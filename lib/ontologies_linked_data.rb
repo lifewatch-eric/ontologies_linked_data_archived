@@ -4,7 +4,7 @@ require_relative "ontologies_linked_data/monkeypatches/to_flex_hash/object"
 
 # Require all models
 project_root = File.dirname(File.absolute_path(__FILE__))
-Dir.glob(project_root + '/models/*', &method(:require))
+Dir.glob(project_root + '/ontologies_linked_data/models/*', &method(:require))
 
 # Setup Goo (repo connection and namespaces)
 module LinkedData
