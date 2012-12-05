@@ -18,6 +18,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("goo")
   gem.add_dependency("json")
   gem.add_dependency("rack")
+  gem.add_dependency("rack-test")
 
   # gem.executables = %w()
 end
