@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require_relative 'lib/ontologies_linked_data/version'
+require File.expand_path('../lib/ontologies_linked_data/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Paul R Alexander"]
