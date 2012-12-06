@@ -14,10 +14,6 @@ module LinkedData
       attribute :qualityRating, :cardinality => { :max => 1 }
       attribute :formalityRating, :cardinality => { :max => 1 }
       attribute :documentationRating, :cardinality => { :max => 1 }
-
-      def initialize(attributes = {})
-        super(attributes)
-      end
     end
   end
 end

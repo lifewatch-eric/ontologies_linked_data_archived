@@ -7,10 +7,6 @@ module LinkedData
       attribute :acronym, :unique => true, :cardinality => { :max => 1, :min => 1 }
       attribute :description, :cardinality => { :max => 1, :min => 1 }
       attribute :parentCategory, :instance_of => { :with => :cateogory }
-
-      def initialize(attributes = {})
-        super(attributes)
-      end
     end
   end
 end
