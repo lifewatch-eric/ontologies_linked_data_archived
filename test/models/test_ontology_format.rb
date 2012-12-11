@@ -31,7 +31,7 @@ class TestOntologyFormat < LinkedData::TestCase
   def test_init
      teardown
      assert_equal 0, LinkedData::Models::OntologyFormat.all.length
-     LinkedData::Models::OntologyFormat.init
+     LinkedData::Models::OntologyFormat.init @acronyms
      assert_equal 2, LinkedData::Models::OntologyFormat.all.length
   end
 
