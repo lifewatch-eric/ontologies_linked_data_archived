@@ -1,5 +1,5 @@
-
 Gemfile.local
-
 Gemfile.lock
 *.swp
+*.gemtags
+*.tags
