@@ -1,6 +1,6 @@
 module LinkedData
   module Models
-    class User < Goo::Base::Resource
+    class User < LinkedData::Models::Base
       model :user
       attribute :username, :unique => true, :cardinality => { :max => 1, :min => 1 }
     end

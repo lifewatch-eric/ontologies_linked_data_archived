@@ -1,7 +1,6 @@
 module LinkedData
   module Models
-    class Group < Goo::Base::Resource
-      model :group
+    class Group < LinkedData::Models::Base
       attribute :created, :date_time_xsd => true, :cardinality => { :max => 1, :min => 1 }
       attribute :name, :cardinality => { :max => 1, :min => 1 }
       attribute :acronym, :unique => true, :cardinality => { :max => 1, :min => 1 }

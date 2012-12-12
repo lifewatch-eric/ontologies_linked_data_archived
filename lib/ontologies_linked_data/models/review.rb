@@ -3,7 +3,7 @@ require_relative "ontology"
 
 module LinkedData
   module Models
-    class Review < Goo::Base::Resource
+    class Review < LinkedData::Models::Base
       model :review
       attribute :creator, :instance_of => { :with => :user }, :cardinality => { :max => 1, :min => 1 }
       attribute :created, :date_time_xsd => true, :cardinality => { :max => 1, :min => 1 }

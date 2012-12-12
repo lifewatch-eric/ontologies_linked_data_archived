@@ -1,6 +1,6 @@
 module LinkedData
   module Models
-    class Project < Goo::Base::Resource
+    class Project < LinkedData::Models::Base
       model :project
       attribute :creator, :cardinality => { :max => 1, :min => 1 }
       attribute :created, :date_time_xsd => true, :cardinality => { :max => 1, :min => 1 }
