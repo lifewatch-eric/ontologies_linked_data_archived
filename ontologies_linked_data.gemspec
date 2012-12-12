@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("json")
   gem.add_dependency("rack")
   gem.add_dependency("rack-test")
+  gem.add_dependency("rubyzip")
 
   # gem.executables = %w()
 end
