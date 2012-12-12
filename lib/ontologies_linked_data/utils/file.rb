@@ -47,6 +47,10 @@ module LinkedData
       def self.repeated_names_in_file_list(file_list)
         return file_list.group_by {|x| x.split("/")[-1]}.select { |k,v| v.length > 1}
       end
+
+      def self.exists_and_file(path)
+        return (File.exist?(path) and (not File.directory?(path)))
+      end
     end
   end
 end

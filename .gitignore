@@ -4,3 +4,4 @@ Gemfile.local
 Gemfile.lock
 *.swp
 .DS_Store
+test/data/ontology_files/parse
