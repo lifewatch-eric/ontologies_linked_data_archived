@@ -9,18 +9,20 @@ Dir.glob(project_root + '/ontologies_linked_data/models/*', &method(:require))
 # Setup Goo (repo connection and namespaces)
 module LinkedData
   def self.config(options = {})
-    port = options[:port] || GOO_PORT || 9000
-    host = options[:host] || GOO_HOST || "localhost"
+    port = options[:port] || $GOO_PORT || 9000
+    host = options[:host] || $GOO_HOST || "localhost"
     begin
-      Goo.configure do |conf|
-        conf[:stores] = [ { :name => :main , :host => host, :port => port, :options => { } } ]
-        conf[:namespaces] = {
-          :metadata => "http://data.bioontology.org/metadata/",
-          :default => :metadata,
-        }
+      if Goo.store().nil?
+        Goo.configure do |conf|
+          conf[:stores] = [ { :name => :main , :host => host, :port => port, :options => { } } ]
+          conf[:namespaces] = {
+            :metadata => "http://data.bioontology.org/metadata/",
+            :default => :metadata,
+          }
+        end
       end
     rescue Exception => e
-      puts "Invalid configuration, moving on"
+      puts "Invalid triplestore configuration, moving on"
     end
   end
 end
