@@ -16,7 +16,7 @@ module LinkedData
       status = options[:status] ||= 200
       headers = options[:headers] ||= {}
       body = options[:body] ||= ""
-      obj = options[:ld_object] || response
+      obj = options[:ld_object] || body
 
       params = env["rack.request.query_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
       # Client accept header
