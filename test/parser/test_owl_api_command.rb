@@ -1,4 +1,5 @@
 require_relative "../test_case"
+require 'logger'
 
 class TestOWLApi < LinkedData::TestCase
 
@@ -7,7 +8,7 @@ class TestOWLApi < LinkedData::TestCase
     input_file = "test/data/ontology_files/BRO_v3.2.owl"
     LinkedData::Parser.logger =  Logger.new(STDOUT)
     owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
-    owlapi.parse 
+    owlapi.parse
     assert(File.exist?(output_repo))
     assert(File.exist?(input_file))
     assert(File.exist?(owlapi.file_triples_path))
@@ -18,7 +19,7 @@ class TestOWLApi < LinkedData::TestCase
     input_file = "test/data/ontology_files/"
     owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
     begin
-      owlapi.parse 
+      owlapi.parse
       assert(false)
     rescue LinkedData::Parser::ParserException => e
       assert(e.kind_of? LinkedData::Parser::MkdirException)
@@ -29,7 +30,7 @@ class TestOWLApi < LinkedData::TestCase
     input_file = "test/data/ontology_files/aaaa"
     owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
     begin
-      owlapi.parse 
+      owlapi.parse
       assert(false)
     rescue LinkedData::Parser::ParserException => e
       assert(e.kind_of? LinkedData::Parser::InputFileNotFoundError)
@@ -41,11 +42,11 @@ class TestOWLApi < LinkedData::TestCase
     input_file = "test/data/ontology_files/fma_3.1_owl_file_v3.1.zip"
     owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
     begin
-      owlapi.parse 
+      owlapi.parse
       assert(false)
     rescue LinkedData::Parser::ParserException => e
       assert(e.kind_of? LinkedData::Parser::MasterFileMissingException)
     end
   end
-  
+
 end
