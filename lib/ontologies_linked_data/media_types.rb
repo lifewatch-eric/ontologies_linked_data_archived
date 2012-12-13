@@ -29,28 +29,29 @@ module LinkedData
 
     private
 
-    TYPE_MAP = {
-       "text/html" => HTML,
-       "application/xhtml+xml" => HTML,
-       "application/json" => JSON,
-       "text/javascript" => JSONP,
-       "application/javascript" => JSONP,
-       "application/ecmascript" => JSONP,
-       "application/x-ecmascript" => JSONP,
-       "application/rdf+turtle" => TURTLE,
-       "application/x-turtle" => TURTLE,
-       "application/turtle" => TURTLE,
-       "application/rdf+xml" => XML,
-       "application/xml" => XML,
-       "text/xml" => XML
-    }
-
     DEFAULT_TYPES = {
+      JSON => "application/json",
       HTML => "text/html",
       TURTLE => "application/rdf+turtle",
       XML => "application/rdf+xml",
-      JSON => "application/json",
       JSONP => "application/javascript"
+    }
+
+    TYPE_MAP = {
+      DEFAULT_TYPES[DEFAULT] => DEFAULT,
+      "text/html" => HTML,
+      "application/xhtml+xml" => HTML,
+      "application/json" => JSON,
+      "text/javascript" => JSONP,
+      "application/javascript" => JSONP,
+      "application/ecmascript" => JSONP,
+      "application/x-ecmascript" => JSONP,
+      "application/rdf+turtle" => TURTLE,
+      "application/x-turtle" => TURTLE,
+      "application/turtle" => TURTLE,
+      "application/rdf+xml" => XML,
+      "application/xml" => XML,
+      "text/xml" => XML
     }
 
   end

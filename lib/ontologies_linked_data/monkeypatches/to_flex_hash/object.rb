@@ -20,8 +20,19 @@ class Object
 
     hash = {}
 
-    # Get all instance variables
-    instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
+    # Look for table attribute or get all instance variables
+    if instance_variables.include?(:@table)
+      hash.replace(instance_variable_get("@table"))
+    else
+      instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
+    end
+
+    # Remove known bad data
+    bad_attributes = %w(internals captures splat)
+    bad_attributes.each do |bad_attribute|
+      hash.delete(bad_attribute)
+      hash.delete(bad_attribute.to_sym)
+    end
 
     if all # Get everything
       methods = serializable_methods if respond_to? "serializable_methods"

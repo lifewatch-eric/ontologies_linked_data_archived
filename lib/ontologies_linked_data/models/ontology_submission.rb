@@ -1,6 +1,6 @@
 module LinkedData
   module Models
-    class OntologySubmission < Goo::Base::Resource
+    class OntologySubmission < LinkedData::Models::Base
       model :ontology_submission
       attribute :acronym, :unique => true
       attribute :submissionId, :unique => true, :instance_of =>  { :with => Fixnum }

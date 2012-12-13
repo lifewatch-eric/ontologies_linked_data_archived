@@ -1,6 +1,6 @@
 module LinkedData
   module Models
-    class Ontology < Goo::Base::Resource
+    class Ontology < LinkedData::Models::Base
       model :ontology
       attribute :acronym, :unique => true
 
