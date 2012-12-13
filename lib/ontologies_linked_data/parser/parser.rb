@@ -1,5 +1,8 @@
 module LinkedData
   module Parser
+    class <<self
+      attr_accessor :logger
+    end
     class ParserException < Exception
     end
     class MkdirException < ParserException

@@ -1,4 +1,6 @@
 require "goo"
+require "logger"
+
 require_relative "ontologies_linked_data/serializer"
 require_relative "ontologies_linked_data/utils/file"
 require_relative "ontologies_linked_data/parser/parser"
