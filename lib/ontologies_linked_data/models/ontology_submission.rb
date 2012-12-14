@@ -14,7 +14,6 @@ module LinkedData
       attribute :hiearchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
 
       #internal values for parsing - not definitive
-      attribute :repoPath,  :single_value =>true, :not_nil =>true
       attribute :uploadFileName,  :single_value =>true, :not_nil =>true
       attribute :masterFileName,  :single_value =>true
 
@@ -32,6 +31,7 @@ module LinkedData
       def sanity_check
         #if master file points to a zip file
         file_path = File.join(self.repoPath, self.uploadFileName)
+        file_path = File.join($REPOSITORY_FOLDER, self.uploadFileName)
 
         zip = LinkedData::Utils::FileHelpers.zip?(file_path) 
         if not zip and self.masterFileName.nil?

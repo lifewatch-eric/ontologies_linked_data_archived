@@ -4,7 +4,6 @@ class TestOntologySubmission < LinkedData::TestCase
   def setup
     @acronym = "SNOMED-TST"
     @name = "SNOMED-CT TEST"
-    @repoPath = "./test/data/ontology_files"
     @uploadFileName = "BRO_v3.2.owl"
     @id = 10
   end
@@ -35,7 +34,6 @@ class TestOntologySubmission < LinkedData::TestCase
     else
       os.ontology = o 
     end
-    os.repoPath = @repoPath
     os.uploadFileName = @uploadFileName
     os.ontologyFormat = owl
     os.administeredBy = user
@@ -76,7 +74,7 @@ class TestOntologySubmission < LinkedData::TestCase
 
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => "BRO", :submissionId => 1, :name => "Biomedical Resource Ontology",
-                             :repoPath => "./test/data/ontology_files", :uploadFileName => "BRO_v3.2.1_v3.2.1.owl"})
+                             :uploadFileName => "BRO_v3.2.1_v3.2.1.owl"})
     assert (not ont_submision.valid?)
     assert_equal 3, ont_submision.errors.length
     assert_instance_of Array, ont_submision.errors[:ontology]
@@ -95,7 +93,7 @@ class TestOntologySubmission < LinkedData::TestCase
     owl, fma, user =  submission_dependent_objects("OWL", "FMA", "test_linked_models")
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => "FMA", :submissionId => 1, :name => "FMA Bla",
-                             :repoPath => "./test/data/ontology_files", :uploadFileName => "fma_3.1_owl_file_v3.1.zip"})
+                             :uploadFileName => "fma_3.1_owl_file_v3.1.zip"})
     ont_submision.ontologyFormat = owl
     ont_submision.administeredBy = user
     ont_submision.ontology = fma
@@ -120,7 +118,7 @@ class TestOntologySubmission < LinkedData::TestCase
   def test_duplicated_file_names
     owl, dup, user =  submission_dependent_objects("OWL", "DUP", "test_linked_models")
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => "Bogus", :submissionId => 1, :name => "Bogus bla blu",
-                             :repoPath => "./test/data/ontology_files", :uploadFileName => "ont_dup_names.zip"})
+                             :uploadFileName => "ont_dup_names.zip"})
     ont_submision.ontologyFormat = owl
     ont_submision.administeredBy = user
     ont_submision.ontology = dup
