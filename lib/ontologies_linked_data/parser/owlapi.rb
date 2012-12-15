@@ -61,7 +61,6 @@ module LinkedData
         command_call = "java -jar #{@owlapi_wrapper_jar_path} #{options}"
         Parser.logger.info("Java call [#{command_call}]")
         stdout,stderr,status = Open3.capture3(command_call)
-        binding
         if not status.success?
           Parser.logger.error("OWLAPI java error in parse")
           Parser.logger.error(stderr)
@@ -91,7 +90,7 @@ module LinkedData
         call_owlapi_java_command
         if @file_triples_path.nil?
           raise RDFFileNotGeneratedException, "Triple file nil"
-        else not File.exist?(@file_triples_path)
+        elsif not File.exist?(@file_triples_path)
           raise RDFFileNotGeneratedException, "Triple file not found in #{@file_triples_path}"
         end
         return @file_triples_path

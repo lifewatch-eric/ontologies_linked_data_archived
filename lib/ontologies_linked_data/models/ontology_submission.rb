@@ -16,7 +16,7 @@ module LinkedData
       attribute :summaryOnly, :single_value  => true
 
       #internal values for parsing - not definitive
-      attribute :uploadFilePath,  :single_value =>true, :not_nil =>true
+      attribute :uploadFilePath,  :single_value =>true
       attribute :masterFileName,  :single_value =>true
 
 
@@ -42,7 +42,8 @@ module LinkedData
 
       def valid?
         valid_result = super
-        return valid_result && self.sanity_check
+        sc = self.sanity_check
+        return valid_result && sc 
       end
 
       def filename
@@ -51,12 +52,13 @@ module LinkedData
       def sanity_check
         if self.summaryOnly
           return true
+        elsif self.uploadFilePath.nil?
+            self.errors[:uploadFilePath] = ["In non-summary only submissions a data file must be provided."]
+            return false
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath) 
         if not zip and self.masterFileName.nil?
-          #unique file
-          self.masterFileName = self.uploadFilePath
           return true
 
         elsif zip and self.masterFileName.nil?
@@ -96,7 +98,7 @@ module LinkedData
       end 
 
       def data_folder
-        return File.join($REPOSITORY_FOLDER, self.ontology.acronym, self.submissionId)
+        return File.join($REPOSITORY_FOLDER, self.ontology.acronym, self.submissionId.to_s)
       end
 
       def process_submission(logger)
@@ -106,10 +108,17 @@ module LinkedData
             self.ontology.load
           end
         end
-        input_file = File.join([$REPOSITORY_FOLDER, self.uploadFilePath])
-        LinkedData::Parser.logger =  Logger.new(STDOUT)
-        owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,self.data_folder,self.masterFileName)
-        owlapi.parse 
+        LinkedData::Parser.logger =  logger
+        owlapi = LinkedData::Parser::OWLAPICommand.new(self.uploadFilePath,self.data_folder,self.masterFileName)
+        triples_file_path = owlapi.parse
+
+        #TODO this logic need to be revise.
+        #It would be better to first transform into ntriple and then upload with curl
+        Goo.store.delete_graph(self.resource_id.value)
+        Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
+        
+        #query for number of clases here ?
+        #generate labels ?
       end
     end
   end
