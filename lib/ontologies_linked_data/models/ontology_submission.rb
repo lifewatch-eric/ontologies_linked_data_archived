@@ -101,6 +101,10 @@ module LinkedData
         return File.join($REPOSITORY_FOLDER, self.ontology.acronym, self.submissionId.to_s)
       end
 
+      def zip_folder
+        return File.join([self.data_folder, "unzipped"])
+      end
+
       def process_submission(logger)
         if not self.loaded?
           self.load
@@ -108,8 +112,20 @@ module LinkedData
             self.ontology.load
           end
         end
+        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
+        zip_dst = nil
+        if zip
+          zip_dst = self.zip_folder
+          if Dir.exist? zip_dst
+            FileUtils.rm_r [zip_dst]
+          end
+          FileUtils.mkdir_p zip_dst
+          extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
+          logger.info("Files extracted from zip #{extracted}")
+        end 
         LinkedData::Parser.logger =  logger
-        owlapi = LinkedData::Parser::OWLAPICommand.new(self.uploadFilePath,self.data_folder,self.masterFileName)
+        input_data = zip_dst ||  self.uploadFilePath
+        owlapi = LinkedData::Parser::OWLAPICommand.new(input_data,self.data_folder,self.masterFileName)
         triples_file_path = owlapi.parse
 
         #TODO this logic need to be revise.
