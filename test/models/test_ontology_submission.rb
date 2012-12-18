@@ -10,8 +10,12 @@ class TestOntologySubmission < LinkedData::TestCase
   end
 
   def teardown
-    l = LinkedData::Models::OntologySubmission.where(:acronym => @acronym, :submissionId => @id)
-    l.each do |o|
+    l = LinkedData::Models::OntologySubmission.all
+    if l.length > 50
+      raise ArgumentError, "Too many ontologies in triple store. TESTS WILL DELETE DATA"
+    end
+    l.each do |os|
+      os.load
       os.delete
       o = os.ontology
       o.load
@@ -19,44 +23,7 @@ class TestOntologySubmission < LinkedData::TestCase
     end
   end
   
-  def submission_dependent_objects(format,acronym,user_name,status_code)
-    #ontology format
-    LinkedData::Models::OntologyFormat.init
-    owl = LinkedData::Models::OntologyFormat.where(:acronym => format)[0]
-    assert_instance_of LinkedData::Models::OntologyFormat, owl
 
-    #ontology
-    LinkedData::Models::OntologyFormat.init
-    ont = LinkedData::Models::Ontology.where(:acronym => acronym)
-    LinkedData::Models::OntologyFormat.init
-    assert(ont.length < 2)
-    if ont.length == 0
-      ont = LinkedData::Models::Ontology.new({:acronym => acronym})
-    else
-      ont = ont[0]
-    end
-    
-    #user test_linked_models
-    users = LinkedData::Models::User.where(:username => user_name)
-    assert(users.length < 2)
-    if users.length == 0
-      user = LinkedData::Models::User.new({:username => user_name})
-    else
-      user = users[0]
-    end
-
-        #user test_linked_models
-    status = LinkedData::Models::SubmissionStatus.where(:code => status_code)
-    assert(status.length < 2)
-    if status.length == 0
-      status = LinkedData::Models::SubmissionStatus.new({:code => status_code})
-    else
-      status = status[0]
-    end
-
-    #Submission Status
-    return owl, ont, user, status 
-  end
 
   def test_valid_ontology
 
@@ -104,7 +71,8 @@ class TestOntologySubmission < LinkedData::TestCase
 
 
   def test_sanity_check_zip
-    
+    teardown
+
     owl, rad, user, status =  submission_dependent_objects("OWL", "RADTEST", "test_linked_models", "UPLOADED")
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({:acronym => "RADTEST", :submissionId => 1, :name => "RADTEST Bla"})
