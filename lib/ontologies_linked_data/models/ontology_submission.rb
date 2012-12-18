@@ -10,6 +10,7 @@ module LinkedData
       attribute :prefLabelProperty, :instance_of =>  { :with => RDF::IRI }, :single_value => true
       attribute :definitionProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
       attribute :synonymProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
+      attribute :authorProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
       attribute :classType, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
       attribute :hiearchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
       attribute :status, :instance_of =>  { :with => :submission_status }, :single_value  => true, :not_nil => true
@@ -106,6 +107,9 @@ module LinkedData
       end
 
       def process_submission(logger)
+        if not self.valid?
+          raise ArgumentError, "Submission is not valid, it cannot be processed. Check errors"
+        end
         if not self.loaded?
           self.load
           if not self.ontology.loaded?
@@ -132,9 +136,18 @@ module LinkedData
         #It would be better to first transform into ntriple and then upload with curl
         Goo.store.delete_graph(self.resource_id.value)
         Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
-        
+
+        rdf_status = SubmissionStatus.find("RDF")
+        self.status = rdf_status
+        self.save
         #query for number of clases here ?
         #generate labels ?
+      end
+
+      def classes
+        return Class.where(:graph => self.resource_id, 
+                           :prefLabelProperty => self.prefLabelProperty,
+                           :classType => self.classType)
       end
     end
   end
