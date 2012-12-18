@@ -1,7 +1,7 @@
-require_relative "../test_case"
+require_relative "./test_ontology_common"
 require "logger"
 
-class TestOntologySubmission < LinkedData::TestCase
+class TestOntologySubmission < LinkedData::TestOntologyCommon
   def setup
     @acronym = "SNOMED-TST"
     @name = "SNOMED-CT TEST"
