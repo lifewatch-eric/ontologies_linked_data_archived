@@ -101,6 +101,7 @@
     <!-- http://bioportal.bioontology.org/ontologies/msotes#class6 -->
 
     <owl:Class rdf:about="&msotes;class6">
+        <rdfs:label>rdfs label value</rdfs:label>
         <mySynonymLabel>syn for class 6</mySynonymLabel>
     </owl:Class>
     
