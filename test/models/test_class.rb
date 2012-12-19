@@ -12,7 +12,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.find(acr + '+' + 1.to_s)
     os_classes = os.classes
     os_classes.each do |c|
-      puts "#{c.id} #{c.prefLabel}"
+      assert (not c.prefLabel.nil?)
     end
     os.ontology.load
     os.ontology.delete

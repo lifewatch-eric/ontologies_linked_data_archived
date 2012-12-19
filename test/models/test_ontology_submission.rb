@@ -220,5 +220,28 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploaded_ont.process_submission Logger.new(STDOUT)
   end
 
+  def test_custom_property_generation
+    acr = "CUSTOMPROPTEST"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss[0]
+    ont_sub.classes.each do |c|
+      assert (not c.prefLabel.nil?)
+      assert_instance_of String, c.prefLabel
+      if c.id.value.include? "class6"
+        assert_equal "rdfs label value", c.prefLabel
+      end
+      if c.id.value.include? "class3"
+        assert_equal "class3", c.prefLabel
+      end
+      if c.id.value.include? "class1"
+        assert_equal "class 1 literal", c.prefLabel
+      end
+    end
+  end
+
 end
 

@@ -132,16 +132,35 @@ module LinkedData
         owlapi = LinkedData::Parser::OWLAPICommand.new(input_data,self.data_folder,self.masterFileName)
         triples_file_path = owlapi.parse
 
-        #TODO this logic need to be revise.
-        #It would be better to first transform into ntriple and then upload with curl
         Goo.store.delete_graph(self.resource_id.value)
         Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
-
         rdf_status = SubmissionStatus.find("RDF")
         self.status = rdf_status
         self.save
-        #query for number of clases here ?
-        #generate labels ?
+
+        missing_labels_generation logger
+      end
+
+      def missing_labels_generation(logger)  
+        property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
+        Goo.store.append_in_graph(property_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+        count_classes = 0
+        self.classes.each do |c|
+          if c.prefLabel.nil?
+            rdfs_labels = c.rdfs_labels
+            label = nil
+            if rdfs_labels.length > 0
+              label = rdfs_labels[0] 
+            else
+              label = LinkedData::Utils::Namespaces.last_iri_fragment c.id.value
+            end
+            label_triples = LinkedData::Utils::Triples.label_for_class_triple(c.id,
+                                                   LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
+            Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+          end
+          count_classes += 1
+        end
+        logger.info("#{count_classes} classes in ontology")
       end
 
       def classes
