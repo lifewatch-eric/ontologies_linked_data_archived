@@ -41,25 +41,28 @@ module LinkedData
       #Submission Status
       return owl, ont, user, status 
     end
-  def init_test_ontology_msotest(acr)
-    ont = LinkedData::Models::Ontology.find(acr)
-    if not ont.nil?
-      sub = ont.submissions || []
-      sub.each do |s|
-        s.load
-        s.delete
+
+
+
+    def init_test_ontology_msotest(acr)
+      ont = LinkedData::Models::Ontology.find(acr)
+      if not ont.nil?
+        sub = ont.submissions || []
+        sub.each do |s|
+          s.load
+          s.delete
+        end
+        ont.delete
       end
-      ont.delete
-    end
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acr, :submissionId => 1, :name => "Some Name" })
-    assert (not ont_submision.valid?)
-    assert_equal 5, ont_submision.errors.length
-    file_path = "./test/data/ontology_files/custom_properties.owl" 
-    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path) 
-    ont_submision.uploadFilePath = uploadFilePath
-    owl, ont, user, status =  submission_dependent_objects("OWL", acr, "test_linked_models", "UPLOADED")
-    ont_submision.ontologyFormat = owl
-    ont_submision.administeredBy = user
+      ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acr, :submissionId => 1, :name => "Some Name" })
+      assert (not ont_submision.valid?)
+      assert_equal 5, ont_submision.errors.length
+      file_path = "./test/data/ontology_files/custom_properties.owl" 
+      uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path) 
+      ont_submision.uploadFilePath = uploadFilePath
+      owl, ont, user, status =  submission_dependent_objects("OWL", acr, "test_linked_models", "UPLOADED")
+      ont_submision.ontologyFormat = owl
+      ont_submision.administeredBy = user
       ont_submision.ontology = ont
       ont_submision.status = status
       ont_submision.prefLabelProperty = RDF::IRI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
@@ -83,6 +86,27 @@ module LinkedData
         uploaded_ont.ontology.load
       end
       uploaded_ont.process_submission Logger.new(STDOUT)
+     
+      #test to see if custom properties were saved in the graph 
+      custom_props = [ "http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel",
+        "http://bioportal.bioontology.org/ontologies/msotes#myDefinition",
+        "http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel",
+        "http://bioportal.bioontology.org/ontologies/msotes#myAuthor"]
+      custom_props.each do |p|
+        query = <<eos
+SELECT * WHERE {
+    GRAPH <#{uploaded_ont.resource_id.value}> {
+        <#{p}> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> ?super .
+    } }
+eos
+        count = 0
+        Goo.store.query(query).each_solution do |sol|
+          if (sol.get(:super).value.include? "skos") || (sol.get(:super).value.include? "elements") ||  (sol.get(:super).value.include? "metadata")
+            count += 1
+          end
+        end
+        assert (count > 0)
+      end
     end
   end
 end
