@@ -22,6 +22,11 @@ module LinkedData
         end
         return submission_ids.max + 1
       end
+
+      def delete
+        submissions = OntologySubmission.where(acronym: self.acronym)
+        submissions.each {|s| s.delete unless s.nil?}
+        super()
       end
     end
   end
