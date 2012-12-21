@@ -9,7 +9,8 @@ module LinkedData
                   :attribute => :ontology }
 
       def next_submission_id
-        submissions = OntologySubmission.where(acronym: self.acronym)
+        submissions = self.submissions
+        submissions = OntologySubmission.where(acronym: self.acronym) if submissions.nil?
 
         # This is the first!
         return 1 if submissions.nil? || submissions.empty?

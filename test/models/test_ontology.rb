@@ -93,6 +93,4 @@ class TestOntology < LinkedData::TestCase
     assert submissions.empty?
   end
 
-
-
 end
