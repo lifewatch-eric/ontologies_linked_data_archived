@@ -20,7 +20,7 @@ module LinkedData
         if args.length == 1 and args[0].include? :graph
           params = args[0]
           graph = params[:graph]
-          prefLabelProperty =  params[:prefLabelProperty] || LinkedData::Utils::Namespaces.default_pref_label 
+          prefLabelProperty = LinkedData::Utils::Namespaces.default_pref_label
           classType =  params[:classType] || LinkedData::Utils::Namespaces.default_type_for_classes
 
           query = <<eos
