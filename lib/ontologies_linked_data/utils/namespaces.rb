@@ -1,7 +1,7 @@
 module LinkedData
   module Utils
     module Namespaces
-      
+
       #TODO: here we can do better.
 
       SKOS = "http://www.w3.org/2004/02/skos/core#"
@@ -14,19 +14,19 @@ module LinkedData
       def self.meta_prefLabel
         META + "prefLabel"
       end
-      def self.skos_prefLabel 
+      def self.skos_prefLabel
         SKOS + "prefLabel"
       end
-      def self.skos_altLabel 
-        SKOS + "definition"
-      end
-      def self.skos_definition
+      def self.skos_altLabel
         SKOS + "altLabel"
       end
-      def self.rdfs_subPropertyOf 
+      def self.skos_definition
+        SKOS + "definition"
+      end
+      def self.rdfs_subPropertyOf
         RDFS + "subPropertyOf"
       end
-      def self.rdfs_label 
+      def self.rdfs_label
         RDFS + "label"
       end
       def self.owl_class
@@ -41,10 +41,10 @@ module LinkedData
       def self.default_pref_label
         RDF::IRI.new(skos_prefLabel)
       end
-      def self.default_type_for_classes 
+      def self.default_type_for_classes
         RDF::IRI.new(owl_class)
       end
-      def self.meta_prefLabel_iri 
+      def self.meta_prefLabel_iri
         RDF::IRI.new(meta_prefLabel)
       end
 

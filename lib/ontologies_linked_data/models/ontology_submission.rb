@@ -44,7 +44,7 @@ module LinkedData
       def valid?
         valid_result = super
         sc = self.sanity_check
-        return valid_result && sc 
+        return valid_result && sc
       end
 
       def filename
@@ -59,6 +59,7 @@ module LinkedData
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath) 
+        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         if not zip and self.masterFileName.nil?
           return true
 
@@ -68,7 +69,6 @@ module LinkedData
             self.errors[:uploadFilePath] = []
           end
           files =  LinkedData::Utils::FileHelpers.files_from_zip(self.uploadFilePath)
-          
           #check for duplicated names
           repeated_names =  LinkedData::Utils::FileHelpers.repeated_names_in_file_list(files)
           if repeated_names.length > 0
@@ -79,7 +79,7 @@ module LinkedData
           end
 
           #error message with options to choose from.
-          self.errors[:uploadFilePath] << { 
+          self.errors[:uploadFilePath] << {
             :message => "Zip file detected, choose the master file.", :options => files }
           return false
 
@@ -89,14 +89,14 @@ module LinkedData
           if not files.include? self.masterFileName
             if self.errors[:uploadFilePath].nil?
               self.errors[:uploadFilePath] = []
-              self.errors[:uploadFilePath] << { 
-                :message => "The selected file `#{self.materFileName}` is not included in the zip file", 
+              self.errors[:uploadFilePath] << {
+                :message => "The selected file `#{self.materFileName}` is not included in the zip file",
                 :options => files }
             end
           end
         end
         return true
-      end 
+      end
 
       def data_folder
         return File.join($REPOSITORY_FOLDER, self.ontology.acronym, self.submissionId.to_s)
@@ -126,7 +126,7 @@ module LinkedData
           FileUtils.mkdir_p zip_dst
           extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
           logger.info("Files extracted from zip #{extracted}")
-        end 
+        end
         LinkedData::Parser.logger =  logger
         input_data = zip_dst ||  self.uploadFilePath
         owlapi = LinkedData::Parser::OWLAPICommand.new(input_data,self.data_folder,self.masterFileName)
@@ -141,20 +141,20 @@ module LinkedData
         missing_labels_generation logger
       end
 
-      def missing_labels_generation(logger)  
+      def missing_labels_generation(logger)
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
         Goo.store.append_in_graph(property_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
         count_classes = 0
         self.classes.each do |c|
           if c.prefLabel.nil?
-            rdfs_labels = c.rdfs_labels
+            rdfs_labels = c.synonymLabel
             label = nil
             if rdfs_labels.length > 0
-              label = rdfs_labels[0] 
+              label = rdfs_labels[0]
             else
               label = LinkedData::Utils::Namespaces.last_iri_fragment c.id.value
             end
-            label_triples = LinkedData::Utils::Triples.label_for_class_triple(c.id,
+            label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.id,
                                                    LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
             Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
           end
