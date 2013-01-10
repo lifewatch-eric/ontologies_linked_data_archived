@@ -6,9 +6,9 @@ module LinkedData
       end
       def self.rdf_for_custom_properties(ont_sub)
         triples = []
+        triples << "<#{names.meta_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.skos_prefLabel}> ."
         unless ont_sub.prefLabelProperty.nil?
           triples << "<#{ont_sub.prefLabelProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.meta_prefLabel}> ."
-          triples << "<#{names.meta_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.skos_prefLabel}> ."
           triples << "<#{names.skos_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
         end
         unless ont_sub.definitionProperty.nil?
