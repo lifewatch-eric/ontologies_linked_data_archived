@@ -4,7 +4,6 @@ module LinkedData
       model :ontology_submission
       attribute :acronym, :unique => true
       attribute :submissionId, :unique => true, :instance_of =>  { :with => Fixnum }
-      attribute :name, :cardinality => { :max => 1, :min => 1 }
 
       #configurable properties
       attribute :prefLabelProperty, :instance_of =>  { :with => RDF::IRI }, :single_value => true
@@ -20,6 +19,8 @@ module LinkedData
       attribute :uploadFilePath,  :single_value =>true
       attribute :masterFileName,  :single_value =>true
 
+      # URI for pulling ontology
+      attribute :pullLocation, :single_value => true, :instance_of =>  { :with => RDF::IRI }
 
       #link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
@@ -53,9 +54,11 @@ module LinkedData
       def sanity_check
         if self.summaryOnly
           return true
-        elsif self.uploadFilePath.nil?
-            self.errors[:uploadFilePath] = ["In non-summary only submissions a data file must be provided."]
-            return false
+        elsif self.uploadFilePath.nil? && self.pullLocation.nil?
+          self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
+          return false
+        elsif self.pullLocation
+          return true
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
@@ -90,7 +93,7 @@ module LinkedData
             if self.errors[:uploadFilePath].nil?
               self.errors[:uploadFilePath] = []
               self.errors[:uploadFilePath] << {
-                :message => "The selected file `#{self.materFileName}` is not included in the zip file",
+                :message => "The selected file `#{self.masterFileName}` is not included in the zip file",
                 :options => files }
             end
           end
