@@ -12,7 +12,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.find(acr + '+' + 1.to_s)
     os_classes = os.classes
     os_classes.each do |c|
-      assert (not c.prefLabel.nil?)
+      assert(!c.prefLabel.nil?, "Class #{c.id.value} does not have a label")
     end
     os.ontology.load
     os.ontology.delete

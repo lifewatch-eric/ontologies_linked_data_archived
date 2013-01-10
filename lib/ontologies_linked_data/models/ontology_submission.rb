@@ -58,7 +58,6 @@ module LinkedData
             return false
         end
 
-        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath) 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         if not zip and self.masterFileName.nil?
           return true
@@ -69,12 +68,13 @@ module LinkedData
             self.errors[:uploadFilePath] = []
           end
           files =  LinkedData::Utils::FileHelpers.files_from_zip(self.uploadFilePath)
+
           #check for duplicated names
           repeated_names =  LinkedData::Utils::FileHelpers.repeated_names_in_file_list(files)
           if repeated_names.length > 0
             names = repeated_names.keys.to_s
-            self.errors[:uploadFilePath] << 
-            "Zip file contains file names (#{names}) in more than one folder." 
+            self.errors[:uploadFilePath] <<
+            "Zip file contains file names (#{names}) in more than one folder."
             return false
           end
 
@@ -145,7 +145,12 @@ module LinkedData
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
         Goo.store.append_in_graph(property_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
         count_classes = 0
-        self.classes.each do |c|
+        label_triples = []
+        t0 = Time.now
+        classes = self.classes
+        t1 = Time.now
+        logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
+        classes.each do |c|
           if c.prefLabel.nil?
             rdfs_labels = c.synonymLabel
             label = nil
@@ -156,15 +161,18 @@ module LinkedData
             end
             label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.id,
                                                    LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
-            Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
           end
           count_classes += 1
         end
-        logger.info("#{count_classes} classes in ontology")
+        if (label_triples.length > 0)
+          logger.info("Asserting #{label_triples.length} labels in #{self.resource_id.value}")
+          label_triples = label_triples.join "\n"
+          Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+        end
       end
 
       def classes
-        return Class.where(:graph => self.resource_id, 
+        return Class.where(:graph => self.resource_id,
                            :prefLabelProperty => self.prefLabelProperty,
                            :classType => self.classType)
       end
