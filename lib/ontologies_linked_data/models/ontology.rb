@@ -8,6 +8,11 @@ module LinkedData
                   :inverse_of => { :with => :ontology_submission,
                   :attribute => :ontology }
 
+      def latest_submission
+        self.load unless self.loaded?
+        OntologySubmission.where(acronym: acronym, submissionId: highest_submission_id()).first
+      end
+
       def next_submission_id
         submissions = self.submissions
         submissions = OntologySubmission.where(acronym: self.acronym) if submissions.nil?
