@@ -24,8 +24,6 @@ class TestOntology < LinkedData::TestCase
     o = LinkedData::Models::Ontology.new({
       acronym: @acronym,
       name: @name,
-      ontologyFormat: "OWL",
-      administeredBy: "tim",
     })
     o.save
 
