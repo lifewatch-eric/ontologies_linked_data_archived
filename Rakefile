@@ -25,10 +25,12 @@ Rake::TestTask.new do |t|
 end
 
 namespace :test do
-  if (not (ENV['TESTOPTS'].index "--skip-parsing").nil?)
-    test_opts = ENV['TESTOPTS'].dup
-    test_opts["--skip-parsing"]=""
-    ENV['TESTOPTS'] = test_opts
-    ENV['SKIP_PARSING'] = "please" #be nice
+  if ENV['TESTOPTS']
+    if (not (ENV['TESTOPTS'].index "--skip-parsing").nil?)
+      test_opts = ENV['TESTOPTS'].dup
+      test_opts["--skip-parsing"]=""
+      ENV['TESTOPTS'] = test_opts
+      ENV['SKIP_PARSING'] = "please" #be nice
+    end
   end
 end
