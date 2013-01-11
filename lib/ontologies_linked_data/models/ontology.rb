@@ -13,6 +13,11 @@ module LinkedData
         OntologySubmission.where(acronym: acronym, submissionId: highest_submission_id()).first
       end
 
+      def submission(submission_id)
+        self.load unless self.loaded?
+        OntologySubmission.where(acronym: acronym, submissionId: submission_id.to_i).first
+      end
+
       def next_submission_id
         (highest_submission_id || 0) + 1
       end
