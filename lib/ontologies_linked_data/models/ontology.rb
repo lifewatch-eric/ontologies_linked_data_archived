@@ -14,11 +14,15 @@ module LinkedData
       end
 
       def next_submission_id
-        submissions = self.submissions
-        submissions = OntologySubmission.where(acronym: self.acronym) if submissions.nil?
+        (highest_submission_id || 0) + 1
+      end
+
+      def highest_submission_id
+        submissions = self.submissions rescue nil
+        submissions = OntologySubmission.where(acronym: acronym) if submissions.nil? && !acronym.nil?
 
         # This is the first!
-        return 1 if submissions.nil? || submissions.empty?
+        return 0 if submissions.nil? || submissions.empty?
 
         # Try to get a new one based on the old
         submission_ids = []
@@ -26,7 +30,7 @@ module LinkedData
           s.load unless s.loaded?
           submission_ids << s.submissionId.to_i
         end
-        return submission_ids.max + 1
+        return submission_ids.max
       end
 
       def delete(in_update=false)
