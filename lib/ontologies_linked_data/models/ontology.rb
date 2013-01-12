@@ -8,6 +8,13 @@ module LinkedData
                   :inverse_of => { :with => :ontology_submission,
                   :attribute => :ontology }
 
+
+      ##
+      # Overrides find to ensure acronym is upcased
+      def self.find(params, store_name = nil)
+        super(params.upcase, store_name)
+      end
+
       def latest_submission
         self.load unless self.loaded?
         OntologySubmission.where(acronym: acronym, submissionId: highest_submission_id()).first
