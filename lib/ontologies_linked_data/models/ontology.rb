@@ -16,17 +16,17 @@ module LinkedData
       end
 
       def latest_submission
-        self.load unless self.loaded?
+        self.load unless self.loaded? || self.attr_loaded?(:acronym)
         OntologySubmission.where(acronym: acronym, submissionId: highest_submission_id()).first
       end
 
       def submission(submission_id)
-        self.load unless self.loaded?
+        self.load unless self.loaded? || self.attr_loaded?(:acronym)
         OntologySubmission.where(acronym: acronym, submissionId: submission_id.to_i).first
       end
 
       def submissions
-        self.load unless self.loaded?
+        self.load unless self.loaded? || self.attr_loaded?(:acronym)
         OntologySubmission.where(acronym: acronym)
       end
 
