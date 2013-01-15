@@ -7,6 +7,9 @@ require_relative "ontologies_linked_data/utils/namespaces"
 require_relative "ontologies_linked_data/parser/parser"
 require_relative "ontologies_linked_data/monkeypatches/to_flex_hash/object"
 
+# Require base model
+require_relative "ontologies_linked_data/models/base"
+
 # Require all models
 project_root = File.dirname(File.absolute_path(__FILE__))
 Dir.glob(project_root + '/ontologies_linked_data/models/*', &method(:require))
