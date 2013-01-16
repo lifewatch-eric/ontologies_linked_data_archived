@@ -3,7 +3,7 @@ module LinkedData
     class Ontology < LinkedData::Models::Base
       model :ontology
       attribute :acronym, :unique => true, :namespace => :omv
-      attribute :name, :not_nil => true, :single_value => true
+      attribute :name, :not_nil => true, :single_value => true, :namespace => :omv
       attribute :submissions,
                   :inverse_of => { :with => :ontology_submission,
                   :attribute => :ontology }
