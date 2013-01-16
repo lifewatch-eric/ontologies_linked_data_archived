@@ -2,13 +2,17 @@ module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
       model :ontology
-      attribute :acronym, :unique => true
+      attribute :acronym, :unique => true, :namespace => :omv
       attribute :name, :not_nil => true, :single_value => true
       attribute :submissions,
                   :inverse_of => { :with => :ontology_submission,
                   :attribute => :ontology }
       attribute :administeredBy, :not_nil => true, :instance_of => { :with => :user }
-
+      attribute :group, :instance_of => { :with => :group }
+      attribute :viewingRestriction
+      attribute :doNotUpdate
+      attribute :flat
+      attribute :hasDomain, :namespace => :omv
 
       ##
       # Overrides find to ensure acronym is upcased
