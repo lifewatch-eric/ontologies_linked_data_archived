@@ -64,7 +64,7 @@ module LinkedData
       ont.administeredBy = user
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = ont
-      ont_submision.status = status
+      ont_submision.submissionStatus = status
       ont_submision.prefLabelProperty = RDF::IRI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
       ont_submision.synonymProperty = RDF::IRI.new("http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel")
       ont_submision.definitionProperty = RDF::IRI.new("http://bioportal.bioontology.org/ontologies/msotes#myDefinition")

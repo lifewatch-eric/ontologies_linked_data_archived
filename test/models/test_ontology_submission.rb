@@ -46,7 +46,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os.hasOntologyLanguage = owl
     os.administeredBy = user
     os.ontology = bogus
-    os.status = status
+    os.submissionStatus = status
     assert os.valid?
   end
 
@@ -63,7 +63,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision =  LinkedData::Models::OntologySubmission.new({:acronym => acronym, :submissionId => id})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    ont_submision.status = status
+    ont_submision.submissionStatus = status
     assert (not ont_submision.valid?)
     assert_equal 2, ont_submision.errors.length
     assert_instance_of Array, ont_submision.errors[:ontology]
@@ -94,7 +94,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.administeredBy = user
     ont_submision.ontology = rad
-    ont_submision.status = status
+    ont_submision.submissionStatus = status
     assert (not ont_submision.valid?)
     assert_equal 1, ont_submision.errors.length
     assert_instance_of Hash, ont_submision.errors[:uploadFilePath][0]
@@ -130,7 +130,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert (!ont_submision.valid?)
     assert_equal 2, ont_submision.errors.length
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
-    assert_instance_of String, ont_submision.errors[:status][0]
+    assert_instance_of String, ont_submision.errors[:submissionStatus][0]
   end
 
   def test_submission_parse
@@ -158,7 +158,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     bro.administeredBy = user
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = bro
-    ont_submision.status = status
+    ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
@@ -204,7 +204,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     bro.administeredBy = user
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = bro
-    ont_submision.status = status
+    ont_submision.submissionStatus = status
     assert (not ont_submision.valid?)
     assert_equal 1, ont_submision.errors[:uploadFilePath][0][:options].length
     ont_submision.masterFileName = ont_submision.errors[:uploadFilePath][0][:options][0].split("/")[-1]

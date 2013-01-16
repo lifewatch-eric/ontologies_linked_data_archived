@@ -30,7 +30,7 @@ module LinkedData
       attribute :uploadFilePath,  :single_value =>true
       attribute :masterFileName,  :single_value =>true
       attribute :summaryOnly, :single_value  => true
-      attribute :internalStatus, :instance_of =>  { :with => :submission_status }, :single_value  => true, :not_nil => true
+      attribute :submissionStatus, :instance_of =>  { :with => :submission_status }, :single_value  => true, :not_nil => true
 
       # URI for pulling ontology
       attribute :pullLocation, :single_value => true, :instance_of =>  { :with => RDF::IRI }

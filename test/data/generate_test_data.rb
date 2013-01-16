@@ -78,7 +78,7 @@ class GenerateTestData
         ontology: o,
         hasOntologyLanguage: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase),
         pullLocation: RDF::IRI.new("http://example.com"),
-        status: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
+        submissionStatus: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
         submissionId: o.next_submission_id
       })
       os.save if os.valid?

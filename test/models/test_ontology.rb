@@ -34,7 +34,7 @@ class TestOntology < LinkedData::TestCase
       ontology: o,
       hasOntologyLanguage: of,
       pullLocation: RDF::IRI.new("http://example.com"),
-      status: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
+      submissionStatus: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
       submissionId: o.next_submission_id
     })
     os.save
