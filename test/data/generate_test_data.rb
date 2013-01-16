@@ -1,9 +1,6 @@
 require_relative "../../config/default.rb"
 require_relative "../../lib/ontologies_linked_data"
 
-LinkedData.config
-
-
 class GenerateTestData
   USERNAMES = %w(emiko mina demetra noe anisa latoria nicholle amelia ona jacquelyne reginia dwana curt corrie percy audrie shizue nevada lorrine awilda elyse arlena monnie samual shon chantelle laurie clark raylene marcelino karry alejandra laurine yolando marine richie anderson samatha somer vincent porsche johnette daryl lindy brande bronwyn signe alessandra vernice kara)
   ONT_FORMATS = %w(owl obo rrf umls)
@@ -71,6 +68,7 @@ class GenerateTestData
 
       o = LinkedData::Models::Ontology.new({
         acronym: acronym,
+        administeredBy: LinkedData::Models::User.find(USERNAMES.shuffle.first),
         name: name
       })
       o.save if o.valid?
@@ -79,7 +77,6 @@ class GenerateTestData
         acronym: acronym,
         ontology: o,
         ontologyFormat: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase),
-        administeredBy: LinkedData::Models::User.find(USERNAMES.shuffle.first),
         pullLocation: RDF::IRI.new("http://example.com"),
         status: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
         submissionId: o.next_submission_id
