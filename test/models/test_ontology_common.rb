@@ -62,7 +62,7 @@ module LinkedData
       ont_submision.uploadFilePath = uploadFilePath
       owl, ont, user, status =  submission_dependent_objects("OWL", acr, "test_linked_models", "UPLOADED", "some ont created by mso for testing")
       ont.administeredBy = user
-      ont_submision.ontologyFormat = owl
+      ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = ont
       ont_submision.status = status
       ont_submision.prefLabelProperty = RDF::IRI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")

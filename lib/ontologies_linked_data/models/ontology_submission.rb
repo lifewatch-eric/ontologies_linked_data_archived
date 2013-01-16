@@ -16,6 +16,7 @@ module LinkedData
       attribute :summaryOnly, :single_value  => true
 
       #internal values for parsing - not definitive
+      attribute :hasOntologyLanguage, :namespace => :omv, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
       attribute :uploadFilePath,  :single_value =>true
       attribute :masterFileName,  :single_value =>true
 
@@ -25,7 +26,6 @@ module LinkedData
       #link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
 
-      attribute :ontologyFormat, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([$REPOSITORY_FOLDER, acronym, submissionId.to_s])

@@ -76,7 +76,7 @@ class GenerateTestData
       os = LinkedData::Models::OntologySubmission.new({
         acronym: acronym,
         ontology: o,
-        ontologyFormat: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase),
+        hasOntologyLanguage: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase),
         pullLocation: RDF::IRI.new("http://example.com"),
         status: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
         submissionId: o.next_submission_id

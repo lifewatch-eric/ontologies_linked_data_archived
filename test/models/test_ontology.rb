@@ -32,7 +32,7 @@ class TestOntology < LinkedData::TestCase
     os = LinkedData::Models::OntologySubmission.new({
       acronym: @acronym,
       ontology: o,
-      ontologyFormat: of,
+      hasOntologyLanguage: of,
       pullLocation: RDF::IRI.new("http://example.com"),
       status: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
       submissionId: o.next_submission_id
