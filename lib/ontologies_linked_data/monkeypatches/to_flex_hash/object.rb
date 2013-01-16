@@ -21,8 +21,8 @@ class Object
     hash = {}
 
     # Look for table attribute or get all instance variables
-    if instance_variables.include?(:@table)
-      hash.replace(instance_variable_get("@table"))
+    if instance_variables.include?(:@attributes)
+      hash.replace(instance_variable_get("@attributes"))
     else
       instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
     end
