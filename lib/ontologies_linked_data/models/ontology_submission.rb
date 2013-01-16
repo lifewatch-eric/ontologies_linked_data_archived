@@ -25,6 +25,7 @@ module LinkedData
       attribute :version, :namespace => :omv, :single_value => true
       attribute :creationDate, :namespace => :omv, :single_value => true
       attribute :description, :namespace => :omv, :single_value => true
+      attribute :status, :namespace => :omv, :single_value => true
 
       # Internal values for parsing - not definitive
       attribute :uploadFilePath,  :single_value =>true
