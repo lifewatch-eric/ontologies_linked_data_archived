@@ -7,6 +7,7 @@ module LinkedData
       attribute :submissions,
                   :inverse_of => { :with => :ontology_submission,
                   :attribute => :ontology }
+      attribute :administeredBy, :not_nil => true, :instance_of => { :with => :user }
 
 
       ##

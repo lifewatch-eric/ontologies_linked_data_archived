@@ -26,7 +26,6 @@ module LinkedData
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
 
       attribute :ontologyFormat, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
-      attribute :administeredBy, :not_nil => true, :instance_of => { :with => :user }
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([$REPOSITORY_FOLDER, acronym, submissionId.to_s])
