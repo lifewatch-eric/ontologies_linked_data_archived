@@ -5,6 +5,7 @@ class TestOntology < LinkedData::TestCase
   def setup
     @acronym = "SNOMED-TST"
     @name = "SNOMED-CT TEST"
+    _delete_objects
   end
 
   def teardown
@@ -23,7 +24,8 @@ class TestOntology < LinkedData::TestCase
 
     o = LinkedData::Models::Ontology.new({
       acronym: @acronym,
-      name: @name,
+      administeredBy: u,
+      name: @name
     })
     o.save
 
@@ -31,7 +33,6 @@ class TestOntology < LinkedData::TestCase
       acronym: @acronym,
       ontology: o,
       ontologyFormat: of,
-      administeredBy: u,
       pullLocation: RDF::IRI.new("http://example.com"),
       status: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
       submissionId: o.next_submission_id
@@ -59,13 +60,21 @@ class TestOntology < LinkedData::TestCase
 
     o.acronym = @acronym
     o.name = @name
+
+    u = LinkedData::Models::User.new(username: "tim")
+    o.administeredBy = u
+
     assert o.valid?
   end
 
   def test_ontology_lifecycle
+    u = LinkedData::Models::User.new(username: "tim")
+    u.save
+
     o = LinkedData::Models::Ontology.new({
       acronym: @acronym,
-      name: @name
+      name: @name,
+      administeredBy: u
     })
 
     # Create

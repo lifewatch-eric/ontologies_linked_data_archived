@@ -65,9 +65,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.uploadFilePath = uploadFilePath
     ont_submision.status = status
     assert (not ont_submision.valid?)
-    assert_equal 3, ont_submision.errors.length
+    assert_equal 2, ont_submision.errors.length
     assert_instance_of Array, ont_submision.errors[:ontology]
-    assert_instance_of Array, ont_submision.errors[:administeredBy]
     assert_instance_of Array, ont_submision.errors[:ontologyFormat]
     ont_submision.ontologyFormat = owl
     ont_submision.administeredBy = user
@@ -152,12 +151,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     end
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id, :name => name })
     assert (not ont_submision.valid?)
-    assert_equal 5, ont_submision.errors.length
+    assert_equal 4, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    bro.administeredBy = user
     ont_submision.ontologyFormat = owl
-    ont_submision.administeredBy = user
     ont_submision.ontology = bro
     ont_submision.status = status
     assert (ont_submision.valid?)
@@ -198,12 +197,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
     assert (not ont_submision.valid?)
-    assert_equal 5, ont_submision.errors.length
+    assert_equal 4, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    bro.administeredBy = user
     ont_submision.ontologyFormat = owl
-    ont_submision.administeredBy = user
     ont_submision.ontology = bro
     ont_submision.status = status
     assert (not ont_submision.valid?)
