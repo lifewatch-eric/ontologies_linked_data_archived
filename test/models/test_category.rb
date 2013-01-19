@@ -16,7 +16,7 @@ class TestCategory < LinkedData::TestCase
     assert c.valid?
   end
 
-  def test_no_duplicate_project_ids
+  def test_no_duplicate_category_ids
     c1 = LinkedData::Models::Category.new({
         :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
         :name => "Test Category",
