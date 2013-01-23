@@ -44,8 +44,7 @@ class TestCategory < LinkedData::TestCase
     c1.delete
   end
 
-
-  def test_category_save
+  def test_category_lifecycle
     c = LinkedData::Models::Category.new({
         :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
         :name => "Test Category",
@@ -58,5 +57,10 @@ class TestCategory < LinkedData::TestCase
     assert_equal true, c.exist?(reload=true)
     c.delete
     assert_equal false, c.exist?(reload=true)
+  end
+
+  def test_category_default_datetime
+    c = LinkedData::Models::Category.new
+    assert c.created.instance_of? DateTime
   end
 end

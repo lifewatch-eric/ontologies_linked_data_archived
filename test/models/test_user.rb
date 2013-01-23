@@ -1,4 +1,5 @@
 require_relative "../test_case"
+require "date"
 
 class TestUser < LinkedData::TestCase
   def test_valid_user
@@ -19,5 +20,10 @@ class TestUser < LinkedData::TestCase
     assert_equal true, u.exist?(reload=true)
     u.delete
     assert_equal false, u.exist?(reload=true)
+  end
+
+  def test_user_default_datetime
+    u = LinkedData::Models::User.new
+    assert u.created.instance_of? DateTime
   end
 end

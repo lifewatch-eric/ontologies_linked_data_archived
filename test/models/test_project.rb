@@ -23,7 +23,7 @@ class TestProject < LinkedData::TestCase
     assert p.valid?
   end
 
-  def test_project_save
+  def test_project_lifecycle
     p = LinkedData::Models::Project.new({
         :name => "Great Project",
         :creator => LinkedData::Models::User.new(username: "paul"),
@@ -39,4 +39,10 @@ class TestProject < LinkedData::TestCase
     p.delete
     assert_equal false, p.exist?(reload=true)
   end
+
+  def test_project_default_datetime
+    p = LinkedData::Models::Project.new
+    assert p.created.instance_of? DateTime
+  end
+
 end
