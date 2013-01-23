@@ -6,7 +6,7 @@ module LinkedData
       attribute :name, :cardinality => { :max => 1, :min => 1 }
       attribute :acronym, :unique => true, :cardinality => { :max => 1, :min => 1 }
       attribute :description, :cardinality => { :max => 1, :min => 1 }
-      attribute :parentCategory, :instance_of => { :with => :cateogory }
+      attribute :parentCategory, :instance_of => { :with => :category }
     end
   end
 end
