@@ -9,7 +9,7 @@ class TestUser < LinkedData::TestCase
     assert u.valid?
   end
 
-  def test_user_save
+  def test_user_lifecycle
     u = LinkedData::Models::User.new({
         username: "test_user"
       })
