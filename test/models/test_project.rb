@@ -153,4 +153,3 @@ class TestProject < LinkedData::TestCase
     assert_equal false, @p.exist?(reload=true)
   end
 end
->>>>>>> master
