@@ -2,9 +2,10 @@ module LinkedData
   module Models
     class Project < LinkedData::Models::Base
       model :project
-      attribute :creator, :single_value => true, :not_nil => true
-      attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :name, :single_value => true, :not_nil => true
+      attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
+      attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
+      attribute :name, :unique => true, :single_value => true, :not_nil => true
+      #attribute :homePage, :instance_of => { :with => URI }, :cardinality => { :min => 1, :max => 1 }
       attribute :homePage, :single_value => true, :not_nil => true
       attribute :description, :single_value => true, :not_nil => true
       attribute :contacts, :cardinality => { :max => 1 }
@@ -12,3 +13,4 @@ module LinkedData
     end
   end
 end
+
