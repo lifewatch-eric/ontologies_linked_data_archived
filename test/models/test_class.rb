@@ -11,7 +11,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.find(acr + '+' + 1.to_s)
+    os = LinkedData::Models::OntologySubmission.where :acronym => acr, :submissionId => 1
+    os = os[0]
+    os.load
     os_classes = os.classes
     os_classes.each do |c|
       assert(!c.prefLabel.nil?, "Class #{c.id.value} does not have a label")
