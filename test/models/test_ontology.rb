@@ -30,7 +30,6 @@ class TestOntology < LinkedData::TestCase
     o.save
 
     os = LinkedData::Models::OntologySubmission.new({
-      acronym: @acronym,
       ontology: o,
       hasOntologyLanguage: of,
       pullLocation: RDF::IRI.new("http://example.com"),

@@ -1,5 +1,4 @@
 require_relative "../test_case"
-require "date"
 
 class TestUser < LinkedData::TestCase
   def test_valid_user
