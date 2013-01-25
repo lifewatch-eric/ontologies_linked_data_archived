@@ -11,7 +11,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :acronym => acr, :submissionId => 1
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
+    assert(os.length == 1)
     os = os[0]
     os.load
     os_classes = os.classes

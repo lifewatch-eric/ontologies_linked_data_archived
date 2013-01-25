@@ -1,9 +1,8 @@
 module LinkedData
   module Models
+
     class OntologySubmission < LinkedData::Models::Base
-      model :ontology_submission,
-        :name_with => lambda {
-         |record| RDF::IRI.new( "#{Goo.namespaces[Goo.namespaces[:default]]}/ontologies/#{record.acronym}/#{record.submissionId}") }
+      model :ontology_submission, :name_with => lambda { |s| submission_id_generator(s) }
       attribute :submissionId, :instance_of =>  { :with => Fixnum }, :single_value => true, :not_nil => true
 
       # Configurable properties for processing
@@ -40,6 +39,16 @@ module LinkedData
       # Link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
 
+      def self.submission_id_generator(ss)
+        if !ss.ontology.loaded? and ss.ontology.persistent?
+          ss.ontology.load
+        end
+        if ss.ontology.acronym.nil?
+          raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
+        end
+        return RDF::IRI.new(
+          "#{Goo.namespaces[Goo.namespaces[:default]]}/ontologies/#{ss.ontology.acronym}/#{ss.submissionId}")
+      end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([$REPOSITORY_FOLDER, acronym, submissionId.to_s])

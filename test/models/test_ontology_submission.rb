@@ -163,8 +163,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploded_ontologies = uploaded.submissions
     uploaded_ont = nil
     uploded_ontologies.each do |ont|
-      ont.load
-      if ont.acronym == acronym
+      ont.load unless ont.loaded?
+      ont.ontology.load unless ont.ontology.loaded?
+      if ont.ontology.acronym == acronym
         uploaded_ont = ont
       end
     end
@@ -212,8 +213,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploded_ontologies = uploaded.submissions
     uploaded_ont = nil
     uploded_ontologies.each do |ont|
-      ont.load
-      if ont.acronym == acronym
+      ont.load unless ont.loaded?
+      ont.ontology.load unless ont.ontology.loaded?
+      if ont.ontology.acronym == acronym
         uploaded_ont = ont
       end
     end
