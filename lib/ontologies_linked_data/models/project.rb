@@ -9,7 +9,7 @@ module LinkedData
       attribute :homePage, :single_value => true, :not_nil => true
       attribute :description, :single_value => true, :not_nil => true
       attribute :contacts, :cardinality => { :max => 1 }
-      attribute :ontologyUsed, :instance_of => { :with => :ontology }, :cardinality => { :min => 1 }
+      attribute :ontologyUsed, :instance_of => { :with => :ontology }
     end
   end
 end
