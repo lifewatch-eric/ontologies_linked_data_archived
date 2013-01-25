@@ -6,16 +6,13 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def teardown
-    l = LinkedData::Models::OntologySubmission.all
+    l = LinkedData::Models::Ontology.all
     if l.length > 50
       raise ArgumentError, "Too many ontologies in triple store. TESTS WILL DELETE DATA"
     end
     l.each do |os|
       os.load
       os.delete
-      o = os.ontology
-      o.load
-      o.delete
     end
   end
 
