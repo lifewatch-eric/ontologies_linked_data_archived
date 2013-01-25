@@ -55,6 +55,8 @@ module LinkedData
         return submission_ids.max
       end
 
+      ##
+      # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
       def delete(in_update=false)
         submissions = self.submissions rescue nil
         submissions = OntologySubmission.where(acronym: acronym) if submissions.nil? && !acronym.nil?
