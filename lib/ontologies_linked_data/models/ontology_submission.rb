@@ -1,9 +1,11 @@
 module LinkedData
   module Models
     class OntologySubmission < LinkedData::Models::Base
-      model :ontology_submission
-      attribute :acronym, :unique => true, :namespace => :omv
-      attribute :submissionId, :unique => true, :instance_of =>  { :with => Fixnum }
+      model :ontology_submission,
+        :name_with => lambda {
+         |record| RDF::IRI.new( "#{Goo.namespaces[Goo.namespaces[:default]]}/ontologies/#{record.acronym}/#{record.submissionId}") }
+      attribute :acronym, :namespace => :omv, :single_value => true, :not_nil => true
+      attribute :submissionId, :instance_of =>  { :with => Fixnum }, :single_value => true, :not_nil => true
 
       # Configurable properties for processing
       attribute :prefLabelProperty, :instance_of =>  { :with => RDF::IRI }, :single_value => true
