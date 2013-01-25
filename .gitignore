@@ -19,3 +19,7 @@ test/data/ontology_files/catalog-v001.xml
 # RubyMine editor files
 .idea
 
+
+*.sublime-project
+
+*.sublime-workspace
