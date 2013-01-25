@@ -5,11 +5,10 @@ module LinkedData
       attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
       attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
       attribute :name, :unique => true, :single_value => true, :not_nil => true
-      #attribute :homePage, :instance_of => { :with => URI }, :cardinality => { :min => 1, :max => 1 }
-      attribute :homePage, :single_value => true, :not_nil => true
+      attribute :homePage, :uri => true, :single_value => true, :not_nil => true
       attribute :description, :single_value => true, :not_nil => true
       attribute :contacts, :cardinality => { :max => 1 }
-      attribute :ontologyUsed, :instance_of => { :with => :ontology }, :cardinality => { :min => 1 }
+      attribute :ontologyUsed, :instance_of => { :with => :ontology }
     end
   end
 end
