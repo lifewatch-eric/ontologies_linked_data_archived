@@ -1,7 +1,28 @@
 require_relative "../test_case"
 
 class TestCategory < LinkedData::TestCase
+  def setup
+    _delete
+    @category = LinkedData::Models::Category.new({
+        :name => "Test Category",
+        :description => "This is a test category",
+        :acronym => "TCG"
+      })
+    @category.save
+  end
+
+  def teardown
+    _delete
+  end
+
+  def _delete
+    category = LinkedData::Models::Category.find("TCG")
+    category.delete unless category.nil?
+  end
+
   def test_valid_category
+    _delete
+
     c = LinkedData::Models::Category.new
     assert (not c.valid?)
 
@@ -17,13 +38,6 @@ class TestCategory < LinkedData::TestCase
   end
 
   def test_no_duplicate_category_ids
-    c1 = LinkedData::Models::Category.new({
-        :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
-        :name => "Test Category",
-        :description => "This is a test category",
-        :acronym => "TCG"
-      })
-
     c2 = LinkedData::Models::Category.new({
         :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
         :name => "Test Category",
@@ -31,17 +45,7 @@ class TestCategory < LinkedData::TestCase
         :acronym => "TCG"
       })
 
-    # Both should be valid before they are saved
-    assert c1.valid?
-    assert c2.valid?
-
-    # Only c1 should be valid after save
-    c1.save
     assert (not c2.valid?)
-    assert c1.valid?
-
-    # Cleanup
-    c1.delete
   end
 
   def test_category_lifecycle
@@ -49,7 +53,7 @@ class TestCategory < LinkedData::TestCase
         :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
         :name => "Test Category",
         :description => "This is a test category",
-        :acronym => "TCG"
+        :acronym => "TCG1"
       })
 
     assert_equal false, c.exist?(reload=true)
@@ -63,4 +67,18 @@ class TestCategory < LinkedData::TestCase
     c = LinkedData::Models::Category.new
     assert c.created.instance_of? DateTime
   end
+
+  def test_category_inverse_of
+    delete_ontologies_and_submissions
+    ont_count, ont_acronyms, onts = create_ontologies_and_submissions(ont_count: 1)
+    ont = onts.first
+    ont.hasDomain = @category
+    ont.save
+
+    category_ont = @category.ontologies.first
+    category_ont.load
+
+    assert_equal category_ont.acronym, ont.acronym
+  end
+
 end
