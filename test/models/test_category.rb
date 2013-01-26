@@ -12,6 +12,7 @@ class TestCategory < LinkedData::TestCase
   end
 
   def teardown
+    super
     _delete
   end
 
