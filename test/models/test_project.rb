@@ -8,6 +8,7 @@ class TestProject < LinkedData::TestCase
     # Create and save a valid user
     @user = LinkedData::Models::User.new
     @user.username = "test_user"
+    @user.email = "test_user@example.org"
     @user.save
     # Create and save a valid ontology
     @ont = LinkedData::Models::Ontology.new

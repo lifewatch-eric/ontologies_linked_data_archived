@@ -6,6 +6,12 @@ class TestOntology < LinkedData::TestCase
     @acronym = "ONT-FOR-TEST"
     @name = "TestOntology TEST"
     _delete_objects
+
+    @user = LinkedData::Models::User.new(username: "tim", email: "tim@example.org")
+    @user.save
+
+    @of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
+    @of.save
   end
 
   def teardown
@@ -16,22 +22,16 @@ class TestOntology < LinkedData::TestCase
   def _create_ontology_with_submissions
     _delete_objects
 
-    u = LinkedData::Models::User.new(username: "tim")
-    u.save
-
-    of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-    of.save
-
     o = LinkedData::Models::Ontology.new({
       acronym: @acronym,
-      administeredBy: u,
+      administeredBy: @user,
       name: @name
     })
     o.save
 
     os = LinkedData::Models::OntologySubmission.new({
       ontology: o,
-      hasOntologyLanguage: of,
+      hasOntologyLanguage: @of,
       pullLocation: RDF::IRI.new("http://example.com"),
       submissionStatus: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
       submissionId: o.next_submission_id
@@ -65,19 +65,16 @@ class TestOntology < LinkedData::TestCase
     o.name = @name
 
     u = LinkedData::Models::User.new(username: "tim")
-    o.administeredBy = u
+    o.administeredBy = @user
 
     assert o.valid?
   end
 
   def test_ontology_lifecycle
-    u = LinkedData::Models::User.new(username: "tim")
-    u.save
-
     o = LinkedData::Models::Ontology.new({
       acronym: @acronym,
       name: @name,
-      administeredBy: u
+      administeredBy: @user
     })
 
     # Create

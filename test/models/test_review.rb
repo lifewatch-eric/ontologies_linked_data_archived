@@ -1,6 +1,19 @@
 require_relative "../test_case"
 
 class TestReview < LinkedData::TestCase
+
+  def setup
+    @user = LinkedData::Models::User.new(username: "paul", email: "paul@example.org")
+    @user.save
+    @ontology = LinkedData::Models::Ontology.new(acronym: "SNOMED-TST", name: "SNOMED CT Test", administeredBy: @user)
+    @ontology.save
+  end
+
+  def teardown
+    @user.delete
+    @ontology.delete
+  end
+
   def test_valid_review
     r = LinkedData::Models::Review.new
     assert (not r.valid?)
@@ -16,17 +29,17 @@ class TestReview < LinkedData::TestCase
     assert (not r.valid?)
 
     # Fix typing
-    r.creator = LinkedData::Models::User.new(username: "paul")
-    r.ontologyReviewed = LinkedData::Models::Ontology.new(acronym: "SNOMED", name: "SNOMED CT")
+    r.creator = @user
+    r.ontologyReviewed = @ontology
     assert r.valid?
   end
 
   def test_review_lifecycle
     r = LinkedData::Models::Review.new({
-        :creator => LinkedData::Models::User.new(username: "paul"),
+        :creator => @user,
         :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
         :body => "This is a test review",
-        :ontologyReviewed => LinkedData::Models::Ontology.new(acronym: "SNOMED", name: "SNOMED CT")
+        :ontologyReviewed => @ontology
       })
 
     assert_equal false, r.exist?(reload=true)
