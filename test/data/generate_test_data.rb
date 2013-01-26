@@ -1,6 +1,21 @@
 require_relative "../../config/default.rb"
 require_relative "../../lib/ontologies_linked_data"
 
+##
+# This class uses some basic convention to allow a set of rake tasks to create/delete sample data.
+# USAGE:
+#   To add a new object type, simply create two methods. For example, for object Person:
+#      def create_people
+#      def delete_people
+#
+#   The method should output a message stating what it's doing:
+#      puts "Creating people..."
+#      puts "Deleting people..."
+#
+#   The create/delete methods will be automatically invoked by the GenerateTestData::create and GenerateTestData::delete
+#   methods, as they look for methods that start with "create_" and "delete_" respectively.
+#
+#   Data used in the creation of objects can be stored in class constants (see USERNAMES, ONT_FORMATS, etc).
 class GenerateTestData
   USERNAMES = %w(emiko mina demetra noe anisa latoria nicholle amelia ona jacquelyne reginia dwana curt corrie percy audrie shizue nevada lorrine awilda elyse arlena monnie samual shon chantelle laurie clark raylene marcelino karry alejandra laurine yolando marine richie anderson samatha somer vincent porsche johnette daryl lindy brande bronwyn signe alessandra vernice kara)
   USER_EMAILS = %w(emiko@example.com mina@example.com demetra@example.com noe@example.com anisa@example.com latoria@example.com nicholle@example.com amelia@example.com ona@example.com jacquelyne@example.com reginia@example.com dwana@example.com curt@example.com corrie@example.com percy@example.com audrie@example.com shizue@example.com nevada@example.com lorrine@example.com awilda@example.com elyse@example.com arlena@example.com monnie@example.com samual@example.com shon@example.com chantelle@example.com laurie@example.com clark@example.com raylene@example.com marcelino@example.com karry@example.com alejandra@example.com laurine@example.com yolando@example.com marine@example.com richie@example.com anderson@example.com samatha@example.com somer@example.com vincent@example.com porsche@example.com johnette@example.com daryl@example.com lindy@example.com brande@example.com bronwyn@example.com signe@example.com alessandra@example.com vernice@example.com kara@example.com)
