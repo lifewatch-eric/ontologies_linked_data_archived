@@ -73,7 +73,8 @@ module LinkedData
       u.save unless u.exist? || !u.valid?
 
       of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-      of.save unless u.exist? || !u.valid?
+      of.save unless of.exist? || !of.valid?
+
 
       ont_acronyms = []
       ontologies = []
