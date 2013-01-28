@@ -53,6 +53,9 @@ module LinkedData
       def self.meta_prefLabel_iri
         RDF::IRI.new(meta_prefLabel)
       end
+      def self.default_altLabel_iri
+        RDF::IRI.new(skos_altLabel)
+      end
 
 
       #TODO: to move somewhere else
