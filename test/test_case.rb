@@ -73,7 +73,7 @@ module LinkedData
       u.save unless u.exist? || !u.valid?
 
       of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-      of.save unless u.exist? || !u.valid?
+      of.save unless of.exist? || !of.valid?
 
       ont_acronyms = []
       ontologies = []
@@ -123,7 +123,7 @@ module LinkedData
       ont = LinkedData::Models::Ontology.find("TST-ONT-0")
       count = 0
       while ont
-        ont.delete
+        ont.delete unless ont.nil?
         ont = LinkedData::Models::Ontology.find("TST-ONT-#{count+1}")
       end
 
@@ -131,7 +131,7 @@ module LinkedData
       u.delete unless u.nil?
 
       of = LinkedData::Models::OntologyFormat.find("OWL")
-      of.delete unless u.nil?
+      of.delete unless of.nil?
     end
 
   end
