@@ -2,32 +2,86 @@ module LinkedData
   module Models
     class Class
 
+      attr_reader :resource_id
+      attr_reader :submission
 
-      attr_accessor :id
-      attr_accessor :graph
+      def initialize(resource_id, submission, plabel = nil, synonyms = nil)
+        @resource_id = resource_id
 
-      def initialize(id,graph,prefLabel = nil, synonymLabel = nil)
-        @id = id
-        @prefLabel = prefLabel
-        @synonymLabel = synonymLabel
-        @graph = graph
+        @attributes = {}
+
+        if !plabel.nil?
+          set_prefLabel plabel
+        end
+        @attributes[:synonyms] = synonyms
+
+        #backreference to the submission that "owns" the term
+        @submission = submission
       end
 
+      private
+
+      def set_prefLabel(label_input)
+        label = nil
+        if label_input.instance_of? Array
+          if label_input.length > 1
+            raise ArgumentError, "Class model only allows one label. TODO: internationalization"
+          end
+          if label_input.length == 1
+            label = label_input[0]
+          end
+        else
+          label = label_input
+        end
+        if label.instance_of? SparqlRd::Resultset::Literal
+          @attributes[:prefLabel] = label
+        else
+          raise ArgumentError, "Unknown type of prefLabel #{label.class.name}"
+        end
+      end
+
+      public
+
       def prefLabel
-        return (@prefLabel ? @prefLabel.value : nil)
+        return @attributes[:prefLabel]
       end
 
       def synonymLabel
-        @synonymLabel.select!{ |sy| sy != nil }
-        return (@synonymLabel ? (@synonymLabel.map { |sy| sy.value })  : [])
+        return [] if @attributes[:synonyms].nil?
+        @attributes[:synonyms].select!{ |sy| sy != nil }
+        return @attributes[:synonyms]
+      end
+
+      def loaded_parents?
+        return !@attributes[:parents].nil?
+      end
+
+      def load_parents
+        hierarchyProperty = @submission.hierarchyProperty ||
+                                LinkedData::Utils::Namespaces.default_hieararchy_property
+        graph = submission.resource_id
+        query = <<eos
+SELECT DISTINCT ?id WHERE {
+  GRAPH <#{graph.value}> {
+    ?id <#{hierarchyProperty.value}> ?parentId .
+    FILTER (!isBLANK(?parentId))
+} } ORDER BY ?id
+eos
+        rs = Goo.store.query(query)
+        classes = []
+        rs.each_solution do |sol|
+        end
       end
 
       def self.where(*args)
-        if args.length == 1 and args[0].include? :graph
-          params = args[0]
-          graph = params[:graph]
-          prefLabelProperty =  params[:prefLabelProperty] || LinkedData::Utils::Namespaces.default_pref_label
-          classType =  params[:classType] || LinkedData::Utils::Namespaces.default_type_for_classes
+        params = args[0]
+        submission = params[:submission]
+        if submission.nil?
+          raise ArgumentError, "Submission needs to be provided to retrive terms"
+        end
+
+        graph = submission.resource_id
+        classType =  submission.classType || LinkedData::Utils::Namespaces.default_type_for_classes
 
           query = <<eos
 SELECT DISTINCT ?id ?prefLabel ?synonymLabel WHERE {
@@ -38,34 +92,20 @@ SELECT DISTINCT ?id ?prefLabel ?synonymLabel WHERE {
     FILTER(!isBLANK(?id))
 } } ORDER BY ?id
 eos
-          rs = Goo.store.query(query)
-          classes = []
-          rs.each_solution do |sol|
-            if ((classes.length > 0) and (classes[-1].id.value == sol.get(:id).value))
-              classes[-1].synonymLabel << sol.get(:synonymLabel)
-            else
-              classes << Class.new(sol.get(:id),graph, sol.get(:prefLabel), [sol.get(:synonymLabel)])
+        rs = Goo.store.query(query)
+        classes = []
+        rs.each_solution do |sol|
+          if ((classes.length > 0) and (classes[-1].resource_id.value == sol.get(:id).value))
+            classes[-1].synonymLabel << sol.get(:synonymLabel)
+          else
+            if sol.get(:prefLabel).instance_of? Array
             end
+            classes << Class.new(sol.get(:id), submission, sol.get(:prefLabel), [sol.get(:synonymLabel)])
           end
-          return classes
-        else
-          raise ArgumentError, "Current Class implementation search capabilities are minimal"
         end
+        return classes
       end
 
-      def rdfs_labels
-        query = <<eos
-SELECT DISTINCT ?id ?label WHERE {
-  GRAPH <#{self.graph.value}> {
-    <#{self.id.value}> <#{LinkedData::Utils::Namespaces.rdfs_label}> ?label .
-} }
-eos
-        rdfs_labels = []
-        Goo.store.query(query).each_solution do |sol|
-          rdfs_labels << sol.get(:label).value
-        end
-        return rdfs_labels
-      end
     end
   end
 end

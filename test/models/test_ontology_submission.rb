@@ -230,7 +230,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploaded_ont.process_submission Logger.new(STDOUT)
 
     uploaded_ont.classes.each do |cls|
-      assert(cls.prefLabel != nil, "Class #{cls.id} does not have a label")
+      assert(cls.prefLabel != nil, "Class #{cls.resource_id} does not have a label")
       assert_instance_of String, cls.prefLabel
       assert(cls.prefLabel.length > 0)
     end

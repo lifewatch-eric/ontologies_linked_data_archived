@@ -182,9 +182,9 @@ module LinkedData
             if rdfs_labels.length > 0
               label = rdfs_labels[0]
             else
-              label = LinkedData::Utils::Namespaces.last_iri_fragment c.id.value
+              label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
             end
-            label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.id,
+            label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.resource_id,
                                                    LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
           end
           count_classes += 1
@@ -197,9 +197,7 @@ module LinkedData
       end
 
       def classes
-        return Class.where(:graph => self.resource_id,
-                           :prefLabelProperty => self.prefLabelProperty,
-                           :classType => self.classType)
+        return Class.where(:submission => self)
       end
     end
   end
