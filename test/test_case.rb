@@ -122,6 +122,7 @@ module LinkedData
     # Delete all ontologies and their submissions. This will look for all ontologies starting with TST-ONT- and ending in a Fixnum
     def delete_ontologies_and_submissions
       ont = LinkedData::Models::Ontology.find("TST-ONT-0")
+      ont.load unless  ont.nil? || ont.loaded?
       count = 0
       while ont
         ont.delete
@@ -129,10 +130,12 @@ module LinkedData
       end
 
       u = LinkedData::Models::User.find("tim")
+      u.load unless u.nil? || u.loaded?
       u.delete unless u.nil?
 
       of = LinkedData::Models::OntologyFormat.find("OWL")
-      of.delete unless u.nil?
+      of.load unless of.nil? || of.loaded?
+      of.delete unless of.nil?
     end
 
   end

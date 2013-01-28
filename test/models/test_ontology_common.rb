@@ -45,6 +45,7 @@ module LinkedData
     def init_test_ontology_msotest(acr)
       ont = LinkedData::Models::Ontology.find(acr)
       if not ont.nil?
+        ont.load unless ont.loaded?
         sub = ont.submissions || []
         sub.each do |s|
           s.load
@@ -71,6 +72,7 @@ module LinkedData
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
       uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED")
+      uploaded.load unless uploaded.loaded?
       uploded_ontologies = uploaded.submissions
       uploaded_ont = nil
       uploded_ontologies.each do |ont|
