@@ -9,6 +9,7 @@ class TestOntology < LinkedData::TestCase
   end
 
   def teardown
+    super
     _delete_objects
   end
 
@@ -104,5 +105,28 @@ class TestOntology < LinkedData::TestCase
     submissions = LinkedData::Models::OntologySubmission.where(acronym: @acronym)
     assert submissions.empty?
   end
+
+  def test_latest_submission
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    ont = ont.first
+    latest = ont.latest_submission
+    latest.load
+    assert_equal 3, latest.submissionId
+  end
+
+  def test_submission_retrieval
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    middle_submission = ont.first.submission(2)
+    middle_submission.load
+    assert_equal 2, middle_submission.submissionId
+  end
+
+  def test_all_submission_retrieval
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    all_submissions = ont.first.submissions
+    assert_equal 3, all_submissions.length
+  end
+
+
 
 end

@@ -75,7 +75,6 @@ module LinkedData
       of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
       of.save unless of.exist? || !of.valid?
 
-
       ont_acronyms = []
       ontologies = []
       ont_count.to_i.times do |count|
@@ -125,7 +124,7 @@ module LinkedData
       ont.load unless  ont.nil? || ont.loaded?
       count = 0
       while ont
-        ont.delete
+        ont.delete unless ont.nil?
         ont = LinkedData::Models::Ontology.find("TST-ONT-#{count+1}")
       end
 
