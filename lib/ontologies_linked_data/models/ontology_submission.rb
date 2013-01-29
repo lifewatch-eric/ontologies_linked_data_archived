@@ -172,7 +172,7 @@ module LinkedData
         count_classes = 0
         label_triples = []
         t0 = Time.now
-        classes = self.classes
+        classes = self.classes :missing_labels_generation => true
         t1 = Time.now
         logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
         classes.each do |c|
@@ -180,11 +180,11 @@ module LinkedData
             rdfs_labels = c.synonymLabel
             label = nil
             if rdfs_labels.length > 0
-              label = rdfs_labels[0]
+              label = rdfs_labels[0].value
             else
-              label = LinkedData::Utils::Namespaces.last_iri_fragment c.id.value
+              label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
             end
-            label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.id,
+            label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.resource_id,
                                                    LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
           end
           count_classes += 1
@@ -196,10 +196,15 @@ module LinkedData
         end
       end
 
-      def classes
-        return Class.where(:graph => self.resource_id,
-                           :prefLabelProperty => self.prefLabelProperty,
-                           :classType => self.classType)
+      def classes(*args)
+        args = [{}] if args.nil? || args.length == 0
+        args[0] = args[0].merge({ :submission => self })
+        return LinkedData::Models::Class.where(*args)
+      end
+
+      def roots
+         return LinkedData::Models::Class.where( :submission => self ,
+                                                :root => true )
       end
     end
   end
