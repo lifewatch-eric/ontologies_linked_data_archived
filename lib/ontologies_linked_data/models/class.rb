@@ -56,6 +56,12 @@ module LinkedData
         return !@attributes[:parents].nil?
       end
 
+      def self.find(*args)
+        raise ArgumentError,
+          "Find is not supported in the Class model. Use .where (:submission => s, :resource_id => id)"
+        #TODO eventually we can bypass this exception and call .where directly.
+      end
+
       def load_parents
         hierarchyProperty = @submission.hierarchyProperty ||
                                 LinkedData::Utils::Namespaces.default_hieararchy_property
@@ -77,18 +83,33 @@ eos
         params = args[0]
         submission = params[:submission]
         if submission.nil?
-          raise ArgumentError, "Submission needs to be provided to retrive terms"
+          raise ArgumentError, "Submission needs to be provided to retrieve terms"
         end
+
+        syn_predicate = LinkedData::Utils::Namespaces.default_altLabel_iri
+        if params.include? :missing_labels_generation
+          syn_predicate = LinkedData::Utils::Namespaces.rdfs_label_iri
+        end
+
 
         graph = submission.resource_id
         classType =  submission.classType || LinkedData::Utils::Namespaces.default_type_for_classes
 
-          query = <<eos
+        one_class_filter = ""
+        if params.include? :resource_id
+          resource_id = params[:resource_id]
+          raise ArgumentError, "Resource ID Class.where needs to be a RDF::IRI" \
+            unless resource_id.kind_of? RDF::IRI
+          one_class_filter = "FILTER (?id = <#{resource_id.value}>)"
+        end
+
+        query = <<eos
 SELECT DISTINCT ?id ?prefLabel ?synonymLabel WHERE {
   GRAPH <#{graph.value}> {
     ?id a <#{classType.value}> .
     OPTIONAL { ?id <#{LinkedData::Utils::Namespaces.default_pref_label.value}> ?prefLabel . }
-    OPTIONAL { ?id <#{LinkedData::Utils::Namespaces.rdfs_label}> ?synonymLabel . }
+    OPTIONAL { ?id <#{syn_predicate.value}> ?synonymLabel . }
+    #{one_class_filter}
     FILTER(!isBLANK(?id))
 } } ORDER BY ?id
 eos

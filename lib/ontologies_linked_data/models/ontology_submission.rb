@@ -172,7 +172,7 @@ module LinkedData
         count_classes = 0
         label_triples = []
         t0 = Time.now
-        classes = self.classes
+        classes = self.classes :missing_labels_generation => true
         t1 = Time.now
         logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
         classes.each do |c|
@@ -196,8 +196,10 @@ module LinkedData
         end
       end
 
-      def classes
-        return Class.where(:submission => self)
+      def classes(*args)
+        args = [{}] if args.nil? || args.length == 0
+        args[0] = args[0].merge({ :submission => self })
+        return Class.where(*args)
       end
     end
   end
