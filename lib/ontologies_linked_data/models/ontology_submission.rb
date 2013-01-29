@@ -201,6 +201,10 @@ module LinkedData
         args[0] = args[0].merge({ :submission => self })
         return Class.where(*args)
       end
+
+      def roots
+
+      end
     end
   end
 end

@@ -56,6 +56,11 @@ module LinkedData
         return !@attributes[:parents].nil?
       end
 
+
+      def loaded_children?
+        return !@attributes[:children].nil?
+      end
+
       def self.find(*args)
         raise ArgumentError,
           "Find is not supported in the Class model. Use .where (:submission => s, :resource_id => id)"
@@ -63,29 +68,52 @@ module LinkedData
       end
 
       def load_parents
+        parents = load_relatives
+        @attributes[:parents] = parents
+        return parents
+      end
+
+      def load_children
+        children = load_relatives(children=true)
+        @attributes[:children]  = children
+        return children
+      end
+
+      def load_relatives(children=false)
+        #by default loads parents
         hierarchyProperty = @submission.hierarchyProperty ||
                                 LinkedData::Utils::Namespaces.default_hieararchy_property
         graph = submission.resource_id
+        if children
+          relative_pattern = " ?relativeId <#{hierarchyProperty.value}> <#{self.resource_id.value}> . "
+        else
+          relative_pattern = " <#{self.resource_id.value}> <#{hierarchyProperty.value}> ?relativeId . "
+        end
         query = <<eos
-SELECT DISTINCT ?parentId WHERE {
+SELECT DISTINCT ?relativeId WHERE {
   GRAPH <#{graph.value}> {
-    <#{self.resource_id.value}> <#{hierarchyProperty.value}> ?parentId .
+    #{relative_pattern}
     FILTER (!isBLANK(?parentId))
 } } ORDER BY ?id
 eos
         rs = Goo.store.query(query)
-        parents = []
+        relatives = []
         rs.each_solution do |sol|
-          parents << LinkedData::Models::Class.new(sol.get(:parentId), self.submission)
+          relatives << LinkedData::Models::Class.new(sol.get(:relativeId), self.submission)
         end
-        @attributes[:parents]=parents
-        return parents
+        return relatives
       end
 
       def parents
         raise ArgumentError, "Parents are not loaded. Call .load_parents" \
           unless self.loaded_parents?
         return @attributes[:parents]
+      end
+
+      def children
+        raise ArgumentError, "Children are not loaded. Call .load_children" \
+          unless self.loaded_children?
+        return @attributes[:children]
       end
 
       def self.where(*args)
