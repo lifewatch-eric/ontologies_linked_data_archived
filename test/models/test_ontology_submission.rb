@@ -231,8 +231,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     uploaded_ont.classes.each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.resource_id} does not have a label")
-      assert_instance_of String, cls.prefLabel
-      assert(cls.prefLabel.length > 0)
+      assert_instance_of String, cls.prefLabel.value
     end
   end
 
@@ -250,17 +249,44 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_sub.load
     ont_sub.classes.each do |c|
       assert (not c.prefLabel.nil?)
-      assert_instance_of String, c.prefLabel
-      if c.id.value.include? "class6"
-        assert_equal "rdfs label value", c.prefLabel
+      assert_instance_of String, c.prefLabel.value
+      if c.resource_id.value.include? "class6"
+        assert_equal "rdfs label value", c.prefLabel.value
       end
-      if c.id.value.include? "class3"
-        assert_equal "class3", c.prefLabel
+      if c.resource_id.value.include? "class3"
+        assert_equal "class3", c.prefLabel.value
       end
-      if c.id.value.include? "class1"
-        assert_equal "class 1 literal", c.prefLabel
+      if c.resource_id.value.include? "class1"
+        assert_equal "class 1 literal", c.prefLabel.value
       end
     end
+  end
+
+  def test_submission_root_classes
+    return if ENV["SKIP_PARSING"]
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
+    assert(os.length == 1)
+    os = os[0]
+
+    roots = os.roots
+    assert_instance_of(Array, roots)
+    assert_equal(3, roots.length)
+    root_ids = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
+      "http://bioportal.bioontology.org/ontologies/msotes#class6",
+      "http://bioportal.bioontology.org/ontologies/msotes#class3"]
+    roots.each do |r|
+      assert(root_ids.include? r.resource_id.value)
+      root_ids.delete_at(root_ids.index(r.resource_id.value))
+    end
+    #I have found them all
+    assert(root_ids.length == 0)
+
+    os.ontology.load
+    os.ontology.delete
+    os.delete
   end
 
 end

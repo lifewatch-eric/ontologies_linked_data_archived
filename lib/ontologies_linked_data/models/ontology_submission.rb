@@ -180,7 +180,7 @@ module LinkedData
             rdfs_labels = c.synonymLabel
             label = nil
             if rdfs_labels.length > 0
-              label = rdfs_labels[0]
+              label = rdfs_labels[0].value
             else
               label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
             end
@@ -199,11 +199,12 @@ module LinkedData
       def classes(*args)
         args = [{}] if args.nil? || args.length == 0
         args[0] = args[0].merge({ :submission => self })
-        return Class.where(*args)
+        return LinkedData::Models::Class.where(*args)
       end
 
       def roots
-
+         return LinkedData::Models::Class.where( :submission => self ,
+                                                :root => true )
       end
     end
   end

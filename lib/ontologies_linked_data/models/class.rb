@@ -123,14 +123,10 @@ eos
           raise ArgumentError, "Submission needs to be provided to retrieve terms"
         end
 
-        syn_predicate = LinkedData::Utils::Namespaces.default_altLabel_iri
-        if params.include? :missing_labels_generation
-          syn_predicate = LinkedData::Utils::Namespaces.rdfs_label_iri
-        end
-
-
         graph = submission.resource_id
+        submission.load if (!submission.nil? and !submission.loaded?)
         classType =  submission.classType || LinkedData::Utils::Namespaces.default_type_for_classes
+        load_labels = true
 
         one_class_filter = ""
         if params.include? :resource_id
@@ -140,25 +136,51 @@ eos
           one_class_filter = "FILTER (?id = <#{resource_id.value}>)"
         end
 
+        root_class_filter = ""
+        if params.include? :root and params[:root]
+          #TODO: UMLS ontologies behave differently
+          hierarchyProperty = submission.hierarchyProperty ||
+                                  LinkedData::Utils::Namespaces.default_hieararchy_property
+          root_class_filter = <<eos
+OPTIONAL { ?id <#{hierarchyProperty.value}> ?superId .}
+FILTER(!bound(?superId))
+eos
+          load_labels = false
+        end
+
+        labels_block = ""
+        if load_labels
+          syn_predicate = LinkedData::Utils::Namespaces.default_altLabel_iri
+          if params.include? :missing_labels_generation
+            syn_predicate = LinkedData::Utils::Namespaces.rdfs_label_iri
+          end
+          labels_block = <<eos
+OPTIONAL { ?id <#{LinkedData::Utils::Namespaces.default_pref_label.value}> ?prefLabel . }
+OPTIONAL { ?id <#{syn_predicate.value}> ?synonymLabel . }
+eos
+        end
+
         query = <<eos
-SELECT DISTINCT ?id ?prefLabel ?synonymLabel WHERE {
+SELECT DISTINCT * WHERE {
   GRAPH <#{graph.value}> {
     ?id a <#{classType.value}> .
-    OPTIONAL { ?id <#{LinkedData::Utils::Namespaces.default_pref_label.value}> ?prefLabel . }
-    OPTIONAL { ?id <#{syn_predicate.value}> ?synonymLabel . }
+    #{labels_block}
     #{one_class_filter}
+    #{root_class_filter}
     FILTER(!isBLANK(?id))
 } } ORDER BY ?id
 eos
         rs = Goo.store.query(query)
         classes = []
         rs.each_solution do |sol|
-          if ((classes.length > 0) and (classes[-1].resource_id.value == sol.get(:id).value))
+          if load_labels and ((classes.length > 0) and (classes[-1].resource_id.value == sol.get(:id).value))
             classes[-1].synonymLabel << sol.get(:synonymLabel)
           else
-            if sol.get(:prefLabel).instance_of? Array
+            if load_labels
+              classes << Class.new(sol.get(:id), submission, sol.get(:prefLabel), [sol.get(:synonymLabel)])
+            else
+              classes << Class.new(sol.get(:id), submission)
             end
-            classes << Class.new(sol.get(:id), submission, sol.get(:prefLabel), [sol.get(:synonymLabel)])
           end
         end
         return classes
