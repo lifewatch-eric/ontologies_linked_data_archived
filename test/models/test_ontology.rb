@@ -41,19 +41,15 @@ class TestOntology < LinkedData::TestCase
 
   def _delete_objects
     u = LinkedData::Models::User.find("tim")
-    u.load unless u.nil? || u.loaded?
     u.delete unless u.nil?
 
     of = LinkedData::Models::OntologyFormat.find("OWL")
-    of.load unless of.nil? || of.loaded?
     of.delete unless of.nil?
 
     ss = LinkedData::Models::SubmissionStatus.find("UPLOADED")
-    ss.load unless ss.nil? || ss.loaded?
     ss.delete unless ss.nil?
 
     o = LinkedData::Models::Ontology.find(@acronym)
-    o.load unless o.nil? || o.loaded?
     o.delete unless o.nil?
   end
 
@@ -90,14 +86,12 @@ class TestOntology < LinkedData::TestCase
   def test_next_submission_id
     _create_ontology_with_submissions
     ss = LinkedData::Models::Ontology.find(@acronym)
-    ss.load unless ss.nil? || ss.loaded?
     assert(ss.next_submission_id == 2)
   end
 
   def test_ontology_deletes_submissions
     _create_ontology_with_submissions
     ont = LinkedData::Models::Ontology.find(@acronym)
-    ont.load unless ont.loaded?
     ont.delete
     submissions = LinkedData::Models::OntologySubmission.where(acronym: @acronym)
     assert submissions.empty?
@@ -123,7 +117,4 @@ class TestOntology < LinkedData::TestCase
     all_submissions = ont.first.submissions
     assert_equal 3, all_submissions.length
   end
-
-
-
 end
