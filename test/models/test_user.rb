@@ -1,6 +1,11 @@
 require_relative "../test_case"
 
 class TestUser < LinkedData::TestCase
+  def teardown
+    u = LinkedData::Models::User.find("test_user")
+    u.delete unless u.nil?
+  end
+
   def test_valid_user
     u = LinkedData::Models::User.new
     assert (not u.valid?)
@@ -21,6 +26,22 @@ class TestUser < LinkedData::TestCase
     assert_equal true, u.exist?(reload=true)
     u.delete
     assert_equal false, u.exist?(reload=true)
+  end
+
+  def test_user_role_assign
+    u = LinkedData::Models::User.new({
+        username: "test_user",
+        email: "test@example.com",
+        role: LinkedData::Models::UserRole.find("ADMINISTRATOR")
+      })
+
+    assert_equal false, u.exist?(reload=true)
+    assert u.valid?
+    u.save
+    assert u.role.length == 1
+
+    assert_equal u.role.first.role,  "ADMINISTRATOR"
+    u.delete
   end
 
   def test_user_default_datetime
