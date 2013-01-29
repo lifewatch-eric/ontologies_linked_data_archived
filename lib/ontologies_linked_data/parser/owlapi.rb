@@ -13,13 +13,13 @@ module LinkedData
 
     class OWLAPICommand
       def initialize(input_file, output_repo, master_file=nil)
-        @owlapi_wrapper_jar_path = "bin/owlapi_wrapper.jar"
+        @owlapi_wrapper_jar_path = $project_bin + "owlapi_wrapper.jar"
         @input_file = input_file
         @output_repo = output_repo
         @master_file = master_file
         @file_triples_path = nil
       end
-      
+
       def setup_environment
         if @output_repo.nil? or Utils::FileHelpers.exists_and_file(@output_repo)
           raise RepositoryFoldersError, "Outout repository folder are files in the system `#{@output_repo}`"
@@ -31,10 +31,10 @@ module LinkedData
           raise MasterFileMissingException , "Master file not provided and input is zipped archive."
         end
         if (not Dir.exist?(@output_repo))
-          begin 
+          begin
             FileUtils.mkdir_p(@output_repo)
           rescue SystemCallError => e
-            raise MkdirException, "Output folder #{@output_repo} folder cannot be created."  
+            raise MkdirException, "Output folder #{@output_repo} folder cannot be created."
           end
         end
       end
@@ -55,7 +55,7 @@ module LinkedData
           options << "-o #{@output_repo}"
         end
         if options.length == 0
-          raise ArgumentError, "Cannot call java OWLAPI command without options." 
+          raise ArgumentError, "Cannot call java OWLAPI command without options."
         end
         options = options.join ' '
         command_call = "java -DentityExpansionLimit=1500000 -Xmx3072M -jar #{@owlapi_wrapper_jar_path} #{options}"
