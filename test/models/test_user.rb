@@ -40,6 +40,10 @@ class TestUser < LinkedData::TestCase
     u.save
     assert u.role.length == 1
 
+
+    u.role.each do |rr|
+      rr.load unless rr.loaded?
+    end
     assert_equal u.role.first.role,  "ADMINISTRATOR"
     u.delete
   end
