@@ -67,16 +67,25 @@ module LinkedData
                                 LinkedData::Utils::Namespaces.default_hieararchy_property
         graph = submission.resource_id
         query = <<eos
-SELECT DISTINCT ?id WHERE {
+SELECT DISTINCT ?parentId WHERE {
   GRAPH <#{graph.value}> {
-    ?id <#{hierarchyProperty.value}> ?parentId .
+    <#{self.resource_id.value}> <#{hierarchyProperty.value}> ?parentId .
     FILTER (!isBLANK(?parentId))
 } } ORDER BY ?id
 eos
         rs = Goo.store.query(query)
-        classes = []
+        parents = []
         rs.each_solution do |sol|
+          parents << LinkedData::Models::Class.new(sol.get(:parentId), self.submission)
         end
+        @attributes[:parents]=parents
+        return parents
+      end
+
+      def parents
+        raise ArgumentError, "Parents are not loaded. Call .load_parents" \
+          unless self.loaded_parents?
+        return @attributes[:parents]
       end
 
       def self.where(*args)
