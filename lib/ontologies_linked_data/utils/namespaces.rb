@@ -45,7 +45,7 @@ module LinkedData
         RDF::IRI.new(skos_prefLabel)
       end
       def self.default_hieararchy_property
-        RDF:IRI.new(rdfs_subClassOf)
+        RDF::IRI.new(rdfs_subClassOf)
       end
       def self.default_type_for_classes
         RDF::IRI.new(owl_class)
