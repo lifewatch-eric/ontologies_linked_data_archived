@@ -149,7 +149,9 @@ eos
         end
 
         labels_block = ""
+        query_options = {}
         if load_labels
+          query_options[:rules] = :SUBP
           syn_predicate = LinkedData::Utils::Namespaces.default_altLabel_iri
           if params.include? :missing_labels_generation
             syn_predicate = LinkedData::Utils::Namespaces.rdfs_label_iri
@@ -170,7 +172,7 @@ SELECT DISTINCT * WHERE {
     FILTER(!isBLANK(?id))
 } } ORDER BY ?id
 eos
-        rs = Goo.store.query(query)
+        rs = Goo.store.query(query, query_options)
         classes = []
         rs.each_solution do |sol|
           if load_labels and ((classes.length > 0) and (classes[-1].resource_id.value == sol.get(:id).value))

@@ -14,7 +14,8 @@ host = $GOO_HOST || "localhost"
 begin
   if Goo.store().nil?
     Goo.configure do |conf|
-      conf[:stores] = [ { :name => :main , :host => host, :port => port, :options => { } } ]
+      conf[:stores] = [ { :name => :main , :host => host, :port => port,
+        :options => { :rules => :NONE} } ]
       conf[:namespaces] = {
         :metadata => "http://data.bioontology.org/metadata/",
         :omv => "http://omv.org/ontology/",
