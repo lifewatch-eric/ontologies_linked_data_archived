@@ -55,7 +55,10 @@ module LinkedData
       def delete(in_update=false)
         submissions = self.submissions rescue nil
         submissions = OntologySubmission.where(acronym: acronym) if submissions.nil? && !acronym.nil?
-        submissions.each {|s| s.delete(in_update) unless s.nil?}
+        submissions.each do |s|
+          s.load unless s.loaded?
+          s.delete
+        end
         super()
       end
     end
