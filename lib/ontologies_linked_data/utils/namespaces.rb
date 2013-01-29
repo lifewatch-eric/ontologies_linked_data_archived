@@ -56,6 +56,9 @@ module LinkedData
       def self.default_altLabel_iri
         RDF::IRI.new(skos_altLabel)
       end
+      def self.rdfs_label_iri
+        RDF::IRI.new(rdfs_label)
+      end
 
 
       #TODO: to move somewhere else
