@@ -22,12 +22,12 @@ module LinkedData
 
       def latest_submission
         self.load unless self.loaded? || self.attr_loaded?(:acronym)
-        OntologySubmission.where(acronym: acronym, submissionId: highest_submission_id()).first
+        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: highest_submission_id()).first
       end
 
       def submission(submission_id)
         self.load unless self.loaded? || self.attr_loaded?(:acronym)
-        OntologySubmission.where(acronym: acronym, submissionId: submission_id.to_i).first
+        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id.to_i).first
       end
 
       def next_submission_id
@@ -36,7 +36,7 @@ module LinkedData
 
       def highest_submission_id
         submissions = self.submissions rescue nil
-        submissions = OntologySubmission.where(acronym: acronym) if submissions.nil? && !acronym.nil?
+        submissions = OntologySubmission.where ontology: { acronym: acronym } if submissions.nil? && !acronym.nil?
 
         # This is the first!
         return 0 if submissions.nil? || submissions.empty?
