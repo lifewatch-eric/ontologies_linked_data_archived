@@ -17,7 +17,8 @@ module LinkedData
       ##
       # Overrides find to ensure acronym is upcased
       def self.find(params, store_name = nil)
-        super(params.upcase, store_name)
+        id = params.kind_of?(String) ? params.upcase : params
+        super(id, store_name)
       end
 
       def latest_submission

@@ -217,8 +217,9 @@ module LinkedData
 
       def add_ontology_attributes
         load unless loaded?
-        ont = self.ontology.load unless self.ontology.loaded?
+        ont = LinkedData::Models::Ontology.find(RDF::IRI.new(self.ontology.resource_id.value))
         return if ont.nil?
+        ont.load unless ont.loaded?
         attributes = ont.attributes.dup
         attributes.delete(:internals)
         attributes.each do |attr, value|
