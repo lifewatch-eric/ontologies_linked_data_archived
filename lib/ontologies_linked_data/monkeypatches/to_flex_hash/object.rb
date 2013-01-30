@@ -23,12 +23,11 @@ class Object
     # Look for table attribute or get all instance variables
     if instance_variables.include?(:@attributes)
       hash.replace(instance_variable_get("@attributes"))
-    else
-      instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
     end
+    instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
 
     # Remove known bad data
-    bad_attributes = %w(internals captures splat)
+    bad_attributes = %w(attributes table _cached_exist internals captures splat uuid)
     bad_attributes.each do |bad_attribute|
       hash.delete(bad_attribute)
       hash.delete(bad_attribute.to_sym)
@@ -66,6 +65,7 @@ class Object
 
       # Convert linked objects to id
       value = v.respond_to?(:resource_id) ? LinkedData::Utils::Namespaces.last_iri_fragment(v.resource_id.value) : v
+
       # Convert arrays of linked objects
       if v.kind_of?(Enumerable) && v.first.respond_to?(:resource_id)
         value = v.map {|e| LinkedData::Utils::Namespaces.last_iri_fragment(e.resource_id.value) }
@@ -73,6 +73,9 @@ class Object
 
       hash[k] = value
     end
+
+    # Add an id
+    hash[:id] = self.resource_id.value if self.respond_to?("resource_id")
 
     hash
   end
