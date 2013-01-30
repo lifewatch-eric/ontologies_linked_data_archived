@@ -169,7 +169,7 @@ module LinkedData
         missing_labels_generation logger
 
         rdf_status = SubmissionStatus.find("RDF")
-        self.status = rdf_status
+        self.submissionStatus = rdf_status
         self.save
       end
 
