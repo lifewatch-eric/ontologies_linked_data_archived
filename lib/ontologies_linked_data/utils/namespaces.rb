@@ -41,13 +41,13 @@ module LinkedData
       def self.xsd_string
         return XSD + "string"
       end
-      def self.default_pref_label
+      def self.default_pref_label_iri
         RDF::IRI.new(skos_prefLabel)
       end
-      def self.default_hieararchy_property
+      def self.default_hieararchy_property_iri
         RDF::IRI.new(rdfs_subClassOf)
       end
-      def self.default_type_for_classes
+      def self.default_type_for_classes_iri
         RDF::IRI.new(owl_class)
       end
       def self.meta_prefLabel_iri
@@ -55,6 +55,9 @@ module LinkedData
       end
       def self.default_altLabel_iri
         RDF::IRI.new(skos_altLabel)
+      end
+      def self.default_definition_iri
+        RDF::IRI.new(skos_definition)
       end
       def self.rdfs_label_iri
         RDF::IRI.new(rdfs_label)

@@ -41,6 +41,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     cls = classes[0]
     assert_equal 'class 5 pref label', cls.prefLabel.value
     assert_equal 0, cls.synonymLabel.length
+    assert_equal 1, cls.definitions.length
 
     os.ontology.load
     os.ontology.delete
@@ -62,12 +63,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert(classes.length == 1)
     cls = classes[0]
     assert(!cls.loaded_parents?)
-    begin
+    assert_raise LinkedData::Models::ClassAttributeNotLoaded do
       cls.parents
-      assert(1 == 0)
-    rescue => e
-      #parent not loaded expection
-      assert_instance_of(ArgumentError, e)
     end
     parents = cls.load_parents
     assert(cls.loaded_parents?)
@@ -89,7 +86,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
+      :submissionId => 1
     assert(os.length == 1)
     os = os[0]
     os.load unless os.loaded?
@@ -99,12 +97,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert(classes.length == 1)
     cls = classes[0]
     assert(!cls.loaded_children?)
-    begin
+    assert_raise LinkedData::Models::ClassAttributeNotLoaded do
       cls.children
-      assert(1 == 0)
-    rescue => e
-      #children not loaded expection
-      assert_instance_of(ArgumentError, e)
     end
     children = cls.load_children
     assert(cls.loaded_children?)
@@ -120,5 +114,70 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os.ontology.delete
     os.delete
   end
+
+  def test_class_all_attributes
+    return if ENV["SKIP_PARSING"]
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
+      :submissionId => 1
+    assert(os.length == 1)
+    os = os[0]
+    os.load unless os.loaded?
+
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    classes = LinkedData::Models::Class.where( :submission => os, :resource_id => class_id )
+    assert(classes.length == 1)
+    cls = classes[0]
+
+
+    cls.load_attributes
+    assert (cls.attributes["http://www.w3.org/2002/07/owl#versionInfo"][0].value == "some version info")
+
+
+    os.ontology.load
+    os.ontology.delete
+    os.delete
+  end
+
+  def test_load_labels_separate
+    return if ENV["SKIP_PARSING"]
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
+      :submissionId => 1
+    assert(os.length == 1)
+    os = os[0]
+    os.load unless os.loaded?
+
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    classes = LinkedData::Models::Class.where( :submission => os, :resource_id => class_id,
+                                              :labels => false)
+    assert(classes.length == 1)
+    cls = classes[0]
+
+    assert_raise LinkedData::Models::ClassAttributeNotLoaded do
+      cls.prefLabel
+    end
+    assert_raise LinkedData::Models::ClassAttributeNotLoaded do
+      cls.synonymLabel
+    end
+    assert_raise LinkedData::Models::ClassAttributeNotLoaded do
+      cls.definitions
+    end
+    cls.load_labels
+    assert(cls.prefLabel.kind_of? SparqlRd::Resultset::Literal)
+    assert_instance_of Array, cls.synonymLabel
+    assert(cls.synonymLabel[0].kind_of? SparqlRd::Resultset::Literal)
+    assert_instance_of Array, cls.definitions
+    assert(cls.definitions[0].kind_of? SparqlRd::Resultset::Literal)
+
+    os.ontology.load
+    os.ontology.delete
+    os.delete
+  end
+
 
 end

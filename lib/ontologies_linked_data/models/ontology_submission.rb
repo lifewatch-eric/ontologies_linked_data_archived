@@ -204,7 +204,7 @@ module LinkedData
 
       def roots
          return LinkedData::Models::Class.where( :submission => self ,
-                                                :root => true )
+                                                :root => true, :labels => false)
       end
     end
   end
