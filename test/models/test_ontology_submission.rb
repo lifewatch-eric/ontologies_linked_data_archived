@@ -140,7 +140,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     bro = LinkedData::Models::Ontology.find(acronym)
     if not bro.nil?
-      brol.load unless bro.loaded?
       sub = bro.submissions || []
       sub.each do |s|
         s.load
@@ -161,7 +160,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
     uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED")
-    uploaded.load unless uploaded.loaded?
     uploded_ontologies = uploaded.submissions
     uploaded_ont = nil
     uploded_ontologies.each do |ont|
@@ -188,7 +186,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     bro = LinkedData::Models::Ontology.find(acronym)
     if not bro.nil?
-      brol.load unless bro.loaded?
       sub = bro.submissions || []
       sub.each do |s|
         s.load
@@ -213,7 +210,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
     uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED")
-    uploaded.load unless uploaded.loaded?
     uploded_ontologies = uploaded.submissions
     uploaded_ont = nil
     uploded_ontologies.each do |ont|
@@ -242,7 +238,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     init_test_ontology_msotest acr
 
     o = LinkedData::Models::Ontology.find(acr)
-    o.load unless o.loaded?
     oss = o.submissions
     assert_equal 1, oss.length
     ont_sub = oss[0]
