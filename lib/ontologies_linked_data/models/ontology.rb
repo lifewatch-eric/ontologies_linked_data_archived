@@ -30,7 +30,7 @@ module LinkedData
 
       def highest_submission_id
         submissions = self.submissions rescue nil
-        submissions = OntologySubmission.where ontology: { acronym: acronym } if submissions.nil? && !acronym.nil?
+        submissions = OntologySubmission.where(ontology: { acronym: acronym }) if submissions.nil? && !acronym.nil?
 
         # This is the first!
         return 0 if submissions.nil? || submissions.empty?
@@ -48,9 +48,8 @@ module LinkedData
       # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
       def delete(in_update=false)
         submissions = self.submissions rescue nil
-        submissions = OntologySubmission.where(acronym: acronym) if submissions.nil? && !acronym.nil?
+        submissions = OntologySubmission.where(ontology: { acronym: acronym }) if submissions.nil? && !acronym.nil?
         submissions.each do |s|
-          s.load unless s.loaded?
           s.delete
         end
         super()
