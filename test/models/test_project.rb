@@ -143,9 +143,9 @@ class TestProject < LinkedData::TestCase
 
   def test_project_default_datetime
     p = LinkedData::Models::Project.new
-    assert p.created.instance_of? DateTime
+    #nil unless it is saved see goo #65
+    assert p.create.nil?
   end
-
   def test_project_save
     assert_equal false, @p.exist?(reload=true)
     @p.save
