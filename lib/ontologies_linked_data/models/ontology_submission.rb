@@ -70,6 +70,12 @@ module LinkedData
         return valid_result && sc
       end
 
+      def load(resource_id=nil)
+        super(resource_id)
+        add_ontology_attributes
+        return self
+      end
+
       def filename
       end
 
@@ -205,6 +211,19 @@ module LinkedData
       def roots
          return LinkedData::Models::Class.where( :submission => self ,
                                                 :root => true, :labels => false)
+      end
+
+      private
+
+      def add_ontology_attributes
+        load unless loaded?
+        ont = self.ontology.load unless self.ontology.loaded?
+        return if ont.nil?
+        attributes = ont.attributes.dup
+        attributes.delete(:internals)
+        attributes.each do |attr, value|
+          instance_variable_set("@#{attr}", value)
+        end
       end
     end
   end
