@@ -165,11 +165,12 @@ module LinkedData
 
         Goo.store.delete_graph(self.resource_id.value)
         Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
+
+        missing_labels_generation logger
+
         rdf_status = SubmissionStatus.find("RDF")
         self.status = rdf_status
         self.save
-
-        missing_labels_generation logger
       end
 
       def missing_labels_generation(logger)
