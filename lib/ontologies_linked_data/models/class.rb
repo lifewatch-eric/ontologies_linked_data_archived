@@ -20,8 +20,9 @@ module LinkedData
         if !plabel.nil?
           set_prefLabel plabel
         end
-        @attributes[:synonyms] = synonyms
-        @attributes[:definitions] = definitions
+
+        @attributes[:synonyms] = synonyms unless synonyms.nil?
+        @attributes[:definitions] = definitions unless definitions.nil?
 
         #backreference to the submission that "owns" the term
         @submission = submission
