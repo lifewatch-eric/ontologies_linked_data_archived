@@ -11,10 +11,15 @@ class TestSubmissionStatus < LinkedData::TestCase
       of.delete
     end
   end
-  
+
   def test_submission_status
     teardown
     LinkedData::Models::SubmissionStatus.init
+    #eventually change this to READY
+    parsed_status = LinkedData::Models::SubmissionStatus.find("RDF")
+    assert(parsed_status.parsed?)
+    parsed_status = LinkedData::Models::SubmissionStatus.find("UPLOADED")
+    assert(!parsed_status.parsed?)
     assert (LinkedData::Models::SubmissionStatus.all.length > 5)
   end
 
