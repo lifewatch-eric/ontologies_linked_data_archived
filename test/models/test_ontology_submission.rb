@@ -268,10 +268,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     roots = os.roots
     assert_instance_of(Array, roots)
-    assert_equal(3, roots.length)
+    assert_equal(2, roots.length)
     root_ids = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
-      "http://bioportal.bioontology.org/ontologies/msotes#class6",
-      "http://bioportal.bioontology.org/ontologies/msotes#class3"]
+      "http://bioportal.bioontology.org/ontologies/msotes#class6" ]
+     # class 3 is now subClass of some anonymous thing.
+     # "http://bioportal.bioontology.org/ontologies/msotes#class3"]
     roots.each do |r|
       assert(root_ids.include? r.resource_id.value)
       root_ids.delete_at(root_ids.index(r.resource_id.value))
