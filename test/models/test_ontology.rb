@@ -93,7 +93,7 @@ class TestOntology < LinkedData::TestCase
     _create_ontology_with_submissions
     ont = LinkedData::Models::Ontology.find(@acronym)
     ont.delete
-    submissions = LinkedData::Models::OntologySubmission.where(acronym: @acronym)
+    submissions = LinkedData::Models::OntologySubmission.where(ontology: {acronym: @acronym})
     assert submissions.empty?
   end
 
