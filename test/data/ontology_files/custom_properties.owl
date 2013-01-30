@@ -50,6 +50,23 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://bioportal.bioontology.org/ontologies/msotes#myHasPart -->
+
+    <owl:ObjectProperty rdf:about="&msotes;myHasPart"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
     // Classes
     //
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +91,7 @@
 
     <owl:Class rdf:about="&msotes;class2">
         <rdfs:subClassOf rdf:resource="&msotes;class1"/>
+        <owl:versionInfo>some version info</owl:versionInfo>
         <myDefinition>my class 2 definition</myDefinition>
         <mySynonymLabel>class 2 syn 2</mySynonymLabel>
         <mySynonymLabel>class 2 syn 1</mySynonymLabel>
@@ -85,7 +103,14 @@
 
     <!-- http://bioportal.bioontology.org/ontologies/msotes#class3 -->
 
-    <owl:Class rdf:about="&msotes;class3"/>
+    <owl:Class rdf:about="&msotes;class3">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&msotes;myHasPart"/>
+                <owl:someValuesFrom rdf:resource="&msotes;class1"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
     
 
 
