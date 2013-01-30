@@ -47,7 +47,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::IRI.new(
-          "#{Goo.namespaces[Goo.namespaces[:default]]}/ontologies/#{ss.ontology.acronym}/#{ss.submissionId}")
+          "#{Goo.namespaces[Goo.namespaces[:default]]}ontologies/#{ss.ontology.acronym}/#{ss.submissionId}")
       end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
@@ -221,9 +221,7 @@ module LinkedData
         ont = LinkedData::Models::Ontology.find(RDF::IRI.new(self.ontology.resource_id.value))
         return if ont.nil?
         ont.load unless ont.loaded?
-        attributes = ont.attributes.dup
-        attributes.delete(:internals)
-        attributes.each do |attr, value|
+        ont.attributes.each do |attr, value|
           instance_variable_set("@#{attr}", value)
         end
       end
