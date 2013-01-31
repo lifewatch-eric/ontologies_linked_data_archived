@@ -134,5 +134,63 @@ module LinkedData
       of.delete unless of.nil?
     end
 
+    def delete_goo_models(gooModelArray)
+      gooModelArray.each do |m|
+        m.load
+        m.delete
+        assert_equal(false, m.exist?(reload=true), "Failed to delete a goo model.")
+      end
+    end
+
+    # Test the 'creator' attribute of a GOO model class
+    # @note This method name cannot begin with 'test_' or it will be called as a test
+    # @param [LinkedData::Models] model_class a GOO model class, e.g. LinkedData::Models::Project
+    # @param [LinkedData::Models::User] user a valid instance of LinkedData::Models::User
+    def model_creator_test(model_class, user)
+      # TODO: if the input argument is an instance, use the .class.new methods?
+      m = model_class.new
+      assert_equal(false, m.valid?, "#{m} .valid? returned true, it was expected to be invalid.")
+      m.creator = "test name" # string is not valid
+      assert_equal(false, m.valid?, "#{m} .valid? returned true, it was expected to be invalid.")
+      assert_equal(false, m.errors[:creator].nil?) # We expect there to be errors on creator
+      assert_instance_of(LinkedData::Models::User, user, "#{user} is not an instance of LinkedData::Models::User")
+      assert_equal(true, user.valid?, "#{user} is not a valid instance of LinkedData::Models::User")
+      m.creator = user  # LinkedData::Models::User instance is valid, but other attributes may generate errors.
+      assert_equal(false, m.valid?, "#{m} .valid? returned true, it was expected to be invalid.")
+      assert_equal(true, m.errors[:creator].nil?) # We expect there to be no errors on creator, there may be others.
+    end
+
+    # Test the 'created' attribute of a GOO model
+    # @note This method name cannot begin with 'test_' or it will be called as a test
+    # @param [LinkedData::Models::Base] m a valid model instance with a 'created' attribute (without a value).
+    def model_created_test(m)
+      assert_equal(true, m.kind_of?(LinkedData::Models::Base), "Expected kind_of?(LinkedData::Models::Base).")
+      assert_equal(true, m.valid?, "Expected valid model: #{m.errors}")
+      m.save if m.valid?
+      # The default value is auto-generated (during save), it should be OK.
+      assert_instance_of(DateTime, m.created, "The 'created' attribute is not a DateTime instance.")
+      assert_equal(true, m.errors[:created].nil?, "#{m.errors}")
+      m.created = "this string should fail"
+      assert (not m.valid?)
+      assert_equal(false, m.errors[:created].nil?, "#{m.errors}")
+      # The value should be an XSD date time.
+      m.created = DateTime.new
+      assert m.valid?
+      assert_instance_of(DateTime, m.created)
+      assert_equal(true, m.errors[:created].nil?, "#{m.errors}")
+    end
+
+    # Test the save and delete methods on a GOO model
+    # @param [LinkedData::Models::Base] m a valid model instance that can be saved and deleted
+    def model_lifecycle_test(m)
+      assert_equal(true, m.kind_of?(LinkedData::Models::Base), "Expected kind_of?(LinkedData::Models::Base).")
+      assert_equal(true, m.valid?, "Expected valid model: #{m.errors}")
+      assert_equal(false, m.exist?(reload=true), "Given model is already saved, expected one that is not.")
+      m.save
+      assert_equal(true, m.exist?(reload=true), "Failed to save model.")
+      m.delete
+      assert_equal(false, m.exist?(reload=true), "Failed to delete model.")
+    end
+
   end
 end
