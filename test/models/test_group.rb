@@ -61,6 +61,7 @@ class TestGroup < LinkedData::TestCase
 
   def test_group_default_datetime
     g = LinkedData::Models::Group.new
-    assert g.created.instance_of? DateTime
+    #defaults are nil unless saved (goo #65)
+    assert g.created.nil?
   end
 end

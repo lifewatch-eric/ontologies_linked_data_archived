@@ -224,6 +224,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       uploaded_ont.ontology.load
     end
     uploaded_ont.process_submission Logger.new(STDOUT)
+    assert uploaded_ont.submissionStatus.parsed?
 
     uploaded_ont.classes.each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.resource_id} does not have a label")
@@ -241,7 +242,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     oss = o.submissions
     assert_equal 1, oss.length
     ont_sub = oss[0]
-    ont_sub.load
+    ont_sub.load unless ont_sub.loaded?
+    assert ont_sub.submissionStatus.parsed?
     ont_sub.classes.each do |c|
       assert (not c.prefLabel.nil?)
       assert_instance_of String, c.prefLabel.value

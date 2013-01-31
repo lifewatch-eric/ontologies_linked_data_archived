@@ -51,6 +51,7 @@ class TestReview < LinkedData::TestCase
 
   def test_review_default_datetime
     r = LinkedData::Models::Review.new
-    assert r.created.instance_of? DateTime
+    #this is nil unless it is saved
+    assert r.created.nil?
   end
 end

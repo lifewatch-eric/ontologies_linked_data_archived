@@ -50,6 +50,8 @@ class TestUser < LinkedData::TestCase
 
   def test_user_default_datetime
     u = LinkedData::Models::User.new
-    assert u.created.instance_of? DateTime
+    #This is nil unless it saves
+    #assert u.created.instance_of? DateTime (see goo #65)
+    assert u.created.nil?
   end
 end
