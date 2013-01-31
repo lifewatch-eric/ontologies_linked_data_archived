@@ -9,7 +9,7 @@ module LinkedData
       attribute :homePage, :uri => true, :single_value => true, :not_nil => true
       attribute :description, :single_value => true, :not_nil => true
       attribute :contacts, :single_value => true
-      attribute :instituion, :single_value => true
+      attribute :institution, :single_value => true
       attribute :ontologyUsed, :instance_of => { :with => :ontology }
     end
   end
