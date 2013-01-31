@@ -14,6 +14,7 @@ class TestProject < LinkedData::TestCase
       :acronym => "GP",
       :creator => @user,
       :created => DateTime.new,
+      :institution => "A university.",
       :homePage => "http://valid.uri.com",
       :description => "This is a test project",
       :ontologyUsed => [@ont],
@@ -77,6 +78,15 @@ class TestProject < LinkedData::TestCase
     assert_equal(true, p.errors[:description].nil?)
   end
 
+  def test_project_institution
+    p = LinkedData::Models::Project.new
+    assert (not p.valid?)
+    # This should be a string.
+    p.institution = @project_params[:institution]
+    assert (not p.valid?) # Other attributes generate errors
+    assert_equal(true, p.errors[:institution].nil?)
+  end
+
   def test_project_ontologyUsed
     p = LinkedData::Models::Project.new
     assert (not p.valid?)
@@ -101,6 +111,7 @@ class TestProject < LinkedData::TestCase
     p.created = @project_params[:created]
     p.homePage = @project_params[:homePage]
     p.description = @project_params[:description]
+    p.institution = @project_params[:institution]
     assert (not p.valid?)
     # Still not valid because not all attributes are typed properly...
     p.creator = "test_user" # must be LinkedData::Model::User
