@@ -19,6 +19,7 @@ class TestProject < LinkedData::TestCase
     # Create a valid project (don't save it here).
     @p = LinkedData::Models::Project.new
     @p.name = "Great Project"
+    @p.acronym = "GP"
     @p.creator = @user
     # Created value has a default that is set during @p.save
     #@p.created = DateTime.new
@@ -126,6 +127,7 @@ class TestProject < LinkedData::TestCase
     assert (not p.valid?)
     # Not valid because not all attributes are present...
     p.name = "Great Project"
+    p.acronym = "GP"
     p.created = DateTime.parse("2012-10-04T07:00:00.000Z")
     p.homePage = "http://valid.uri.com"
     p.description = "This is a test project"
