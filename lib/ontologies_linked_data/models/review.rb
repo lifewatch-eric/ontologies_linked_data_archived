@@ -7,13 +7,14 @@ module LinkedData
       model :review
       attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
       attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :body, :cardinality => { :max => 1, :min => 1}
+      attribute :body, :single_value => true, :not_nil => true
       attribute :ontologyReviewed, :instance_of => { :with => :ontology }, :single_value => true, :not_nil => true
-      attribute :usabilityRating, :cardinality => { :max => 1 }
-      attribute :coverageRating, :cardinality => { :max => 1 }
-      attribute :qualityRating, :cardinality => { :max => 1 }
-      attribute :formalityRating, :cardinality => { :max => 1 }
-      attribute :documentationRating, :cardinality => { :max => 1 }
+      attribute :usabilityRating, :single_value => true
+      attribute :coverageRating, :single_value => true
+      attribute :qualityRating, :single_value => true
+      attribute :formalityRating, :single_value => true
+      attribute :correctnessRating, :single_value => true
+      attribute :documentationRating, :single_value => true
     end
   end
 end
