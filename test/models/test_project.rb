@@ -31,6 +31,15 @@ class TestProject < LinkedData::TestCase
     @project_params = nil
   end
 
+  def test_project_acronym
+    p = LinkedData::Models::Project.new
+    assert (not p.valid?)
+    # name should be a valid URI, this should be:
+    p.acronym = @project_params[:acronym]
+    assert (not p.valid?) # Other attributes generate errors
+    assert_equal(true, p.errors[:acronym].nil?)
+  end
+
   def test_project_name
     p = LinkedData::Models::Project.new
     assert (not p.valid?)
@@ -52,17 +61,16 @@ class TestProject < LinkedData::TestCase
   def test_project_created
     # Ensure there is no 'created' parameter so the model creates a default value.
     @project_params.delete :created
-    p = LinkedData::Models::Project.new(@project_params)
-    model_created_test(p) # method from test_case.rb
+    model_created_test(LinkedData::Models::Project.new(@project_params)) # method from test_case.rb
   end
 
   def test_project_homePage
     p = LinkedData::Models::Project.new
     assert (not p.valid?)
-    ## This should be a valid URI, this is not:
-    #p.homePage = "test homePage"
-    #assert (not p.valid?) # Other attributes generate errors
-    #assert_equal(false, p.errors[:homePage].nil?)
+    # This should be a valid URI, this is not:
+    p.homePage = "test homePage"
+    assert (not p.valid?) # Other attributes generate errors
+    assert_equal(false, p.errors[:homePage].nil?)
     # homePage should be a valid URI, this should be:
     p.homePage = @project_params[:homePage]
     assert (not p.valid?) # Other attributes generate errors
@@ -125,8 +133,7 @@ class TestProject < LinkedData::TestCase
   end
 
   def test_project_lifecycle
-    p = LinkedData::Models::Project.new(@project_params)
-    model_lifecycle_test(p)
+    model_lifecycle_test(LinkedData::Models::Project.new(@project_params))
   end
 
 end
