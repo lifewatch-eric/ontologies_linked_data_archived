@@ -2,7 +2,7 @@ require 'set'
 
 class Object
   def to_flex_hash(options = {})
-    if kind_of?(Hash) || kind_of?(String) || kind_of?(Fixnum) || kind_of?(Float); then return self; end
+    if kind_of?(String) || kind_of?(Fixnum) || kind_of?(Float); then return self; end
 
     # Handle enumerables by recursing
     if kind_of?(Enumerable) && !kind_of?(Hash)
@@ -11,6 +11,12 @@ class Object
         new_enum << item.to_flex_hash
       end
       return new_enum
+    elsif kind_of?(Hash)
+      new_hash = self.class.new
+      each do |key, value|
+        new_hash[key] = value.to_flex_hash
+      end
+      return new_hash
     end
 
     all = options[:all] ||= false
@@ -71,11 +77,19 @@ class Object
         value = v.map {|e| LinkedData::Utils::Namespaces.last_iri_fragment(e.resource_id.value) }
       end
 
+      # Convert arrays of RDF objects (have `value` method)
+      if v.kind_of?(Enumerable) && v.first.respond_to?(:value)
+        value = v.map {|e| e.value }
+      end
+
+      # Objects with `value` method should have that called
+      value = value.respond_to?(:value) ? value.value : value
+
       hash[k] = value
     end
 
     # Add an id
-    hash[:id] = self.resource_id.value if self.respond_to?("resource_id")
+    hash[:id] = self.resource_id.value if self.respond_to?(:resource_id)
 
     hash
   end
