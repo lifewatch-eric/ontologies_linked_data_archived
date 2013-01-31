@@ -11,11 +11,12 @@ class TestProject < LinkedData::TestCase
     # Create valid project parameters
     @project_params = {
       :name => "Great Project",
+      :acronym => "GP",
       :creator => @user,
+      :created => DateTime.new,
       :homePage => "http://valid.uri.com",
       :description => "This is a test project",
       :ontologyUsed => [@ont],
-      :created => DateTime.new,
     }
   end
 
@@ -96,6 +97,7 @@ class TestProject < LinkedData::TestCase
     assert (not p.valid?)
     # Not valid because not all attributes are present...
     p.name = @project_params[:name]
+    p.acronym = @project_params[:acronym]
     p.created = @project_params[:created]
     p.homePage = @project_params[:homePage]
     p.description = @project_params[:description]

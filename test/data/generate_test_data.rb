@@ -107,10 +107,10 @@ class GenerateTestData
       o = LinkedData::Models::Ontology.find(acronym)
       o.delete unless o.nil?
 
-      os = LinkedData::Models::OntologySubmission.where(acronym: acronym)
-      os.each do |s|
-        s.delete unless s.nil?
-      end
+      # os = LinkedData::Models::OntologySubmission.where(ontology: {acronym: acronym})
+      # os.each do |s|
+      #   s.delete unless s.nil?
+      # end
     end
   end
 

@@ -66,7 +66,9 @@ class TestCategory < LinkedData::TestCase
 
   def test_category_default_datetime
     c = LinkedData::Models::Category.new
-    assert c.created.instance_of? DateTime
+    #This is nil unless it is saved see goo #65
+    #assert c.created.instance_of? DateTime
+    assert c.created.nil?
   end
 
   def test_category_inverse_of
