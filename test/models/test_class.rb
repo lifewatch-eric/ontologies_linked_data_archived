@@ -76,6 +76,14 @@ class TestClassModel < LinkedData::TestOntologyCommon
     #they should have the same submission
     assert_equal(cls.parents[0].submission, os)
 
+    #transitive
+    cls.load_parents transitive=true
+    ancestors = cls.parents
+    ancestors.map! { |a| a.resource_id.value }
+    data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
+ "http://bioportal.bioontology.org/ontologies/msotes#class2"]
+    assert ancestors.sort == data_ancestors.sort
+
     os.ontology.load
     os.ontology.delete
     os.delete
@@ -92,7 +100,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os = os[0]
     os.load unless os.loaded?
 
-    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class1"
     classes = LinkedData::Models::Class.where( :submission => os, :resource_id => class_id )
     assert(classes.length == 1)
     cls = classes[0]
@@ -104,11 +112,20 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert(cls.loaded_children?)
     assert_equal(children, cls.children)
     assert_equal(1, cls.children.length)
-    children_id = "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    children_id = "http://bioportal.bioontology.org/ontologies/msotes#class2"
     assert_equal(children_id,cls.children[0].resource_id.value)
 
     #they should have the same submission
     assert_equal(cls.children[0].submission, os)
+
+
+    #transitive
+    cls.load_children transitive=true
+    descendents = cls.children
+    descendents.map! { |a| a.resource_id.value }
+    data_descendents = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
+ "http://bioportal.bioontology.org/ontologies/msotes#class2"]
+    assert descendents.sort == data_descendents.sort
 
     os.ontology.load
     os.ontology.delete

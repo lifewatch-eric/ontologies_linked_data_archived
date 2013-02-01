@@ -98,14 +98,14 @@ module LinkedData
         return self
       end
 
-      def load_parents
-        parents = load_relatives
+      def load_parents(transitive=false)
+        parents = load_relatives(:up,transitive)
         @attributes[:parents] = parents
         return parents
       end
 
-      def load_children
-        children = load_relatives(children=true)
+      def load_children(transitive=false)
+        children = load_relatives(:down,transitive)
         @attributes[:children]  = children
         return children
       end
@@ -140,12 +140,12 @@ eos
         end
       end
 
-      def load_relatives(children=false)
+      def load_relatives(up_or_down=:up, transitive=false)
         #by default loads parents
         hierarchyProperty = @submission.hierarchyProperty ||
                                 LinkedData::Utils::Namespaces.default_hieararchy_property_iri
         graph = submission.resource_id
-        if children
+        if up_or_down == :down
           relative_pattern = " ?relativeId <#{hierarchyProperty.value}> <#{self.resource_id.value}> . "
         else
           relative_pattern = " <#{self.resource_id.value}> <#{hierarchyProperty.value}> ?relativeId . "
@@ -157,7 +157,9 @@ SELECT DISTINCT ?relativeId WHERE {
     FILTER (!isBLANK(?parentId))
 } } ORDER BY ?relativeId
 eos
-        rs = Goo.store.query(query)
+        query_options = {}
+        query_options = { :rules => :SUBC } if transitive
+        rs = Goo.store.query(query,query_options)
         relatives = []
         rs.each_solution do |sol|
           relatives << LinkedData::Models::Class.new(sol.get(:relativeId), self.submission)
