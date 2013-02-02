@@ -42,6 +42,11 @@ namespace :data do
     require_relative "test/data/generate_test_data"
     GenerateTestData.delete
   end
+
+  desc "Delete all data"
+  task :destroy do
+    require_relative "test/data/destroy_test_data"
+  end
 end
 
 namespace :test do
