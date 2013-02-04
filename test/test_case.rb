@@ -72,8 +72,14 @@ module LinkedData
       u = LinkedData::Models::User.new(username: "tim", email: "tim@example.org")
       u.save unless u.exist? || !u.valid?
 
-      of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-      of.save unless of.exist? || !of.valid?
+      of = LinkedData::Models::OntologyFormat.find("OWL")
+      if of.nil?
+        of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
+        assert of.valid?
+        of.save
+      end
+
+      LinkedData::Models::SubmissionStatus.init
 
       ont_acronyms = []
       ontologies = []
@@ -100,7 +106,7 @@ module LinkedData
             ontology: o,
             hasOntologyLanguage: of,
             pullLocation: RDF::IRI.new("http://example.com"),
-            submissionStatus: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
+            submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED"),
             submissionId: o.next_submission_id
           })
           os.save if os.valid?
