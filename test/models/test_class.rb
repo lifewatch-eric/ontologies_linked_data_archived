@@ -132,6 +132,36 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os.delete
   end
 
+  def test_path_to_root
+    return if ENV["SKIP_PARSING"]
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
+      :submissionId => 1
+    assert(os.length == 1)
+    os = os[0]
+    os.load unless os.loaded?
+
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_7"
+    classes = LinkedData::Models::Class.where( :submission => os, :resource_id => class_id )
+    assert(classes.length == 1)
+    cls = classes[0]
+
+    paths = cls.paths_to_root
+    assert paths.length == 1
+    path = paths[0]
+    assert path.length == 3
+    assert path[0].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class_7"
+    assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
+
+    os.ontology.load
+    os.ontology.delete
+    os.delete
+  end
+
+
   def test_class_all_attributes
     return if ENV["SKIP_PARSING"]
 
