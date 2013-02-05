@@ -289,6 +289,35 @@ eos
         return classes
       end
 
+      def paths_to_root
+        paths = [[self]]
+        self.load_parents unless self.loaded_parents?
+        traverse_path_to_root(self.parents, paths)
+        return paths
+      end
+
+      private
+
+      def traverse_path_to_root(parents, paths)
+        if parents.length > 1
+          new_paths = paths * parents.length
+          paths.delete_if {true}
+          paths.concat new_paths
+        end
+        parents.each_index do |i|
+          path_i = i % paths.length
+          path = paths[path_i]
+          path << parents[i]
+        end
+        paths.each do |path|
+          p = path[-1]
+          p.load_parents unless p.loaded_parents?
+          if p.parents and p.parents.length > 0
+            traverse_path_to_root p.parents, paths
+          end
+        end
+      end
+
     end
   end
 end
