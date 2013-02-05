@@ -154,7 +154,7 @@ eos
 SELECT DISTINCT ?relativeId WHERE {
   GRAPH <#{graph.value}> {
     #{relative_pattern}
-    FILTER (!isBLANK(?parentId))
+    FILTER (!isBLANK(?relativeId))
 } } ORDER BY ?relativeId
 eos
         query_options = {}
@@ -302,18 +302,26 @@ eos
         if parents.length > 1
           new_paths = paths * parents.length
           paths.delete_if {true}
-          paths.concat new_paths
+          new_paths.each do |np|
+            paths << np.clone
+          end
+          parents.each_index do |i|
+            path_i = i % paths.length
+            path = paths[path_i]
+            path << parents[i]
+          end
+        else
+          paths.each do |path|
+            path << parents[0]
+          end
         end
-        parents.each_index do |i|
-          path_i = i % paths.length
-          path = paths[path_i]
-          path << parents[i]
-        end
+
         paths.each do |path|
           p = path[-1]
           p.load_parents unless p.loaded_parents?
           if p.parents and p.parents.length > 0
-            traverse_path_to_root p.parents, paths
+            new_paths = [path]
+            traverse_path_to_root p.parents, new_paths
           end
         end
       end

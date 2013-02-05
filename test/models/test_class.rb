@@ -63,7 +63,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     parents = cls.load_parents
     assert(cls.loaded_parents?)
     assert_equal(parents, cls.parents)
-    assert_equal(1, cls.parents.length)
+    assert_equal(2, cls.parents.length)
     parent_id = "http://bioportal.bioontology.org/ontologies/msotes#class2"
     assert_equal(parent_id,cls.parents[0].resource_id.value)
 
@@ -75,7 +75,10 @@ class TestClassModel < LinkedData::TestOntologyCommon
     ancestors = cls.parents
     ancestors.map! { |a| a.resource_id.value }
     data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
- "http://bioportal.bioontology.org/ontologies/msotes#class2"]
+ "http://bioportal.bioontology.org/ontologies/msotes#class2",
+ "http://bioportal.bioontology.org/ontologies/msotes#class4",
+ "http://bioportal.bioontology.org/ontologies/msotes#class5"   ]
+    binding.pry
     assert ancestors.sort == data_ancestors.sort
 
   end
@@ -115,7 +118,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
     descendents = cls.children
     descendents.map! { |a| a.resource_id.value }
     data_descendents = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
- "http://bioportal.bioontology.org/ontologies/msotes#class2"]
+ "http://bioportal.bioontology.org/ontologies/msotes#class2",
+    "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
     assert descendents.sort == data_descendents.sort
 
   end
@@ -146,6 +150,36 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
   end
 
+  def test_path_to_root_with_multiple_parents
+    return if ENV["SKIP_PARSING"]
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
+      :submissionId => 1
+    assert(os.length == 1)
+    os = os[0]
+    os.load unless os.loaded?
+
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    classes = LinkedData::Models::Class.where( :submission => os, :resource_id => class_id )
+    assert(classes.length == 1)
+    cls = classes[0]
+
+    paths = cls.paths_to_root
+    assert paths.length == 2
+    path = paths[0]
+    assert path.length == 3
+    assert path[0].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
+    path = paths[1]
+    assert path.length == 3
+    assert path[0].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class4"
+    assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class3"
+
+  end
 
   def test_class_all_attributes
     return if ENV["SKIP_PARSING"]
