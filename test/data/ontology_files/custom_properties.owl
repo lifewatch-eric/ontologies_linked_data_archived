@@ -118,6 +118,7 @@
 
     <owl:Class rdf:about="&msotes;class4">
         <rdfs:subClassOf rdf:resource="&msotes;class3"/>
+        <rdfs:subClassOf rdf:resource="&msotes;class_5"/>
         <myPrefLabel>label for class 4</myPrefLabel>
     </owl:Class>
     
