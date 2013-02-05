@@ -46,6 +46,10 @@ module LinkedData
       ont = LinkedData::Models::Ontology.find(acr)
       if not ont.nil?
         sub = ont.submissions || []
+        if sub.length > 0
+          sub[0].load
+          return if sub[0].submissionStatus.parsed?
+        end
         sub.each do |s|
           s.load
           s.delete

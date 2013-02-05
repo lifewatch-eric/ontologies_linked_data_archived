@@ -19,9 +19,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os_classes.each do |c|
       assert(!c.prefLabel.nil?, "Class #{c.resource_id.value} does not have a label")
     end
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
   def test_class_where_id
@@ -43,9 +40,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal 0, cls.synonymLabel.length
     assert_equal 1, cls.definitions.length
 
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
   def test_class_parents
@@ -84,9 +78,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
  "http://bioportal.bioontology.org/ontologies/msotes#class2"]
     assert ancestors.sort == data_ancestors.sort
 
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
   def test_class_children
@@ -127,9 +118,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
  "http://bioportal.bioontology.org/ontologies/msotes#class2"]
     assert descendents.sort == data_descendents.sort
 
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
   def test_path_to_root
@@ -156,9 +144,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
     assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
 
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
 
@@ -182,10 +167,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     cls.load_attributes
     assert (cls.attributes["http://www.w3.org/2002/07/owl#versionInfo"][0].value == "some version info")
 
-
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
   def test_load_labels_separate
@@ -221,9 +202,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_instance_of Array, cls.definitions
     assert(cls.definitions[0].kind_of? SparqlRd::Resultset::Literal)
 
-    os.ontology.load
-    os.ontology.delete
-    os.delete
   end
 
 
