@@ -298,28 +298,43 @@ eos
 
       private
 
+      def append_if_not_there_already(path,r)
+        return nil if (path.select { |x| x.resource_id.value == r.resource_id.value }).length > 0
+        path << r
+      end
+
       def traverse_path_to_root(parents, paths)
+        recurse_on_path = []
         if parents.length > 1
           new_paths = paths * parents.length
           paths.delete_if {true}
           new_paths.each do |np|
             paths << np.clone
           end
+          paths.each do |p|
+            recurse_on_path << false
+          end
+
           parents.each_index do |i|
             path_i = i % paths.length
             path = paths[path_i]
-            path << parents[i]
+            recurse_on_path[path_i] = recurse_on_path[path_i] || (!append_if_not_there_already(path, parents[i]).nil?)
           end
         else
-          paths.each do |path|
-            path << parents[0]
+          paths.each_index do |i|
+            recurse_on_path[i] = false
+          end
+          paths.each_index do |i|
+            path = paths[i]
+            recurse_on_path[i] = !append_if_not_there_already(path,parents[0]).nil?
           end
         end
 
-        paths.each do |path|
+        paths.each_index do |i|
+          path = paths[i]
           p = path[-1]
           p.load_parents unless p.loaded_parents?
-          if p.parents and p.parents.length > 0
+          if recurse_on_path[i] and p.parents and p.parents.length > 0
             new_paths = [path]
             traverse_path_to_root p.parents, new_paths
           end

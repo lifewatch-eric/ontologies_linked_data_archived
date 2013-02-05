@@ -104,6 +104,7 @@
     <!-- http://bioportal.bioontology.org/ontologies/msotes#class3 -->
 
     <owl:Class rdf:about="&msotes;class3">
+        <rdfs:subClassOf rdf:resource="&msotes;class4"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&msotes;myHasPart"/>
@@ -118,7 +119,6 @@
 
     <owl:Class rdf:about="&msotes;class4">
         <rdfs:subClassOf rdf:resource="&msotes;class3"/>
-        <rdfs:subClassOf rdf:resource="&msotes;class_5"/>
         <myPrefLabel>label for class 4</myPrefLabel>
     </owl:Class>
     

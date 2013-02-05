@@ -77,8 +77,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
  "http://bioportal.bioontology.org/ontologies/msotes#class4",
- "http://bioportal.bioontology.org/ontologies/msotes#class5"   ]
-    binding.pry
+ "http://bioportal.bioontology.org/ontologies/msotes#class3"   ]
     assert ancestors.sort == data_ancestors.sort
 
   end
