@@ -235,7 +235,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   def test_custom_property_generation
     return if ENV["SKIP_PARSING"]
 
-    acr = "CUSTOMPROPTEST"
+    acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
     o = LinkedData::Models::Ontology.find(acr)
@@ -248,7 +248,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       assert (not c.prefLabel.nil?)
       assert_instance_of String, c.prefLabel.value
       if c.resource_id.value.include? "class6"
-        assert_equal "rdfs label value", c.prefLabel.value
+        #either the RDF label of the synonym
+        assert ("rdfs label value" == c.prefLabel.value || "syn for class 6" == c.prefLabel.value)
       end
       if c.resource_id.value.include? "class3"
         assert_equal "class3", c.prefLabel.value
