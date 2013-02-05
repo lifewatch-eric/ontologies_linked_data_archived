@@ -140,6 +140,14 @@
         <myDefinition>def for class 5</myDefinition>
         <myPrefLabel>class 5 pref label</myPrefLabel>
     </owl:Class>
+    
+
+
+    <!-- http://bioportal.bioontology.org/ontologies/msotes#class_7 -->
+
+    <owl:Class rdf:about="&msotes;class_7">
+        <rdfs:subClassOf rdf:resource="&msotes;class2"/>
+    </owl:Class>
 </rdf:RDF>
 
 
