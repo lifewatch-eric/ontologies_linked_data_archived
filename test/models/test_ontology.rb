@@ -7,7 +7,7 @@ class TestOntology < LinkedData::TestCase
     @name = "TestOntology TEST"
     _delete_objects
 
-    @user = LinkedData::Models::User.new(username: "tim", email: "tim@example.org")
+    @user = LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
     @user.save
 
     @of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")

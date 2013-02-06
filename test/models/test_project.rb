@@ -4,7 +4,7 @@ class TestProject < LinkedData::TestCase
 
   def setup
     super
-    @user = LinkedData::Models::User.new({:username => "test_user",:email => "test_user@example.org"})
+    @user = LinkedData::Models::User.new({:username => "test_user",:email => "test_user@example.org", :password => "password"})
     @user.save
     @ont = LinkedData::Models::Ontology.new({:acronym => "TST_ONT",:name => "Test Ontology",:administeredBy => @user})
     @ont.save

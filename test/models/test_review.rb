@@ -3,7 +3,7 @@ require_relative "../test_case"
 class TestReview < LinkedData::TestCase
 
   def setup
-    @user = LinkedData::Models::User.new(username: "test_user", email: "test_user@example.org")
+    @user = LinkedData::Models::User.new(username: "test_user", email: "test_user@example.org", password: "password")
     @user.save
     @ont = LinkedData::Models::Ontology.new(acronym: "TST", name: "Test Ontology", administeredBy: @user)
     @ont.save
