@@ -69,7 +69,7 @@ module LinkedData
       submission_count = options[:submission_count] || 5
       random_submission_count = options[:random_submission_count].nil? ? true : options[:random_submission_count]
 
-      u = LinkedData::Models::User.new(username: "tim", email: "tim@example.org")
+      u = LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: password)
       u.save unless u.exist? || !u.valid?
 
       of = LinkedData::Models::OntologyFormat.find("OWL")

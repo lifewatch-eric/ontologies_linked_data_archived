@@ -12,16 +12,19 @@ class TestUser < LinkedData::TestCase
 
     u.username = "test_user"
     u.email = "test@example.com"
+    u.password = "a_password"
     assert u.valid?
   end
 
   def test_user_lifecycle
     u = LinkedData::Models::User.new({
         username: "test_user",
-        email: "test@example.com"
+        email: "test@example.com",
+        password: "a_password"
       })
 
     assert_equal false, u.exist?(reload=true)
+    assert u.valid?
     u.save
     assert_equal true, u.exist?(reload=true)
     u.delete
