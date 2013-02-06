@@ -1,4 +1,5 @@
 require 'bcrypt'
+require_relative 'authentication'
 
 module LinkedData
   module Models
