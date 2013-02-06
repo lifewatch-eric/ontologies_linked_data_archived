@@ -1,4 +1,3 @@
-require 'gdbm'
 require 'bcrypt'
 require 'digest'
 require 'openssl'
