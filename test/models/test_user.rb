@@ -32,7 +32,8 @@ class TestUser < LinkedData::TestCase
     u = LinkedData::Models::User.new({
         username: "test_user",
         email: "test@example.com",
-        role: LinkedData::Models::UserRole.find("ADMINISTRATOR")
+        role: LinkedData::Models::Users::Role.find("ADMINISTRATOR"),
+        password: "a_password"
       })
 
     assert_equal false, u.exist?(reload=true)

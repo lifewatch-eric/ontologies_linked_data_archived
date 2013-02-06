@@ -25,7 +25,7 @@ class TestReview < LinkedData::TestCase
     delete_goo_models(LinkedData::Models::Review.all)
     delete_goo_models(LinkedData::Models::Ontology.all)
     delete_goo_models(LinkedData::Models::User.all)
-    delete_goo_models(LinkedData::Models::UserRole.all)
+    delete_goo_models(LinkedData::Models::Users::Role.all)
     @review_params = nil
     @ont = nil
     @user = nil

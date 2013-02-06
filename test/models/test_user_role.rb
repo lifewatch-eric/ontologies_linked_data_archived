@@ -6,7 +6,7 @@ class TestUserRole < LinkedData::TestCase
   end
 
   def teardown
-    roles = LinkedData::Models::UserRole.all
+    roles = LinkedData::Models::Users::Role.all
     roles.each do |role|
       role.load
       role.delete
@@ -17,14 +17,14 @@ class TestUserRole < LinkedData::TestCase
     teardown
 
     @roles.each do |role|
-      role = LinkedData::Models::UserRole.new(role: role)
+      role = LinkedData::Models::Users::Role.new(role: role)
       role.save
     end
 
     @roles.each do |role|
-      list = LinkedData::Models::UserRole.where(role: role)
+      list = LinkedData::Models::Users::Role.where(role: role)
       assert_equal 1, list.length
-      assert_instance_of LinkedData::Models::UserRole, list[0]
+      assert_instance_of LinkedData::Models::Users::Role, list[0]
       list[0].load
       assert_equal role, list[0].role
     end
@@ -32,9 +32,9 @@ class TestUserRole < LinkedData::TestCase
 
   def test_init
      teardown
-     assert_equal 0, LinkedData::Models::UserRole.all.length
-     LinkedData::Models::UserRole.init @roles
-     assert_equal 2, LinkedData::Models::UserRole.all.length
+     assert_equal 0, LinkedData::Models::Users::Role.all.length
+     LinkedData::Models::Users::Role.init @roles
+     assert_equal 2, LinkedData::Models::Users::Role.all.length
   end
 
 end

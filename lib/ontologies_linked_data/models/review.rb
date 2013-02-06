@@ -1,6 +1,3 @@
-require_relative "user"
-require_relative "ontology"
-
 module LinkedData
   module Models
     class Review < LinkedData::Models::Base
