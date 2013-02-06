@@ -9,6 +9,21 @@ module LinkedData
     module Users
       module Authentication
 
+        def authenticate(pass)
+          hash = self.passwordHash
+          return true if valid_password?(pass, hash)
+          if valid_legacy_password?(pass, hash)
+            self.password = pass
+            if self.valid?
+              self.save
+            else
+              raise Exception("Failed to update password hash to bcrypt from old SHA256")
+            end
+            return true
+          end
+          false
+        end
+
         def valid_legacy_password?(pass, hash)
           return false if pass.nil? || hash.nil?
 
