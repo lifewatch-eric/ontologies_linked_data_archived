@@ -40,6 +40,15 @@ module LinkedData
           old_pass == encrypted_pass
         end
 
+        def valid_password?(pass, hash)
+          return false if pass.nil? || hash.nil?
+          begin
+            BCrypt::Password.new(hash) == pass
+          rescue BCrypt::Errors::InvalidHash
+            return false
+          end
+        end
+
       end
     end
   end
