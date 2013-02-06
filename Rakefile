@@ -34,13 +34,13 @@ namespace :data do
   desc "Create sample data"
   task :create do
     require_relative "test/data/generate_test_data"
-    GenerateTestData.create
+    LinkedData::TestData::Generate.create
   end
 
   desc "Remove sample data"
   task :delete do
     require_relative "test/data/generate_test_data"
-    GenerateTestData.delete
+    LinkedData::TestData::Generate.delete
   end
 
   desc "Delete all data"

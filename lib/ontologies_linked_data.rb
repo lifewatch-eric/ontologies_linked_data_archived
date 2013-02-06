@@ -34,3 +34,6 @@ require_relative "ontologies_linked_data/models/base"
 project_root = File.dirname(File.absolute_path(__FILE__))
 Dir.glob(project_root + '/ontologies_linked_data/models/**/*.rb', &method(:require))
 $project_bin = project_root + '/../bin/'
+
+# Sample data generator
+require_relative "../test/data/generate_test_data"
