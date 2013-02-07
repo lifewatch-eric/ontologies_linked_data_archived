@@ -47,6 +47,10 @@ namespace :data do
   task :destroy do
     require_relative "test/data/destroy_test_data"
   end
+  task :console do
+    require_relative "test/data/generate_test_data"
+    binding.pry
+  end
 end
 
 namespace :test do
