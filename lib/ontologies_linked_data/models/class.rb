@@ -234,7 +234,8 @@ eos
                                   LinkedData::Utils::Namespaces.default_hieararchy_property_iri
           root_class_filter = <<eos
 OPTIONAL { ?id <#{hierarchyProperty.value}> ?superId .}
-FILTER(!bound(?superId))
+OPTIONAL { ?id <http://www.w3.org/2002/07/owl#deprecated> ?deprecated .}
+FILTER(!bound(?superId) && (!bound(?deprecated) || ?deprecated != true))
 eos
         end
 
