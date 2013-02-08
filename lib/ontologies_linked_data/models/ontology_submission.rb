@@ -6,26 +6,28 @@ module LinkedData
       attribute :submissionId, :instance_of =>  { :with => Fixnum }, :single_value => true, :not_nil => true
 
       # Configurable properties for processing
-      attribute :prefLabelProperty, :instance_of =>  { :with => RDF::IRI }, :single_value => true
-      attribute :definitionProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
-      attribute :synonymProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
-      attribute :authorProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
-      attribute :classType, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
+      attribute :prefLabelProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
+      attribute :definitionProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
+      attribute :synonymProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
+      attribute :authorProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
+      attribute :classType, :instance_of => { :with => RDF::IRI }, :single_value  => true
       attribute :hiearchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
-      attribute :obsoleteProperty, :single_value => true
-      attribute :obsoleteParent, :single_value => true
+      attribute :obsoleteProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
+      attribute :obsoleteParent, :instance_of => { :with => RDF::IRI }, :single_value => true
 
       # Ontology metadata
       attribute :hasOntologyLanguage, :namespace => :omv, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
       attribute :homepage, :single_value => true
-      attribute :publication, :single_value => true, :single_value => true
+      attribute :publication, :single_value => true
       attribute :uri, :namespace => :omv, :single_value => true
       attribute :naturalLanguage, :namespace => :omv, :single_value => true
       attribute :documentation, :namespace => :omv, :single_value => true
       attribute :version, :namespace => :omv, :single_value => true
-      attribute :creationDate, :namespace => :omv, :single_value => true
+      attribute :creationDate, :namespace => :omv, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
       attribute :description, :namespace => :omv, :single_value => true
       attribute :status, :namespace => :omv, :single_value => true
+      attribute :contact, :not_nil => true, :instance_of => { :with => :contact }
+      attribute :released, :date_time_xsd => true, :single_value => true, :not_nil => true
 
       # Internal values for parsing - not definitive
       attribute :uploadFilePath,  :single_value =>true
@@ -86,7 +88,7 @@ module LinkedData
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
           return false
         elsif self.pullLocation
-          return true
+          return remote_file_exists?(self.pullLocation)
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
@@ -225,6 +227,52 @@ module LinkedData
           instance_variable_set("@#{attr}", value)
         end
       end
+
+      def download_ontology_file
+
+      end
+
+      def remote_file_exists?(url)
+        begin
+          url = URI.parse(url)
+          if url.kind_of?(URI::FTP)
+            check = check_ftp_file(url)
+          else
+            check = check_http_file(url)
+          end
+        rescue Exception => e
+          check = false
+        end
+        check
+      end
+
+      def check_http_file(url)
+        session = Net::HTTP.new(url.host, url.port)
+        session.use_ssl = true if url.port == 443
+        session.start do |http|
+          response_valid = http.head(url.request_uri).code.to_i < 400
+          return response_valid
+        end
+      end
+
+      def check_ftp_file(uri)
+        ftp = Net::FTP.new(uri.host, uri.user, uri.password)
+        ftp.login
+        begin
+          file_exists = ftp.size(uri.path) > 0
+        rescue Exception => e
+          # Check using another method
+          path = uri.path.split("/")
+          filename = path.pop
+          path = path.join("/")
+          ftp.chdir(path)
+          files = ftp.dir
+          # Dumb check, just see if the filename is somewhere in the list
+          files.each { |file| return true if file.include?(filename) }
+        end
+        file_exists
+      end
+
     end
   end
 end
