@@ -25,6 +25,7 @@ module LinkedData
       end
 
       def self.label_for_class_triple(class_id,property,label)
+        label = label.gsub('"','\"')
         "<#{class_id.value}> <#{property.value}> \"\"\"#{label}\"\"\"^^<#{names.xsd_string}> ."
       end
     end
