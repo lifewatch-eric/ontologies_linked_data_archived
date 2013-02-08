@@ -9,10 +9,11 @@ module LinkedData
                   :attribute => :ontology }
       attribute :administeredBy, :not_nil => true, :instance_of => { :with => :user }
       attribute :group, :instance_of => { :with => :group }
-      attribute :viewingRestriction
-      attribute :doNotUpdate
-      attribute :flat
-      attribute :hasDomain, :namespace => :omv
+      attribute :viewingRestriction, :default => lambda {|x| "public"}
+      attribute :doNotUpdate, :single_value => true
+      attribute :flat, :single_value => true
+      attribute :hasDomain, :namespace => :omv, :instance_of => { :with => :category }
+      attribute :acl, :instance_of => { :with => :user }
 
       def latest_submission
         self.load unless self.loaded? || self.attr_loaded?(:acronym)
