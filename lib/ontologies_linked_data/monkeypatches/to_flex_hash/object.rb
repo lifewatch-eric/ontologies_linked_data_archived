@@ -33,7 +33,7 @@ class Object
     instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
 
     # Remove known bad data
-    bad_attributes = %w(attributes table _cached_exist internals captures splat uuid)
+    bad_attributes = %w(attributes table _cached_exist internals captures splat uuid apikey password passwordHash)
     bad_attributes.each do |bad_attribute|
       hash.delete(bad_attribute)
       hash.delete(bad_attribute.to_sym)
