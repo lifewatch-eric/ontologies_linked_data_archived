@@ -1,5 +1,4 @@
 require 'bcrypt'
-require 'digest'
 require 'openssl'
 require 'base64'
 
