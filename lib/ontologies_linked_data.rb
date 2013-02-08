@@ -7,6 +7,7 @@ require_relative "ontologies_linked_data/utils/triples"
 require_relative "ontologies_linked_data/utils/namespaces"
 require_relative "ontologies_linked_data/parser/parser"
 require_relative "ontologies_linked_data/monkeypatches/to_flex_hash/object"
+require_relative "ontologies_linked_data/monkeypatches/logging"
 
 # Setup Goo (repo connection and namespaces)
 port = $GOO_PORT || 9000
