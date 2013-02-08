@@ -4,7 +4,7 @@ module LinkedData
       model :ontology_format
       attribute :acronym, :unique => true
 
-      def self.init(values = ["OBO", "OWL"])
+      def self.init(values = ["OBO", "OWL", "UMLS", "PROTEGE"])
         values.each do |acr|
           of =  LinkedData::Models::OntologyFormat.new( { :acronym => acr } )
           if not of.exist?
