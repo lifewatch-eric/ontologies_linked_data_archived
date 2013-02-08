@@ -1,4 +1,5 @@
 require 'bcrypt'
+require 'securerandom'
 require_relative 'authentication'
 
 module LinkedData
@@ -15,6 +16,7 @@ module LinkedData
       attribute :lastName, :single_value => true
       attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
       attribute :passwordHash, :single_value => true, :not_nil => true, :read_only => true
+      attribute :apikey, :single_value => true, :not_nil => true, :read_only => true, :default => lambda {|x| SecureRandom.uuid}
 
       def initialize(attributes = {})
         # Don't allow passwordHash to be set here
