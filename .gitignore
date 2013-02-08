@@ -23,3 +23,5 @@ test/data/ontology_files/catalog-v001.xml
 *.sublime-project
 
 *.sublime-workspace
+
+migration/settings.rb
