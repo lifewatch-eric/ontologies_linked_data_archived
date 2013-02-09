@@ -26,7 +26,7 @@ module LinkedData
         if review.creator.username.nil?
           raise ArgumentError, "Review cannot be saved if creator has no username."
         end
-        ontologyURL = "#{Goo.namespaces[Goo.namespaces[:default]]}ontologies/#{review.ontologyReviewed.acronym}"
+        ontologyURL = "#{(self.namespace :default)}ontologies/#{review.ontologyReviewed.acronym}"
         reviewURL = ontologyURL + "/reviews/#{review.creator.username}"
         return RDF::IRI.new(reviewURL)
       end
