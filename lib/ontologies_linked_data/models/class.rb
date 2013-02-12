@@ -305,6 +305,7 @@ eos
       end
 
       def traverse_path_to_root(parents, paths)
+        return if parents.length == 0
         recurse_on_path = []
         if parents.length > 1
           new_paths = paths * parents.length
