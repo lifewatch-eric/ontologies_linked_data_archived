@@ -12,6 +12,13 @@ class TestOntology < LinkedData::TestCase
 
     @of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
     @of.save
+
+    cname = "Jeff Baines"
+    cemail = "jeff@example.org"
+    @contact = LinkedData::Models::Contact.where(name: cname, email: cemail).first rescue nil
+    @contact = LinkedData::Models::Contact.new(name: cname, email: cemail) if @contact.nil? || @contact.empty?
+
+    stub_request(:get, "example.com/ontology_file").to_return(:body => "fake ontology content")
   end
 
   def teardown
@@ -32,9 +39,11 @@ class TestOntology < LinkedData::TestCase
     os = LinkedData::Models::OntologySubmission.new({
       ontology: o,
       hasOntologyLanguage: @of,
-      pullLocation: RDF::IRI.new("http://example.com"),
+      pullLocation: RDF::IRI.new("http://example.com/ontology_file"),
       submissionStatus: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
-      submissionId: o.next_submission_id
+      submissionId: o.next_submission_id,
+      contact: @contact,
+      released: DateTime.now - 5
     })
     os.save
   end

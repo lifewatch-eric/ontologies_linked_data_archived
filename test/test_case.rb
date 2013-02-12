@@ -11,9 +11,12 @@ end
 
 require_relative "../lib/ontologies_linked_data"
 require "test/unit"
+require "webmock/minitest"
+WebMock.allow_net_connect!
 
 module LinkedData
   class TestCase < Test::Unit::TestCase
+
     def submission_dependent_objects(format,acronym,user_name,status_code)
       #ontology format
       LinkedData::Models::OntologyFormat.init
@@ -65,12 +68,19 @@ module LinkedData
     # @option options [Fixnum] :submission_count How many submissions each ontology should have (acts as max number when random submission count is used)
     # @option options [TrueClass, FalseClass] :random_submission_count Use a random number of submissions between 1 and :submission_count
     def create_ontologies_and_submissions(options = {})
+      delete_ontologies_and_submissions
+
       ont_count = options[:ont_count] || 5
       submission_count = options[:submission_count] || 5
       random_submission_count = options[:random_submission_count].nil? ? true : options[:random_submission_count]
 
       u = LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
       u.save unless u.exist? || !u.valid?
+
+      contact_name = "Sheila"
+      contact_email = "sheila@example.org"
+      contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email)
+      contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email) if contact.empty?
 
       of = LinkedData::Models::OntologyFormat.find("OWL")
       if of.nil?
@@ -93,10 +103,8 @@ module LinkedData
           administeredBy: u
         })
 
-        if o.valid?
-          o.save
-          ontologies << o
-        end
+        o.save
+        ontologies << o
 
         # Random submissions (between 1 and max)
         max = random_submission_count ? (1..submission_count.to_i).to_a.shuffle.first : submission_count
@@ -105,11 +113,14 @@ module LinkedData
             acronym: "TST-ONT-#{count}",
             ontology: o,
             hasOntologyLanguage: of,
-            pullLocation: RDF::IRI.new("http://example.com"),
+            summaryOnly: true,
             submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED"),
-            submissionId: o.next_submission_id
+            submissionId: o.next_submission_id,
+            contact: contact,
+            released: DateTime.now - 3
           })
-          os.save if os.valid?
+          binding.pry if !os.valid?
+          os.save
         end
       end
 

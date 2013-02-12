@@ -24,13 +24,15 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
     id = 10
 
-    owl, bogus, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, bogus, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
 
     os = LinkedData::Models::OntologySubmission.new
     assert (not os.valid?)
 
     os.acronym = acronym
     os.submissionId = id
+    os.contact = contact
+    os.released = DateTime.now - 4
     os.name = name
     o = LinkedData::Models::Ontology.find(acronym)
     if o.nil?
@@ -55,10 +57,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
     id = 10
 
-    owl, bro, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({:acronym => acronym, :submissionId => id})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
     ont_submision.uploadFilePath = uploadFilePath
     ont_submision.submissionStatus = status
     assert (not ont_submision.valid?)
@@ -83,10 +87,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     teardown
 
-    owl, rad, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, rad, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({:acronym => acronym, :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
     ont_submision.uploadFilePath = uploadFilePath
     ont_submision.hasOntologyLanguage = owl
     ont_submision.administeredBy = user
@@ -118,9 +124,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/ont_dup_names.zip"
     id = 10
 
-    owl, dup, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, dup, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => 1,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.administeredBy = user
     ont_submision.ontology = dup
@@ -151,8 +159,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_equal 4, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, bro, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
     bro.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = bro
     ont_submision.submissionStatus = status
@@ -198,8 +208,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_equal 4, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, bro, user, status =  submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
     bro.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = bro
     ont_submision.submissionStatus = status

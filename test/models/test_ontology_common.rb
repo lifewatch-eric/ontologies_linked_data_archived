@@ -38,8 +38,14 @@ module LinkedData
         status = status[0]
       end
 
+      # contact
+      contact_name = "Peter"
+      contact_email = "peter@example.org"
+      contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email).first rescue nil
+      contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email) if contact.nil?
+
       #Submission Status
-      return owl, ont, user, status
+      return owl, ont, user, status, contact
     end
 
     def init_test_ontology_msotest(acr)
@@ -58,12 +64,14 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
       assert (not ont_submision.valid?)
-      assert_equal 4, ont_submision.errors.length
+      assert_equal 6, ont_submision.errors.length
       file_path = "./test/data/ontology_files/custom_properties.owl"
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
       ont_submision.uploadFilePath = uploadFilePath
-      owl, ont, user, status =  submission_dependent_objects("OWL", acr, "test_linked_models", "UPLOADED", "some ont created by mso for testing")
+      owl, ont, user, status, contact = submission_dependent_objects("OWL", acr, "test_linked_models", "UPLOADED", "some ont created by mso for testing")
       ont.administeredBy = user
+      ont_submision.contact = contact
+      ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = ont
       ont_submision.submissionStatus = status
