@@ -110,7 +110,6 @@ module LinkedData
         max = random_submission_count ? (1..submission_count.to_i).to_a.shuffle.first : submission_count
         max.times do
           os = LinkedData::Models::OntologySubmission.new({
-            acronym: "TST-ONT-#{count}",
             ontology: o,
             hasOntologyLanguage: of,
             summaryOnly: true,
