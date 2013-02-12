@@ -8,7 +8,7 @@ module LinkedData
         unless File.exist? file_path
           raise ArgumentError, "File path #{file_path} not found"
         end
-        file_type = `file --mime -b #{file_path}`
+        file_type = `file --mime -b #{Shellwords.escape(file_path)}`
         return file_type.split(";")[0] == "application/zip"
       end
 
