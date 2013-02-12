@@ -94,7 +94,7 @@ module LinkedData
           os = LinkedData::Models::OntologySubmission.new({
             ontology: o,
             hasOntologyLanguage: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase),
-            pullLocation: RDF::IRI.new("http://example.com"),
+            summaryOnly: true,
             submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED") || LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
             submissionId: o.next_submission_id
           })
