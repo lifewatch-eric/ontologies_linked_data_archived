@@ -36,7 +36,7 @@ module LinkedData
       attribute :submissionStatus, :instance_of =>  { :with => :submission_status }, :single_value  => true, :not_nil => true
 
       # URI for pulling ontology
-      attribute :pullLocation, :single_value => true, :instance_of =>  { :with => RDF::IRI }
+      attribute :pullLocation, :single_value => true, :instance_of => { :with => RDF::IRI }
 
       # Link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
@@ -88,7 +88,8 @@ module LinkedData
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
           return false
         elsif self.pullLocation
-          return remote_file_exists?(self.pullLocation)
+          self.errors[:pullLocation] = ["File at #{self.pullLocation.value} does not exist"]
+          return remote_file_exists?(self.pullLocation.value)
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
