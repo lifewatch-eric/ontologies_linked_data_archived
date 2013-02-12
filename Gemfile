@@ -1,11 +1,16 @@
 source 'https://rubygems.org'
 
+gem 'rake'
 gem 'rack'
 gem 'rack-test'
 gem 'json'
 gem 'pry'
 gem 'rubyzip'
 gem 'bcrypt-ruby'
+gem 'multi_json'
+gem 'oj'
+
+# Testing
 gem 'simplecov', :require => false, :group => :test
 gem 'webmock', :group => :test
 

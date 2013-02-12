@@ -54,7 +54,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::IRI.new(
-          "#{Goo.namespaces[Goo.namespaces[:default]]}ontologies/#{ss.ontology.acronym}/#{ss.submissionId}")
+          "#{(self.namespace :default)}ontologies/#{ss.ontology.acronym}/#{ss.submissionId}")
       end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
@@ -167,23 +167,32 @@ module LinkedData
           FileUtils.mkdir_p zip_dst
           extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
           logger.info("Files extracted from zip #{extracted}")
+          logger.flush
         end
         LinkedData::Parser.logger =  logger
-        input_data = zip_dst ||  self.uploadFilePath
+        input_data = zip_dst || self.uploadFilePath
+        labels_file = File.join(File.dirname(input_data),"labels.ttl")
         owlapi = LinkedData::Parser::OWLAPICommand.new(input_data,self.data_folder,self.masterFileName)
         triples_file_path = owlapi.parse
+        logger.flush
 
         Goo.store.delete_graph(self.resource_id.value)
         Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
+        logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
+        logger.flush
 
-        missing_labels_generation logger
+
+        missing_labels_generation(logger, labels_file)
+        logger.flush
 
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
         self.save
+        logger.info("Submission status updated to RDF")
+        logger.flush
       end
 
-      def missing_labels_generation(logger)
+      def missing_labels_generation(logger,save_in_file)
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
         Goo.store.append_in_graph(property_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
         count_classes = 0
@@ -192,6 +201,7 @@ module LinkedData
         classes = self.classes :missing_labels_generation => true
         t1 = Time.now
         logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
+        logger.flush
         classes.each do |c|
           if c.prefLabel.nil?
             rdfs_labels = c.synonymLabel
@@ -208,9 +218,25 @@ module LinkedData
         end
         if (label_triples.length > 0)
           logger.info("Asserting #{label_triples.length} labels in #{self.resource_id.value}")
+          logger.flush
           label_triples = label_triples.join "\n"
+          #save triples for logs
+          fsave = File.open(save_in_file,"w")
+          fsave.write(property_triples)
+          fsave.write(label_triples)
+          fsave.close()
+          logger.info("Saved generated labels in #{save_in_file}")
+          t0 = Time.now
           Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+          t1 = Time.now
+          logger.info("Labels asserted in #{t1 - t0} sec.")
+          logger.flush
+        else
+          logger.info("No labels generated for ontology.")
+          logger.flush
         end
+        logger.info("end missing_labels_generation")
+        logger.flush
       end
 
       def classes(*args)

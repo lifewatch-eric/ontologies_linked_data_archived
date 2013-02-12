@@ -234,7 +234,8 @@ eos
                                   LinkedData::Utils::Namespaces.default_hieararchy_property_iri
           root_class_filter = <<eos
 OPTIONAL { ?id <#{hierarchyProperty.value}> ?superId .}
-FILTER(!bound(?superId))
+OPTIONAL { ?id <http://www.w3.org/2002/07/owl#deprecated> ?deprecated .}
+FILTER(!bound(?superId) && (!bound(?deprecated) || ?deprecated != true))
 eos
         end
 
@@ -304,6 +305,7 @@ eos
       end
 
       def traverse_path_to_root(parents, paths)
+        return if parents.length == 0
         recurse_on_path = []
         if parents.length > 1
           new_paths = paths * parents.length
