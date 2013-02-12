@@ -82,7 +82,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
-    ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1.zip"
+    ontologyFile = "./test/data/ontology_files/SDO.zip"
     id = 10
 
     teardown
@@ -156,7 +156,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     end
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id, :name => name })
     assert (not ont_submision.valid?)
-    assert_equal 4, ont_submision.errors.length
+    assert_equal 6, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
@@ -205,7 +205,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
     assert (not ont_submision.valid?)
-    assert_equal 4, ont_submision.errors.length
+    assert_equal 6, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
@@ -215,9 +215,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = bro
     ont_submision.submissionStatus = status
-    assert (not ont_submision.valid?)
-    assert_equal 1, ont_submision.errors[:uploadFilePath][0][:options].length
-    ont_submision.masterFileName = ont_submision.errors[:uploadFilePath][0][:options][0].split("/")[-1]
     assert (ont_submision.valid?)
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
