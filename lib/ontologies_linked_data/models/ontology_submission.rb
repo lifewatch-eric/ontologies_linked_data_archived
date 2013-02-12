@@ -1,3 +1,8 @@
+require 'net/ftp'
+require 'net/http'
+require 'uri'
+require 'open-uri'
+
 module LinkedData
   module Models
 
@@ -219,7 +224,14 @@ module LinkedData
                                                 :root => true, :labels => false)
       end
 
-      private
+      def download_and_store_ontology_file
+        file, filename = download_ontology_file
+        file_location = self.class.copy_file_repository(self.ontology.acronym, self.submissionId, file, filename)
+        self.uploadFilePath = file_location
+        return file, filename
+      end
+
+      # private
 
       def add_ontology_attributes
         load unless loaded?
@@ -232,7 +244,29 @@ module LinkedData
       end
 
       def download_ontology_file
+        file = open(self.pullLocation.value, :read_timeout => nil)
+        if file.meta && file.meta["content-disposition"]
+          cd = file.meta["content-disposition"].match(/filename=\"(.*)\"/)
+          filename = cd.nil? ? nil : cd[1]
+        end
+        filename = LinkedData::Utils::Namespaces.last_iri_fragment(self.pullLocation.value) if filename.nil?
+        return file, filename
+      end
 
+      def download_via_http(url)
+        open(url)
+      end
+
+      def download_via_ftp(url)
+        ftp = Net::FTP.new(url.host, url.user, url.password)
+        ftp.passive = true
+        ftp.login
+        tmp = Tempfile.new(LinkedData::Utils::Namespaces.last_iri_fragment(url.path))
+        ftp.getbinaryfile(url.path) do |chunk|
+          tmp << chunk
+        end
+        tmp.close
+        tmp
       end
 
       def remote_file_exists?(url)
