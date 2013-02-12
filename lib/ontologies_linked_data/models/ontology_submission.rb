@@ -93,15 +93,17 @@ module LinkedData
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
+        files =  LinkedData::Utils::FileHelpers.files_from_zip(self.uploadFilePath) if zip
         if not zip and self.masterFileName.nil?
           return true
-
+        elsif zip and files.length == 1
+          self.masterFileName = files.first
+          return true
         elsif zip and self.masterFileName.nil?
           #zip and masterFileName not set. The user has to choose.
           if self.errors[:uploadFilePath].nil?
             self.errors[:uploadFilePath] = []
           end
-          files =  LinkedData::Utils::FileHelpers.files_from_zip(self.uploadFilePath)
 
           #check for duplicated names
           repeated_names =  LinkedData::Utils::FileHelpers.repeated_names_in_file_list(files)
