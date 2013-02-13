@@ -140,6 +140,7 @@ module LinkedData
       end
 
       def data_folder
+        self.ontology.load unless self.ontology.loaded?
         return File.join($REPOSITORY_FOLDER, self.ontology.acronym, self.submissionId.to_s)
       end
 
