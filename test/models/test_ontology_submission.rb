@@ -297,5 +297,55 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os.delete
   end
 
+  #escaping sequences
+  def test_submission_parse_sbo
+    return if ENV["SKIP_PARSING"]
+    acronym = "SBO-TST"
+    name = "SBO Bla"
+    ontologyFile = "./test/data/ontology_files/SBO.obo"
+    id = 10
+
+    sbo = LinkedData::Models::Ontology.find(acronym)
+    if not sbo.nil?
+      sub = sbo.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
+    ont_submision.uploadFilePath = uploadFilePath
+    owl, sbo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    sbo.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
+    ont_submision.hasOntologyLanguage = owl
+    ont_submision.ontology = sbo
+    ont_submision.submissionStatus = status
+    assert (ont_submision.valid?)
+    ont_submision.save
+    assert_equal true, ont_submision.exist?(reload=true)
+
+    sbo = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sbo = sbo[0]
+    sbo.load unless sbo.loaded?
+    sbo.ontology.load unless sbo.ontology.loaded?
+    sbo.process_submission Logger.new(STDOUT)
+    assert sbo.submissionStatus.parsed?
+
+    sbo = LinkedData::Models::Ontology.find(acronym)
+    if not sbo.nil?
+      sub = sbo.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+  end
+
+
+
 end
 
