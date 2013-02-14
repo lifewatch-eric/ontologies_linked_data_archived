@@ -297,5 +297,161 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os.delete
   end
 
+  #ontology with errors
+  def test_submission_parse_emo
+    return if ENV["SKIP_PARSING"]
+    acronym = "EMO-TST"
+    name = "EMO Bla"
+    ontologyFile = "./test/data/ontology_files/emo_1.1.owl"
+    id = 10
+
+    emo = LinkedData::Models::Ontology.find(acronym)
+    if not emo.nil?
+      sub = emo.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
+    ont_submision.uploadFilePath = uploadFilePath
+    owl, emo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    emo.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
+    ont_submision.hasOntologyLanguage = owl
+    ont_submision.ontology = emo
+    ont_submision.submissionStatus = status
+    assert (ont_submision.valid?)
+    ont_submision.save
+    assert_equal true, ont_submision.exist?(reload=true)
+
+    sub = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sub = sub[0]
+    sub.load unless sub.loaded?
+    sub.ontology.load unless sub.ontology.loaded?
+
+    assert_raise LinkedData::Parser::OWLAPIParserException do
+      sub.process_submission Logger.new(STDOUT)
+    end
+
+    sub = LinkedData::Models::Ontology.find(acronym)
+    if not sub.nil?
+      sub = sub.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+  end
+
+  #escaping sequences
+  def test_submission_parse_sbo
+    return if ENV["SKIP_PARSING"]
+    acronym = "SBO-TST"
+    name = "SBO Bla"
+    ontologyFile = "./test/data/ontology_files/SBO.obo"
+    id = 10
+
+    sbo = LinkedData::Models::Ontology.find(acronym)
+    if not sbo.nil?
+      sub = sbo.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
+    ont_submision.uploadFilePath = uploadFilePath
+    owl, sbo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    sbo.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
+    ont_submision.hasOntologyLanguage = owl
+    ont_submision.ontology = sbo
+    ont_submision.submissionStatus = status
+    assert (ont_submision.valid?)
+    ont_submision.save
+    assert_equal true, ont_submision.exist?(reload=true)
+
+    sbo = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sbo = sbo[0]
+    sbo.load unless sbo.loaded?
+    sbo.ontology.load unless sbo.ontology.loaded?
+    sbo.process_submission Logger.new(STDOUT)
+    assert sbo.submissionStatus.parsed?
+
+    sbo = LinkedData::Models::Ontology.find(acronym)
+    if not sbo.nil?
+      sub = sbo.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+  end
+
+  #ontology with import errors
+  def test_submission_parse_cno
+    return if ENV["SKIP_PARSING"]
+    acronym = "CNO-TST"
+    name = "CNO Bla"
+    ontologyFile = "./test/data/ontology_files/CNO_05.owl"
+    id = 10
+
+    emo = LinkedData::Models::Ontology.find(acronym)
+    if not emo.nil?
+      sub = emo.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
+    ont_submision.uploadFilePath = uploadFilePath
+    owl, emo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    emo.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
+    ont_submision.hasOntologyLanguage = owl
+    ont_submision.ontology = emo
+    ont_submision.submissionStatus = status
+    assert (ont_submision.valid?)
+    ont_submision.save
+    assert_equal true, ont_submision.exist?(reload=true)
+
+    sub = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sub = sub[0]
+    sub.load unless sub.loaded?
+    sub.ontology.load unless sub.ontology.loaded?
+    sub.process_submission Logger.new(STDOUT)
+    assert sub.submissionStatus.parsed?
+
+    assert sub.missingImports.length == 1
+    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
+
+    sub = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sub = sub[0]
+    sub.load unless sub.loaded?
+    assert sub.missingImports.length == 1
+    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
+
+    sub = LinkedData::Models::Ontology.find(acronym)
+    if not sub.nil?
+      sub = sub.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+  end
+
+
 end
 

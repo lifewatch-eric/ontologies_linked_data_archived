@@ -18,6 +18,7 @@ module LinkedData
         @output_repo = output_repo
         @master_file = master_file
         @file_triples_path = nil
+        @missing_imports = nil
       end
 
       def setup_environment
@@ -43,22 +44,26 @@ module LinkedData
         options = []
         if not @input_file.nil?
           if @master_file.nil?
-            options << "-m #{@input_file}" #if no master file the input repo is a unique file.
+            options << "-m #{Shellwords.escape(@input_file)}" #if no master file the input repo is a unique file.
           else
-            options << "-i #{@input_file}"
+            options << "-i #{Shellwords.escape(@input_file)}"
           end
         end
         if not @master_file.nil?
-          options << "-m #{@master_file}"
+          options << "-m #{Shellwords.escape(@master_file)}"
         end
         if not @output_repo.nil?
-          options << "-o #{@output_repo}"
+          options << "-o #{Shellwords.escape(@output_repo)}"
         end
         if options.length == 0
           raise ArgumentError, "Cannot call java OWLAPI command without options."
         end
         options = options.join ' '
-        command_call = "java -DentityExpansionLimit=1500000 -Xmx3072M -jar #{@owlapi_wrapper_jar_path} #{options}"
+        errors_log = File.join([@output_repo, "errors.log"])
+        if File.exist? errors_log
+          File.delete errors_log
+        end
+        command_call = "java -DentityExpansionLimit=1500000 -Xmx5120M -jar #{@owlapi_wrapper_jar_path} #{options}"
         Parser.logger.info("Java call [#{command_call}]")
         stdout,stderr,status = Open3.capture3(command_call)
         if not status.success?
@@ -78,7 +83,18 @@ module LinkedData
           @file_triples_path = File.join([@output_repo, "owlapi.xrdf"])
           Parser.logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
         end
-        return @file_triples_path
+        @missing_imports = []
+        if File.exist? errors_log
+          ferrors = File.open(errors_log,"r")
+          lines = ferrors.read().split("\n")
+          lines.each_index do |i|
+            if lines[i].include? "OWL_IMPORT_MISSING"
+              @missing_imports << lines[i+1].gsub("Message: ","")
+            end
+          end
+          ferrors.close()
+        end
+        return [@file_triples_path, @missing_imports]
       end
 
       def file_triples_path
@@ -93,7 +109,7 @@ module LinkedData
         elsif not File.exist?(@file_triples_path)
           raise RDFFileNotGeneratedException, "Triple file not found in #{@file_triples_path}"
         end
-        return @file_triples_path
+        return @file_triples_path, @missing_imports
       end
     end
   end
