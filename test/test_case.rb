@@ -118,7 +118,6 @@ module LinkedData
             contact: contact,
             released: DateTime.now - 3
           })
-          binding.pry if !os.valid?
           os.save
         end
       end

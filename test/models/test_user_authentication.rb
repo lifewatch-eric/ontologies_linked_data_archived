@@ -68,7 +68,6 @@ class TestUserAuthentication < LinkedData::TestCase
     skip("Waiting for read-only attribute support...")
     u = LinkedData::Models::User.new
     assert_raise Exception do
-      binding.pry
       u.passwordHash = "password"
     end
   end
