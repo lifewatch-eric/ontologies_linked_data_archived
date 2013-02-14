@@ -39,6 +39,7 @@ module LinkedData
       attribute :masterFileName,  :single_value =>true
       attribute :summaryOnly, :single_value  => true
       attribute :submissionStatus, :instance_of =>  { :with => :submission_status }, :single_value  => true, :not_nil => true
+      attribute :missingImports
 
       # URI for pulling ontology
       attribute :pullLocation, :single_value => true, :instance_of => { :with => RDF::IRI }
@@ -174,7 +175,12 @@ module LinkedData
         input_data = zip_dst || self.uploadFilePath
         labels_file = File.join(File.dirname(input_data),"labels.ttl")
         owlapi = LinkedData::Parser::OWLAPICommand.new(input_data,self.data_folder,self.masterFileName)
-        triples_file_path = owlapi.parse
+        triples_file_path, missing_imports = owlapi.parse
+        if missing_imports
+          missing_imports.each do |imp|
+            logger.info("OWL_IMPORT_MISSING: #{imp}")
+          end
+        end
         logger.flush
 
         Goo.store.delete_graph(self.resource_id.value)
@@ -188,6 +194,13 @@ module LinkedData
 
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
+
+        if missing_imports.length > 0
+          self.missingImports = missing_imports
+        else
+          self.missingImports = nil
+        end
+
         self.save
         logger.info("Submission status updated to RDF")
         logger.flush
