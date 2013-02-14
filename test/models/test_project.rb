@@ -15,6 +15,7 @@ class TestProject < LinkedData::TestCase
       :creator => @user,
       :created => DateTime.new,
       :institution => "A university.",
+      :contacts => "Anonymous Funk, Anonymous Miller.",
       :homePage => "http://valid.uri.com",
       :description => "This is a test project",
       :ontologyUsed => [@ont],
@@ -40,28 +41,32 @@ class TestProject < LinkedData::TestCase
     assert_equal(true, p.errors[:acronym].nil?)
   end
 
-  def test_project_name
+  def test_project_contacts
     p = LinkedData::Models::Project.new
     assert (not p.valid?)
-    ## In goo, the name is prefixed with a URI namespace.
-    ## name should be a valid URI, this is not:
-    #p.name = "test name"
-    #assert (not p.valid?) # Other attributes generate errors
-    #assert_equal(false, p.errors[:name].nil?)
-    # name should be a valid URI, this should be:
-    p.name = "test_name"
+    # This should be a string.
+    p.contacts = @project_params[:contacts]
     assert (not p.valid?) # Other attributes generate errors
-    assert_equal(true, p.errors[:name].nil?)
-  end
-
-  def test_project_creator
-    model_creator_test(LinkedData::Models::Project, @user)
+    assert_equal(true, p.errors[:contacts].nil?)
   end
 
   def test_project_created
     # Ensure there is no 'created' parameter so the model creates a default value.
     @project_params.delete :created
     model_created_test(LinkedData::Models::Project.new(@project_params)) # method from test_case.rb
+  end
+
+  def test_project_creator
+    model_creator_test(LinkedData::Models::Project, @user)
+  end
+
+  def test_project_description
+    p = LinkedData::Models::Project.new
+    assert (not p.valid?)
+    # This should be a string.
+    p.description = @project_params[:description]
+    assert (not p.valid?) # Other attributes generate errors
+    assert_equal(true, p.errors[:description].nil?)
   end
 
   def test_project_homePage
@@ -77,15 +82,6 @@ class TestProject < LinkedData::TestCase
     assert_equal(true, p.errors[:homePage].nil?)
   end
 
-  def test_project_description
-    p = LinkedData::Models::Project.new
-    assert (not p.valid?)
-    # This should be a string.
-    p.description = @project_params[:description]
-    assert (not p.valid?) # Other attributes generate errors
-    assert_equal(true, p.errors[:description].nil?)
-  end
-
   def test_project_institution
     p = LinkedData::Models::Project.new
     assert (not p.valid?)
@@ -93,6 +89,20 @@ class TestProject < LinkedData::TestCase
     p.institution = @project_params[:institution]
     assert (not p.valid?) # Other attributes generate errors
     assert_equal(true, p.errors[:institution].nil?)
+  end
+
+  def test_project_name
+    p = LinkedData::Models::Project.new
+    assert (not p.valid?)
+    ## In goo, the name is prefixed with a URI namespace.
+    ## name should be a valid URI, this is not:
+    #p.name = "test name"
+    #assert (not p.valid?) # Other attributes generate errors
+    #assert_equal(false, p.errors[:name].nil?)
+    # name should be a valid URI, this should be:
+    p.name = "test_name"
+    assert (not p.valid?) # Other attributes generate errors
+    assert_equal(true, p.errors[:name].nil?)
   end
 
   def test_project_ontologyUsed
