@@ -152,14 +152,25 @@ module LinkedData
 
       def process_submission(logger)
         if not self.valid?
-          raise ArgumentError, "Submission is not valid, it cannot be processed. Check errors"
+          error = "Submission is not valid, it cannot be processed. Check errors"
+          logger.info(error)
+          logger.flush
+          raise ArgumentError, error
         end
-        if not self.loaded?
-          self.load
-          if not self.ontology.loaded?
-            self.ontology.load
-          end
+
+        if not self.uploadFilePath
+          error = "Submission is missing an ontology file, cannot parse"
+          logger.info(error)
+          logger.flush
+          raise ArgumentError, error
         end
+
+        logger.info("Starting parse for #{self.ontology.acronym}/submissions/#{self.submissionId}")
+        logger.flush
+
+        self.load unless self.loaded?
+        self.ontology.load unless self.ontology.loaded?
+
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
         if zip
