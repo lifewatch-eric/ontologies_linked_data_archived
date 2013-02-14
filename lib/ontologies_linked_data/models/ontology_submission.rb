@@ -2,6 +2,7 @@ require 'net/ftp'
 require 'net/http'
 require 'uri'
 require 'open-uri'
+require 'cgi'
 
 module LinkedData
   module Models
@@ -55,7 +56,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::IRI.new(
-          "#{(self.namespace :default)}ontologies/#{ss.ontology.acronym}/#{ss.submissionId}")
+          "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym)}/#{ss.submissionId}")
       end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
