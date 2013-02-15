@@ -452,6 +452,57 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     end
   end
 
+  #multiple preflables
+  def test_submission_parse_aero
+    return if ENV["SKIP_PARSING"]
+    acronym = "AERO-TST"
+    name = "aero Bla"
+    ontologyFile = "./test/data/ontology_files/aero.owl"
+    id = 10
+
+    aero = LinkedData::Models::Ontology.find(acronym)
+    if not aero.nil?
+      sub = aero.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
+    ont_submision.uploadFilePath = uploadFilePath
+    owl, aero, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    aero.administeredBy = user
+    ont_submision.contact = contact
+    ont_submision.released = DateTime.now - 4
+    ont_submision.prefLabelProperty =  RDF::IRI.new "http://www.w3.org/2000/01/rdf-schema#label"
+    ont_submision.synonymProperty = RDF::IRI.new "http://purl.obolibrary.org/obo/IAO_0000118"
+    ont_submision.definitionProperty = RDF::IRI.new "http://purl.obolibrary.org/obo/IAO_0000115"
+    ont_submision.authorProperty = RDF::IRI.new "http://purl.obolibrary.org/obo/IAO_0000117"
+    ont_submision.hasOntologyLanguage = owl
+    ont_submision.ontology = aero
+    ont_submision.submissionStatus = status
+    assert (ont_submision.valid?)
+    ont_submision.save
+    assert_equal true, ont_submision.exist?(reload=true)
+
+    aero = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    aero = aero[0]
+    aero.load unless aero.loaded?
+    aero.ontology.load unless aero.ontology.loaded?
+    aero.process_submission Logger.new(STDOUT)
+    assert aero.submissionStatus.parsed?
+
+    aero = LinkedData::Models::Ontology.find(acronym)
+    if not aero.nil?
+      sub = aero.submissions || []
+      sub.each do |s|
+        s.load
+        s.delete
+      end
+    end
+  end
 
 end
 
