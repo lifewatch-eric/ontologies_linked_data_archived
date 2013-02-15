@@ -1,5 +1,5 @@
-$GOO_PORT = 9000
-$GOO_HOST = "localhost"
+$GOO_PORT = 9000 unless $GOO_PORT
+$GOO_HOST = "localhost" unless $GOO_HOST
 
 $REPOSITORY_FOLDER = "./test/data/ontology_files/repo"
 

@@ -14,6 +14,7 @@ port = $GOO_PORT || 9000
 host = $GOO_HOST || "localhost"
 begin
   if Goo.store().nil?
+    puts ">> Connecting to rdf store #{host}:#{port}"
     Goo.configure do |conf|
       conf[:stores] = [ { :name => :main , :host => host, :port => port,
         :options => { :rules => :NONE} } ]
