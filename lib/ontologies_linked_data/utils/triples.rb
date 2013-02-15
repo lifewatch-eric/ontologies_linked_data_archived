@@ -7,16 +7,22 @@ module LinkedData
       def self.rdf_for_custom_properties(ont_sub)
         triples = []
         triples << "<#{names.meta_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.skos_prefLabel}> ."
-        unless ont_sub.prefLabelProperty.nil? or ont_sub.prefLabelProperty.value == names.rdfs_label
-          triples << "<#{ont_sub.prefLabelProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.meta_prefLabel}> ."
-          triples << "<#{names.skos_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
+        unless ont_sub.prefLabelProperty.nil?
+          unless ont_sub.prefLabelProperty.value == names.rdfs_label
+            triples << "<#{ont_sub.prefLabelProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.meta_prefLabel}> ."
+            triples << "<#{names.skos_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
+          end
         end
-        unless ont_sub.definitionProperty.nil? or ont_sub.prefLabelProperty.value == names.rdfs_label
+        unless ont_sub.definitionProperty.nil?
+          unless ont_sub.definitionProperty.value == names.rdfs_label
           triples << "<#{ont_sub.definitionProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.skos_definition}> ."
+          end
         end
-        unless ont_sub.synonymProperty.nil? or ont_sub.prefLabelProperty.value == names.rdfs_label
-          triples << "<#{ont_sub.synonymProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
-          triples << "<#{names.skos_altLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
+        unless ont_sub.synonymProperty.nil?
+          unless ont_sub.synonymProperty.value == names.rdfs_label
+            triples << "<#{ont_sub.synonymProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
+            triples << "<#{names.skos_altLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
+          end
         end
         unless ont_sub.authorProperty.nil?
           triples << "<#{ont_sub.authorProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.dc_creator}> ."
