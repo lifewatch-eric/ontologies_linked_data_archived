@@ -186,7 +186,7 @@ module LinkedData
         LinkedData::Parser.logger =  logger
         input_data = zip_dst || self.uploadFilePath
         labels_file = File.join(File.dirname(input_data),"labels.ttl")
-        owlapi = LinkedData::Parser::OWLAPICommand.new(input_data,self.data_folder,self.masterFileName)
+        owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data),File.expand_path(self.data_folder),self.masterFileName)
         triples_file_path, missing_imports = owlapi.parse
         if missing_imports
           missing_imports.each do |imp|
