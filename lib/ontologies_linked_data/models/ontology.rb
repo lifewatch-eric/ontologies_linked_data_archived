@@ -9,7 +9,7 @@ module LinkedData
                   :attribute => :ontology }
       attribute :administeredBy, :not_nil => true, :instance_of => { :with => :user }
       attribute :group, :instance_of => { :with => :group }
-      attribute :viewingRestriction, :default => lambda {|x| "public"}
+      attribute :viewingRestriction, :single_value => true, :default => lambda {|x| "public"}
       attribute :doNotUpdate, :single_value => true
       attribute :flat, :single_value => true
       attribute :hasDomain, :namespace => :omv, :instance_of => { :with => :category }
