@@ -78,6 +78,11 @@ module LinkedData
         self.create_ontology_formats
         puts "Creating ontology metadata..."
 
+        contact_name = "Sheila"
+        contact_email = "sheila@example.org"
+        contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email)
+        contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email) if contact.empty?
+
         count = 0
         ONT_ACRONYMS.each_with_index do |acronym, index|
           break if count >= limit
@@ -89,16 +94,20 @@ module LinkedData
             administeredBy: LinkedData::Models::User.find(USERNAMES.shuffle.first),
             name: name
           })
-          o.save if o.valid?
+          o.save unless o.exist?
+
+          o = LinkedData::Models::Ontology.find(o.acronym) unless o.persistent?
 
           os = LinkedData::Models::OntologySubmission.new({
             ontology: o,
             hasOntologyLanguage: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase),
             summaryOnly: true,
             submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED") || LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
-            submissionId: o.next_submission_id
+            submissionId: o.next_submission_id,
+            contact: contact,
+            released: DateTime.now - 3
           })
-          os.save if os.valid?
+          os.save unless os.exist?
           count += 1
         end
       end
