@@ -283,7 +283,7 @@ module LinkedData
         return file, filename
       end
 
-      # private
+      private
 
       def add_ontology_attributes
         load unless loaded?
@@ -303,22 +303,6 @@ module LinkedData
         end
         filename = LinkedData::Utils::Namespaces.last_iri_fragment(self.pullLocation.value) if filename.nil?
         return file, filename
-      end
-
-      def download_via_http(url)
-        open(url)
-      end
-
-      def download_via_ftp(url)
-        ftp = Net::FTP.new(url.host, url.user, url.password)
-        ftp.passive = true
-        ftp.login
-        tmp = Tempfile.new(LinkedData::Utils::Namespaces.last_iri_fragment(url.path))
-        ftp.getbinaryfile(url.path) do |chunk|
-          tmp << chunk
-        end
-        tmp.close
-        tmp
       end
 
       def remote_file_exists?(url)
