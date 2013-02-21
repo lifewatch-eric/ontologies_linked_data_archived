@@ -36,10 +36,10 @@ module LinkedData
       attribute :released, :date_time_xsd => true, :single_value => true, :not_nil => true
 
       # Internal values for parsing - not definitive
-      attribute :uploadFilePath,  :single_value =>true
-      attribute :masterFileName,  :single_value =>true
-      attribute :summaryOnly, :single_value  => true
-      attribute :submissionStatus, :instance_of =>  { :with => :submission_status }, :single_value  => true, :not_nil => true
+      attribute :uploadFilePath, :single_value =>true
+      attribute :masterFileName, :single_value =>true
+      attribute :summaryOnly, :single_value => true
+      attribute :submissionStatus, :instance_of => { :with => :submission_status }, :single_value  => true, :not_nil => true
       attribute :missingImports
 
       # URI for pulling ontology
