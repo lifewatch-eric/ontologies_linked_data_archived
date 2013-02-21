@@ -4,38 +4,14 @@ require "json"
 require_relative "../../lib/ontologies_linked_data"
 
 class Person
-  def initialize(name, age, height = 6)
+  def initialize(name)
     @name = name
-    @age = age
-    @height = height
-  end
-
-  def person_is_how_old
-    "#{@name} is #{@age}"
-  end
-
-  def name_upcase
-    @name.upcase
-  end
-
-  def relative_age
-    if @age < 10
-      "young"
-    elsif @age < 20
-      "teenager"
-    elsif @age > 20
-      "old"
-    end
-  end
-
-  def serializable_methods
-    [:relative_age, :name_upcase, :person_is_how_old]
   end
 end
 
 class TestSerializerXML < Test::Unit::TestCase
-  PERSON = Person.new("Simon", 21)
-  PEOPLE = [Person.new("Simon", 21), Person.new("Gloria", 28)]
+  PERSON = Person.new("Simon")
+  PEOPLE = [Person.new("Simon"), Person.new("Gloria")]
   DATE = DateTime.now
 
   USER_XML = <<-EOS.gsub(/\s+/, "")
@@ -113,8 +89,6 @@ class TestSerializerXML < Test::Unit::TestCase
     <?xml version="1.0" encoding="UTF-8"?>
     <person>
       <name>Simon</name>
-      <age>21</age>
-      <height>6</height>
     </person>
   EOS
 
@@ -123,13 +97,9 @@ class TestSerializerXML < Test::Unit::TestCase
     <personCollection>
       <person>
         <name>Simon</name>
-        <age>21</age>
-        <height>6</height>
       </person>
       <person>
         <name>Gloria</name>
-        <age>28</age>
-        <height>6</height>
       </person>
     </personCollection>
   EOS
