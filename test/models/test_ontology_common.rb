@@ -57,7 +57,7 @@ module LinkedData
           return if sub[0].submissionStatus.parsed?
         end
         sub.each do |s|
-          s.load
+          s.load unless s.loaded?
           s.delete
         end
         ont.delete
