@@ -104,6 +104,11 @@ class TestSerializerXML < Test::Unit::TestCase
     </personCollection>
   EOS
 
+  NIL_XML = <<-EOS.gsub(/\s+/, "")
+    <?xml version="1.0" encoding="UTF-8"?>
+    <empty/>
+  EOS
+
   USERS_HASH = {
     :created=>DATE,
     :email=>"alejandra@example.com",
@@ -163,6 +168,11 @@ class TestSerializerXML < Test::Unit::TestCase
   def test_people_to_xml
     xml = LinkedData::Serializers::XML.serialize(PEOPLE, {})
     assert_equal xml.to_s.gsub(/\s+/, ""), PEOPLE_XML
+  end
+
+  def test_nil_to_xml
+    xml = LinkedData::Serializers::XML.serialize(nil, {})
+    assert_equal xml.to_s.gsub(/\s+/, ""), NIL_XML
   end
 
 end

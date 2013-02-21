@@ -10,6 +10,10 @@ module LinkedData
 
       def self.to_xml(object, type)
         doc = ::XML::Document.new
+        if object.nil? || object.respond_to?("empty?") && object.empty?
+          doc.root = ::XML::Node.new("empty")
+          return doc
+        end
 
         if object.kind_of?(Hash)
           root = convert_hash(object, type)
