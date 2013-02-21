@@ -1,5 +1,6 @@
+require "xml"
 require_relative "media_types"
-require_relative "serializers"
+require_relative "serializers/serializers"
 
 module LinkedData
   class Serializer
@@ -28,7 +29,7 @@ module LinkedData
       # If user provided a format via query string, override the accept header
       best = params["format"].to_sym if params["format"]
       # Default format if none is provided
-      best = LinkedData::MediaTypes::DEFAULT #if best.nil?
+      best = LinkedData::MediaTypes::DEFAULT if best.nil?
 
       # Error out if we don't support the foramt
       unless LinkedData::MediaTypes.supported_base_type?(best)
