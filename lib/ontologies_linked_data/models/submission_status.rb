@@ -16,10 +16,14 @@ module LinkedData
         end
       end
 
+      def self.parsed_code
+        "RDF"
+      end
+
       def parsed?
         #TODO eventually this has to check for READY.
         self.load unless self.loaded?
-        return (self.code == "RDF")
+        return (self.code == self.class.parsed_code)
       end
     end
   end
