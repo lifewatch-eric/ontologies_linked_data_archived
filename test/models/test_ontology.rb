@@ -106,12 +106,26 @@ class TestOntology < LinkedData::TestCase
     assert submissions.empty?
   end
 
-  def test_latest_submission
+  def test_latest_any_submission
     count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
     ont = ont.first
-    latest = ont.latest_submission
+    latest = ont.latest_submission(status: :any)
     latest.load
     assert_equal 3, latest.submissionId
+  end
+
+  def test_latest_parsed_submission
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    ont = ont.first
+    LinkedData::Models::SubmissionStatus.init
+    status = LinkedData::Models::SubmissionStatus.find(LinkedData::Models::SubmissionStatus.parsed_code)
+    sub = ont.submissions[1]
+    sub.load
+    sub.submissionStatus = status
+    sub.save
+    latest = ont.latest_submission
+    latest.load
+    assert_equal 2, latest.submissionId
   end
 
   def test_submission_retrieval
