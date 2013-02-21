@@ -15,9 +15,12 @@ module LinkedData
       attribute :hasDomain, :namespace => :omv, :instance_of => { :with => :category }
       attribute :acl, :instance_of => { :with => :user }
 
-      def latest_submission
+      def latest_submission(options = {})
+        status = options[:status] || :parsed
         self.load unless self.loaded? || self.attr_loaded?(:acronym)
-        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: highest_submission_id()).first
+        submission_id = highest_submission_id(status)
+        return nil if submission_id.nil?
+        OntologySubmission.where({ontology: { acronym: acronym }, submissionId: submission_id}).first
       end
 
       def submission(submission_id)
@@ -29,10 +32,7 @@ module LinkedData
         (highest_submission_id || 0) + 1
       end
 
-      def highest_submission_id
-        submissions = self.submissions rescue nil
-        submissions = OntologySubmission.where(ontology: { acronym: acronym }) if submissions.nil? && !acronym.nil?
-
+      def highest_submission_id(status = nil)
         # This is the first!
         return 0 if submissions.nil? || submissions.empty?
 
@@ -40,8 +40,11 @@ module LinkedData
         submission_ids = []
         submissions.each do |s|
           s.load unless s.loaded?
+          s.submissionStatus.load unless s.submissionStatus.loaded?
+          next if !s.submissionStatus.parsed? && status == :parsed
           submission_ids << s.submissionId.to_i
         end
+
         return submission_ids.max
       end
 
