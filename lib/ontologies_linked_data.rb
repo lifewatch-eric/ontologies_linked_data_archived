@@ -2,6 +2,7 @@ require "goo"
 
 require_relative "../config/default.rb"
 require_relative "ontologies_linked_data/serializer"
+require_relative "ontologies_linked_data/serializers/serializers"
 require_relative "ontologies_linked_data/utils/file"
 require_relative "ontologies_linked_data/utils/triples"
 require_relative "ontologies_linked_data/utils/namespaces"
