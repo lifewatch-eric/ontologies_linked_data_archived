@@ -9,6 +9,7 @@ gem 'rubyzip'
 gem 'bcrypt-ruby'
 gem 'multi_json'
 gem 'oj'
+gem 'libxml-ruby'
 
 # Testing
 gem 'simplecov', :require => false, :group => :test
