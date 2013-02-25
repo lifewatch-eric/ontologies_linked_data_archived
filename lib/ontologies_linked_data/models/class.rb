@@ -5,7 +5,43 @@ module LinkedData
     class ClassAttributeNotLoaded < StandardError
     end
 
-    class Class
+    class Class < LinkedData::Models::Base
+      model :class,
+            :on_initialize => lambda { |t| t.load_attributes([:prefLabel, :synonyms, :definitions]) },
+            :namespace => :owl
+
+      attribute :resource_id #special attribute to name the object manually
+
+      attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
+
+      attribute :prefLabel, :not_nil => true, :single_value => true , :namespace => :skos
+      attribute :synonym, :namespace => :skos, :alias => :altLabel
+      attribute :definition, :namespace => :skos
+      attribute :deprecated, :namespace => :owl
+
+      attribute :parents, :namespace => :rdfs, :alias => :subClassOf
+      attribute :children, :namespace => :rdfs, :alias => :subClassOf, :inverse_of => { :with => :class , :attribute => :parents }
+
+      def self.where(*args)
+        params = args[0].dup
+        missing_labels_generation = params.delete :missing_labels_generation
+        super(params)
+      end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+    #=============================================================================================================
+    class Class_old
 
       attr_reader :resource_id
       attr_reader :attributes

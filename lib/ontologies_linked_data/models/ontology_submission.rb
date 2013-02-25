@@ -224,15 +224,19 @@ module LinkedData
         count_classes = 0
         label_triples = []
         t0 = Time.now
-        classes = self.classes :missing_labels_generation => true
+        classes = self.classes :missing_labels_generation => true,
+                               :load_attrs => [:prefLabel, :synonym],
+                               :query_options => { rules: :SUBP }
+        binding.pry
         t1 = Time.now
         logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
         logger.flush
+        binding.pry
         classes.each do |c|
           if c.prefLabel.nil?
             rdfs_labels = c.synonymLabel
             label = nil
-            if rdfs_labels.length > 0
+            if rdfs_labels && rdfs_labels.length > 0
               label = rdfs_labels[0].value
             else
               label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
