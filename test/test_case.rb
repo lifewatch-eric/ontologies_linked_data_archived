@@ -191,7 +191,7 @@ module LinkedData
       # The value should be an XSD date time.
       m.created = DateTime.new
       assert m.valid?
-      assert_instance_of(DateTime, m.created)
+      assert_instance_of(SparqlRd::Resultset::DatetimeLiteral, m.created)
       assert_equal(true, m.errors[:created].nil?, "#{m.errors}")
     end
 

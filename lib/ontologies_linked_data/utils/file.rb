@@ -5,6 +5,7 @@ module LinkedData
     module FileHelpers
 
       def self.zip?(file_path)
+        file_path = file_path.to_s
         unless File.exist? file_path
           raise ArgumentError, "File path #{file_path} not found"
         end
@@ -13,36 +14,39 @@ module LinkedData
       end
 
       def self.files_from_zip(file_path)
-          unless File.exist? file_path
-            raise ArgumentError, "File path #{file_path} not found"
-          end
-          files = []
-          Zip::ZipFile.open(file_path) do |zipfile|
-            zipfile.each do |file|
-              if not file.is_directory()
-                if not file.name.split("/")[-1].start_with? "." #a hidden file in __MACOSX or .DS_Store
-                  files << file.name
-                end
+        file_path = file_path.to_s
+        unless File.exist? file_path
+          raise ArgumentError, "File path #{file_path} not found"
+        end
+        files = []
+        Zip::ZipFile.open(file_path) do |zipfile|
+          zipfile.each do |file|
+            if not file.is_directory()
+              if not file.name.split("/")[-1].start_with? "." #a hidden file in __MACOSX or .DS_Store
+                files << file.name
               end
             end
           end
-          return files
+        end
+        return files
       end
 
       def self.unzip(file_path, dst_folder)
-          unless File.exist? file_path
-            raise ArgumentError, "File path #{file_path} not found"
+        file_path = file_path.to_s
+        dst_folder = dst_folder.to_s
+        unless File.exist? file_path
+          raise ArgumentError, "File path #{file_path} not found"
+        end
+        unless Dir.exist? dst_folder
+          raise ArgumentError, "Folder path #{dst_folder} not found"
+        end
+        extracted_files = []
+        Zip::ZipFile.open(file_path) do |zipfile|
+          zipfile.each do |file|
+            extracted_files << file.extract(File.join(dst_folder,file.name))
           end
-          unless Dir.exist? dst_folder
-            raise ArgumentError, "Folder path #{dst_folder} not found"
-          end
-          extracted_files = []
-          Zip::ZipFile.open(file_path) do |zipfile|
-            zipfile.each do |file|
-              extracted_files << file.extract(File.join(dst_folder,file.name))
-            end
-          end
-          return extracted_files
+        end
+        return extracted_files
       end
 
       def self.repeated_names_in_file_list(file_list)
@@ -50,6 +54,7 @@ module LinkedData
       end
 
       def self.exists_and_file(path)
+        path = path.to_s
         return (File.exist?(path) and (not File.directory?(path)))
       end
     end

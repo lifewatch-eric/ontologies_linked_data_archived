@@ -143,7 +143,7 @@ module LinkedData
 
       def data_folder
         self.ontology.load unless self.ontology.loaded?
-        return File.join($REPOSITORY_FOLDER, self.ontology.acronym, self.submissionId.to_s)
+        return File.join($REPOSITORY_FOLDER, self.ontology.acronym.to_s, self.submissionId.to_s)
       end
 
       def zip_folder
@@ -185,8 +185,8 @@ module LinkedData
         end
         LinkedData::Parser.logger =  logger
         input_data = zip_dst || self.uploadFilePath
-        labels_file = File.join(File.dirname(input_data),"labels.ttl")
-        owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data),File.expand_path(self.data_folder),self.masterFileName)
+        labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
+        owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data.to_s),File.expand_path(self.data_folder.to_s),self.masterFileName)
         triples_file_path, missing_imports = owlapi.parse
         if missing_imports
           missing_imports.each do |imp|

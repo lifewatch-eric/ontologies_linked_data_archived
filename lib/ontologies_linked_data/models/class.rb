@@ -45,7 +45,7 @@ module LinkedData
         else
           label = label_input
         end
-        if label.instance_of? SparqlRd::Resultset::Literal
+        if label.kind_of? SparqlRd::Resultset::Literal
           @attributes[:prefLabel] = label
         else
           raise ArgumentError, "Unknown type of prefLabel #{label.class.name}"
