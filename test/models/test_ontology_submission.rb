@@ -29,11 +29,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.new
     assert (not os.valid?)
 
-    os.acronym = acronym
+    bogus.acronym = acronym
     os.submissionId = id
     os.contact = contact
     os.released = DateTime.now - 4
-    os.name = name
+    bogus.name = name
     o = LinkedData::Models::Ontology.find(acronym)
     if o.nil?
       os.ontology = LinkedData::Models::Ontology.new(:acronym => acronym)
@@ -43,7 +43,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     os.uploadFilePath = uploadFilePath
     os.hasOntologyLanguage = owl
-    os.administeredBy = user
+    bogus.administeredBy = user
     os.ontology = bogus
     os.submissionStatus = status
     assert os.valid?
