@@ -66,7 +66,7 @@ module LinkedData
       only = params["include"] ||= []
       only = only.split(",") unless only.kind_of?(Array)
       only, all = [], true if only[0].eql?("all")
-      options = {:only => only, :all => all}
+      options = {:only => only, :all => all, :params => params}
       LinkedData::Serializers.serialize(obj, type, options)
     end
 
