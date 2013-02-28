@@ -1,20 +1,22 @@
 require 'set'
 
 class Object
-  def to_flex_hash(options = {})
+  def to_flex_hash(options = {}, &block)
     if kind_of?(String) || kind_of?(Fixnum) || kind_of?(Float); then return self; end
+
+    self.load if self.is_a?(Goo::Base::Resource) && !self.loaded? && self.resource_id.bnode?
 
     # Handle enumerables by recursing
     if kind_of?(Enumerable) && !kind_of?(Hash)
       new_enum = self.class.new
       each do |item|
-        new_enum << item.to_flex_hash
+        new_enum << item.to_flex_hash(options, &block)
       end
       return new_enum
     elsif kind_of?(Hash)
       new_hash = self.class.new
       each do |key, value|
-        new_hash[key] = value.to_flex_hash
+        new_hash[key] = value.to_flex_hash(options, &block)
       end
       return new_hash
     end
@@ -71,11 +73,11 @@ class Object
       v = v.value if v.kind_of?(RDF::IRI)
 
       # Convert linked objects to id
-      value = v.respond_to?(:resource_id) ? LinkedData::Utils::Namespaces.last_iri_fragment(v.resource_id.value) : v
+      value = v.respond_to?(:resource_id) ? v.resource_id.value : v
 
       # Convert arrays of linked objects
       if v.kind_of?(Enumerable) && v.first.respond_to?(:resource_id)
-        value = v.map {|e| LinkedData::Utils::Namespaces.last_iri_fragment(e.resource_id.value) }
+        value = v.map {|e| e.resource_id.value }
       end
 
       # Convert arrays of RDF objects (have `value` method)
@@ -86,11 +88,16 @@ class Object
       # Objects with `value` method should have that called
       value = value.respond_to?(:parsed_value) ? value.parsed_value : value
 
+      # Deal with bnodes (should overwrite other values)
+      element = v.kind_of?(Array) || v.kind_of?(Set) ? v.first : v
+      bnode = element.resource_id.bnode? rescue false
+      value = v.to_flex_hash(options, &block) if bnode
+
       hash[k] = value
     end
 
-    # Add an id
-    hash[:id] = self.resource_id.value if self.respond_to?(:resource_id)
+    # Provide the hash for serialization processes to add data
+    yield hash, self if block_given?
 
     hash
   end
