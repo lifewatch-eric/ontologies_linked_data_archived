@@ -61,6 +61,7 @@ class Object
 
     # Symbolize keys and convert linked objects to their ids
     hash.dup.each do |k,v|
+
       unless k.kind_of? Symbol
         hash[k.to_sym] = v
         hash.delete(k)
@@ -78,12 +79,12 @@ class Object
       end
 
       # Convert arrays of RDF objects (have `value` method)
-      if v.kind_of?(Enumerable) && v.first.respond_to?(:value)
-        value = v.map {|e| e.value }
+      if v.kind_of?(Enumerable) && v.first.respond_to?(:parsed_value)
+        value = v.map {|e| e.parsed_value }
       end
 
       # Objects with `value` method should have that called
-      value = value.respond_to?(:value) ? value.value : value
+      value = value.respond_to?(:parsed_value) ? value.parsed_value : value
 
       hash[k] = value
     end

@@ -29,11 +29,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.new
     assert (not os.valid?)
 
-    os.acronym = acronym
+    bogus.acronym = acronym
     os.submissionId = id
     os.contact = contact
     os.released = DateTime.now - 4
-    os.name = name
+    bogus.name = name
     o = LinkedData::Models::Ontology.find(acronym)
     if o.nil?
       os.ontology = LinkedData::Models::Ontology.new(:acronym => acronym)
@@ -43,7 +43,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     os.uploadFilePath = uploadFilePath
     os.hasOntologyLanguage = owl
-    os.administeredBy = user
+    bogus.administeredBy = user
     os.ontology = bogus
     os.submissionStatus = status
     assert os.valid?
@@ -70,7 +70,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_instance_of Array, ont_submision.errors[:ontology]
     assert_instance_of Array, ont_submision.errors[:hasOntologyLanguage]
     ont_submision.hasOntologyLanguage = owl
-    ont_submision.administeredBy = user
+    bro.administeredBy = user
     ont_submision.ontology = bro
     assert ont_submision.valid?
     assert_equal 0, ont_submision.errors.length
@@ -95,7 +95,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.released = DateTime.now - 4
     ont_submision.uploadFilePath = uploadFilePath
     ont_submision.hasOntologyLanguage = owl
-    ont_submision.administeredBy = user
+    rad.administeredBy = user
     ont_submision.ontology = rad
     ont_submision.submissionStatus = status
     assert (not ont_submision.valid?)
@@ -130,7 +130,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.contact = contact
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
-    ont_submision.administeredBy = user
+    dup.administeredBy = user
     ont_submision.ontology = dup
     assert (!ont_submision.valid?)
     assert_equal 2, ont_submision.errors.length

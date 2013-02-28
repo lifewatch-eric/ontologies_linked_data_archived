@@ -44,16 +44,16 @@ module LinkedData
         options = []
         if not @input_file.nil?
           if @master_file.nil?
-            options << "-m #{Shellwords.escape(@input_file)}" #if no master file the input repo is a unique file.
+            options << "-m #{Shellwords.escape(@input_file.to_s)}" #if no master file the input repo is a unique file.
           else
-            options << "-i #{Shellwords.escape(@input_file)}"
+            options << "-i #{Shellwords.escape(@input_file.to_s)}"
           end
         end
         if not @master_file.nil?
-          options << "-m #{Shellwords.escape(@master_file)}"
+          options << "-m #{Shellwords.escape(@master_file.to_s)}"
         end
         if not @output_repo.nil?
-          options << "-o #{Shellwords.escape(@output_repo)}"
+          options << "-o #{Shellwords.escape(@output_repo.to_s)}"
         end
         if options.length == 0
           raise ArgumentError, "Cannot call java OWLAPI command without options."
