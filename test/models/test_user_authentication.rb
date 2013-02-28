@@ -13,7 +13,9 @@ class TestUserAuthentication < LinkedData::TestCase
         email: "test@example.com",
         password: password
       })
-    assert u.password.nil?
+    assert_raise NoMethodError do
+      assert u.password.nil?
+    end
     assert !u.passwordHash.eql?(password)
   end
 
@@ -24,7 +26,9 @@ class TestUserAuthentication < LinkedData::TestCase
         email: "test@example.com",
         password: password
       })
-    assert u.password.nil?
+    assert_raise NoMethodError do
+      assert u.password.nil?
+    end
     assert !u.passwordHash.eql?(password)
     assert u.authenticate(password)
   end
