@@ -60,7 +60,7 @@ module LinkedData
       end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
-        path_to_repo = File.join([$REPOSITORY_FOLDER, acronym, submissionId.to_s])
+        path_to_repo = File.join([$REPOSITORY_FOLDER, acronym.to_s, submissionId.to_s])
         name = filename || File.basename(File.new(src).path)
         if not Dir.exist? path_to_repo
           FileUtils.mkdir_p path_to_repo
