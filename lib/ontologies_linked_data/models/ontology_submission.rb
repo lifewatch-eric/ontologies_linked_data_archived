@@ -17,7 +17,7 @@ module LinkedData
       attribute :synonymProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
       attribute :authorProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
       attribute :classType, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :hiearchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
+      attribute :hierarchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
       attribute :obsoleteProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
       attribute :obsoleteParent, :instance_of => { :with => RDF::IRI }, :single_value => true
 
