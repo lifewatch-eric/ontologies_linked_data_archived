@@ -79,12 +79,6 @@ module LinkedData
         return valid_result && sc
       end
 
-      def load(resource_id=nil)
-        super(resource_id)
-        add_ontology_attributes
-        return self
-      end
-
       def filename
       end
 
@@ -284,16 +278,6 @@ module LinkedData
       end
 
       private
-
-      def add_ontology_attributes
-        load unless loaded?
-        ont = LinkedData::Models::Ontology.find(RDF::IRI.new(self.ontology.resource_id.value))
-        return if ont.nil?
-        ont.load unless ont.loaded?
-        ont.attributes.each do |attr, value|
-          instance_variable_set("@#{attr}", value)
-        end
-      end
 
       def download_ontology_file
         file = open(self.pullLocation.value, :read_timeout => nil)
