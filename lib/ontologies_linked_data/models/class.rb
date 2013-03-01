@@ -25,6 +25,13 @@ module LinkedData
       def self.where(*args)
         params = args[0].dup
         missing_labels_generation = params.delete :missing_labels_generation
+
+        #subPropertyOf reasoning by default in reasoning if loading labels/syns/defs
+        if params.include? :load_attrs
+          if params[:load_attrs] == :defined || !(params[:load_attrs] & [:prefLabel, :synonym, :definition]).empty?
+            params[:query_options] = { rules: :SUBP } if !params.include? :query_options
+          end
+        end
         super(params)
       end
     end
