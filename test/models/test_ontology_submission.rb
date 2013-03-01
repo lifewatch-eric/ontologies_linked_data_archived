@@ -253,7 +253,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_sub = oss[0]
     ont_sub.load unless ont_sub.loaded?
     assert ont_sub.submissionStatus.parsed?
-    ont_sub.classes.each do |c|
+    ont_sub.classes(:load_attrs => [:prefLabel, :synonym]).each do |c|
       assert (not c.prefLabel.nil?)
       assert_instance_of String, c.prefLabel.value
       if c.resource_id.value.include? "class6"

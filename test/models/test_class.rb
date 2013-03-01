@@ -37,7 +37,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_instance_of(LinkedData::Models::Class, classes[0])
     cls = classes[0]
     assert_equal 'class 5 pref label', cls.prefLabel.value
-    assert_equal 0, cls.synonymLabel.length
+    assert_equal 0, cls.synonym.length
     assert_equal 1, cls.definitions.length
 
   end
@@ -223,15 +223,15 @@ class TestClassModel < LinkedData::TestOntologyCommon
       cls.prefLabel
     end
     assert_raise LinkedData::Models::ClassAttributeNotLoaded do
-      cls.synonymLabel
+      cls.synonym
     end
     assert_raise LinkedData::Models::ClassAttributeNotLoaded do
       cls.definitions
     end
     cls.load_labels
     assert(cls.prefLabel.kind_of? SparqlRd::Resultset::Literal)
-    assert_instance_of Array, cls.synonymLabel
-    assert(cls.synonymLabel[0].kind_of? SparqlRd::Resultset::Literal)
+    assert_instance_of Array, cls.synonym
+    assert(cls.synonym[0].kind_of? SparqlRd::Resultset::Literal)
     assert_instance_of Array, cls.definitions
     assert(cls.definitions[0].kind_of? SparqlRd::Resultset::Literal)
 
