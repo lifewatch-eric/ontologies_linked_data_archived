@@ -180,6 +180,13 @@ module LinkedData
           end
           FileUtils.mkdir_p zip_dst
           extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
+
+          # Set master file name automatically if there is only one file
+          if extracted.length == 1 && self.masterFileName.nil?
+            self.masterFileName = extracted.first.name
+            self.save
+          end
+
           logger.info("Files extracted from zip #{extracted}")
           logger.flush
         end
