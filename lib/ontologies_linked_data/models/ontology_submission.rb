@@ -283,6 +283,20 @@ module LinkedData
         return file, filename
       end
 
+      def remote_file_exists?(url)
+        begin
+          url = URI.parse(url)
+          if url.kind_of?(URI::FTP)
+            check = check_ftp_file(url)
+          else
+            check = check_http_file(url)
+          end
+        rescue Exception => e
+          check = false
+        end
+        check
+      end
+
       private
 
       def add_ontology_attributes
@@ -303,20 +317,6 @@ module LinkedData
         end
         filename = LinkedData::Utils::Namespaces.last_iri_fragment(self.pullLocation.value) if filename.nil?
         return file, filename
-      end
-
-      def remote_file_exists?(url)
-        begin
-          url = URI.parse(url)
-          if url.kind_of?(URI::FTP)
-            check = check_ftp_file(url)
-          else
-            check = check_http_file(url)
-          end
-        rescue Exception => e
-          check = false
-        end
-        check
       end
 
       def check_http_file(url)
