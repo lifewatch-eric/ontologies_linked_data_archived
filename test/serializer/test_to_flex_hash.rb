@@ -1,7 +1,12 @@
 require "test/unit"
-require_relative "../object.rb"
+require 'pry'
+require_relative "../../lib/ontologies_linked_data"
 
 class Person
+  include LinkedData::Hypermedia::Resource
+
+  serialize_methods :relative_age, :name_upcase, :person_is_how_old
+
   def initialize(name, age, height = 6)
     @name = name
     @age = age
@@ -25,24 +30,17 @@ class Person
       "old"
     end
   end
-
-  def serializable_methods
-    [:relative_age, :name_upcase, :person_is_how_old]
-  end
-
 end
 
 class Paul < Person
+  serialize_methods *(self.superclass.hypermedia_settings[:serialize_methods] + [:test_method])
+
   def initialize
     super("Paul A", 35, 8)
   end
 
   def test_method
     "return from test method"
-  end
-
-  def serializable_methods
-    super + [:test_method]
   end
 end
 
@@ -58,8 +56,12 @@ class ToHashTest < Test::Unit::TestCase
 
   def test_all
     person = PERSON.to_flex_hash(:all => true)
-    reference = {:name=>"Simon", :age=>21, :height=>6, :relative_age=>"old", :name_upcase=>"SIMON", :person_is_how_old=>"Simon is 21"}
-    assert_equal person, reference
+    assert person[:name].eql?("Simon")
+    assert person[:age] == 21
+    assert person[:height] == 6
+    assert person[:relative_age].eql?("old")
+    assert person[:name_upcase].eql?("SIMON")
+    assert person[:person_is_how_old].eql?("Simon is 21")
   end
 
   def test_include_methods
