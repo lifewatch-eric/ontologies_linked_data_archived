@@ -17,7 +17,7 @@ module LinkedData
       attribute :synonymProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
       attribute :authorProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
       attribute :classType, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :hiearchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
+      attribute :hierarchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
       attribute :obsoleteProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
       attribute :obsoleteParent, :instance_of => { :with => RDF::IRI }, :single_value => true
 
@@ -60,7 +60,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::IRI.new(
-          "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym)}/#{ss.submissionId}")
+          "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/#{ss.submissionId.to_s}")
       end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
@@ -178,6 +178,13 @@ module LinkedData
           end
           FileUtils.mkdir_p zip_dst
           extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
+
+          # Set master file name automatically if there is only one file
+          if extracted.length == 1 && self.masterFileName.nil?
+            self.masterFileName = extracted.first.name
+            self.save
+          end
+
           logger.info("Files extracted from zip #{extracted}")
           logger.flush
         end
@@ -281,18 +288,6 @@ module LinkedData
         return file, filename
       end
 
-      private
-
-      def download_ontology_file
-        file = open(self.pullLocation.value, :read_timeout => nil)
-        if file.meta && file.meta["content-disposition"]
-          cd = file.meta["content-disposition"].match(/filename=\"(.*)\"/)
-          filename = cd.nil? ? nil : cd[1]
-        end
-        filename = LinkedData::Utils::Namespaces.last_iri_fragment(self.pullLocation.value) if filename.nil?
-        return file, filename
-      end
-
       def remote_file_exists?(url)
         begin
           url = URI.parse(url)
@@ -305,6 +300,18 @@ module LinkedData
           check = false
         end
         check
+      end
+
+      private
+
+      def download_ontology_file
+        file = open(self.pullLocation.value, :read_timeout => nil)
+        if file.meta && file.meta["content-disposition"]
+          cd = file.meta["content-disposition"].match(/filename=\"(.*)\"/)
+          filename = cd.nil? ? nil : cd[1]
+        end
+        filename = LinkedData::Utils::Namespaces.last_iri_fragment(self.pullLocation.value) if filename.nil?
+        return file, filename
       end
 
       def check_http_file(url)
