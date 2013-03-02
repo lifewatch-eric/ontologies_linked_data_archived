@@ -25,11 +25,11 @@ module LinkedData
       # Out of the media types we offer, which would be best?
       best = LinkedData::MediaTypes.base_type(accept.best_media_type(LinkedData::MediaTypes.all)) unless accept.nil?
       # Try one other method to get the media type
-      best = LinkedData::MediaTypes.base_type(env["HTTP_ACCEPT"]) if best.nil?
+      best ||= LinkedData::MediaTypes.base_type(env["HTTP_ACCEPT"])
       # If user provided a format via query string, override the accept header
       best = params["format"].to_sym if params["format"]
       # Default format if none is provided
-      best = LinkedData::MediaTypes::DEFAULT if best.nil?
+      best ||= LinkedData::MediaTypes::DEFAULT
 
       # Error out if we don't support the foramt
       unless LinkedData::MediaTypes.supported_base_type?(best)
