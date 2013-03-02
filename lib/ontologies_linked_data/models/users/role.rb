@@ -4,7 +4,7 @@ module LinkedData
       class Role < LinkedData::Models::Base
         DEFAULT = "LIBRARIAN"
 
-        attribute :role, :unique => true
+        attribute :role, :unique => true, :single_value => true, :not_nil => true
 
         def self.init(values = ["LIBRARIAN", "ADMINISTRATOR", "DEVELOPER"])
           values.each do |role|
