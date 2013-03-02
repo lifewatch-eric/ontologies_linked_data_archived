@@ -25,7 +25,7 @@ class Object
     hash = remove_bad_attributes(hash)
 
     if all # Get everything
-      methods = self.hypermedia_settings[:serialize_methods] if self.hypermedia_settings
+      methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
     end
 
     # Infer methods from only
@@ -101,7 +101,7 @@ class Object
 
   def populate_attributes(hash)
     # Look for default attributes or use all
-    if self.class.hypermedia_settings[:serialize_default].empty?
+    if !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_default].empty?
       # Look for table attribute or get all instance variables
       if instance_variables.include?(:@attributes)
         hash.replace(instance_variable_get("@attributes"))
@@ -117,7 +117,7 @@ class Object
 
   def remove_bad_attributes(hash)
     bad_attributes = %w(attributes table _cached_exist internals captures splat uuid apikey password inverse_atttributes)
-    bad_attributes.concat(self.class.hypermedia_settings[:serialize_never])
+    bad_attributes.concat(self.class.hypermedia_settings[:serialize_never]) unless !self.is_a?(LinkedData::Hypermedia::Resource)
     bad_attributes.each do |bad_attribute|
       hash.delete(bad_attribute)
       hash.delete(bad_attribute.to_sym)
