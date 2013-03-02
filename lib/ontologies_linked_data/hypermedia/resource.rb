@@ -12,6 +12,9 @@ module LinkedData
 
       def self.included(base)
         base.extend(ClassMethods)
+        ClassMethods::SETTINGS.each do |type|
+          Resource.store_settings(base, type, [])
+        end
       end
 
       module ClassMethods
