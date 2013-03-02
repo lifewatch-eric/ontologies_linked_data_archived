@@ -18,6 +18,12 @@ module LinkedData
       attribute :passwordHash, :single_value => true, :not_nil => true, :read_only => true
       attribute :apikey, :single_value => true, :not_nil => true, :read_only => true, :default => lambda {|x| SecureRandom.uuid}
 
+      # Hypermedia settings
+      embed_values :role => [:role], :email => [:test]
+      serialize_default :username, :email, :role
+      serialize_never :passwordHash
+      serialize_owner :apikey
+
       def initialize(attributes = {})
         # Don't allow passwordHash to be set here
         attributes.delete(:passwordHash)

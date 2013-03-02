@@ -48,6 +48,10 @@ module LinkedData
       # Link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
 
+      # Hypermedia settings
+      embed :contact
+      embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
+
       def self.submission_id_generator(ss)
         if !ss.ontology.loaded? and ss.ontology.persistent?
           ss.ontology.load
