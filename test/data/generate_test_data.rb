@@ -96,7 +96,7 @@ module LinkedData
           })
           o.save unless o.exist?
 
-          o = LinkedData::Models::Ontology.find(o.acronym) unless o.persistent?
+          o = LinkedData::Models::Ontology.find(o.acronym.to_s) unless o.persistent?
 
           os = LinkedData::Models::OntologySubmission.new({
             ontology: o,
