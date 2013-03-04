@@ -292,9 +292,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     #I have found them all
     assert(root_ids.length == 0)
 
-    os.ontology.load
-    os.ontology.delete
+    ontology = os.ontology
     os.delete
+    ontology.load
+    ontology.delete
   end
 
   #ontology with errors

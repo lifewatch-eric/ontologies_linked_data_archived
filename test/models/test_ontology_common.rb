@@ -23,7 +23,8 @@ module LinkedData
       users = LinkedData::Models::User.where(:username => user_name)
       assert(users.length < 2)
       if users.length == 0
-        user = LinkedData::Models::User.new({:username => user_name})
+        user = LinkedData::Models::User.new({:username => user_name, :email => "some@email.org" })
+        user.attributes[:passwordHash] = "some random pass hash"
       else
         user = users[0]
       end
