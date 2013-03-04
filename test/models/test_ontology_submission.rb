@@ -235,7 +235,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploaded_ont.process_submission Logger.new(STDOUT)
     assert uploaded_ont.submissionStatus.parsed?
 
-    uploaded_ont.classes.each do |cls|
+    uploaded_ont.classes(:load_attrs => [:prefLabel]).each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.resource_id} does not have a label")
       assert_instance_of String, cls.prefLabel.value
     end
