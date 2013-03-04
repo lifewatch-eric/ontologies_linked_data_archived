@@ -25,3 +25,5 @@ migration/test*
 
 *.sublime-workspace
 
+
+.ruby-version
