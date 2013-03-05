@@ -65,6 +65,7 @@ class Object
 
       # Initial value
       new_value = v
+      new_value = v.value if v.is_a?(RDF::IRI)
       new_value = convert_bnode(new_value, options, &block)
       new_value = convert_goo_objects(new_value)
       new_value = rdf_parsed_value(new_value)
