@@ -235,7 +235,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     uploaded_ont.process_submission Logger.new(STDOUT)
     assert uploaded_ont.submissionStatus.parsed?
 
-    uploaded_ont.classes.each do |cls|
+    uploaded_ont.classes(:load_attrs => [:prefLabel]).each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.resource_id} does not have a label")
       assert_instance_of String, cls.prefLabel.value
     end
@@ -253,7 +253,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_sub = oss[0]
     ont_sub.load unless ont_sub.loaded?
     assert ont_sub.submissionStatus.parsed?
-    ont_sub.classes.each do |c|
+    ont_sub.classes(:load_attrs => [:prefLabel, :synonym]).each do |c|
       assert (not c.prefLabel.nil?)
       assert_instance_of String, c.prefLabel.value
       if c.resource_id.value.include? "class6"
@@ -292,9 +292,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     #I have found them all
     assert(root_ids.length == 0)
 
-    os.ontology.load
-    os.ontology.delete
+    ontology = os.ontology
     os.delete
+    ontology.load
+    ontology.delete
   end
 
   #ontology with errors

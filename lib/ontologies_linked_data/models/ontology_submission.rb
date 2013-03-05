@@ -229,15 +229,17 @@ module LinkedData
         count_classes = 0
         label_triples = []
         t0 = Time.now
-        classes = self.classes :missing_labels_generation => true
+        classes = self.classes :missing_labels_generation => true,
+                               :load_attrs => [:prefLabel, :synonym],
+                               :query_options => { rules: :SUBP }
         t1 = Time.now
         logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
         logger.flush
         classes.each do |c|
           if c.prefLabel.nil?
-            rdfs_labels = c.synonymLabel
+            rdfs_labels = c.synonym
             label = nil
-            if rdfs_labels.length > 0
+            if rdfs_labels && rdfs_labels.length > 0
               label = rdfs_labels[0].value
             else
               label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
@@ -273,12 +275,21 @@ module LinkedData
       def classes(*args)
         args = [{}] if args.nil? || args.length == 0
         args[0] = args[0].merge({ :submission => self })
-        return LinkedData::Models::Class.where(*args)
+        clss = LinkedData::Models::Class.where(*args)
+        clss.select! { |c| !c.resource_id.bnode? }
+        return clss
       end
 
       def roots
-         return LinkedData::Models::Class.where( :submission => self ,
-                                                :root => true, :labels => false)
+        #TODO review this
+        classes = LinkedData::Models::Class.where(:submission => self, :load_attrs => [:prefLabel, :definition, :synonym])
+        roots = []
+        classes.each do |c|
+          next if c.resource_id.bnode?
+          roots << c if c.parents.nil? or c.parents.length == 0
+        end
+        roots.select! { |r| r.deprecated.nil? }
+        return roots
       end
 
       def download_and_store_ontology_file
