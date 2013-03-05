@@ -18,15 +18,16 @@ class Object
 
     hash = {}
 
+    if all # Get everything
+      methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
+      self.load if self.is_a?(Goo::Base::Resource) && !self.loaded?
+    end
+
     # Determine whether to use defaults from the DSL or all attributes
     hash = populate_attributes(hash, all)
 
     # Remove banned attributes (from DSL or defined here)
     hash = remove_bad_attributes(hash)
-
-    if all # Get everything
-      methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
-    end
 
     # Infer methods from only
     only.each do |prop|
