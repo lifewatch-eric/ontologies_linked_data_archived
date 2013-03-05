@@ -17,6 +17,9 @@ module LinkedData
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
+      link_to LinkedData::Hypermedia::Link.new("metrics", "/ontologies/:acronym/metrics"),
+              LinkedData::Hypermedia::Link.new("submissions", "/ontologies/:acronym/submissions")
+
       def latest_submission(options = {})
         status = options[:status] || :parsed
         submission_id = highest_submission_id(status)
