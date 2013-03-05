@@ -19,7 +19,7 @@ class Object
     hash = {}
 
     # Determine whether to use defaults from the DSL or all attributes
-    hash = populate_attributes(hash)
+    hash = populate_attributes(hash, all)
 
     # Remove banned attributes (from DSL or defined here)
     hash = remove_bad_attributes(hash)
@@ -100,9 +100,9 @@ class Object
     return nil
   end
 
-  def populate_attributes(hash)
+  def populate_attributes(hash, all = false)
     # Look for default attributes or use all
-    if !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_default].empty?
+    if !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_default].empty? || all
       # Look for table attribute or get all instance variables
       if instance_variables.include?(:@attributes)
         hash.replace(instance_variable_get("@attributes"))
