@@ -23,6 +23,23 @@ module LinkedData
       module ClassMethods
         attr_accessor :hypermedia_settings
 
+        ##
+        # This is a convenience method that will provide Goo with
+        # a list of attributes and nested values to load
+        def goo_attrs_to_load
+          if self.hypermedia_settings[:serialize_default].empty?
+            default_attrs = [:defined]
+          else
+            default_attrs = self.hypermedia_settings[:serialize_default].dup
+          end
+          special_attrs = {}
+          self.hypermedia_settings[:embed].each {|e| special_attrs[e] = [:defined]}
+          embed_values = self.hypermedia_settings[:embed_values].first || {}
+          special_attrs.merge!(embed_values)
+          default_attrs << special_attrs unless special_attrs.empty?
+          return default_attrs
+        end
+
         # Methods with these names will be created
         # for each entry, allowing values to be
         # stored on a per-class basis
