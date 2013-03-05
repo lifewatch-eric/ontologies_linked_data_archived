@@ -8,7 +8,7 @@ module LinkedData
           links = generate_links(hashed_obj)
           hash["links"] = links unless links.empty?
           if hashed_obj.is_a?(Goo::Base::Resource)
-            if options[:params].nil? || !options[:params]["no_context"].nil? && !options[:params]["no_context"].eql?("true")
+            if options[:params].nil? || options[:params]["no_context"].nil? || !options[:params]["no_context"].eql?("true")
               context = generate_context(hashed_obj, hash.keys)
               hash.merge!(context)
             end
