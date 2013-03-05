@@ -2,49 +2,49 @@ require "test/unit"
 require 'pry'
 require_relative "../../lib/ontologies_linked_data"
 
-class Person
-  include LinkedData::Hypermedia::Resource
+class ToHashTest < Test::Unit::TestCase
+  class Person
+    include LinkedData::Hypermedia::Resource
 
-  serialize_methods :relative_age, :name_upcase, :person_is_how_old
+    serialize_methods :relative_age, :name_upcase, :person_is_how_old
 
-  def initialize(name, age, height = 6)
-    @name = name
-    @age = age
-    @height = height
-  end
+    def initialize(name, age, height = 6)
+      @name = name
+      @age = age
+      @height = height
+    end
 
-  def person_is_how_old
-    "#{@name} is #{@age}"
-  end
+    def person_is_how_old
+      "#{@name} is #{@age}"
+    end
 
-  def name_upcase
-    @name.upcase
-  end
+    def name_upcase
+      @name.upcase
+    end
 
-  def relative_age
-    if @age < 10
-      "young"
-    elsif @age < 20
-      "teenager"
-    elsif @age > 20
-      "old"
+    def relative_age
+      if @age < 10
+        "young"
+      elsif @age < 20
+        "teenager"
+      elsif @age > 20
+        "old"
+      end
     end
   end
-end
 
-class Paul < Person
-  serialize_methods *(self.superclass.hypermedia_settings[:serialize_methods] + [:test_method])
+  class Paul < Person
+    serialize_methods *(self.superclass.hypermedia_settings[:serialize_methods] + [:test_method])
 
-  def initialize
-    super("Paul A", 35, 8)
+    def initialize
+      super("Paul A", 35, 8)
+    end
+
+    def test_method
+      "return from test method"
+    end
   end
 
-  def test_method
-    "return from test method"
-  end
-end
-
-class ToHashTest < Test::Unit::TestCase
   PERSON = Person.new("Simon", 21)
   PAUL = Paul.new
 
