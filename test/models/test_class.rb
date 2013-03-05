@@ -124,6 +124,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_path_to_root_with_multiple_parents
+    skip("test_path_to_root_with_multiple_parents")
     return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
