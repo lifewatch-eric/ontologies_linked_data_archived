@@ -3,13 +3,13 @@ require "date"
 require "json"
 require_relative "../../lib/ontologies_linked_data"
 
-class Person
-  def initialize(name)
-    @name = name
-  end
-end
-
 class TestSerializerXML < Test::Unit::TestCase
+  class Person
+    def initialize(name)
+      @name = name
+    end
+  end
+
   PERSON = Person.new("Simon")
   PEOPLE = [Person.new("Simon"), Person.new("Gloria")]
   DATE = DateTime.now
