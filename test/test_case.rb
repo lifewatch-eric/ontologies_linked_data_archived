@@ -104,7 +104,6 @@ module LinkedData
         })
 
         o.save
-        ontologies << o
 
         # Random submissions (between 1 and max)
         max = random_submission_count ? (1..submission_count.to_i).to_a.shuffle.first : submission_count
@@ -120,6 +119,8 @@ module LinkedData
           })
           os.save
         end
+
+        ontologies << o
       end
 
       # Get ontology objects if empty
