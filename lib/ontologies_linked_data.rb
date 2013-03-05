@@ -22,7 +22,10 @@ begin
         :options => { :rules => :NONE} } ]
       conf[:namespaces] = {
         :metadata => "http://data.bioontology.org/metadata/",
-        :omv => "http://omv.org/ontology/",
+        :omv => "http://omv.ontoware.org/2005/05/ontology#",
+        :skos => "http://www.w3.org/2004/02/skos/core#",
+        :owl => "http://www.w3.org/2002/07/owl#",
+        :rdfs => "http://www.w3.org/2000/01/rdf-schema#",
         :default => :metadata
       }
     end
