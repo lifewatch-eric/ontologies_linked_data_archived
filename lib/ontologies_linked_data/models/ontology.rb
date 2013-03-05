@@ -17,14 +17,12 @@ module LinkedData
 
       def latest_submission(options = {})
         status = options[:status] || :parsed
-        self.load unless self.loaded? || self.attr_loaded?(:acronym)
         submission_id = highest_submission_id(status)
         return nil if submission_id.nil?
         OntologySubmission.where({ontology: { acronym: acronym }, submissionId: submission_id}).first
       end
 
       def submission(submission_id)
-        self.load unless self.loaded? || self.attr_loaded?(:acronym)
         OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id.to_i).first
       end
 
@@ -34,13 +32,12 @@ module LinkedData
 
       def highest_submission_id(status = nil)
         # This is the first!
-        return 0 if submissions.nil? || submissions.empty?
+        tmp_submissions = submissions
+        return 0 if tmp_submissions.nil? || tmp_submissions.empty?
 
         # Try to get a new one based on the old
         submission_ids = []
-        submissions.each do |s|
-          s.load unless s.loaded?
-          s.submissionStatus.load unless s.submissionStatus.loaded?
+        tmp_submissions.each do |s|
           next if !s.submissionStatus.parsed? && status == :parsed
           submission_ids << s.submissionId.to_i
         end
@@ -51,8 +48,6 @@ module LinkedData
       ##
       # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
       def delete(in_update=false)
-        submissions = self.submissions rescue nil
-        submissions = OntologySubmission.where(ontology: { acronym: acronym }) if submissions.nil? && !acronym.nil?
         submissions.each do |s|
           s.delete
         end
