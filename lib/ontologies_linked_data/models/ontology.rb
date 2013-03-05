@@ -15,6 +15,8 @@ module LinkedData
       attribute :hasDomain, :namespace => :omv, :instance_of => { :with => :category }
       attribute :acl, :instance_of => { :with => :user }
 
+      # Hypermedia settings
+      serialize_default :administeredBy, :acronym, :name
       def latest_submission(options = {})
         status = options[:status] || :parsed
         submission_id = highest_submission_id(status)

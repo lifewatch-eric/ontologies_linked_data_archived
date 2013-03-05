@@ -51,6 +51,8 @@ module LinkedData
       # Hypermedia settings
       embed :contact
       embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
+      serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
+                        :publication, :documentation, :version, :description, :status
 
       def self.submission_id_generator(ss)
         if !ss.ontology.loaded? and ss.ontology.persistent?
