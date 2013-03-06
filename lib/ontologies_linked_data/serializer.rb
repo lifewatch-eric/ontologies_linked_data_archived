@@ -44,8 +44,15 @@ module LinkedData
           :headers => headers
         )
       rescue Exception => e
-        message = e.message + "\n\n" + e.backtrace.join("\n") if env["rack.test"] || (respond_to?("development?") && development?)
-        response(:status => 500, :body => message)
+        begin
+          if env["rack.test"] || development?
+            message = e.message + "\n\n  " + e.backtrace.join("\n  ")
+            LOGGER.debug message
+            response(:status => 500, :body => message)
+          end
+        rescue
+          # Do nothing
+        end
       end
     end
 
