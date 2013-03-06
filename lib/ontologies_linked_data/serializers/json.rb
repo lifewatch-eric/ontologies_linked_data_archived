@@ -3,7 +3,7 @@ module LinkedData
     class JSON
       def self.serialize(obj, options = {})
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
-          hash["@id"] = hashed_obj.resource_id.value if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
+          hash["@id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX) if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
           hash["@type"] = hashed_obj.class.type_uri if hash["@id"] && hashed_obj.class.respond_to?(:type_uri)
           links = LinkedData::Hypermedia.generate_links(hashed_obj)
           hash["links"] = links unless links.empty?

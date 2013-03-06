@@ -5,7 +5,7 @@ module LinkedData
         links = {}
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
-            hash["id"] = hashed_obj.resource_id.value
+            hash["id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX)
             links_xml = generate_links(hashed_obj)
             links[hash["id"]] = links_xml unless links_xml.empty?
           end

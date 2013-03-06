@@ -68,6 +68,8 @@ class Object
       new_value = convert_bnode(new_value, options, &block)
       new_value = convert_goo_objects(new_value)
       new_value = rdf_parsed_value(new_value)
+      new_value = new_value.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX) if new_value.is_a?(String)
+      new_value = new_value.map {|e| e.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX)} if new_value.is_a?(Enumerable) && new_value.first.is_a?(String)
 
       hash[k] = new_value
     end
