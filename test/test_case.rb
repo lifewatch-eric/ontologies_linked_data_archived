@@ -74,8 +74,7 @@ module LinkedData
       submission_count = options[:submission_count] || 5
       random_submission_count = options[:random_submission_count].nil? ? true : options[:random_submission_count]
 
-      u = LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
-      u.save unless u.exist? || !u.valid?
+      u = LinkedData::Models::User.find("tim") || LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
 
       contact_name = "Sheila"
       contact_email = "sheila@example.org"
@@ -143,8 +142,8 @@ module LinkedData
         ont = LinkedData::Models::Ontology.find("TST-ONT-#{count+1}")
       end
 
-      u = LinkedData::Models::User.find("tim")
-      u.delete unless u.nil?
+      #u = LinkedData::Models::User.find("tim")
+      #u.delete unless u.nil?
 
     end
 
