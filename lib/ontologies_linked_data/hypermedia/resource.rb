@@ -21,12 +21,15 @@ module LinkedData
         # a list of attributes and nested values to load
         def goo_attrs_to_load
           if self.hypermedia_settings[:serialize_default].empty?
-            default_attrs = [:defined]
+            default_attrs = self.defined_attributes_not_transient
           else
             default_attrs = self.hypermedia_settings[:serialize_default].dup
           end
           special_attrs = {}
-          self.hypermedia_settings[:embed].each {|e| special_attrs[e] = [:defined]}
+          self.hypermedia_settings[:embed].each do |e|
+            embed_class = Goo.find_model_by_name(e)
+            special_attrs[e] = [embed_class.defined_attributes_not_transient]
+          end
           embed_values = self.hypermedia_settings[:embed_values].first || {}
           special_attrs.merge!(embed_values)
           default_attrs << special_attrs unless special_attrs.empty?
