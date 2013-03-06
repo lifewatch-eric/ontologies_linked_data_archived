@@ -7,11 +7,11 @@ class TestOntology < LinkedData::TestCase
     @name = "TestOntology TEST"
     _delete_objects
 
-    @user = LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
-    @user.save
+    @user = LinkedData::Models::User.find("tim") || LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
+    @user.save unless @user.exist?
 
-    @of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-    @of.save
+    @of = LinkedData::Models::OntologyFormat.find("OWL") || LinkedData::Models::OntologyFormat.new(acronym: "OWL")
+    @of.save unless @of.exist?
 
     cname = "Jeff Baines"
     cemail = "jeff@example.org"
@@ -40,7 +40,7 @@ class TestOntology < LinkedData::TestCase
       ontology: o,
       hasOntologyLanguage: @of,
       pullLocation: RDF::IRI.new("http://example.com/ontology_file"),
-      submissionStatus: LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
+      submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED") || LinkedData::Models::SubmissionStatus.new(:code => "UPLOADED"),
       submissionId: o.next_submission_id,
       contact: @contact,
       released: DateTime.now - 5
@@ -49,17 +49,20 @@ class TestOntology < LinkedData::TestCase
   end
 
   def _delete_objects
-    u = LinkedData::Models::User.find("tim")
-    u.delete unless u.nil?
-
-    of = LinkedData::Models::OntologyFormat.find("OWL")
-    of.delete unless of.nil?
-
-    ss = LinkedData::Models::SubmissionStatus.find("UPLOADED")
-    ss.delete unless ss.nil?
 
     o = LinkedData::Models::Ontology.find(@acronym)
     o.delete unless o.nil?
+
+
+    #u = LinkedData::Models::User.find("tim")
+    #u.delete unless u.nil?
+
+    #of = LinkedData::Models::OntologyFormat.find("OWL")
+    #of.delete unless of.nil?
+
+    #ss = LinkedData::Models::SubmissionStatus.find("UPLOADED")
+    #ss.delete unless ss.nil?
+
   end
 
   def test_valid_ontology

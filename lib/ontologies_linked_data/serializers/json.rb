@@ -55,7 +55,6 @@ module LinkedData
         )
         embedded
       end
-
     end
   end
 end
