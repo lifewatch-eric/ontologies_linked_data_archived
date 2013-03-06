@@ -1,7 +1,7 @@
 require "goo"
 
 require_relative "../config/default.rb"
-require_relative "ontologies_linked_data/hypermedia/resource"
+require_relative "ontologies_linked_data/hypermedia/hypermedia"
 require_relative "ontologies_linked_data/serializer"
 require_relative "ontologies_linked_data/serializers/serializers"
 require_relative "ontologies_linked_data/utils/file"

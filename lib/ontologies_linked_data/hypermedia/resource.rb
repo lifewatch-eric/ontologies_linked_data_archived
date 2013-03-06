@@ -1,12 +1,5 @@
 module LinkedData
   module Hypermedia
-    class Link
-      attr_accessor :path, :type, :type_uri
-      def initialize(type, path)
-        @path = path; @type = type
-      end
-    end
-
     module Resource
       def self.store_settings(cls, type, setting)
         cls.hypermedia_settings ||= {}
