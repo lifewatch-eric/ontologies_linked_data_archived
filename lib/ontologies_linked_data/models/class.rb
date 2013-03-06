@@ -59,6 +59,7 @@ module LinkedData
 
       def traverse_path_to_root(parents, paths)
         return if parents.length == 0
+        parents.select! { |s| !s.resource_id.bnode?}
         recurse_on_path = []
         if parents.length > 1
           new_paths = paths * parents.length
