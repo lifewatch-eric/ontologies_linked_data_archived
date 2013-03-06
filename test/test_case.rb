@@ -146,8 +146,6 @@ module LinkedData
       u = LinkedData::Models::User.find("tim")
       u.delete unless u.nil?
 
-      of = LinkedData::Models::OntologyFormat.find("OWL")
-      of.delete unless of.nil?
     end
 
     def delete_goo_models(gooModelArray)
