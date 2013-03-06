@@ -19,7 +19,7 @@ module LinkedData
       attribute :apikey, :single_value => true, :not_nil => true, :read_only => true, :default => lambda {|x| SecureRandom.uuid}
 
       # Hypermedia settings
-      embed_values :role => [:role], :email => [:test]
+      embed_values :role => [:role]
       serialize_default :username, :email, :role
       serialize_never :passwordHash
       serialize_owner :apikey

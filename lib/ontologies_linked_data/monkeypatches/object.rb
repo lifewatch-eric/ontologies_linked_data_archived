@@ -4,8 +4,6 @@ class Object
   def to_flex_hash(options = {}, &block)
     if kind_of?(String) || kind_of?(Fixnum) || kind_of?(Float); then return self; end
 
-    self.load if self.is_a?(Goo::Base::Resource) && !self.loaded? && self.resource_id.bnode?
-
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
     return recursed_object unless recursed_object.nil?
@@ -18,15 +16,16 @@ class Object
 
     hash = {}
 
+    if all # Get everything
+      methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
+      self.load if self.is_a?(Goo::Base::Resource) && !self.loaded?
+    end
+
     # Determine whether to use defaults from the DSL or all attributes
     hash = populate_attributes(hash, all)
 
     # Remove banned attributes (from DSL or defined here)
     hash = remove_bad_attributes(hash)
-
-    if all # Get everything
-      methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
-    end
 
     # Infer methods from only
     only.each do |prop|
@@ -65,7 +64,7 @@ class Object
 
       # Initial value
       new_value = v
-      new_value = v.value if v.is_a?(RDF::IRI)
+      new_value = convert_iris(new_value)
       new_value = convert_bnode(new_value, options, &block)
       new_value = convert_goo_objects(new_value)
       new_value = rdf_parsed_value(new_value)
@@ -131,7 +130,7 @@ class Object
 
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.load unless e.loaded?; e.to_flex_hash(options, &block)}
+        values = value.map {|e| e.to_flex_hash(options, &block)}
       else
         value.load unless value.loaded?
         values = value.to_flex_hash(options, &block)
@@ -151,12 +150,10 @@ class Object
         embedded_values = []
         if (value.is_a?(Array) || value.is_a?(Set))
           value.each do |goo_object|
-            goo_object.load unless goo_object.loaded?
-            add_goo_values(value, goo_object, embedded_values, attributes_to_embed)
+            add_goo_values(goo_object, embedded_values, attributes_to_embed)
           end
         else
-          value.load unless value.loaded?
-          add_goo_values(value, value, embedded_values, attributes_to_embed)
+          add_goo_values(value, embedded_values, attributes_to_embed)
           embedded_values = embedded_values.first
         end
         hash[attribute] = embedded_values
@@ -166,16 +163,34 @@ class Object
     return hash, false
   end
 
-  def add_goo_values(value, goo_object, embedded_values, attributes_to_embed)
+  def add_goo_values(goo_object, embedded_values, attributes_to_embed)
     if attributes_to_embed.length > 1
       embedded_values_hash = {}
       attributes_to_embed.each do |a|
-        embedded_values_hash[a] = goo_object.send(a)
+        embedded_values_hash[a] = convert_all_goo_types(goo_object.send(a))
         embedded_values << embedded_values_hash
       end
     else
-      embedded_values << goo_object.send(attributes_to_embed.first)
+      embedded_values << convert_all_goo_types(goo_object.send(attributes_to_embed.first))
     end
+  end
+
+  def convert_iris(object)
+    new_value = (object.is_a?(RDF::IRI) || object.is_a?(SparqlRd::Resultset::IRI)) ? object.value : object
+
+    # Convert arrays of linked objects
+    if object.kind_of?(Enumerable) && (object.first.is_a?(RDF::IRI) || object.first.is_a?(SparqlRd::Resultset::IRI))
+      new_value = object.map {|e| e.value }
+    end
+
+    return new_value
+  end
+
+  def convert_all_goo_types(object)
+    new_value = convert_iris(object)
+    new_value = convert_goo_objects(object)
+    new_value = rdf_parsed_value(object)
+    new_value
   end
 
   def convert_goo_objects(object)
