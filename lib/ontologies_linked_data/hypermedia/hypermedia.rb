@@ -1,3 +1,4 @@
+require 'cgi'
 require_relative 'link'
 require_relative 'resource'
 
@@ -16,16 +17,22 @@ module LinkedData
     def self.expand_link(link, object)
       new_link = link.gsub(/(:[\w|\.]+)/).each do |match|
         if match.include?(".")
-          parts = match.split(".")
-          attribute = parts[0]
-          attribute_method = parts[1]
-          match = object.send(attribute.gsub(":", "")).send(attribute_method)
+          method_queue = match.split(".")
+          match = get_nested_value(object, method_queue)
         elsif match.include?(":")
           match = object.send(match.to_s.gsub(":", ""))
         end
-        match
+        CGI.escape(match)
       end
       new_link
     end
+
+    def self.get_nested_value(object, queue)
+      attribute = queue.shift
+      value = object.send(attribute.gsub(":", ""))
+      return value if queue.empty?
+      get_nested_value(value, queue)
+    end
+
   end
 end
