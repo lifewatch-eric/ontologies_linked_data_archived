@@ -2,8 +2,8 @@ module LinkedData
   module Serializers
     class JSONP
       def self.serialize(obj, options)
-        callback = options[:params][:callback] || "?"
-        variable = options[:params][:variable]
+        callback = options[:params]["callback"] || options[:params]["jsonp"] || "?"
+        variable = options[:params]["variable"]
         json = LinkedData::Serializers::JSON.serialize(obj, options)
         response = begin
           if callback && variable
@@ -13,7 +13,7 @@ module LinkedData
           elsif callback
             "#{callback}(#{json});"
           else
-            "?(#{json});"
+            "(#{json});"
           end
         end
       end
