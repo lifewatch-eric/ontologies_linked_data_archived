@@ -49,7 +49,7 @@ module LinkedData
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
 
       # Hypermedia settings
-      embed :contact
+      embed :contact, :ontology
       embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
       serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
                         :publication, :documentation, :version, :description, :status, :submissionId

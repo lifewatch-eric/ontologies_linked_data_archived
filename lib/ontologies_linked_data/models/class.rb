@@ -31,6 +31,14 @@ module LinkedData
       attribute :descendents, :use => :children,
                 :query_options => { :rules => :SUBC }
 
+      # Hypermedia settings
+      link_to LinkedData::Hypermedia::Link.new("self", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value"),
+              LinkedData::Hypermedia::Link.new("children", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/children"),
+              LinkedData::Hypermedia::Link.new("parents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents"),
+              LinkedData::Hypermedia::Link.new("descendents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents"),
+              LinkedData::Hypermedia::Link.new("ancestors", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors")
+
+
       def self.where(*args)
         params = args[0].dup
         missing_labels_generation = params.delete :missing_labels_generation

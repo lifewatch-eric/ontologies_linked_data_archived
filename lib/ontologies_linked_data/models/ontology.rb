@@ -18,7 +18,10 @@ module LinkedData
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
       link_to LinkedData::Hypermedia::Link.new("metrics", "/ontologies/:acronym/metrics"),
-              LinkedData::Hypermedia::Link.new("submissions", "/ontologies/:acronym/submissions")
+              LinkedData::Hypermedia::Link.new("submissions", "/ontologies/:acronym/submissions"),
+              LinkedData::Hypermedia::Link.new("classes", "/ontologies/:acronym/classes"),
+              LinkedData::Hypermedia::Link.new("roots", "/ontologies/:acronym/classes/roots"),
+              LinkedData::Hypermedia::Link.new("reviews", "/ontologies/:acronym/reviews")
 
       def latest_submission(options = {})
         status = options[:status] || :parsed
