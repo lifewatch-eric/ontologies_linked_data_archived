@@ -44,7 +44,8 @@ module LinkedData
         missing_labels_generation = params.delete :missing_labels_generation
 
         inject_subproperty_query_option(params)
-        super(params) rescue binding.pry
+        params[:filter]="FILTER(!isBlank(?subject))"
+        super(params)
       end
 
       def self.find(*args)
