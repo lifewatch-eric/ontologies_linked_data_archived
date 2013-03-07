@@ -288,7 +288,7 @@ module LinkedData
         roots = []
         classes.each do |c|
           next if c.resource_id.bnode?
-          roots << c if (c.attributes[:deprecated].nil?) || (c.attributes[:deprecated] == false)
+          roots << c if (c.attributes[:deprecated].nil?) || (c.attributes[:deprecated].parsed_value == false)
         end
         return roots
       end
