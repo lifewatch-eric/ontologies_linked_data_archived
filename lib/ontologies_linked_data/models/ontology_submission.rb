@@ -283,14 +283,13 @@ module LinkedData
       end
 
       def roots
-        #TODO review this
-        classes = LinkedData::Models::Class.where(:submission => self, :load_attrs => [:prefLabel, :definition, :synonym])
+        classes = LinkedData::Models::Class.where(submission: self, parents: :unbound,
+                                                  load_attrs: [:prefLabel, :definition, :synonym, :deprecated])
         roots = []
         classes.each do |c|
           next if c.resource_id.bnode?
-          roots << c if c.parents.nil? or c.parents.length == 0
+          roots << c if (c.attributes[:deprecated].nil?) || (c.attributes[:deprecated] == false)
         end
-        roots.select! { |r| r.deprecated.nil? }
         return roots
       end
 
