@@ -31,6 +31,8 @@ module LinkedData
       attribute :descendents, :use => :children,
                 :query_options => { :rules => :SUBC }
 
+      attribute :children_count, :aggregate => { :attribute => :children, :with => :count }
+
       # Hypermedia settings
       link_to LinkedData::Hypermedia::Link.new("self", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value"),
               LinkedData::Hypermedia::Link.new("children", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/children"),

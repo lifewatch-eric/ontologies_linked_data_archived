@@ -171,4 +171,27 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert (cls.attributes["http://www.w3.org/2002/07/owl#versionInfo"][0].value == "some version info")
 
   end
+
+  def test_children_count
+    return if ENV["SKIP_PARSING"]
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
+      :submissionId => 1
+    clss = LinkedData::Models::Class.where submission: os[0], load_attrs: { prefLabel: true, children_count: true }
+    clss.each do |c|
+      if c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
+        assert c.children_count == 1
+      elsif c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
+        assert c.children_count == 2
+      elsif c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class3"
+        assert c.children_count == 1
+      elsif c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class4"
+        assert c.children_count == 2
+      else
+        assert c.children_count == 0
+      end
+    end
+  end
 end
