@@ -191,22 +191,25 @@ module LinkedData
           logger.flush
         end
         LinkedData::Parser.logger =  logger
-        input_data = zip_dst || self.uploadFilePath
-        labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
-        owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data.to_s),File.expand_path(self.data_folder.to_s),self.masterFileName)
-        triples_file_path, missing_imports = owlapi.parse
-        if missing_imports
-          missing_imports.each do |imp|
-            logger.info("OWL_IMPORT_MISSING: #{imp}")
+
+        if self.hasOntologyLanguage.acronym.eql?("UMLS")
+          triples_file_path = File.expand_path(self.uploadFilePath.to_s)
+          logger.info("Using UMLS turtle file, skipping OWLAPI parse")
+          logger.flush
+          delete_and_append(triples_file_path, logger, SparqlRd::Utils::MimeType.turtle)
+        else
+          input_data = zip_dst || self.uploadFilePath
+          labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
+          owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data.to_s),File.expand_path(self.data_folder.to_s),self.masterFileName)
+          triples_file_path, missing_imports = owlapi.parse
+          if missing_imports
+            missing_imports.each do |imp|
+              logger.info("OWL_IMPORT_MISSING: #{imp}")
+            end
           end
+          logger.flush
+          delete_and_append(triples_file_path, logger)
         end
-        logger.flush
-
-        Goo.store.delete_graph(self.resource_id.value)
-        Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
-        logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
-        logger.flush
-
 
         missing_labels_generation(logger, labels_file)
         logger.flush
@@ -214,7 +217,7 @@ module LinkedData
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
 
-        if missing_imports.length > 0
+        if missing_imports && missing_imports.length > 0
           self.missingImports = missing_imports
         else
           self.missingImports = nil
@@ -315,6 +318,13 @@ module LinkedData
       end
 
       private
+
+      def delete_and_append(triples_file_path, logger, mime_type = nil)
+        Goo.store.delete_graph(self.resource_id.value)
+        Goo.store.append_in_graph(File.read(triples_file_path), self.resource_id.value, mime_type)
+        logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
+        logger.flush
+      end
 
       def download_ontology_file
         file = open(self.pullLocation.value, :read_timeout => nil)
