@@ -139,12 +139,15 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_submission_parse
-    return if ENV["SKIP_PARSING"]
+    submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10)
+  end
 
-    acronym = "BROTEST"
-    name = "BROTEST Bla"
-    ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
-    id = 10
+  def test_submission_parse_multiple
+
+  end
+
+  def submission_parse( acronym, name, ontologyFile, id)
+    return if ENV["SKIP_PARSING"]
 
     bro = LinkedData::Models::Ontology.find(acronym)
     if not bro.nil?

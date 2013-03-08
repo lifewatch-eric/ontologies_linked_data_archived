@@ -211,6 +211,11 @@ module LinkedData
         missing_labels_generation(logger, labels_file)
         logger.flush
 
+
+        #call search indexing (similar to missing_labels_generation)
+        index_submission logger
+
+
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
 
@@ -224,6 +229,25 @@ module LinkedData
         logger.info("Submission status updated to RDF")
         logger.flush
       end
+
+
+      def index_submission(logger)
+        classes = self.classes :load_attrs => [:prefLabel, :synonym, :definition]
+
+
+        #Class.indexBatch(classes)
+
+        #classes.each do |c|
+        #
+        #  binding.pry
+        #
+        #end
+
+
+      end
+
+
+
 
       def missing_labels_generation(logger,save_in_file)
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)

@@ -31,6 +31,10 @@ module LinkedData
       attribute :descendents, :use => :children,
                 :query_options => { :rules => :SUBC }
 
+
+      search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
+                     :document => lambda { |t| t.get_index_doc }
+
       # Hypermedia settings
       link_to LinkedData::Hypermedia::Link.new("self", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value"),
               LinkedData::Hypermedia::Link.new("children", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/children"),
@@ -38,6 +42,23 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("descendents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents"),
               LinkedData::Hypermedia::Link.new("ancestors", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors")
 
+      def get_index_doc
+        attrs = {
+            :submissionAcronym => self.submission.ontology.acronym,
+            :submissionId => self.submission.submissionId
+        }
+
+        object_id = self.resource_id.value
+        doc = self.attributes.dup
+        doc.delete :internals
+        doc.delete :uuid
+
+        doc = doc.merge(attrs)
+
+        doc[:resource_id] = object_id
+
+        return doc
+      end
 
       def self.where(*args)
         params = args[0].dup

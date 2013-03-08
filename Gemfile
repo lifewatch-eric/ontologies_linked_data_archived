@@ -10,6 +10,7 @@ gem 'bcrypt-ruby'
 gem 'multi_json'
 gem 'oj'
 gem 'libxml-ruby'
+gem 'rsolr'
 
 # Testing
 gem 'simplecov', :require => false, :group => :test
