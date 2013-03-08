@@ -98,12 +98,18 @@ class Object
       end
       return new_hash
     elsif kind_of?(Goo::Base::Page)
-      items = self.dup
-      self.clear
-      items.each do |item|
-        self << item.to_flex_hash(options, &block)
+      model = self.first.class.goop_settings[:model]
+      page = {
+        page: self.page,
+        page_count: self.page_count,
+        prev_page: self.prev_page,
+        next_page: self.next_page,
+        model => []
+      }
+      self.each do |item|
+        page[model] << item.to_flex_hash(options, &block)
       end
-      return self
+      return page
     end
     return nil
   end
