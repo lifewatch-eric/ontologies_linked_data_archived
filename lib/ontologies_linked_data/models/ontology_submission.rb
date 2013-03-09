@@ -7,19 +7,21 @@ require 'cgi'
 module LinkedData
   module Models
 
+    IRI = SparqlRd::Resultset::IRI
+
     class OntologySubmission < LinkedData::Models::Base
       model :ontology_submission, :name_with => lambda { |s| submission_id_generator(s) }
       attribute :submissionId, :instance_of =>  { :with => Fixnum }, :single_value => true, :not_nil => true
 
       # Configurable properties for processing
-      attribute :prefLabelProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
-      attribute :definitionProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :synonymProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :authorProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :classType, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :hierarchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
-      attribute :obsoleteProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
-      attribute :obsoleteParent, :instance_of => { :with => RDF::IRI }, :single_value => true
+      attribute :prefLabelProperty, :instance_of => { :with => IRI }, :single_value => true
+      attribute :definitionProperty, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :synonymProperty, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :authorProperty, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :classType, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :hierarchyProperty, :instance_of =>  { :with => IRI }, :single_value  => true
+      attribute :obsoleteProperty, :instance_of => { :with => IRI }, :single_value => true
+      attribute :obsoleteParent, :instance_of => { :with => IRI }, :single_value => true
 
       # Ontology metadata
       attribute :hasOntologyLanguage, :namespace => :omv, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
