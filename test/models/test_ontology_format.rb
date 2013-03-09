@@ -12,7 +12,7 @@ class TestOntologyFormat < LinkedData::TestCase
       of.delete
     end
   end
-  
+
   def test_formats
     teardown
     @acronyms.each do |acr|
@@ -23,7 +23,6 @@ class TestOntologyFormat < LinkedData::TestCase
       list =  LinkedData::Models::OntologyFormat.where( :acronym => acr )
       assert_equal 1, list.length
       assert_instance_of LinkedData::Models::OntologyFormat, list[0]
-      list[0].load
       assert_equal acr, list[0].acronym
     end
   end

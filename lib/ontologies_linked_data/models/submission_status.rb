@@ -22,7 +22,6 @@ module LinkedData
 
       def parsed?
         #TODO eventually this has to check for READY.
-        self.load unless self.loaded?
         return (self.code == self.class.parsed_code)
       end
     end
