@@ -195,7 +195,8 @@ module LinkedData
         LinkedData::Parser.logger =  logger
 
         if self.hasOntologyLanguage.acronym.eql?("UMLS")
-          triples_file_path = File.expand_path(self.uploadFilePath.to_s)
+          file_name = zip ? File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
+          triples_file_path = File.expand_path(file_name)
           logger.info("Using UMLS turtle file, skipping OWLAPI parse")
           logger.flush
           delete_and_append(triples_file_path, logger, SparqlRd::Utils::MimeType.turtle)
