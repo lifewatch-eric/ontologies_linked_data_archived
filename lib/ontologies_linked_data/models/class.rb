@@ -34,11 +34,11 @@ module LinkedData
       attribute :children_count, :aggregate => { :attribute => :children, :with => :count }
 
       # Hypermedia settings
-      link_to LinkedData::Hypermedia::Link.new("self", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value"),
-              LinkedData::Hypermedia::Link.new("children", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/children"),
-              LinkedData::Hypermedia::Link.new("parents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents"),
-              LinkedData::Hypermedia::Link.new("descendents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents"),
-              LinkedData::Hypermedia::Link.new("ancestors", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors")
+      link_to LinkedData::Hypermedia::Link.new("self", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value", self.type_uri),
+              LinkedData::Hypermedia::Link.new("children", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", self.type_uri),
+              LinkedData::Hypermedia::Link.new("parents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", self.type_uri),
+              LinkedData::Hypermedia::Link.new("descendents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents", self.type_uri),
+              LinkedData::Hypermedia::Link.new("ancestors", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", self.type_uri)
 
 
       def self.where(*args)

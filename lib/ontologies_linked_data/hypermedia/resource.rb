@@ -30,7 +30,7 @@ module LinkedData
             embed_class = Goo.find_model_by_name(e)
             special_attrs[e] = array_to_goo_hash(embed_class.defined_attributes_not_transient)
           end
-          embed_values = self.hypermedia_settings[:embed_values].first.dup || {}
+          embed_values = (self.hypermedia_settings[:embed_values].first || {}).dup
           embed_values.dup.each {|k,v| embed_values[k] = array_to_goo_hash(v)}
           special_attrs.merge!(embed_values)
           default_attrs.merge!(special_attrs)
