@@ -16,7 +16,7 @@ class TestOntology < LinkedData::TestCase
     cname = "Jeff Baines"
     cemail = "jeff@example.org"
     @contact = LinkedData::Models::Contact.where(name: cname, email: cemail).first rescue nil
-    @contact = LinkedData::Models::Contact.new(name: cname, email: cemail) if @contact.nil? || @contact.empty?
+    @contact = LinkedData::Models::Contact.new(name: cname, email: cemail) if @contact.nil?
 
     stub_request(:get, "example.com/ontology_file").to_return(:body => "fake ontology content")
   end
