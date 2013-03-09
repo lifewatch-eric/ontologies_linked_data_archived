@@ -79,7 +79,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class1"
-    cls = LinkedData::Models::Class.find(class_id, submission: os )
+    cls = LinkedData::Models::Class.find(class_id, submission: os, load_attrs: { prefLabel: true, children: true })
     assert cls.prefLabel == 'class 1 literal'
     children = cls.children
     assert_equal(1, cls.children.length)
@@ -154,7 +154,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_class_all_attributes
-    skip("Waiting for 'all_attributes' attribute support...")
     return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
@@ -166,9 +165,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
-    cls = LinkedData::Models::Class.find(class_id, submission: os )
-    #cls.load_attributes
-    assert (cls.attributes["http://www.w3.org/2002/07/owl#versionInfo"][0].value == "some version info")
+    cls = LinkedData::Models::Class.find(class_id, submission: os , load_attrs: :all)
+    assert (cls.attributes[:versionInfo][0].value == "some version info")
 
   end
 

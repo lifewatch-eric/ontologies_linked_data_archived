@@ -7,7 +7,7 @@ module LinkedData
 
     class Class < LinkedData::Models::Base
       model :class,
-            :namespace => :owl
+            :namespace => :owl, :schemaless => :true
 
       attribute :resource_id #special attribute to name the object manually
 
@@ -110,12 +110,18 @@ module LinkedData
       def self.inject_subproperty_query_option(params)
         #subPropertyOf reasoning by default if loading labels/syns/defs
         if params.include? :load_attrs
-          attrs = params[:load_attrs].instance_of?(Array) ? params[:load_attrs]
+          unless params[:load_attrs] == :all
+            attrs = params[:load_attrs].instance_of?(Array) ? params[:load_attrs]
                                               : params[:load_attrs].keys
+          else
+            params[:query_options] = { rules: :SUBP }
+            return
+          end
           if attrs == :defined ||
             !(attrs & [:prefLabel, :synonym, :definition]).empty?
              params[:query_options] = { rules: :SUBP } if !params.include? :query_options
           end
+
         end
       end
     end
