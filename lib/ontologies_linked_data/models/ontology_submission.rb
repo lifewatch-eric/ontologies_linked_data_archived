@@ -45,7 +45,7 @@ module LinkedData
       attribute :missingImports
 
       # URI for pulling ontology
-      attribute :pullLocation, :single_value => true, :instance_of => { :with => RDF::IRI }
+      attribute :pullLocation, :single_value => true, :instance_of => { :with => IRI }
 
       # Link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
