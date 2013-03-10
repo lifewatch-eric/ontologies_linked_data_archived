@@ -31,7 +31,7 @@ begin
     end
   end
 rescue Exception => e
-  abort("EXITING: Cannot connect to triplestore")
+  abort("EXITING: Cannot connect to triplestore '#{e}'")
 end
 
 # Require base model
