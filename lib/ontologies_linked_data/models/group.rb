@@ -1,6 +1,7 @@
 module LinkedData
   module Models
     class Group < LinkedData::Models::Base
+      model :group, :name_with => lambda { |s| plural_resource_id(s) }
       attribute :acronym, :unique => true, :single_value => true, :not_nil => true
       attribute :name, :single_value => true, :not_nil => true
       attribute :description, :single_value => true

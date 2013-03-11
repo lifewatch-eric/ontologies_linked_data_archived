@@ -4,7 +4,7 @@ require_relative 'review'
 module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
-      model :ontology
+      model :ontology, :name_with => lambda { |s| plural_resource_id(s) }
       attribute :acronym, :unique => true, :namespace => :omv
       attribute :name, :not_nil => true, :single_value => true, :namespace => :omv
       attribute :submissions,
