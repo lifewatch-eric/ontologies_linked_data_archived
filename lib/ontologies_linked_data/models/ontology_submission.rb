@@ -7,19 +7,21 @@ require 'cgi'
 module LinkedData
   module Models
 
+    IRI = SparqlRd::Resultset::IRI
+
     class OntologySubmission < LinkedData::Models::Base
       model :ontology_submission, :name_with => lambda { |s| submission_id_generator(s) }
       attribute :submissionId, :instance_of =>  { :with => Fixnum }, :single_value => true, :not_nil => true
 
       # Configurable properties for processing
-      attribute :prefLabelProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
-      attribute :definitionProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :synonymProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :authorProperty, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :classType, :instance_of => { :with => RDF::IRI }, :single_value  => true
-      attribute :hierarchyProperty, :instance_of =>  { :with => RDF::IRI }, :single_value  => true
-      attribute :obsoleteProperty, :instance_of => { :with => RDF::IRI }, :single_value => true
-      attribute :obsoleteParent, :instance_of => { :with => RDF::IRI }, :single_value => true
+      attribute :prefLabelProperty, :instance_of => { :with => IRI }, :single_value => true
+      attribute :definitionProperty, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :synonymProperty, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :authorProperty, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :classType, :instance_of => { :with => IRI }, :single_value  => true
+      attribute :hierarchyProperty, :instance_of =>  { :with => IRI }, :single_value  => true
+      attribute :obsoleteProperty, :instance_of => { :with => IRI }, :single_value => true
+      attribute :obsoleteParent, :instance_of => { :with => IRI }, :single_value => true
 
       # Ontology metadata
       attribute :hasOntologyLanguage, :namespace => :omv, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
@@ -43,7 +45,7 @@ module LinkedData
       attribute :missingImports
 
       # URI for pulling ontology
-      attribute :pullLocation, :single_value => true, :instance_of => { :with => RDF::IRI }
+      attribute :pullLocation, :single_value => true, :instance_of => { :with => IRI }
 
       # Link to ontology
       attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
@@ -62,7 +64,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::IRI.new(
-          "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/#{ss.submissionId.to_s}")
+          "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}")
       end
 
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
@@ -191,22 +193,26 @@ module LinkedData
           logger.flush
         end
         LinkedData::Parser.logger =  logger
-        input_data = zip_dst || self.uploadFilePath
-        labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
-        owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data.to_s),File.expand_path(self.data_folder.to_s),self.masterFileName)
-        triples_file_path, missing_imports = owlapi.parse
-        if missing_imports
-          missing_imports.each do |imp|
-            logger.info("OWL_IMPORT_MISSING: #{imp}")
+
+        if self.hasOntologyLanguage.acronym.eql?("UMLS")
+          file_name = zip ? File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
+          triples_file_path = File.expand_path(file_name)
+          logger.info("Using UMLS turtle file, skipping OWLAPI parse")
+          logger.flush
+          delete_and_append(triples_file_path, logger, SparqlRd::Utils::MimeType.turtle)
+        else
+          input_data = zip_dst || self.uploadFilePath
+          labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
+          owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data.to_s),File.expand_path(self.data_folder.to_s),self.masterFileName)
+          triples_file_path, missing_imports = owlapi.parse
+          if missing_imports
+            missing_imports.each do |imp|
+              logger.info("OWL_IMPORT_MISSING: #{imp}")
+            end
           end
+          logger.flush
+          delete_and_append(triples_file_path, logger)
         end
-        logger.flush
-
-        Goo.store.delete_graph(self.resource_id.value)
-        Goo.store.append_in_graph(File.read(triples_file_path),self.resource_id.value)
-        logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
-        logger.flush
-
 
         missing_labels_generation(logger, labels_file)
         logger.flush
@@ -219,7 +225,7 @@ module LinkedData
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
 
-        if missing_imports.length > 0
+        if missing_imports && missing_imports.length > 0
           self.missingImports = missing_imports
         else
           self.missingImports = nil
@@ -234,12 +240,7 @@ module LinkedData
       def index_submission(logger)
         query = "submissionAcronym:#{self.ontology.acronym}"
         Class.unindexByQuery query
-
-
-        binding.pry
-
         classes = self.classes :load_attrs => [:prefLabel, :synonym, :definition]
-
         Class.indexBatch(classes)
 
 
@@ -307,14 +308,13 @@ module LinkedData
       end
 
       def roots
-        #TODO review this
-        classes = LinkedData::Models::Class.where(:submission => self, :load_attrs => [:prefLabel, :definition, :synonym])
+        classes = LinkedData::Models::Class.where(submission: self, parents: :unbound,
+                                                  load_attrs: [:prefLabel, :definition, :synonym, :deprecated])
         roots = []
         classes.each do |c|
           next if c.resource_id.bnode?
-          roots << c if c.parents.nil? or c.parents.length == 0
+          roots << c if (c.attributes[:deprecated].nil?) || (c.attributes[:deprecated].parsed_value == false)
         end
-        roots.select! { |r| r.deprecated.nil? }
         return roots
       end
 
@@ -340,6 +340,13 @@ module LinkedData
       end
 
       private
+
+      def delete_and_append(triples_file_path, logger, mime_type = nil)
+        Goo.store.delete_graph(self.resource_id.value)
+        Goo.store.append_in_graph(File.read(triples_file_path), self.resource_id.value, mime_type)
+        logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
+        logger.flush
+      end
 
       def download_ontology_file
         file = open(self.pullLocation.value, :read_timeout => nil)

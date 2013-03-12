@@ -31,11 +31,16 @@ begin
     end
   end
 rescue Exception => e
-  abort("EXITING: Cannot connect to triplestore")
+  abort("EXITING: Cannot connect to triplestore '#{e}'")
 end
 
 # Require base model
 require_relative "ontologies_linked_data/models/base"
+
+#TODO: TEMPORAL HACK hypermedia links in ontology uses class model.
+#      we need to import this one first.
+require_relative "ontologies_linked_data/models/class"
+
 
 # Require all models
 project_root = File.dirname(File.absolute_path(__FILE__))

@@ -68,8 +68,8 @@ class Object
       new_value = convert_bnode(new_value, options, &block)
       new_value = convert_goo_objects(new_value)
       new_value = rdf_parsed_value(new_value)
-      new_value = new_value.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX) if new_value.is_a?(String)
-      new_value = new_value.map {|e| e.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX)} if new_value.is_a?(Enumerable) && new_value.first.is_a?(String)
+      new_value = new_value.gsub("http://data.bioontology.org/metadata/", $REST_URL_PREFIX) if new_value.is_a?(String)
+      new_value = new_value.map {|e| e.gsub("http://data.bioontology.org/metadata/", $REST_URL_PREFIX)} if new_value.is_a?(Enumerable) && new_value.first.is_a?(String)
 
       hash[k] = new_value
     end
@@ -85,7 +85,7 @@ class Object
   ##
   # Handle enumerables by recursing
   def enumerable_handling(options, &block)
-    if kind_of?(Enumerable) && !kind_of?(Hash)
+    if kind_of?(Enumerable) && !kind_of?(Hash) && !kind_of?(Goo::Base::Page)
       new_enum = self.class.new
       each do |item|
         new_enum << item.to_flex_hash(options, &block)
@@ -97,6 +97,19 @@ class Object
         new_hash[key] = value.to_flex_hash(options, &block)
       end
       return new_hash
+    elsif kind_of?(Goo::Base::Page)
+      model = self.first.class.goop_settings[:model]
+      page = {
+        page: self.page,
+        page_count: self.page_count,
+        prev_page: self.prev_page,
+        next_page: self.next_page,
+        model => []
+      }
+      self.each do |item|
+        page[model] << item.to_flex_hash(options, &block)
+      end
+      return page
     end
     return nil
   end
@@ -132,7 +145,7 @@ class Object
 
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.to_flex_hash(options, &block)}
+        values = value.map {|e| e.load unless e.loaded?; e.to_flex_hash(options, &block)}
       else
         value.load unless value.loaded?
         values = value.to_flex_hash(options, &block)

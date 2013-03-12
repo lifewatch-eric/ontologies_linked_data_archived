@@ -7,7 +7,7 @@ module LinkedData
 
     class Class < LinkedData::Models::Base
       model :class,
-            :namespace => :owl
+            :namespace => :owl, :schemaless => :true
 
       attribute :resource_id #special attribute to name the object manually
 
@@ -31,16 +31,17 @@ module LinkedData
       attribute :descendents, :use => :children,
                 :query_options => { :rules => :SUBC }
 
+      attribute :children_count, :aggregate => { :attribute => :children, :with => :count }
 
       search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
-      link_to LinkedData::Hypermedia::Link.new("self", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value"),
-              LinkedData::Hypermedia::Link.new("children", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/children"),
-              LinkedData::Hypermedia::Link.new("parents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents"),
-              LinkedData::Hypermedia::Link.new("descendents", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents"),
-              LinkedData::Hypermedia::Link.new("ancestors", "/ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors")
+      link_to LinkedData::Hypermedia::Link.new("self", "ontologies/:submission.ontology.acronym/classes/:resource_id.value", self.type_uri),
+              LinkedData::Hypermedia::Link.new("children", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", self.type_uri),
+              LinkedData::Hypermedia::Link.new("parents", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", self.type_uri),
+              LinkedData::Hypermedia::Link.new("descendents", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents", self.type_uri),
+              LinkedData::Hypermedia::Link.new("ancestors", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", self.type_uri)
 
       def get_index_doc
         attrs = {
@@ -63,7 +64,8 @@ module LinkedData
         missing_labels_generation = params.delete :missing_labels_generation
 
         inject_subproperty_query_option(params)
-        super(params) rescue binding.pry
+        params[:filter]="FILTER(!isBlank(?subject))"
+        super(params)
       end
 
       def self.find(*args)
@@ -126,9 +128,18 @@ module LinkedData
       def self.inject_subproperty_query_option(params)
         #subPropertyOf reasoning by default if loading labels/syns/defs
         if params.include? :load_attrs
-          if params[:load_attrs] == :defined || !(params[:load_attrs] & [:prefLabel, :synonym, :definition]).empty?
+          unless params[:load_attrs] == :all
+            attrs = params[:load_attrs].instance_of?(Array) ? params[:load_attrs]
+                                              : params[:load_attrs].keys
+          else
+            params[:query_options] = { rules: :SUBP }
+            return
+          end
+          if attrs == :defined ||
+            !(attrs & [:prefLabel, :synonym, :definition]).empty?
              params[:query_options] = { rules: :SUBP } if !params.include? :query_options
           end
+
         end
       end
     end

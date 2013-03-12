@@ -1,7 +1,10 @@
+require_relative 'ontology_submission'
+require_relative 'review'
+
 module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
-      model :ontology
+      model :ontology, :name_with => lambda { |s| plural_resource_id(s) }
       attribute :acronym, :unique => true, :namespace => :omv
       attribute :name, :not_nil => true, :single_value => true, :namespace => :omv
       attribute :submissions,
@@ -17,11 +20,11 @@ module LinkedData
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
-      link_to LinkedData::Hypermedia::Link.new("metrics", "/ontologies/:acronym/metrics"),
-              LinkedData::Hypermedia::Link.new("submissions", "/ontologies/:acronym/submissions"),
-              LinkedData::Hypermedia::Link.new("classes", "/ontologies/:acronym/classes"),
-              LinkedData::Hypermedia::Link.new("roots", "/ontologies/:acronym/classes/roots"),
-              LinkedData::Hypermedia::Link.new("reviews", "/ontologies/:acronym/reviews")
+      link_to LinkedData::Hypermedia::Link.new("metrics", "ontologies/:acronym/metrics"),
+              LinkedData::Hypermedia::Link.new("submissions", "ontologies/:acronym/submissions", LinkedData::Models::OntologySubmission.type_uri),
+              LinkedData::Hypermedia::Link.new("classes", "ontologies/:acronym/classes", LinkedData::Models::Class.type_uri),
+              LinkedData::Hypermedia::Link.new("roots", "ontologies/:acronym/classes/roots", LinkedData::Models::Class.type_uri),
+              LinkedData::Hypermedia::Link.new("reviews", "ontologies/:acronym/reviews", LinkedData::Models::Review.type_uri)
 
       def latest_submission(options = {})
         status = options[:status] || :parsed

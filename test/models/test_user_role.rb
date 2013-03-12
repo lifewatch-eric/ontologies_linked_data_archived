@@ -25,7 +25,6 @@ class TestUserRole < LinkedData::TestCase
       list = LinkedData::Models::Users::Role.where(role: role)
       assert_equal 1, list.length
       assert_instance_of LinkedData::Models::Users::Role, list[0]
-      list[0].load
       assert_equal role, list[0].role
     end
   end

@@ -1,7 +1,7 @@
 module LinkedData
   module Models
     class Project < LinkedData::Models::Base
-      model :project
+      model :project, :name_with => lambda { |s| plural_resource_id(s) }
       attribute :acronym, :unique => true, :single_value => true, :not_nil => true
       attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
       attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }

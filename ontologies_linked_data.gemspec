@@ -24,6 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("rack-test")
   gem.add_dependency("rubyzip")
   gem.add_dependency("libxml-ruby")
+  gem.add_dependency("activesupport")
 
   # gem.executables = %w()
 end

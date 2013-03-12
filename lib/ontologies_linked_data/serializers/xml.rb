@@ -5,7 +5,7 @@ module LinkedData
         links = {}
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
-            hash["id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata", $REST_URL_PREFIX)
+            hash["id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata/", $REST_URL_PREFIX)
             links_xml = generate_links(hashed_obj)
             links[hash["id"]] = links_xml unless links_xml.empty?
           end
@@ -40,9 +40,14 @@ module LinkedData
         return {} if !object.is_a?(LinkedData::Hypermedia::Resource) || object.class.hypermedia_settings[:link_to].empty?
         links = object.class.hypermedia_settings[:link_to]
         links_output = ::XML::Node.new("links")
+        self_link = ::XML::Node.new("self")
+        self_link['href'] = object.resource_id.value.gsub("http://data.bioontology.org/metadata/", $REST_URL_PREFIX)
+        self_link['rel'] = object.class.type_uri
+        links_output << self_link
         links.each do |link|
           link_xml = ::XML::Node.new(link.type)
           link_xml['href'] = LinkedData::Hypermedia.expand_link(link.path, object)
+          link_xml['rel'] = link.type_uri if link.type_uri
           links_output << link_xml
         end
         return links_output
