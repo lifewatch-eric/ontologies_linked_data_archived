@@ -1,6 +1,8 @@
 $GOO_PORT = 9000 unless $GOO_PORT
 $GOO_HOST = "localhost" unless $GOO_HOST
 
+$SEARCH_SERVER_URL = "http://localhost:9001/solr" unless $SEARCH_SERVER_URL
+
 $REPOSITORY_FOLDER = "./test/data/ontology_files/repo"
 
 $REST_URL_PREFIX = "http://data.bioontology.org/"

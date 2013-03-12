@@ -217,10 +217,8 @@ module LinkedData
         missing_labels_generation(logger, labels_file)
         logger.flush
 
-
-        #call search indexing (similar to missing_labels_generation)
+        #index this ontology
         index_submission logger
-
 
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
@@ -236,19 +234,14 @@ module LinkedData
         logger.flush
       end
 
-
       def index_submission(logger)
         query = "submissionAcronym:#{self.ontology.acronym}"
+        logger.info("Indexing Ontology: #{self.ontology.acronym}")
         Class.unindexByQuery query
         classes = self.classes :load_attrs => [:prefLabel, :synonym, :definition]
         Class.indexBatch(classes)
-
-
-
+        Class.indexCommit
       end
-
-
-
 
       def missing_labels_generation(logger,save_in_file)
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)

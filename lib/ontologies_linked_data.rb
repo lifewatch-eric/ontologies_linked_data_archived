@@ -12,11 +12,13 @@ require_relative "ontologies_linked_data/monkeypatches/object"
 require_relative "ontologies_linked_data/monkeypatches/logging"
 
 # Setup Goo (repo connection and namespaces)
-port = $GOO_PORT || 9000
-host = $GOO_HOST || "localhost"
+port = $GOO_PORT
+host = $GOO_HOST
+search_server_url = $SEARCH_SERVER_URL
+
 begin
   if Goo.store().nil?
-    puts ">> Connecting to rdf store #{host}:#{port}"
+    puts ">> Connecting to rdf store #{host}:#{port} and search server at #{search_server_url}"
     Goo.configure do |conf|
       conf[:stores] = [ { :name => :main , :host => host, :port => port,
         :options => { :rules => :NONE} } ]
@@ -28,6 +30,7 @@ begin
         :rdfs => "http://www.w3.org/2000/01/rdf-schema#",
         :default => :metadata
       }
+      conf[:search_conf] = { :search_server => search_server_url }
     end
   end
 rescue Exception => e
