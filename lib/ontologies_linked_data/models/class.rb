@@ -52,9 +52,7 @@ module LinkedData
         doc = self.attributes.dup
         doc.delete :internals
         doc.delete :uuid
-
         doc = doc.merge(attrs)
-
         doc[:resource_id] = object_id
 
         return doc

@@ -232,16 +232,16 @@ module LinkedData
 
 
       def index_submission(logger)
+        query = "submissionAcronym:#{self.ontology.acronym}"
+        Class.unindexByQuery query
+
+
+        binding.pry
+
         classes = self.classes :load_attrs => [:prefLabel, :synonym, :definition]
 
+        Class.indexBatch(classes)
 
-        #Class.indexBatch(classes)
-
-        #classes.each do |c|
-        #
-        #  binding.pry
-        #
-        #end
 
 
       end
