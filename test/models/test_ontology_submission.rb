@@ -140,6 +140,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
   def test_submission_parse
     submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10)
+
+    #This one has some nasty looking IRIS with slashes in the anchor
+    submission_parse("MCCLTEST", "MCCLS TEST", "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 10)
   end
 
   def test_submission_parse_multiple
