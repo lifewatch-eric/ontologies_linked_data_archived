@@ -143,6 +143,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     #This one has some nasty looking IRIS with slashes in the anchor
     submission_parse("MCCLTEST", "MCCLS TEST", "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 10)
+
+    #This one has resources wih accents.
+    submission_parse("OntoMATEST", "OntoMA TEST", "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 10)
   end
 
   def test_submission_parse_multiple
