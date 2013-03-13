@@ -62,7 +62,15 @@ module LinkedData
         submissions.each do |s|
           s.delete
         end
+        # Clear the search index
+        unindex()
         super()
+      end
+
+      def unindex
+        query = "submissionAcronym:#{acronym}"
+        Ontology.unindexByQuery(query)
+        Ontology.indexCommit()
       end
     end
   end
