@@ -336,7 +336,7 @@ module LinkedData
 
       def delete_and_append(triples_file_path, logger, mime_type = nil)
         Goo.store.delete_graph(self.resource_id.value)
-        Goo.store.append_in_graph(File.read(triples_file_path), self.resource_id.value, mime_type)
+        Goo.store.put_file_in_graph(triples_file_path, self.resource_id.value, mime_type)
         logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
         logger.flush
       end
