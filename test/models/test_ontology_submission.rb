@@ -307,7 +307,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontology.delete
   end
 
-  #ontology with errors
   def test_submission_parse_emo
     return if ENV["SKIP_PARSING"]
     acronym = "EMO-TST"
@@ -342,10 +341,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     sub = sub[0]
     sub.load unless sub.loaded?
     sub.ontology.load unless sub.ontology.loaded?
-
-    assert_raise LinkedData::Parser::OWLAPIParserException do
-      sub.process_submission Logger.new(STDOUT)
-    end
 
     sub = LinkedData::Models::Ontology.find(acronym)
     if not sub.nil?
