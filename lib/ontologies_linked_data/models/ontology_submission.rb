@@ -3,6 +3,7 @@ require 'net/http'
 require 'uri'
 require 'open-uri'
 require 'cgi'
+require 'benchmark'
 
 module LinkedData
   module Models
@@ -192,7 +193,7 @@ module LinkedData
           logger.info("Files extracted from zip #{extracted}")
           logger.flush
         end
-        LinkedData::Parser.logger =  logger
+        LinkedData::Parser.logger = logger
 
         if self.hasOntologyLanguage.acronym.eql?("UMLS")
           file_name = zip ? File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
@@ -218,7 +219,7 @@ module LinkedData
         logger.flush
 
         #index this ontology
-        index_submission logger
+        index(logger)
 
         rdf_status = SubmissionStatus.find("RDF")
         self.submissionStatus = rdf_status
@@ -234,13 +235,37 @@ module LinkedData
         logger.flush
       end
 
-      def index_submission(logger)
-        query = "submissionAcronym:#{self.ontology.acronym}"
-        logger.info("Indexing Ontology: #{self.ontology.acronym}")
-        Class.unindexByQuery query
+      def index(logger)
         classes = self.classes :load_attrs => [:prefLabel, :synonym, :definition]
-        Class.indexBatch(classes)
-        Class.indexCommit
+        logger.info("Indexing ontology: #{self.ontology.acronym}...")
+
+        time = Benchmark.realtime do
+          self.ontology.unindex()
+          Class.indexBatch(classes)
+          Class.indexCommit()
+        end
+        logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec.")
+
+        logger.info("Optimizing index...")
+
+        time = Benchmark.realtime do
+          Class.indexOptimize()
+        end
+        logger.info("Completed optimizing index in #{time} sec.")
+      end
+
+      # Override delete to add removal from the search index
+      #TODO: revise this with a better process
+      def delete(in_update=false)
+        super()
+        self.ontology.unindex()
+
+        # need to re-index the previous submission (if exists)
+        prev_sub = self.ontology.latest_submission()
+
+        if prev_sub
+          prev_sub.index(LinkedData::Parser.logger)
+        end
       end
 
       def missing_labels_generation(logger,save_in_file)

@@ -25,6 +25,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("rubyzip")
   gem.add_dependency("libxml-ruby")
   gem.add_dependency("activesupport")
+  gem.add_dependency("rsolr")
 
   # gem.executables = %w()
 end
