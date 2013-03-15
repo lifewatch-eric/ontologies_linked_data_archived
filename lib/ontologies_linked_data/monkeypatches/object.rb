@@ -104,6 +104,7 @@ class Object
         page_count: self.page_count,
         prev_page: self.prev_page,
         next_page: self.next_page,
+        links: generate_page_links(options, self.page, self.page_count),
         model => []
       }
       self.each do |item|
@@ -112,6 +113,18 @@ class Object
       return page
     end
     return nil
+  end
+
+  def generate_page_links(options, page, page_count)
+    request = options[:request]
+    params = request.params.dup
+    request_path = "#{$REST_URL_PREFIX.chomp("/")}#{request.path}"
+    next_page = page == page_count ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page + 1))}"
+    prev_page = page == 1 ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page - 1))}"
+    return {
+      next_page: next_page,
+      prev_page: prev_page
+    }
   end
 
   def populate_attributes(hash, all = false)

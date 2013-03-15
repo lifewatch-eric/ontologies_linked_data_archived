@@ -14,9 +14,9 @@ module LinkedData
     end
 
     def build_response(env, options = {})
-      status = options[:status] ||= 200
-      headers = options[:headers] ||= {}
-      body = options[:body] ||= ""
+      status = options[:status] || 200
+      headers = options[:headers] || {}
+      body = options[:body] || ""
       obj = options[:ld_object] || body
 
       params = env["rack.request.query_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
@@ -40,7 +40,7 @@ module LinkedData
         response(
           :status => status,
           :content_type => "#{LinkedData::MediaTypes.media_type_from_base(best)};charset=utf-8",
-          :body => serialize(best, obj, params),
+          :body => serialize(best, obj, params, Rack::Request.new(env)),
           :headers => headers
         )
       rescue Exception => e
@@ -59,21 +59,21 @@ module LinkedData
     private
 
     def response(options = {})
-      status = options[:status] ||= 200
-      headers = options[:headers] ||= {}
-      body = options[:body] ||= ""
-      content_type = options[:content_type] ||= "text/plain"
-      content_length = options[:content_length] ||= body.bytesize.to_s
+      status = options[:status] || 200
+      headers = options[:headers] || {}
+      body = options[:body] || ""
+      content_type = options[:content_type] || "text/plain"
+      content_length = options[:content_length] || body.bytesize.to_s
       raise ArgumentError("Body must be a string") unless body.kind_of?(String)
       headers.merge!({"Content-Type" => content_type, "Content-Length" => content_length})
       [status, headers, [body]]
     end
 
-    def serialize(type, obj, params)
-      only = params["include"] ||= []
+    def serialize(type, obj, params, request)
+      only = params["include"] || []
       only = only.split(",") unless only.kind_of?(Array)
       only, all = [], true if only[0].eql?("all")
-      options = {:only => only, :all => all, :params => params}
+      options = {:only => only, :all => all, :params => params, :request => request}
       LinkedData::Serializers.serialize(obj, type, options)
     end
 
