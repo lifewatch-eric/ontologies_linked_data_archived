@@ -247,48 +247,53 @@ module LinkedData
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
         Goo.store.append_in_graph(property_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
         count_classes = 0
-        label_triples = []
         t0 = Time.now
-        classes = self.classes :missing_labels_generation => true,
-                               :load_attrs => [:prefLabel, :synonym],
-                               :query_options => { rules: :SUBP }
+        page = 1
+        size = 2500
         t1 = Time.now
-        logger.info("Obtained #{classes.length} classes for #{self.resource_id.value} in #{t1 - t0} sec.")
-        logger.flush
-        classes.each do |c|
-          if c.prefLabel.nil?
-            rdfs_labels = c.synonym
-            label = nil
-            if rdfs_labels && rdfs_labels.length > 0
-              label = rdfs_labels[0].value
-            else
-              label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
+        fsave = File.open(save_in_file,"w")
+        fsave.write(property_triples)
+        begin #per page
+          label_triples = []
+          page_classes = LinkedData::Models::Class.page submission: self,
+                                                   page: page, size: size,
+                                                   load_attrs: { prefLabel: true, synonym: true },
+                                                   query_options: { rules: :SUBP }
+          logger.info("#{page_classes.length} in page #{page} classes for #{self.resource_id.value} (#{t1 - t0} sec). Total pages #{page_classes.page_count}.")
+          logger.flush
+          page_classes.each do |c|
+            if c.prefLabel.nil?
+              rdfs_labels = c.synonym
+              label = nil
+              if rdfs_labels && rdfs_labels.length > 0
+                label = rdfs_labels[0].value
+              else
+                label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
+              end
+              label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.resource_id,
+                                                     LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
             end
-            label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.resource_id,
-                                                   LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
+            count_classes += 1
           end
-          count_classes += 1
-        end
-        if (label_triples.length > 0)
-          logger.info("Asserting #{label_triples.length} labels in #{self.resource_id.value}")
-          logger.flush
-          label_triples = label_triples.join "\n"
-          #save triples for logs
-          fsave = File.open(save_in_file,"w")
-          fsave.write(property_triples)
-          fsave.write(label_triples)
-          fsave.close()
-          logger.info("Saved generated labels in #{save_in_file}")
-          t0 = Time.now
-          Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
-          t1 = Time.now
-          logger.info("Labels asserted in #{t1 - t0} sec.")
-          logger.flush
-        else
-          logger.info("No labels generated for ontology.")
-          logger.flush
-        end
-        logger.info("end missing_labels_generation")
+          if (label_triples.length > 0)
+            logger.info("Asserting #{label_triples.length} labels in #{self.resource_id.value}")
+            logger.flush
+            label_triples = label_triples.join "\n"
+            fsave.write(label_triples)
+            t0 = Time.now
+            Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+            t1 = Time.now
+            logger.info("Labels asserted in #{t1 - t0} sec.")
+            logger.flush
+          else
+            logger.info("No labels generated in page #{page_classes.page_count}.")
+            logger.flush
+          end
+          page = page_classes.next_page
+        end while !page.nil?
+        logger.info("end missing_labels_generation traversed #{count_classes} classes")
+        logger.info("Saved generated labels in #{save_in_file}")
+        fsave.close()
         logger.flush
       end
 
