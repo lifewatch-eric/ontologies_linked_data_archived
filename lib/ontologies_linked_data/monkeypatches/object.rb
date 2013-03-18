@@ -68,8 +68,8 @@ class Object
       new_value = convert_bnode(new_value, options, &block)
       new_value = convert_goo_objects(new_value)
       new_value = rdf_parsed_value(new_value)
-      new_value = new_value.gsub("http://data.bioontology.org/metadata/", $REST_URL_PREFIX) if new_value.is_a?(String)
-      new_value = new_value.map {|e| e.gsub("http://data.bioontology.org/metadata/", $REST_URL_PREFIX)} if new_value.is_a?(Enumerable) && new_value.first.is_a?(String)
+      new_value = new_value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if new_value.is_a?(String)
+      new_value = new_value.map {|e| e.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)} if new_value.is_a?(Enumerable) && new_value.first.is_a?(String)
 
       hash[k] = new_value
     end
@@ -118,7 +118,7 @@ class Object
   def generate_page_links(options, page, page_count)
     request = options[:request]
     params = request.params.dup
-    request_path = "#{$REST_URL_PREFIX.chomp("/")}#{request.path}"
+    request_path = "#{LinkedData.settings.rest_url_prefix.chomp("/")}#{request.path}"
     next_page = page == page_count ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page + 1))}"
     prev_page = page == 1 ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page - 1))}"
     return {

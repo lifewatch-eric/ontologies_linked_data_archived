@@ -8,7 +8,7 @@ module LinkedData
 
       def self.plural_resource_id(object, model_name = nil, naming_attr = nil)
         model_name ||= (model_name || self.goo_name.to_s).pluralize
-        url_prefix = $REST_URL_PREFIX || self.namespace(:default)
+        url_prefix = LinkedData.settings.rest_url_prefix || self.namespace(:default)
         RDF::IRI.new("#{url_prefix}#{model_name}/#{unique_value(object, self.goop_settings[:attributes], naming_attr)}")
       end
 

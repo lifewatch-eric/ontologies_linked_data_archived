@@ -9,7 +9,7 @@ module LinkedData
       links = object.class.hypermedia_settings[:link_to]
       links_output = {}
       links.each do |link|
-        links_output[link.type] = $REST_URL_PREFIX + expand_link(link.path, object)
+        links_output[link.type] = LinkedData.settings.rest_url_prefix + expand_link(link.path, object)
       end
       links_output
     end
