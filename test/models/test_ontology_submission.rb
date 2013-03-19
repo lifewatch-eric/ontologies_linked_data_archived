@@ -59,7 +59,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({:acronym => acronym, :submissionId => id})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.contact = contact
     ont_submision.released = DateTime.now - 4
@@ -89,7 +89,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     owl, rad, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({:acronym => acronym, :submissionId => id,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.contact = contact
     ont_submision.released = DateTime.now - 4
@@ -125,7 +125,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     id = 10
 
     owl, dup, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => 1,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.contact = contact
     ont_submision.released = DateTime.now - 4
@@ -159,7 +159,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
         s.delete
       end
     end
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id, :name => name })
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
     assert (not ont_submision.valid?)
     assert_equal 6, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
@@ -208,7 +208,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
     end
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     assert (not ont_submision.valid?)
     assert_equal 6, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -319,7 +319,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
     end
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, emo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
@@ -365,7 +365,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
     end
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, sbo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
@@ -413,7 +413,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
     end
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, emo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
@@ -470,7 +470,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
     end
 
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :acronym => acronym, :submissionId => id,})
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, aero, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
