@@ -236,20 +236,27 @@ module LinkedData
       end
 
       def index(logger)
-        classes = self.classes :load_attrs => [:prefLabel, :synonym, :definition]
-        logger.info("Indexing ontology: #{self.ontology.acronym}...")
+        page = 1
+        size = 2500
 
         time = Benchmark.realtime do
           self.ontology.unindex()
-          Class.indexBatch(classes)
-          Class.indexCommit()
+          logger.info("Indexing ontology: #{self.ontology.acronym}...")
+
+          begin #per page
+            page_classes = LinkedData::Models::Class.page submission: self,
+                                                          page: page, size: size,
+                                                          load_attrs: { prefLabel: true, synonym: true, definition: true }
+            LinkedData::Models::Class.indexBatch(page_classes)
+            page = page_classes.next_page
+          end while !page.nil?
+          LinkedData::Models::Class.indexCommit()
         end
         logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec.")
-
         logger.info("Optimizing index...")
 
         time = Benchmark.realtime do
-          Class.indexOptimize()
+          LinkedData::Models::Class.indexOptimize()
         end
         logger.info("Completed optimizing index in #{time} sec.")
       end

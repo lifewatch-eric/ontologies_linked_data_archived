@@ -148,10 +148,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     submission_parse("OntoMATEST", "OntoMA TEST", "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 10)
   end
 
-  def test_submission_parse_multiple
-
-  end
-
   def submission_parse( acronym, name, ontologyFile, id)
     return if ENV["SKIP_PARSING"]
 
