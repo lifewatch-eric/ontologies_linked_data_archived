@@ -60,11 +60,11 @@ module LinkedData
       # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
       def delete(in_update=false)
         submissions.each do |s|
-          s.delete
+          s.delete(in_update, false)
         end
         # Clear the search index
         unindex()
-        super()
+        super(in_update)
       end
 
       def unindex

@@ -263,15 +263,17 @@ module LinkedData
 
       # Override delete to add removal from the search index
       #TODO: revise this with a better process
-      def delete(in_update=false)
-        super()
+      def delete(in_update=false, remove_index=true)
+        super(in_update)
         self.ontology.unindex()
 
-        # need to re-index the previous submission (if exists)
-        prev_sub = self.ontology.latest_submission()
+        if remove_index
+          # need to re-index the previous submission (if exists)
+          prev_sub = self.ontology.latest_submission()
 
-        if prev_sub
-          prev_sub.index(LinkedData::Parser.logger)
+          if prev_sub
+            prev_sub.index(LinkedData::Parser.logger)
+          end
         end
       end
 
