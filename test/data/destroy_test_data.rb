@@ -1,6 +1,7 @@
-require_relative "../../config/default.rb"
-require_relative "../../lib/ontologies_linked_data"
 require "pry"
+require_relative "../../lib/ontologies_linked_data"
+require_relative "../../config/config.rb"
+
 Goo.stores.each do |store|
   name = store[:name]
 

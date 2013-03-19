@@ -10,6 +10,8 @@ if ENV["COVERAGE"].eql?("true")
 end
 
 require_relative "../lib/ontologies_linked_data"
+require_relative "../config/config.rb"
+
 require "test/unit"
 require "webmock/minitest"
 WebMock.allow_net_connect!

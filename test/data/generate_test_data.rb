@@ -1,5 +1,6 @@
-require_relative "../../config/default.rb"
 require_relative "../../lib/ontologies_linked_data"
+require_relative "../../config/config.rb"
+
 
 ##
 # This class uses some basic convention to allow a set of rake tasks to create/delete sample data.
