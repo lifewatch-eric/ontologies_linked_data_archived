@@ -2,7 +2,6 @@ require "goo"
 
 # Setup Goo (repo connection and namespaces)
 require_relative "ontologies_linked_data/config/config"
-require_relative "../config/default.rb"
 
 # Include other dependent code
 require_relative "ontologies_linked_data/hypermedia/hypermedia"
