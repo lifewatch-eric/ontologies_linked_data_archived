@@ -47,4 +47,22 @@ module LinkedData
       abort("EXITING: Cannot connect to triplestore and/or search server '#{e}'")
     end
   end
+
+  ##
+  # Configure ontologies_linked_data namespaces
+  # We do this at initial runtime because goo needs namespaces for its DSL
+  def goo_namespaces
+    Goo.configure do |conf|
+      conf[:namespaces] = {
+        :metadata => "http://data.bioontology.org/metadata/",
+        :omv => "http://omv.ontoware.org/2005/05/ontology#",
+        :skos => "http://www.w3.org/2004/02/skos/core#",
+        :owl => "http://www.w3.org/2002/07/owl#",
+        :rdfs => "http://www.w3.org/2000/01/rdf-schema#",
+        :default => :metadata
+      }
+    end
+  end
+  self.goo_namespaces
+
 end
