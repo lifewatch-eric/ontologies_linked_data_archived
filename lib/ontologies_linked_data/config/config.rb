@@ -12,7 +12,9 @@ module LinkedData
     return if @settings_run
     @settings_run = true
 
-    yield @settings if block_given?
+    overide_connect_goo = false
+
+    yield @settings, overide_connect_goo if block_given?
 
     # Set defaults
     @settings.goo_port          ||= 9000
@@ -21,9 +23,11 @@ module LinkedData
     @settings.repository_folder ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix   ||= "http://data.bioontology.org/"
 
-    connect_goo
+    connect_goo unless overide_connect_goo
   end
 
+  ##
+  # Connect to goo by configuring the store and search server
   def connect_goo(host = nil, port = nil, search_server_url = nil)
     port              ||= @settings.goo_port
     host              ||= @settings.goo_host
