@@ -34,7 +34,7 @@ class Object
 
     # Add methods
     methods.each do |method|
-      hash[method] = self.send(method.to_s)
+      hash[method] = self.send(method.to_s) if self.respond_to?(method)
     end
 
     # Get rid of everything except the 'only'
