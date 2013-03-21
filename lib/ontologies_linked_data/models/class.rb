@@ -37,6 +37,7 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
+      serialize_default :prefLabel, :synonym, :definition, :children_count
       serialize_never :submissionAcronym, :submissionId, :submission
       link_to LinkedData::Hypermedia::Link.new("self", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value", s) }, self.type_uri),
               LinkedData::Hypermedia::Link.new("ontology", lambda { |s| link_path("ontologies/:submission.ontology.acronym", s) },  Goo.namespaces[Goo.namespaces[:default]]+"Ontology"),
