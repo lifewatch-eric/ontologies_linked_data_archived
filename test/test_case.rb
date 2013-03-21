@@ -16,6 +16,19 @@ require "test/unit"
 require "webmock/minitest"
 WebMock.allow_net_connect!
 
+# Check to make sure you want to run if not pointed at localhost
+if !LinkedData.settings.goo_host.eql?("localhost")
+  print "\n\n================================== WARNING =================================="
+  print "\nYou are using a triplestore at #{LinkedData.settings.goo_host}. Tests can be destructive.\nType 'y' to continue: "
+  $stdout.flush
+  confirm = $stdin.gets
+  if !(confirm.strip == 'y')
+    abort("Canceling tests...\n\n")
+  end
+  print "Running tests..."
+  $stdout.flush
+end
+
 module LinkedData
   class TestCase < Test::Unit::TestCase
 
