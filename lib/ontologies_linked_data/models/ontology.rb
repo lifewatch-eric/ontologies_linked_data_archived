@@ -62,8 +62,6 @@ module LinkedData
         submissions.each do |s|
           s.delete(in_update, false)
         end
-        # Clear the search index
-        unindex()
         super(in_update)
       end
 

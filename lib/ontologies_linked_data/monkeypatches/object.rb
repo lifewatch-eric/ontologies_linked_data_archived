@@ -98,29 +98,46 @@ class Object
       end
       return new_hash
     elsif kind_of?(Goo::Base::Page)
-      model = self.first.class.goop_settings[:model]
-      page = {
-        page: self.page,
-        page_count: self.page_count,
-        prev_page: self.prev_page,
-        next_page: self.next_page,
-        links: generate_page_links(options, self.page, self.page_count),
-        model => []
-      }
-      self.each do |item|
-        page[model] << item.to_flex_hash(options, &block)
-      end
-      return page
+      return convert_goo_page(options, &block)
     end
     return nil
   end
 
+  def convert_goo_page(options, &block)
+    if self.first && self.first.is_a?(LinkedData::Models::Base)
+      model = self.first.class.goop_settings[:model]
+    else
+      model = :results
+    end
+
+    page = {
+      page: self.page,
+      page_count: self.page_count,
+      prev_page: self.prev_page,
+      next_page: self.next_page,
+      links: generate_page_links(options, self.page, self.page_count),
+      model => []
+    }
+
+    self.each do |item|
+      page[model] << item.to_flex_hash(options, &block)
+    end
+    page
+  end
+
   def generate_page_links(options, page, page_count)
     request = options[:request]
-    params = request.params.dup
-    request_path = "#{LinkedData.settings.rest_url_prefix.chomp("/")}#{request.path}"
-    next_page = page == page_count ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page + 1))}"
-    prev_page = page == 1 ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page - 1))}"
+
+    if request
+      params = request.params.dup
+      request_path = "#{LinkedData.settings.rest_url_prefix.chomp("/")}#{request.path}"
+      next_page = page == page_count ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page + 1))}"
+      prev_page = page == 1 ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page - 1))}"
+    else
+      next_page = "?#{Rack::Utils.build_query("page" => page + 1)}"
+      prev_page = "?#{Rack::Utils.build_query("page" => page - 1)}"
+    end
+
     return {
       next_page: next_page,
       prev_page: prev_page
