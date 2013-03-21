@@ -192,4 +192,10 @@ class TestClassModel < LinkedData::TestOntologyCommon
       end
     end
   end
+
+  def test_class_nil_values
+    cls = LinkedData::Models::Class.new
+    cls.my_new_attr = "blah"
+    assert cls.my_new_attr == ["blah"]
+  end
 end
