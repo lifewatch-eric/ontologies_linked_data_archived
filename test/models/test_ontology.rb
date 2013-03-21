@@ -143,4 +143,13 @@ class TestOntology < LinkedData::TestCase
     all_submissions = ont.first.submissions
     assert_equal 3, all_submissions.length
   end
+
+  def test_duplicate_contacts
+    _create_ontology_with_submissions
+    ont = LinkedData::Models::Ontology.find(@acronym)
+    sub = ont.submissions.first
+    sub.load
+    assert sub.contact.length == 1
+  end
+
 end
