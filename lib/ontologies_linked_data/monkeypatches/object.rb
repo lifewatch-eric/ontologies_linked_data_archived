@@ -175,10 +175,10 @@ class Object
 
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.load unless e.loaded?; e.to_flex_hash(options, &block)}
+        values = value.map {|e| e.load unless e.loaded?; e.to_flex_hash({}, &block)}
       else
         value.load unless value.loaded?
-        values = value.to_flex_hash(options, &block)
+        values = value.to_flex_hash({}, &block)
       end
       hash[attribute] = values
       return hash, true
