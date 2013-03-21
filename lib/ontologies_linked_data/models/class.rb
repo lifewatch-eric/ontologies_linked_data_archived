@@ -37,11 +37,13 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
-      link_to LinkedData::Hypermedia::Link.new("self", "ontologies/:submission.ontology.acronym/classes/:resource_id.value", self.type_uri),
-              LinkedData::Hypermedia::Link.new("children", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", self.type_uri),
-              LinkedData::Hypermedia::Link.new("parents", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", self.type_uri),
-              LinkedData::Hypermedia::Link.new("descendents", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents", self.type_uri),
-              LinkedData::Hypermedia::Link.new("ancestors", "ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", self.type_uri)
+      serialize_never :submissionAcronym, :submissionId, :submission
+      link_to LinkedData::Hypermedia::Link.new("self", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value", s) }, self.type_uri),
+              LinkedData::Hypermedia::Link.new("ontology", lambda { |s| link_path("ontologies/:submission.ontology.acronym", s) },  Goo.namespaces[Goo.namespaces[:default]]+"Ontology"),
+              LinkedData::Hypermedia::Link.new("children", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", s) }, self.type_uri),
+              LinkedData::Hypermedia::Link.new("parents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", s) }, self.type_uri),
+              LinkedData::Hypermedia::Link.new("descendents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents", s) }, self.type_uri),
+              LinkedData::Hypermedia::Link.new("ancestors", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", s) }, self.type_uri)
 
       def get_index_doc
         attrs = {
@@ -73,6 +75,13 @@ module LinkedData
         super(*args)
       end
 
+      def self.link_path(path, cls)
+        unless cls.respond_to?(:submission)
+          path.sub!(":submission.ontology.acronym", cls.submissionAcronym)
+        end
+        LinkedData::Hypermedia::expand_link(path, cls)
+      end
+
       def paths_to_root
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
@@ -81,6 +90,7 @@ module LinkedData
       end
 
       private
+
       def append_if_not_there_already(path,r)
         return nil if (path.select { |x| x.resource_id.value == r.resource_id.value }).length > 0
         path << r
