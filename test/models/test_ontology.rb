@@ -113,7 +113,6 @@ class TestOntology < LinkedData::TestCase
     count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
     ont = ont.first
     latest = ont.latest_submission(status: :any)
-    latest.load
     assert_equal 3, latest.submissionId
   end
 
@@ -123,18 +122,15 @@ class TestOntology < LinkedData::TestCase
     LinkedData::Models::SubmissionStatus.init
     status = LinkedData::Models::SubmissionStatus.find(LinkedData::Models::SubmissionStatus.parsed_code)
     sub = ont.submissions[1]
-    sub.load
     sub.submissionStatus = status
     sub.save
     latest = ont.latest_submission
-    latest.load
     assert_equal 2, latest.submissionId
   end
 
   def test_submission_retrieval
     count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
     middle_submission = ont.first.submission(2)
-    middle_submission.load
     assert_equal 2, middle_submission.submissionId
   end
 
@@ -148,7 +144,6 @@ class TestOntology < LinkedData::TestCase
     _create_ontology_with_submissions
     ont = LinkedData::Models::Ontology.find(@acronym)
     sub = ont.submissions.first
-    sub.load
     assert sub.contact.length == 1
   end
 
