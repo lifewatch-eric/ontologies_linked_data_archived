@@ -314,7 +314,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not emo.nil?
       sub = emo.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
@@ -342,7 +341,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not sub.nil?
       sub = sub.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
@@ -360,7 +358,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not sbo.nil?
       sub = sbo.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
@@ -390,7 +387,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not sbo.nil?
       sub = sbo.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
@@ -447,7 +443,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not sub.nil?
       sub = sub.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
@@ -465,7 +460,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not aero.nil?
       sub = aero.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
@@ -499,7 +493,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     if not aero.nil?
       sub = aero.submissions || []
       sub.each do |s|
-        s.load
         s.delete
       end
     end
