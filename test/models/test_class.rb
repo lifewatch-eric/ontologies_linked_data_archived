@@ -14,7 +14,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
     assert(os.length == 1)
     os = os[0]
-    os.load
     os_classes = os.classes :load_attrs => [:prefLabel]
     os_classes.each do |c|
       assert(!c.prefLabel.nil?, "Class #{c.resource_id.value} does not have a label")

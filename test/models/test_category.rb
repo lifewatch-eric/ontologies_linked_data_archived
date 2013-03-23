@@ -79,7 +79,6 @@ class TestCategory < LinkedData::TestCase
     ont.save
 
     category_ont = @category.ontologies.first
-    category_ont.load
 
     assert_equal category_ont.acronym, ont.acronym
   end
