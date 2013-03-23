@@ -16,7 +16,7 @@ module LinkedData
     end
 
     SERIALIZERS = {
-      LinkedData::MediaTypes::HTML => JSON,
+      LinkedData::MediaTypes::HTML => HTML,
       LinkedData::MediaTypes::JSON => JSON,
       LinkedData::MediaTypes::JSONP => JSONP,
       LinkedData::MediaTypes::XML => XML,
