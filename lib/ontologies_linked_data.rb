@@ -4,6 +4,7 @@ require "goo"
 require_relative "ontologies_linked_data/config/config"
 
 # Include other dependent code
+require_relative "ontologies_linked_data/security/authorization"
 require_relative "ontologies_linked_data/hypermedia/hypermedia"
 require_relative "ontologies_linked_data/serializer"
 require_relative "ontologies_linked_data/serializers/serializers"
