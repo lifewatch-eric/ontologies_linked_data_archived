@@ -22,6 +22,7 @@ module LinkedData
     @settings.search_server_url ||= "http://localhost:8983/solr"
     @settings.repository_folder ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix   ||= "http://data.bioontology.org/"
+    @settings.enable_security   ||= false
 
     connect_goo unless overide_connect_goo
   end
