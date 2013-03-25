@@ -7,7 +7,7 @@ class TestLinkedDataSerializer < Test::Unit::TestCase
   include Rack::Test::Methods
 
   def app
-    eval "Rack::Builder.new {( " + File.read(File.dirname(__FILE__) + '/test.ru') + "\n )}"
+    eval "Rack::Builder.new {( " + File.read(File.dirname(__FILE__) + '/serializer.ru') + "\n )}"
   end
 
   # DISABLED UNTIL WE SUPPORT CONTENT NEGOTIATION
