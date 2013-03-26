@@ -3,9 +3,10 @@ require 'set'
 module LinkedData
   module Security
     class Authorization
+      APIKEYS_FOR_AUTHORIZATION = {}
+
       def initialize(app = nil)
         @app = app
-        @apikeys_for_authorization = Set.new
       end
 
       ROUTES_THAT_BYPASS_SECURITY = Set.new([
@@ -17,7 +18,7 @@ module LinkedData
 
       def call(env)
         # Skip auth unless security is enabled or for routes we know should be allowed
-        return @app.call(env) unless LinkedData.settings.security_enabled
+        return @app.call(env) unless LinkedData.settings.enable_security
         return @app.call(env) if ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"])
 
         params = env["rack.request.query_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
@@ -33,7 +34,7 @@ module LinkedData
           }
         end
 
-        if status != 403 && !authorized?(apikey)
+        if status != 403 && !authorized?(apikey, env)
           status = 403
           response = {
             status: status,
@@ -65,27 +66,28 @@ module LinkedData
         apikey = nil
         if env["Authorization"]
           token = Rack::Utils.parse_query(env["Authorization"].split(" ")[1])
+          # Strip spaces from start and end of string
           apikey = token["token"].sub(/^\"(.*)\"$/) { $1 }
         elsif env["HTTP_COOKIE"] && apikey.nil?
           cookie = Rack::Utils.parse_query(env["HTTP_COOKIE"])
           apikey = cookie["ncbo_apikey"] if cookie["ncbo_apikey"]
-        elsif apikey.nil?
+        elsif params["apikey"]
           apikey = params["apikey"]
         end
         apikey
       end
 
-      def authorized?(apikey)
+      def authorized?(apikey, env)
         return false if apikey.nil?
-        if @apikeys_for_authorization.include?(apikey)
-          return true
+        if APIKEYS_FOR_AUTHORIZATION.key?(apikey)
+          env["REMOTE_USER"] = APIKEYS_FOR_AUTHORIZATION[apikey]
         else
           users = LinkedData::Models::User.where(apikey: apikey)
           return false if users.empty?
           # This will kind-of break if multiple apikeys exist
           # Though it is also kind-of ok since we just want to know if a user with corresponding key exists
           user = users.first
-          @apikeys_for_authorization << user.apikey
+          env["REMOTE_USER"] = user
         end
         return true
       end
