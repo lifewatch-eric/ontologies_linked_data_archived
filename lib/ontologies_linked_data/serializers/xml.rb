@@ -46,7 +46,7 @@ module LinkedData
         links_output << self_link
         links.each do |link|
           link_xml = ::XML::Node.new(link.type)
-          link_xml['href'] = LinkedData::Hypermedia.expand_link(link.path, object)
+          link_xml['href'] = LinkedData::Hypermedia.expand_link(link, object)
           link_xml['rel'] = link.type_uri if link.type_uri
           links_output << link_xml
         end
