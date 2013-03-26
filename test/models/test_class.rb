@@ -176,18 +176,18 @@ class TestClassModel < LinkedData::TestOntologyCommon
     init_test_ontology_msotest acr
     os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
       :submissionId => 1
-    clss = LinkedData::Models::Class.where submission: os[0], load_attrs: { prefLabel: true, children_count: true }
+    clss = LinkedData::Models::Class.where submission: os[0], load_attrs: { prefLabel: true, childrenCount: true }
     clss.each do |c|
       if c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
-        assert c.children_count == 1
+        assert c.childrenCount == 1
       elsif c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
-        assert c.children_count == 2
+        assert c.childrenCount == 2
       elsif c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class3"
-        assert c.children_count == 1
+        assert c.childrenCount == 1
       elsif c.resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class4"
-        assert c.children_count == 2
+        assert c.childrenCount == 2
       else
-        assert c.children_count == 0
+        assert c.childrenCount == 0
       end
     end
   end
