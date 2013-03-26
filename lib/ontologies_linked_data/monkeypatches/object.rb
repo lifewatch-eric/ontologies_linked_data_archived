@@ -112,9 +112,9 @@ class Object
 
     page = {
       page: self.page,
-      page_count: self.page_count,
-      prev_page: self.prev_page,
-      next_page: self.next_page,
+      pageCount: self.page_count,
+      prevPage: self.prev_page,
+      nextPage: self.next_page,
       links: generate_page_links(options, self.page, self.page_count),
       model => []
     }
@@ -139,8 +139,8 @@ class Object
     end
 
     return {
-      next_page: next_page,
-      prev_page: prev_page
+      nextPage: next_page,
+      prevPage: prev_page
     }
   end
 
