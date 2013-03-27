@@ -38,6 +38,7 @@ module LinkedData
 
       # Hypermedia settings
       serialize_default :prefLabel, :synonym, :definition, :childrenCount
+      serialize_methods :children, :parents, :properties
       serialize_never :submissionAcronym, :submissionId, :submission
       link_to LinkedData::Hypermedia::Link.new("self", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value", s) }, self.type_uri),
               LinkedData::Hypermedia::Link.new("ontology", lambda { |s| link_path("ontologies/:submission.ontology.acronym", s) },  Goo.namespaces[Goo.namespaces[:default]]+"Ontology"),
@@ -81,6 +82,14 @@ module LinkedData
           path.sub!(":submission.ontology.acronym", cls.submissionAcronym)
         end
         LinkedData::Hypermedia::expand_link(path, cls)
+      end
+
+      def properties
+        cls_all = self.class.find self.resource_id, submission: self.submission, load_attrs: :all
+        properties = cls_all.attributes.select {|k,v| k.is_a?(SparqlRd::Resultset::IRI)}
+        bad_iri = SparqlRd::Resultset::IRI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
+        properties.delete(bad_iri)
+        properties
       end
 
       def paths_to_root
