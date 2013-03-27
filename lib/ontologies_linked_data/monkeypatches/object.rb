@@ -45,7 +45,7 @@ class Object
 
     # Special processing for each attribute in the new hash
     # This will handle serializing linked goo objects
-    hash.dup.each do |k,v|
+    hash.each do |k,v|
       # Convert keys from IRIs to strings
       unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
         hash.delete(k)
