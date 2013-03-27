@@ -43,17 +43,20 @@ class Object
     # Make sure we're not returning things to be excepted
     hash.delete_if {|k,v| except.include?(k) } unless except.empty?
 
-    # Convert keys to symbols
-    hash.dup.each do |k,v|
-      unless k.kind_of? Symbol
-        hash[k.to_sym] = v
-        hash.delete(k)
-      end
-    end
-
     # Special processing for each attribute in the new hash
     # This will handle serializing linked goo objects
     hash.dup.each do |k,v|
+      # Convert keys from IRIs to strings
+      unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
+        hash.delete(k)
+        hash[convert_nonstandard_types(k, options, &block)] = v
+      end
+
+      unless k.kind_of? Symbol
+        hash.delete(k)
+        hash[k.to_sym] = v
+      end
+
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       hash, modified = embed_goo_objects(hash, k, v, options, &block)
       next if modified
@@ -62,15 +65,7 @@ class Object
       hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
       next if modified
 
-      # Initial value
-      new_value = v
-      new_value = convert_iris(new_value)
-      new_value = convert_bnode(new_value, options, &block)
-      new_value = convert_goo_objects(new_value)
-      new_value = rdf_parsed_value(new_value)
-      new_value = new_value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if new_value.is_a?(String)
-      new_value = new_value.map {|e| e.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)} if new_value.is_a?(Enumerable) && new_value.first.is_a?(String)
-
+      new_value = convert_nonstandard_types(v, options, &block)
       hash[k] = new_value
     end
 
@@ -81,6 +76,19 @@ class Object
   end
 
   private
+
+  ##
+  # Convert types from goo and elsewhere using custom methods
+  def convert_nonstandard_types(value, options, &block)
+    return convert_value_hash(value, options, &block) if value.is_a?(Hash)
+    value = convert_iris(value)
+    value = convert_bnode(value, options, &block)
+    value = convert_goo_objects(value)
+    value = rdf_parsed_value(value)
+    value = value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if value.is_a?(String)
+    value = value.map {|e| e.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)} if value.is_a?(Enumerable) && value.first.is_a?(String)
+    value
+  end
 
   ##
   # Handle enumerables by recursing
@@ -229,6 +237,14 @@ class Object
     end
 
     return new_value
+  end
+
+  def convert_value_hash(hash, options, &block)
+    new_hash = Hash.new
+    hash.each do |k, v|
+      new_hash[convert_nonstandard_types(k, options, &block)] = convert_nonstandard_types(v, options, &block)
+    end
+    new_hash
   end
 
   def convert_all_goo_types(object)
