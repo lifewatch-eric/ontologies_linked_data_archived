@@ -213,10 +213,10 @@ module LinkedData
           end
           logger.flush
           delete_and_append(triples_file_path, logger)
-        end
 
-        missing_labels_generation(logger, labels_file)
-        logger.flush
+          missing_labels_generation(logger, labels_file)
+          logger.flush
+        end
 
         #index this ontology
         index(logger)
