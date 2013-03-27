@@ -68,11 +68,11 @@ module LinkedData
           token = Rack::Utils.parse_query(env["Authorization"].split(" ")[1])
           # Strip spaces from start and end of string
           apikey = token["token"].sub(/^\"(.*)\"$/) { $1 }
-        elsif env["HTTP_COOKIE"] && apikey.nil?
-          cookie = Rack::Utils.parse_query(env["HTTP_COOKIE"])
-          apikey = cookie["ncbo_apikey"] if cookie["ncbo_apikey"]
         elsif params["apikey"]
           apikey = params["apikey"]
+        elsif env["HTTP_COOKIE"] && env["HTTP_COOKIE"].include?("ncbo_apikey") && apikey.nil?
+          cookie = Rack::Utils.parse_query(env["HTTP_COOKIE"])
+          apikey = cookie["ncbo_apikey"] if cookie["ncbo_apikey"]
         end
         apikey
       end
