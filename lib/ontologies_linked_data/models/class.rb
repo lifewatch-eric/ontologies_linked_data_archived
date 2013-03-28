@@ -78,8 +78,8 @@ module LinkedData
       end
 
       def self.link_path(path, cls)
-        unless cls.respond_to?(:submission)
-          path.sub!(":submission.ontology.acronym", cls.submissionAcronym)
+        if cls.attributes[:internals] && cls.attributes[:internals].read_only
+          path.sub!(":submission.ontology.acronym", cls.submissionAcronym.first.value)
         end
         LinkedData::Hypermedia::expand_link(path, cls)
       end
