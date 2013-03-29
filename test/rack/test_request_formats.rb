@@ -1,6 +1,6 @@
 require "test/unit"
 require "rack/test"
-require "json"
+require "multi_json"
 require_relative "../../lib/ontologies_linked_data"
 
 class TestLinkedDataSerializer < Test::Unit::TestCase
