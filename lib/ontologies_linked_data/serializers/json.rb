@@ -14,7 +14,7 @@ module LinkedData
             end
           end
         end
-        hash.to_json
+        MultiJson.dump(hash)
       end
 
       private

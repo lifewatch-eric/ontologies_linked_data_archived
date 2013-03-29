@@ -45,7 +45,7 @@ class TestSerializerOutput < Test::Unit::TestCase
 
   def test_person_to_json
     json = LinkedData::Serializers.serialize(@person, :json)
-    reference = JSON.parse(json)
+    reference = MultiJson.load(json)
     assert reference.key?("name")
     assert reference.key?("age")
     assert reference.key?("@type")
@@ -59,7 +59,7 @@ class TestSerializerOutput < Test::Unit::TestCase
   def test_hash_to_json
     hash = {test: "value", name: "testing"}
     json = LinkedData::Serializers.serialize(hash, :json)
-    reference = JSON.parse(json)
+    reference = MultiJson.load(json)
     assert reference.key?("test")
     assert reference.key?("name")
   end
