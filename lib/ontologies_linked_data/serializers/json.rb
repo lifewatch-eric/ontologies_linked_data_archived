@@ -1,6 +1,8 @@
 module LinkedData
   module Serializers
     class JSON
+      CONTEXTS = {}
+
       def self.serialize(obj, options = {})
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           hash["@id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
@@ -21,6 +23,7 @@ module LinkedData
 
       def self.generate_context(object, serialized_attrs = [])
         return {} if object.resource_id.bnode?
+        return CONTEXTS[object.hash] unless CONTEXTS[object.hash].nil?
         serialized_attrs ||= []
         hash = {}
         class_attributes = object.class.goop_settings[:attributes]
@@ -44,7 +47,9 @@ module LinkedData
           end
           hash[attr] = predicate unless predicate.nil?
         end
-        {"@context" => hash}
+        context = {"@context" => hash}
+        CONTEXTS[object.hash] = context
+        context
       end
 
       def self.embedded?(object, attribute)
