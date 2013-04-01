@@ -23,13 +23,11 @@ module LinkedData
 
       def self.generate_context(object, serialized_attrs = [])
         return {} if object.resource_id.bnode?
-        return CONTEXTS[object.hash] unless CONTEXTS[object.hash].nil?
-        serialized_attrs ||= []
+        return remove_unused_attrs(CONTEXTS[object.hash], serialized_attrs) unless CONTEXTS[object.hash].nil?
         hash = {}
         class_attributes = object.class.goop_settings[:attributes]
         hash["@vocab"] = "#{Goo.namespaces[Goo.namespaces[:default]]}"
         class_attributes.each do |attr, settings|
-          next if !serialized_attrs.empty? && !serialized_attrs.include?(attr)
           if settings && settings[:validators] && settings[:validators][:instance_of]
             linked_model = settings[:validators][:instance_of][:with]
             unless linked_model.is_a?(Class)
@@ -49,7 +47,12 @@ module LinkedData
         end
         context = {"@context" => hash}
         CONTEXTS[object.hash] = context
-        context
+        remove_unused_attrs(context, serialized_attrs)
+      end
+
+      def self.remove_unused_attrs(context, serialized_attrs = [])
+        new_context = context["@context"].reject {|k,v| !serialized_attrs.include?(k) && !k.to_s.start_with?("@")}
+        {"@context" => new_context}
       end
 
       def self.embedded?(object, attribute)
