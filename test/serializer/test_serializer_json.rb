@@ -1,6 +1,7 @@
 require "test/unit"
 require "multi_json"
 require_relative "../../lib/ontologies_linked_data"
+require_relative "../../config/config"
 
 class TestSerializerOutput < Test::Unit::TestCase
   class Car < LinkedData::Models::Base
@@ -64,4 +65,16 @@ class TestSerializerOutput < Test::Unit::TestCase
     assert reference.key?("name")
   end
 
+  def test_sparql_http_object_serialization
+    iri_str = "http://example.org"
+    iri = SparqlRd::Resultset::IRI.new(iri_str)
+    int = SparqlRd::Resultset::IntegerLiteral.new(1)
+    bool = SparqlRd::Resultset::BooleanLiteral.new("false", false)
+    hash = {iri: iri, int: int, bool: bool}
+    json = LinkedData::Serializers.serialize(hash, :json)
+    reference = MultiJson.load(json)
+    assert reference["iri"].eql?(iri_str)
+    assert reference["int"] == 1
+    assert reference["bool"] == false
+  end
 end
