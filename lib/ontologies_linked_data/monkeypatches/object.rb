@@ -2,7 +2,9 @@ require 'set'
 
 class Object
   def to_flex_hash(options = {}, &block)
-    if kind_of?(String) || kind_of?(Fixnum) || kind_of?(Float); then return self; end
+    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float)
+    return self.to_s if is_a?(SparqlRd::Resultset::StringLiteral) || is_a?(SparqlRd::Resultset::IRI)
+    return self.parsed_value if is_a?(SparqlRd::Resultset::Node)
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
@@ -81,12 +83,8 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
-    value = convert_iris(value)
     value = convert_bnode(value, options, &block)
     value = convert_goo_objects(value)
-    value = rdf_parsed_value(value)
-    value = value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if value.is_a?(String)
-    value = value.map {|e| e.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)} if value.is_a?(Enumerable) && value.first.is_a?(String)
     value
   end
 
@@ -228,17 +226,6 @@ class Object
     end
   end
 
-  def convert_iris(object)
-    new_value = (object.is_a?(RDF::IRI) || object.is_a?(SparqlRd::Resultset::IRI)) ? object.value : object
-
-    # Convert arrays of linked objects
-    if object.kind_of?(Enumerable) && (object.first.is_a?(RDF::IRI) || object.first.is_a?(SparqlRd::Resultset::IRI))
-      new_value = object.map {|e| e.value }
-    end
-
-    return new_value
-  end
-
   def convert_value_hash(hash, options, &block)
     new_hash = Hash.new
     hash.each do |k, v|
@@ -248,9 +235,7 @@ class Object
   end
 
   def convert_all_goo_types(object)
-    new_value = convert_iris(object)
     new_value = convert_goo_objects(object)
-    new_value = rdf_parsed_value(object)
     new_value
   end
 
@@ -261,18 +246,6 @@ class Object
     # Convert arrays of linked objects
     if object.kind_of?(Enumerable) && object.first.is_a?(Goo::Base::Resource)
       new_value = object.map {|e| e.resource_id.value }
-    end
-
-    return new_value
-  end
-
-  def rdf_parsed_value(object)
-    # Objects with `value` method should have that called
-    new_value = object.respond_to?(:parsed_value) ? object.parsed_value : object
-
-    # Convert arrays of RDF objects (have `value` method)
-    if object.kind_of?(Enumerable) && object.first.respond_to?(:parsed_value)
-      new_value = object.map {|e| e.parsed_value }
     end
 
     return new_value
