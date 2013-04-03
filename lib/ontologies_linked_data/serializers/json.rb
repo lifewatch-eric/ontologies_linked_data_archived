@@ -8,7 +8,10 @@ module LinkedData
           hash["@id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
           hash["@type"] = hashed_obj.class.type_uri if hash["@id"] && hashed_obj.class.respond_to?(:type_uri)
           links = LinkedData::Hypermedia.generate_links(hashed_obj)
-          hash["links"] = links unless links.empty?
+          unless links.empty?
+            hash["links"] = links
+            hash["links"].merge!(generate_links_context(hashed_obj))
+          end
           if hashed_obj.is_a?(Goo::Base::Resource)
             if options[:params].nil? || options[:params]["no_context"].nil? || !options[:params]["no_context"].eql?("true")
               context = generate_context(hashed_obj, hash.keys)
@@ -48,6 +51,15 @@ module LinkedData
         context = {"@context" => hash}
         CONTEXTS[object.hash] = context
         remove_unused_attrs(context, serialized_attrs)
+      end
+
+      def self.generate_links_context(object)
+        links = object.class.hypermedia_settings[:link_to]
+        links_context = {}
+        links.each do |link|
+          links_context[link.type] = link.type_uri
+        end
+        return {"@context" => links_context}
       end
 
       def self.remove_unused_attrs(context, serialized_attrs = [])
