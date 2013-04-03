@@ -83,6 +83,8 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
+    return value.to_s if value.is_a?(SparqlRd::Resultset::StringLiteral) || value.is_a?(SparqlRd::Resultset::IRI)
+    return value.parsed_value if value.is_a?(SparqlRd::Resultset::Node)
     value = convert_bnode(value, options, &block)
     value = convert_goo_objects(value)
     value
