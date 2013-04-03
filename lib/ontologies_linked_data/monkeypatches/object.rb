@@ -112,23 +112,17 @@ class Object
   end
 
   def convert_goo_page(options, &block)
-    if self.first && self.first.is_a?(LinkedData::Models::Base)
-      model = self.first.class.goop_settings[:model]
-    else
-      model = :results
-    end
-
     page = {
       page: self.page,
       pageCount: self.page_count,
       prevPage: self.prev_page,
       nextPage: self.next_page,
       links: generate_page_links(options, self.page, self.page_count),
-      model => []
+      collection: []
     }
 
     self.each do |item|
-      page[model] << item.to_flex_hash(options, &block)
+      page[:collection] << item.to_flex_hash(options, &block)
     end
     page
   end
