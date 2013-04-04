@@ -272,7 +272,7 @@ module LinkedData
           prev_sub = self.ontology.latest_submission()
 
           if prev_sub
-            prev_sub.index(LinkedData::Parser.logger)
+            prev_sub.index(LinkedData::Parser.logger || $stderr)
           end
         end
       end
