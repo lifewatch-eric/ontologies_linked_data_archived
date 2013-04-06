@@ -1,10 +1,11 @@
 require 'set'
 
 class Object
+
   def to_flex_hash(options = {}, &block)
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float)
-    return self.to_s if is_a?(SparqlRd::Resultset::StringLiteral) || is_a?(SparqlRd::Resultset::IRI)
-    return self.parsed_value if is_a?(SparqlRd::Resultset::Node)
+    converted_self, is_an_rdf_obj = convert_rdf_objects(self, options, &block)
+    return converted_self if is_an_rdf_obj
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
@@ -47,7 +48,7 @@ class Object
 
     # Special processing for each attribute in the new hash
     # This will handle serializing linked goo objects
-    hash.each do |k,v|
+    hash.dup.each do |k,v|
       # Convert keys from IRIs to strings
       unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
         hash.delete(k)
@@ -83,8 +84,8 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
-    return value.to_s if value.is_a?(SparqlRd::Resultset::StringLiteral) || value.is_a?(SparqlRd::Resultset::IRI)
-    return value.parsed_value if value.is_a?(SparqlRd::Resultset::Node)
+    value, value_was_modified = convert_rdf_objects(value, options, &block)
+    return value if value_was_modified
     value = convert_bnode(value, options, &block)
     value = convert_goo_objects(value)
     value
@@ -245,6 +246,27 @@ class Object
     end
 
     return new_value
+  end
+
+  def convert_rdf_objects(obj, options, &block)
+    modified = false
+
+    if obj.is_a?(SparqlRd::Resultset::IntegerLiteral)
+      modified = true
+      obj = obj.to_i
+    end
+
+    if obj.is_a?(SparqlRd::Resultset::StringLiteral) || obj.is_a?(SparqlRd::Resultset::IRI) || obj.is_a?(SparqlRd::Resultset::Node)
+      modified = true
+      obj = obj.to_s
+    end
+
+    if (obj.is_a?(Array) || obj.is_a?(Set)) && (obj.first.is_a?(SparqlRd::Resultset::StringLiteral) || obj.first.is_a?(SparqlRd::Resultset::IRI) || obj.first.is_a?(SparqlRd::Resultset::Node))
+      modified = true
+      obj = obj.map {|e| e.to_s}
+    end
+
+    return obj, modified
   end
 
   ##
