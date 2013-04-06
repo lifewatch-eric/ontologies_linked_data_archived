@@ -1,4 +1,5 @@
 require "xml"
+require "date"
 require_relative "media_types"
 require_relative "serializers/serializers"
 
@@ -61,7 +62,7 @@ module LinkedData
       content_type = options[:content_type] || "text/plain"
       content_length = options[:content_length] || body.bytesize.to_s
       raise ArgumentError("Body must be a string") unless body.kind_of?(String)
-      headers.merge!({"Content-Type" => content_type, "Content-Length" => content_length})
+      headers.merge!({"Content-Type" => content_type, "Content-Length" => content_length, "Last-Modified" => last_modified})
       [status, headers, [body]]
     end
 
@@ -71,6 +72,15 @@ module LinkedData
       only, all = [], true if only[0].eql?("all")
       options = {:only => only, :all => all, :params => params, :request => request}
       LinkedData::Serializers.serialize(obj, type, options)
+    end
+
+    def self.last_modified
+      @last_modified ||= DateTime.now
+      now = DateTime.now
+      if now.to_time - @last_modified.to_time > 300
+        @last_modified = now
+      end
+      @last_modified.iso8601
     end
 
   end
