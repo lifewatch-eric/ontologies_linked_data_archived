@@ -4,7 +4,7 @@ class Object
 
   def to_flex_hash(options = {}, &block)
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float)
-    converted_self, is_an_rdf_obj = convert_rdf_objects(self, options, &block)
+    converted_self, is_an_rdf_obj = convert_rdf_objects(self)
     return converted_self if is_an_rdf_obj
 
     # Recurse to handle sets, arrays, etc
@@ -87,7 +87,7 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
-    value, value_was_modified = convert_rdf_objects(value, options, &block)
+    value, value_was_modified = convert_rdf_objects(value)
     return value if value_was_modified
     value = convert_bnode(value, options, &block)
     value = convert_goo_objects(value)
@@ -251,25 +251,30 @@ class Object
     return new_value
   end
 
-  def convert_rdf_objects(obj, options, &block)
+  def convert_rdf_objects(obj)
     modified = false
 
-    if obj.is_a?(SparqlRd::Resultset::IntegerLiteral)
+    if obj.is_a?(SparqlRd::Resultset::Node)
       modified = true
-      obj = obj.to_i
+      obj = convert_rdf_object(obj)
     end
 
-    if obj.is_a?(SparqlRd::Resultset::StringLiteral) || obj.is_a?(SparqlRd::Resultset::IRI) || obj.is_a?(SparqlRd::Resultset::Node)
+    if (obj.is_a?(Array) || obj.is_a?(Set)) && obj.first.is_a?(SparqlRd::Resultset::Node)
       modified = true
-      obj = obj.to_s
-    end
-
-    if (obj.is_a?(Array) || obj.is_a?(Set)) && (obj.first.is_a?(SparqlRd::Resultset::StringLiteral) || obj.first.is_a?(SparqlRd::Resultset::IRI) || obj.first.is_a?(SparqlRd::Resultset::Node))
-      modified = true
-      obj = obj.map {|e| e.to_s}
+      obj = obj.map {|e| convert_rdf_object(e)}
     end
 
     return obj, modified
+  end
+
+  def convert_rdf_object(obj)
+    if obj.is_a?(SparqlRd::Resultset::IRI)
+      obj = obj.to_s
+    elsif obj.is_a?(SparqlRd::Resultset::Node)
+      obj = obj.parsed_value
+    end
+
+    obj
   end
 
   ##
