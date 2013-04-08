@@ -1,7 +1,7 @@
 require_relative "./test_ontology_common"
 require "logger"
 
-class TestNote < LinkedData::TestOntologyCommon
+class TestMapping < LinkedData::TestOntologyCommon
   def setup
     ontologies_parse()
   end
