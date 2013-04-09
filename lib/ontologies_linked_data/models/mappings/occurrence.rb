@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 require_relative '../ontology'
 require_relative './process'
 
@@ -13,7 +15,15 @@ module LinkedData
       attribute :to, :single_value => true, :instance_of => { :with => :class }
       attribute :relationship, :single_value => true, :instance_of => { :with => IRI }
 
-      def occurrence_id_generator(inst)
+      def self.occurrence_id_generator(inst)
+        value_process = inst.process.resource_id.value
+        acrons = inst.ontologies.map { |o| o.acronym }
+        acrons.sort!
+        acrons = acrons.join "#"
+        val_to_hash = "#{value_process}-#{acrons}"
+        hashed_value = Digest::SHA1.hexdigest(val_to_hash)
+        return RDF::IRI.new(
+          "#{(self.namespace :default)}mappingoccurrence/#{hashed_value}")
       end
     end
   end
