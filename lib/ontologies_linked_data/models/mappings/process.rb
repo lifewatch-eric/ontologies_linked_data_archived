@@ -4,11 +4,14 @@ require_relative '../users/user'
 module LinkedData
   module Models
     class MappingProcess < LinkedData::Models::Base
-      attribute :name, :unique => true
+      model :mapping_process, :name_with => lambda { |s| process_id_generator(s) }
+      attribute :name, :single_value => true
       attribute :date, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :user, :single_value => true, :not_nil => true, :instance_of => { :with => LinkedData::Models::User }
+      attribute :owner, :single_value => true, :not_nil => true, :instance_of => { :with => :user }
 
-      def occurrence_id_generator(inst)
+      def self.process_id_generator(inst)
+        return RDF::IRI.new(
+          "#{(self.namespace :default)}mappingprocess/#{CGI.escape(inst.name.to_s)}-#{CGI.escape(DateTime.now.xmlschema)}")
       end
     end
   end
