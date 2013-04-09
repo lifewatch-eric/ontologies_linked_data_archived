@@ -202,7 +202,11 @@ class TestMapping < LinkedData::TestOntologyCommon
 
     #search for two particular ontologies ont2,ont3
     # how do I search for multiple values of the same attribute 
-    #occs = LinkedData::Models::Occurrence.where ontologies: [ ont1, ont2 ]
+    occs = LinkedData::Models::Occurrence.where ontologies: [ ont1, ont2 ]
+    assert occs.length == 1
+    assert occs[0].ontologies.length == 2
+    assert (occs[0].ontologies.select { |o| o.name == "MappingOntTest1" }).length == 1
+    assert (occs[0].ontologies.select { |o| o.name == "MappingOntTest2" }).length == 1
 
   end
 end
