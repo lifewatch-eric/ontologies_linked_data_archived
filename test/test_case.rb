@@ -82,84 +82,15 @@ module LinkedData
     # @option options [Fixnum] :ont_count Number of ontologies to create
     # @option options [Fixnum] :submission_count How many submissions each ontology should have (acts as max number when random submission count is used)
     # @option options [TrueClass, FalseClass] :random_submission_count Use a random number of submissions between 1 and :submission_count
+    # @option options [TrueClass, FalseClass] :process_submission Parse the test ontology file
     def create_ontologies_and_submissions(options = {})
-      delete_ontologies_and_submissions
-
-      ont_count = options[:ont_count] || 5
-      submission_count = options[:submission_count] || 5
-      random_submission_count = options[:random_submission_count].nil? ? true : options[:random_submission_count]
-
-      u = LinkedData::Models::User.find("tim") || LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
-
-      contact_name = "Sheila"
-      contact_email = "sheila@example.org"
-      contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email)
-      contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email) if contact.empty?
-
-      of = LinkedData::Models::OntologyFormat.find("OWL")
-      if of.nil?
-        of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-        assert of.valid?
-        of.save
-      end
-
-      LinkedData::Models::SubmissionStatus.init
-
-      ont_acronyms = []
-      ontologies = []
-      ont_count.to_i.times do |count|
-        acronym = "TST-ONT-#{count}"
-        ont_acronyms << acronym
-
-        o = LinkedData::Models::Ontology.new({
-          acronym: acronym,
-          name: "Test Ontology ##{count}",
-          administeredBy: u
-        })
-
-        o.save
-
-        # Random submissions (between 1 and max)
-        max = random_submission_count ? (1..submission_count.to_i).to_a.shuffle.first : submission_count
-        max.times do
-          os = LinkedData::Models::OntologySubmission.new({
-            ontology: o,
-            hasOntologyLanguage: of,
-            summaryOnly: true,
-            submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED"),
-            submissionId: o.next_submission_id,
-            contact: contact,
-            released: DateTime.now - 3
-          })
-          os.save
-        end
-
-        ontologies << o
-      end
-
-      # Get ontology objects if empty
-      if ontologies.empty?
-        ont_acronyms.each do |ont_id|
-          ontologies << LinkedData::Models::Ontology.find(ont_id)
-        end
-      end
-
-      return ont_count, ont_acronyms, ontologies
+      LinkedData::SampleData::Ontology.create_ontologies_and_submissions(options)
     end
 
     ##
-    # Delete all ontologies and their submissions. This will look for all ontologies starting with TST-ONT- and ending in a Fixnum
+    # Delete all ontologies and their submissions
     def delete_ontologies_and_submissions
-      ont = LinkedData::Models::Ontology.find("TST-ONT-0")
-      count = 0
-      while ont
-        ont.delete unless ont.nil?
-        ont = LinkedData::Models::Ontology.find("TST-ONT-#{count+1}")
-      end
-
-      #u = LinkedData::Models::User.find("tim")
-      #u.delete unless u.nil?
-
+      LinkedData::SampleData::Ontology.delete_ontologies_and_submissions
     end
 
     def delete_goo_models(gooModelArray)
