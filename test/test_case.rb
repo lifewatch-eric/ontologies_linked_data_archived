@@ -12,7 +12,8 @@ end
 require_relative "../lib/ontologies_linked_data"
 require_relative "../config/config.rb"
 
-require "test/unit"
+require 'minitest/unit'
+MiniTest::Unit.autorun
 require "webmock/minitest"
 WebMock.allow_net_connect!
 
@@ -30,8 +31,38 @@ if !LinkedData.settings.goo_host.eql?("localhost")
 end
 
 module LinkedData
-  class TestCase < Test::Unit::TestCase
+  class Unit < MiniTest::Unit
+    def before_suites
+      # code to run before the first test (gets inherited in sub-tests)
+    end
 
+    def after_suites
+      # code to run after the last test (gets inherited in sub-tests)
+      LinkedData::SampleData::Ontology.delete_ontologies_and_submissions
+    end
+
+    def _run_suites(suites, type)
+      begin
+        before_suites
+        super(suites, type)
+      ensure
+        after_suites
+      end
+    end
+
+    def _run_suite(suite, type)
+      begin
+        suite.before_suite if suite.respond_to?(:before_suite)
+        super(suite, type)
+      ensure
+        suite.after_suite if suite.respond_to?(:after_suite)
+      end
+    end
+  end
+
+  LinkedData::Unit.runner = LinkedData::Unit.new
+
+  class TestCase < MiniTest::Unit::TestCase
     def submission_dependent_objects(format,acronym,user_name,status_code)
       #ontology format
       LinkedData::Models::OntologyFormat.init

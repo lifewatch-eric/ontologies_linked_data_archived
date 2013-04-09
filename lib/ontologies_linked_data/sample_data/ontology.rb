@@ -7,14 +7,16 @@ module LinkedData
       # @param [Hash] options the options to create ontologies with
       # @option options [Fixnum] :ont_count Number of ontologies to create
       # @option options [Fixnum] :submission_count How many submissions each ontology should have (acts as max number when random submission count is used)
+      # @option options [Fixnum] :submissions_to_process Which submission ids to parse
       # @option options [TrueClass, FalseClass] :random_submission_count Use a random number of submissions between 1 and :submission_count
       # @option options [TrueClass, FalseClass] :process_submission Parse the test ontology file
       def self.create_ontologies_and_submissions(options = {})
         # Default options
         ont_count = options[:ont_count] || 5
         submission_count = options[:submission_count] || 5
-        random_submission_count = options[:random_submission_count] || true
+        random_submission_count = options[:random_submission_count] || false
         process_submission = options[:process_submission] || false
+        submissions_to_process = options[:submissions_to_process]
         acronym = options[:acronym] || "TEST-ONT"
         name = options[:name]
         file_path = options[:file_path]
@@ -63,7 +65,7 @@ module LinkedData
               released: DateTime.now - 3
             })
 
-            if process_submission
+            if process_submission && (submissions_to_process.nil? || submissions_to_process.include?(os.submissionId))
               file_path ||= "../../../../test/data/ontology_files/BRO_v3.#{os.submissionId}.owl"
               file_path = File.expand_path(file_path, __FILE__)
               raise ArgumentError, "File located at #{file_path} does not exist" unless File.exist?(file_path)
@@ -88,7 +90,7 @@ module LinkedData
         if process_submission
           ontologies.each do |o|
             o.submissions.each do |ss|
-              # next if ss.submissionId == 1
+              next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
               ss.process_submission Logger.new(STDOUT)
             end
           end
