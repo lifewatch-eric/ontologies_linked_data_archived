@@ -11,7 +11,13 @@ module LinkedData
       attribute :terms, :cardinality => { :min => 2 }, :instance_of => { :with => LinkedData::Models::Class }
       attribute :occurrence, :instance_of => { :with => LinkedData::Models::Occurrence }
 
-      def mapping_id_generator(ins)
+      def self.mapping_id_generator(ins)
+        term_vals=ins.terms.map { |t| t.resource_id.value }
+        term_vals.sort!
+        val_to_hash = term_vals.join("-")
+        hashed_value = Digest::SHA1.hexdigest(val_to_hash)
+        return RDF::IRI.new(
+          "#{(self.namespace :default)}mapping/#{hashed_value}")
       end
     end
   end
