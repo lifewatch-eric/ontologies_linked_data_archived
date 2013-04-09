@@ -201,10 +201,10 @@ class Object
         embedded_values = []
         if (value.is_a?(Array) || value.is_a?(Set))
           value.each do |goo_object|
-            add_goo_values(goo_object, embedded_values, attributes_to_embed)
+            add_goo_values(goo_object, embedded_values, attributes_to_embed, options, &block)
           end
         else
-          add_goo_values(value, embedded_values, attributes_to_embed)
+          add_goo_values(value, embedded_values, attributes_to_embed, options, &block)
           embedded_values = embedded_values.first
         end
         hash[attribute] = embedded_values
@@ -214,15 +214,15 @@ class Object
     return hash, false
   end
 
-  def add_goo_values(goo_object, embedded_values, attributes_to_embed)
+  def add_goo_values(goo_object, embedded_values, attributes_to_embed, options, &block)
     if attributes_to_embed.length > 1
       embedded_values_hash = {}
       attributes_to_embed.each do |a|
-        embedded_values_hash[a] = convert_all_goo_types(goo_object.send(a))
+        embedded_values_hash[a] = convert_nonstandard_types(goo_object.send(a), options, &block)
         embedded_values << embedded_values_hash
       end
     else
-      embedded_values << convert_all_goo_types(goo_object.send(attributes_to_embed.first))
+      embedded_values << convert_nonstandard_types(goo_object.send(attributes_to_embed.first), options, &block)
     end
   end
 
@@ -232,11 +232,6 @@ class Object
       new_hash[convert_nonstandard_types(k, options, &block)] = convert_nonstandard_types(v, options, &block)
     end
     new_hash
-  end
-
-  def convert_all_goo_types(object)
-    new_value = convert_goo_objects(object)
-    new_value
   end
 
   def convert_goo_objects(object)
