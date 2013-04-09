@@ -208,5 +208,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert (occs[0].ontologies.select { |o| o.name == "MappingOntTest1" }).length == 1
     assert (occs[0].ontologies.select { |o| o.name == "MappingOntTest2" }).length == 1
 
+    mappings = LinkedData::Models::Mapping.where occurrence: occs
+    assert mappings.length == 11
+
   end
 end
