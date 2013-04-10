@@ -14,7 +14,7 @@ module LinkedData
           end
           if hashed_obj.is_a?(Goo::Base::Resource)
             if options[:params].nil? || options[:params]["no_context"].nil? || !options[:params]["no_context"].eql?("true")
-              context = generate_context(hashed_obj, hash.keys)
+              context = generate_context(hashed_obj, hash.keys, options)
               hash.merge!(context)
             end
           end
@@ -24,7 +24,7 @@ module LinkedData
 
       private
 
-      def self.generate_context(object, serialized_attrs = [])
+      def self.generate_context(object, serialized_attrs = [], options = {})
         return {} if object.resource_id.bnode?
         return remove_unused_attrs(CONTEXTS[object.hash], serialized_attrs) unless CONTEXTS[object.hash].nil?
         hash = {}
@@ -50,7 +50,8 @@ module LinkedData
         end
         context = {"@context" => hash}
         CONTEXTS[object.hash] = context
-        remove_unused_attrs(context, serialized_attrs)
+        context = remove_unused_attrs(context, serialized_attrs) unless options[:params] && options[:params]["full_context"].eql?("true")
+        context
       end
 
       def self.generate_links_context(object)
