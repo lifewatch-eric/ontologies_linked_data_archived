@@ -19,8 +19,12 @@ module LinkedData
         ##
         # This is a convenience method that will provide Goo with
         # a list of attributes and nested values to load
-        def goo_attrs_to_load
-          if self.hypermedia_settings[:serialize_default].empty?
+        def goo_attrs_to_load(attributes = [])
+          raise ArgumentError, "`attributes` should be an array" unless attributes.is_a?(Array)
+          if !attributes.empty?
+            return :all if attributes.first == :all
+            default_attrs = array_to_goo_hash(attributes)
+          elsif self.hypermedia_settings[:serialize_default].empty?
             default_attrs = array_to_goo_hash(self.defined_attributes_not_transient)
           else
             default_attrs = array_to_goo_hash(self.hypermedia_settings[:serialize_default].dup)
