@@ -159,7 +159,7 @@ class Object
       instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
     else
       self.class.hypermedia_settings[:serialize_default].each do |var|
-        hash[var.to_sym] = self.send(var)
+        hash[var.to_sym] = self.instance_variable_get("@#{var}")
       end
     end
     hash
@@ -216,11 +216,11 @@ class Object
     if attributes_to_embed.length > 1
       embedded_values_hash = {}
       attributes_to_embed.each do |a|
-        embedded_values_hash[a] = convert_nonstandard_types(goo_object.send(a), options, &block)
+        embedded_values_hash[a] = convert_nonstandard_types(goo_object.instance_variable_get("@#{a}"), options, &block)
         embedded_values << embedded_values_hash
       end
     else
-      embedded_values << convert_nonstandard_types(goo_object.send(attributes_to_embed.first), options, &block)
+      embedded_values << convert_nonstandard_types(goo_object.instance_variable_get("@#{attributes_to_embed.first}"), options, &block)
     end
   end
 
