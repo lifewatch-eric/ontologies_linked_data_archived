@@ -21,7 +21,6 @@ class Object
 
     if all # Get everything
       methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
-      self.load if self.is_a?(Goo::Base::Resource) && !self.loaded?
     end
 
     # Determine whether to use defaults from the DSL or all attributes
@@ -181,9 +180,8 @@ class Object
 
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.load unless e.loaded?; e.to_flex_hash({}, &block)}
+        values = value.map {|e| e.to_flex_hash({}, &block)}
       else
-        value.load unless value.loaded?
         values = value.to_flex_hash({}, &block)
       end
       hash[attribute] = values
