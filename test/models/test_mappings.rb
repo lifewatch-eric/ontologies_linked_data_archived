@@ -175,17 +175,20 @@ class TestMapping < LinkedData::TestOntologyCommon
 
     assert LinkedData::Models::Mapping.all.length == (ont1_terms_uris.length + ont2_terms_uris.length)
 
-    mappings = LinkedData::Models::Mapping.where terms: [{ ontology: ont1.resource_id }]
-    binding.pry
+    mappings = LinkedData::Models::Mapping.where terms: { ontology: ont1.resource_id }
     assert mappings.length == 11
 
-    mappings = LinkedData::Models::Mapping.where terms: [{ ontology: ont2.resource_id }]
+    mappings = LinkedData::Models::Mapping.where terms: { ontology: ont2.resource_id }
     assert mappings.length == 22
 
     mappings = LinkedData::Models::Mapping.where terms: [{ ontology: ont1.resource_id }, { ontology: ont2.resource_id }]
-    assert mappings.length == 12
+    assert mappings.length == 11
 
-    mappings1 = LinkedData::Models::Mapping.where terms: [{ ontology: ont3.resource_id }]
+
+    mappings = LinkedData::Models::Mapping.where terms: { ontology: [ont1.resource_id, ont2.resource_id ] }
+    assert mappings.length == 0
+
+    mappings = LinkedData::Models::Mapping.where terms: [{ ontology: ont3.resource_id }]
     assert mappings.length == 11
   end
 end
