@@ -2,6 +2,11 @@ require_relative "../test_case"
 require 'pry'
 
 class TestOntology < LinkedData::TestCase
+
+  def before_suite
+    stub_request(:get, "example.com/ontology_file").to_return(:body => "fake ontology content")
+  end
+
   def setup
     @acronym = "ONT-FOR-TEST"
     @name = "TestOntology TEST"
@@ -17,8 +22,6 @@ class TestOntology < LinkedData::TestCase
     cemail = "jeff@example.org"
     @contact = LinkedData::Models::Contact.where(name: cname, email: cemail).first rescue nil
     @contact = LinkedData::Models::Contact.new(name: cname, email: cemail) if @contact.nil?
-
-    stub_request(:get, "example.com/ontology_file").to_return(:body => "fake ontology content")
   end
 
   def teardown
@@ -110,14 +113,14 @@ class TestOntology < LinkedData::TestCase
   end
 
   def test_latest_any_submission
-    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3)
     ont = ont.first
     latest = ont.latest_submission(status: :any)
     assert_equal 3, latest.submissionId
   end
 
   def test_latest_parsed_submission
-    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3)
     ont = ont.first
     LinkedData::Models::SubmissionStatus.init
     status = LinkedData::Models::SubmissionStatus.find(LinkedData::Models::SubmissionStatus.parsed_code)
@@ -129,13 +132,13 @@ class TestOntology < LinkedData::TestCase
   end
 
   def test_submission_retrieval
-    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3)
     middle_submission = ont.first.submission(2)
     assert_equal 2, middle_submission.submissionId
   end
 
   def test_all_submission_retrieval
-    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3, random_submission_count: false)
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3)
     all_submissions = ont.first.submissions
     assert_equal 3, all_submissions.length
   end

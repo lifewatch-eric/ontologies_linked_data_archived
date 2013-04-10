@@ -13,7 +13,7 @@ class TestUserAuthentication < LinkedData::TestCase
         email: "test@example.com",
         password: password
       })
-    assert_raise NoMethodError do
+    assert_raises NoMethodError do
       assert u.password.nil?
     end
     assert !u.passwordHash.eql?(password)
@@ -26,7 +26,7 @@ class TestUserAuthentication < LinkedData::TestCase
         email: "test@example.com",
         password: password
       })
-    assert_raise NoMethodError do
+    assert_raises NoMethodError do
       assert u.password.nil?
     end
     assert !u.passwordHash.eql?(password)
@@ -71,7 +71,7 @@ class TestUserAuthentication < LinkedData::TestCase
   def test_hash_not_assignable
     skip("Waiting for read-only attribute support...")
     u = LinkedData::Models::User.new
-    assert_raise Exception do
+    assert_raises Exception do
       u.passwordHash = "password"
     end
   end
