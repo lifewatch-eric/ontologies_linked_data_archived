@@ -2,7 +2,7 @@ require "test/unit"
 require 'pry'
 require_relative "../../lib/ontologies_linked_data"
 
-class ToHashTest < Test::Unit::TestCase
+class ToHashTest < MiniTest::Unit::TestCase
   class Person
     include LinkedData::Hypermedia::Resource
 

@@ -3,7 +3,7 @@ require "multi_json"
 require_relative "../../lib/ontologies_linked_data"
 require_relative "../../config/config"
 
-class TestSerializerOutput < Test::Unit::TestCase
+class TestSerializerOutput < MiniTest::Unit::TestCase
   class Car < LinkedData::Models::Base
     attribute :model, :unique => true
   end

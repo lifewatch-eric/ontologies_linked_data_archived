@@ -3,7 +3,7 @@ require "date"
 require "multi_json"
 require_relative "../../lib/ontologies_linked_data"
 
-class TestSerializerXML < Test::Unit::TestCase
+class TestSerializerXML < MiniTest::Unit::TestCase
   class Person
     def initialize(name)
       @name = name

@@ -3,7 +3,7 @@ require "rack/test"
 require "multi_json"
 require_relative "../../lib/ontologies_linked_data"
 
-class TestLinkedDataSerializer < Test::Unit::TestCase
+class TestLinkedDataSerializer < MiniTest::Unit::TestCase
   include Rack::Test::Methods
 
   def app

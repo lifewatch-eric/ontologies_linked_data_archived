@@ -5,7 +5,7 @@ require_relative "../../lib/ontologies_linked_data"
 require_relative "../../config/config.rb"
 
 
-class TestRackAuthorization < Test::Unit::TestCase
+class TestRackAuthorization < MiniTest::Unit::TestCase
   include Rack::Test::Methods
 
   def app

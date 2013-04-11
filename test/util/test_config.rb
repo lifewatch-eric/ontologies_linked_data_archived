@@ -1,7 +1,7 @@
 require "test/unit"
 require_relative "../../lib/ontologies_linked_data"
 
-class TestLinkedDataSerializer < Test::Unit::TestCase
+class TestLinkedDataSerializer < MiniTest::Unit::TestCase
   def teardown
     Goo.class_variable_set("@@_default_store", nil)
     LinkedData.instance_variable_set("@settings_run", false)
