@@ -4,6 +4,7 @@ module LinkedData
       model :review, :name_with => lambda { |r| generate_review_iri(r) }
       attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
       attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
+      attribute :updated, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
       attribute :body, :single_value => true, :not_nil => true
       attribute :ontologyReviewed, :instance_of => { :with => :ontology }, :single_value => true, :not_nil => true
       attribute :usabilityRating, :single_value => true

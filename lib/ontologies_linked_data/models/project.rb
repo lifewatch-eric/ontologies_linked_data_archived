@@ -5,6 +5,7 @@ module LinkedData
       attribute :acronym, :unique => true, :single_value => true, :not_nil => true
       attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
       attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
+      attribute :updated, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
       attribute :name, :single_value => true, :not_nil => true
       attribute :homePage, :uri => true, :single_value => true, :not_nil => true
       attribute :description, :single_value => true, :not_nil => true
