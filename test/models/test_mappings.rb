@@ -19,6 +19,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     submission_parse("MappingOntTest3", "MappingOntTest3", "./test/data/ontology_files/aero.owl", 33)
   end
 
+  #TODO this needs to be replaced by Paul's data genrator
   def submission_parse( acronym, name, ontologyFile, id)
     return if ENV["SKIP_PARSING"]
 
