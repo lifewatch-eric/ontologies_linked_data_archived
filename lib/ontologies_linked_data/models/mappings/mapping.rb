@@ -29,7 +29,11 @@ module LinkedData
       def self.mapping_id_generator(ins)
         term_vals=ins.terms.map { |t| t.resource_id.value }
         term_vals.sort!
-        val_to_hash = term_vals.join("-")
+        return mapping_id_generator_iris(*term_vals)
+      end
+
+      def self.mapping_id_generator_iris(*terms)
+        val_to_hash = terms.join("-")
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
           "#{(self.namespace :default)}mapping/#{hashed_value}")
