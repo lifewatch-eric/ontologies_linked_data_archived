@@ -8,7 +8,7 @@ module LinkedData
     class TermMapping < LinkedData::Models::Base
 
       model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s) }
-      attribute :term, :not_nil => true, :instance_of => { :with => IRI }
+      attribute :term, :instance_of => { :with => IRI }
       attribute :ontology, :not_nil => true, :single_value => true, :instance_of => { :with => IRI }
 
       def self.term_mapping_id_generator(ins)
