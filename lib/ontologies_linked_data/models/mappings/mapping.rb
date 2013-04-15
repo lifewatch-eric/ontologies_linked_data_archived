@@ -8,7 +8,7 @@ module LinkedData
     class TermMapping < LinkedData::Models::Base
 
       model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s) }
-      attribute :term, :instance_of => { :with => IRI }
+      attribute :term, :not_nil => true, :instance_of => { :with => IRI }
       attribute :ontology, :not_nil => true, :single_value => true, :instance_of => { :with => IRI }
 
       def self.term_mapping_id_generator(ins)
@@ -23,7 +23,7 @@ module LinkedData
 
     class Mapping < LinkedData::Models::Base
       model :mapping, :name_with => lambda { |s| mapping_id_generator(s) }
-      attribute :terms, :cardinality => { :min => 2 }, :instance_of => { :with => :term_mapping }
+      attribute :terms, :instance_of => { :with => :term_mapping }
       attribute :process, :instance_of => { :with => :mapping_process }
 
       def self.mapping_id_generator(ins)
