@@ -15,6 +15,7 @@ require_relative "ontologies_linked_data/parser/parser"
 require_relative "ontologies_linked_data/monkeypatches/object"
 require_relative "ontologies_linked_data/monkeypatches/logging"
 require_relative "ontologies_linked_data/sample_data/sample_data"
+require_relative "ontologies_linked_data/mappings/mappings"
 
 # Require base model
 require_relative "ontologies_linked_data/models/base"
