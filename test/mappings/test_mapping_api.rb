@@ -110,11 +110,18 @@ class TestMappingAPI < LinkedData::TestOntologyCommon
     LinkedData::Models::Mapping.all.each do |m|
       m.delete
     end
+    LinkedData::Models::TermMapping.all.each do |tm|
+      tm.delete
+    end
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" })[0]
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" })[0]
+    ont3 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest3" })[0]
 
     ONT1_TERMS.each_index do |i1|
       term1 = RDF::IRI.new(ONT1_TERMS[i1])
       term2 = RDF::IRI.new(ONT2_TERMS[i1])
-      mapping_terms =  [RDF::IRI.new(term1),  RDF::IRI.new(term2)]
+      mapping_terms =  [LinkedData::Models::TermMapping.new(term: RDF::IRI.new(term1), ontology: ont1.resource_id),
+        LinkedData::Models::TermMapping.new(term: RDF::IRI.new(term2), ontology: ont2.resource_id) ]
       assert !LinkedData::Mappings.exist?(*mapping_terms)
       assert LinkedData::Models::Mapping, LinkedData::Mappings.create_or_retrieve_mapping(*mapping_terms)
     end
@@ -124,7 +131,8 @@ class TestMappingAPI < LinkedData::TestOntologyCommon
     ONT1_TERMS.each_index do |i1|
       term1 = RDF::IRI.new(ONT1_TERMS[i1])
       term2 = RDF::IRI.new(ONT2_TERMS[i1])
-      mapping_terms =  [RDF::IRI.new(term1),  RDF::IRI.new(term2)]
+      mapping_terms =  [LinkedData::Models::TermMapping.new(term: RDF::IRI.new(term1), ontology: ont1.resource_id),
+        LinkedData::Models::TermMapping.new(term: RDF::IRI.new(term2), ontology: ont2.resource_id) ]
       assert LinkedData::Mappings.exist?(*mapping_terms)
       assert LinkedData::Models::Mapping, LinkedData::Mappings.create_or_retrieve_mapping(*mapping_terms)
     end

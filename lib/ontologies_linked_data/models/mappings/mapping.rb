@@ -23,17 +23,18 @@ module LinkedData
 
     class Mapping < LinkedData::Models::Base
       model :mapping, :name_with => lambda { |s| mapping_id_generator(s) }
-      attribute :terms, :instance_of => { :with => :term_mapping }
+      attribute :terms, :cardinality => { :min => 2 }, :instance_of => { :with => :term_mapping }
       attribute :process, :instance_of => { :with => :mapping_process }
 
       def self.mapping_id_generator(ins)
-        term_vals=ins.terms.map { |t| t.resource_id.value }
-        term_vals.sort!
-        return mapping_id_generator_iris(*term_vals)
+        return mapping_id_generator_iris(*ins.terms)
       end
 
       def self.mapping_id_generator_iris(*terms)
-        val_to_hash = terms.join("-")
+        terms.each do |t|
+          raise ArgumentError, "Terms must be TermMapping" if !(t.instance_of? TermMapping)
+        end
+        val_to_hash = (terms.map{ |t| t.resource_id.value}).sort.join("-")
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
           "#{(self.namespace :default)}mapping/#{hashed_value}")

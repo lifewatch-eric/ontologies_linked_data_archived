@@ -1,9 +1,8 @@
 module LinkedData
   module Mappings
 
-    def self.exist?(*iris)
-     values = (iris.map { |i| i.value}).sort
-     id = LinkedData::Models::Mapping.mapping_id_generator_iris(values)
+    def self.exist?(*term_mappings)
+     id = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mappings)
       
      query =  """SELECT * WHERE { GRAPH ?g { <#{id.value}> a <#{LinkedData::Models::Mapping.type_uri}> }} LIMIT 1"""
      epr = Goo.store(@store_name)
@@ -14,16 +13,19 @@ module LinkedData
     end
 
     #it only creates the id
-    def self.create_or_retrieve_mapping(*iris)
-     values = (iris.map { |i| i.value}).sort
-     id = LinkedData::Models::Mapping.mapping_id_generator_iris(values)
-     if Mappings.exist?(id)
+    def self.create_or_retrieve_mapping(*term_mappings)
+     id = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mappings)
+     if Mappings.exist?(*term_mappings)
        return LinkedData::Models::Mapping.find(id)
      end
-     insert = """INSERT DATA { GRAPH <#{LinkedData::Models::Mapping.type_uri}> {  <#{id.value}> a <#{LinkedData::Models::Mapping.type_uri}> }}"""
-     epr = Goo.store(@store_name)
-     epr.update(insert)
-     return  LinkedData::Models::Mapping.find(id)
+     assign = []
+     term_mappings.each do |tm|
+       assign << LinkedData::Models::TermMapping.find(tm.resource_id) || tm
+     end
+     m = LinkedData::Models::Mapping.new(terms: term_mappings)
+     m.save
+     return  m
     end
+
   end
 end
