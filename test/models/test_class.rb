@@ -166,7 +166,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
     cls = LinkedData::Models::Class.find(class_id, submission: os , load_attrs: :all)
     assert (cls.attributes[:versionInfo][0].value == "some version info")
-
+    assert (cls.attributes[RDF::IRI.new("http://www.w3.org/2002/07/owl#versionInfo")][0].value == "some version info")
   end
 
   def test_children_count
