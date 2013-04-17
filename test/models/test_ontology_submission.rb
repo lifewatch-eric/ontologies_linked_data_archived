@@ -49,34 +49,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert os.valid?
   end
 
-  def test_sanity_check_single_file_submission
-    return if ENV["SKIP_PARSING"]
-
-    acronym = "BRO"
-    name = "Biomedical Resource Ontology"
-    ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
-    id = 10
-
-    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
-
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
-    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
-    ont_submision.contact = contact
-    ont_submision.released = DateTime.now - 4
-    ont_submision.uploadFilePath = uploadFilePath
-    ont_submision.submissionStatus = status
-    assert (not ont_submision.valid?)
-    assert_equal 2, ont_submision.errors.length
-    assert_instance_of Array, ont_submision.errors[:ontology]
-    assert_instance_of Array, ont_submision.errors[:hasOntologyLanguage]
-    ont_submision.hasOntologyLanguage = owl
-    bro.administeredBy = user
-    ont_submision.ontology = bro
-    assert ont_submision.valid?
-    assert_equal 0, ont_submision.errors.length
-  end
-
-
   def test_sanity_check_zip
     return if ENV["SKIP_PARSING"]
 
