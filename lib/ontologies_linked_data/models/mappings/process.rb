@@ -11,7 +11,7 @@ module LinkedData
 
       def self.process_id_generator(inst)
         return RDF::IRI.new(
-          "#{(self.namespace :default)}mappingprocess/#{CGI.escape(inst.name.to_s)}-#{CGI.escape(DateTime.now.xmlschema)}")
+          "#{(self.namespace :default)}mappingprocess/#{CGI.escape(inst.name.to_s)}-#{CGI.escape(inst.username)}")
       end
     end
   end
