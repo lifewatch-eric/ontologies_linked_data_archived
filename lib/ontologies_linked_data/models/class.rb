@@ -96,7 +96,44 @@ module LinkedData
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents, paths, 0)
+        paths.each do |p|
+          p.reverse!
+        end
         return paths
+      end
+
+      def tree
+        return [] if self.parents.nil? or self.parents.length == 0
+        paths = [[self]]
+        traverse_path_to_root(self.parents, paths, 0, tree=true)
+        path = paths.first
+        items_hash = {}
+        path.each do |t|
+          items_hash[t.resource_id.value] = t
+        end
+        
+        self.class.where( items: items_hash , load_attrs: { :children => true, :prefLabel => true, :childrenCount => true }, submission: self.submission)
+        path.reverse!
+        path.last.children.delete_if { |x| true }
+        #build the tree
+        root_node = path.first
+        tree_node = path.first
+        path.delete_at(0)
+        while tree_node.children.length > 0 and path.length > 0 do
+          next_tree_node = nil
+          tree_node.children.each_index do |i|
+            if tree_node.children[i].resource_id.value == path.first.resource_id.value
+              next_tree_node = path.first
+              tree_node.children[i] = path.first
+            else
+              tree_node.children[i].instance_variable_set("@children",[])
+            end
+          end
+          tree_node = next_tree_node
+          path.delete_at(0)
+        end
+
+        return root_node
       end
 
       private
@@ -106,12 +143,13 @@ module LinkedData
         path << r
       end
 
-      def traverse_path_to_root(parents, paths, path_i)
+      def traverse_path_to_root(parents, paths, path_i,tree=false)
+        return if (tree and parents.length == 0)
         parents.select! { |s| !s.resource_id.bnode?}
         recurse_on_path = []
         recursions = [path_i]
         recurse_on_path = [false]
-        if parents.length > 1
+        if parents.length > 1 and not tree
           (parents.length-1).times do 
             paths << paths[path_i].clone
             recursions << (paths.length - 1)
@@ -132,7 +170,7 @@ module LinkedData
           path = paths[rec_i]
           p = path.last
           if (recurse_on_path[i] && p.parents && p.parents.length > 0)
-            traverse_path_to_root(p.parents, paths, rec_i)
+            traverse_path_to_root(p.parents, paths, rec_i, tree=tree)
           end
         end
       end
