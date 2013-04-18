@@ -62,7 +62,9 @@ module LinkedData
       content_type = options[:content_type] || "text/plain"
       content_length = options[:content_length] || body.bytesize.to_s
       raise ArgumentError("Body must be a string") unless body.kind_of?(String)
-      headers.merge!({"Content-Type" => content_type, "Content-Length" => content_length, "Last-Modified" => last_modified})
+      headers.merge!({"Content-Type" => content_type, "Content-Length" => content_length})
+      # Cache headers
+      headers.merge!({"Vary" => "User-Agent, Accept, Accept-Language", "Cache-Control" => "public, max-age=1209600"})
       [status, headers, [body]]
     end
 
@@ -74,13 +76,8 @@ module LinkedData
       LinkedData::Serializers.serialize(obj, type, options)
     end
 
-    def self.last_modified
-      @last_modified ||= DateTime.now
-      now = DateTime.now
-      if now.to_time - @last_modified.to_time > 300
-        @last_modified = now
-      end
-      @last_modified.iso8601
+    def self.expires
+      (Time.now + 300).httpdate
     end
 
   end
