@@ -49,34 +49,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert os.valid?
   end
 
-  def test_sanity_check_single_file_submission
-    return if ENV["SKIP_PARSING"]
-
-    acronym = "BRO"
-    name = "Biomedical Resource Ontology"
-    ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
-    id = 10
-
-    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
-
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
-    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
-    ont_submision.contact = contact
-    ont_submision.released = DateTime.now - 4
-    ont_submision.uploadFilePath = uploadFilePath
-    ont_submision.submissionStatus = status
-    assert (not ont_submision.valid?)
-    assert_equal 2, ont_submision.errors.length
-    assert_instance_of Array, ont_submision.errors[:ontology]
-    assert_instance_of Array, ont_submision.errors[:hasOntologyLanguage]
-    ont_submision.hasOntologyLanguage = owl
-    bro.administeredBy = user
-    ont_submision.ontology = bro
-    assert ont_submision.valid?
-    assert_equal 0, ont_submision.errors.length
-  end
-
-
   def test_sanity_check_zip
     return if ENV["SKIP_PARSING"]
 
@@ -146,49 +118,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     #This one has resources wih accents.
     submission_parse("OntoMATEST", "OntoMA TEST", "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 10)
-  end
-
-  def submission_parse( acronym, name, ontologyFile, id)
-    return if ENV["SKIP_PARSING"]
-
-    bro = LinkedData::Models::Ontology.find(acronym)
-    if not bro.nil?
-      sub = bro.submissions || []
-      sub.each do |s|
-        s.load
-        s.delete
-      end
-    end
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
-    assert (not ont_submision.valid?)
-    assert_equal 6, ont_submision.errors.length
-    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
-    ont_submision.uploadFilePath = uploadFilePath
-    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
-    bro.administeredBy = user
-    ont_submision.contact = contact
-    ont_submision.released = DateTime.now - 4
-    ont_submision.hasOntologyLanguage = owl
-    ont_submision.ontology = bro
-    ont_submision.submissionStatus = status
-    assert (ont_submision.valid?)
-    ont_submision.save
-    assert_equal true, ont_submision.exist?(reload=true)
-    uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED")
-    uploded_ontologies = uploaded.submissions
-    uploaded_ont = nil
-    uploded_ontologies.each do |ont|
-      ont.load unless ont.loaded?
-      ont.ontology.load unless ont.ontology.loaded?
-      if ont.ontology.acronym == acronym
-        uploaded_ont = ont
-      end
-    end
-    assert (not uploaded_ont.nil?)
-    if not uploaded_ont.ontology.loaded?
-      uploaded_ont.ontology.load
-    end
-    uploaded_ont.process_submission Logger.new(STDOUT)
   end
 
   def test_submission_parse_zip

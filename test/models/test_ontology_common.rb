@@ -49,6 +49,49 @@ module LinkedData
       return owl, ont, user, status, contact
     end
 
+    def submission_parse( acronym, name, ontologyFile, id)
+      return if ENV["SKIP_PARSING"]
+
+      bro = LinkedData::Models::Ontology.find(acronym)
+      if not bro.nil?
+        sub = bro.submissions || []
+        sub.each do |s|
+          s.load
+          s.delete
+        end
+      end
+      ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
+      assert (not ont_submision.valid?)
+      assert_equal 6, ont_submision.errors.length
+      uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
+      ont_submision.uploadFilePath = uploadFilePath
+      owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+      bro.administeredBy = user
+      ont_submision.contact = contact
+      ont_submision.released = DateTime.now - 4
+      ont_submision.hasOntologyLanguage = owl
+      ont_submision.ontology = bro
+      ont_submision.submissionStatus = status
+      assert (ont_submision.valid?)
+      ont_submision.save
+      assert_equal true, ont_submision.exist?(reload=true)
+      uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED")
+      uploded_ontologies = uploaded.submissions
+      uploaded_ont = nil
+      uploded_ontologies.each do |ont|
+        ont.load unless ont.loaded?
+        ont.ontology.load unless ont.ontology.loaded?
+        if ont.ontology.acronym == acronym
+          uploaded_ont = ont
+        end
+      end
+      assert (not uploaded_ont.nil?)
+      if not uploaded_ont.ontology.loaded?
+        uploaded_ont.ontology.load
+      end
+      uploaded_ont.process_submission Logger.new(STDOUT)
+    end
+
     def init_test_ontology_msotest(acr)
       ont = LinkedData::Models::Ontology.find(acr)
       if not ont.nil?

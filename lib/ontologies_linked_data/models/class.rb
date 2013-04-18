@@ -95,7 +95,7 @@ module LinkedData
       def paths_to_root
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
-        traverse_path_to_root(self.parents, paths)
+        traverse_path_to_root(self.parents, paths, 0)
         return paths
       end
 
@@ -106,41 +106,33 @@ module LinkedData
         path << r
       end
 
-      def traverse_path_to_root(parents, paths)
-        return if parents.length == 0
+      def traverse_path_to_root(parents, paths, path_i)
         parents.select! { |s| !s.resource_id.bnode?}
         recurse_on_path = []
+        recursions = [path_i]
+        recurse_on_path = [false]
         if parents.length > 1
-          new_paths = paths * parents.length
-          paths.delete_if {true}
-          new_paths.each do |np|
-            paths << np.clone
-          end
-          paths.each do |p|
+          (parents.length-1).times do 
+            paths << paths[path_i].clone
+            recursions << (paths.length - 1)
             recurse_on_path << false
           end
 
           parents.each_index do |i|
-            path_i = i % paths.length
-            path = paths[path_i]
-            recurse_on_path[path_i] = recurse_on_path[path_i] || (!append_if_not_there_already(path, parents[i]).nil?)
+            rec_i = recursions[i]
+            recurse_on_path[i] = recurse_on_path[i] || !append_if_not_there_already(paths[rec_i], parents[i]).nil?
           end
         else
-          paths.each_index do |i|
-            recurse_on_path[i] = false
-          end
-          paths.each_index do |i|
-            path = paths[i]
-            recurse_on_path[i] = !append_if_not_there_already(path,parents[0]).nil?
-          end
+          path = paths[path_i]
+          recurse_on_path[0] = !append_if_not_there_already(path,parents[0]).nil?
         end
 
-        paths.each_index do |i|
-          path = paths[i]
-          p = path[-1]
-          if recurse_on_path[i] and p.parents and p.parents.length > 0
-            new_paths = [path]
-            traverse_path_to_root p.parents, new_paths
+        recursions.each_index do |i|
+          rec_i = recursions[i]
+          path = paths[rec_i]
+          p = path.last
+          if (recurse_on_path[i] && p.parents && p.parents.length > 0)
+            traverse_path_to_root(p.parents, paths, rec_i)
           end
         end
       end

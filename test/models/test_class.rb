@@ -123,7 +123,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_path_to_root_with_multiple_parents
-    skip("test_path_to_root_with_multiple_parents")
     return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
@@ -166,7 +165,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
     cls = LinkedData::Models::Class.find(class_id, submission: os , load_attrs: :all)
     assert (cls.attributes[:versionInfo][0].value == "some version info")
-
+    assert (cls.attributes[RDF::IRI.new("http://www.w3.org/2002/07/owl#versionInfo")][0].value == "some version info")
   end
 
   def test_children_count
@@ -197,4 +196,52 @@ class TestClassModel < LinkedData::TestOntologyCommon
     cls.my_new_attr = "blah"
     assert cls.my_new_attr == ["blah"]
   end
+
+  def test_bro_trees
+    if !LinkedData::Models::Ontology.find("BROTEST123")
+      submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
+    end
+    os = LinkedData::Models::Ontology.find("BROTEST123").latest_submission
+    statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
+    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os)
+
+    paths_backend = cls.paths_to_root
+    paths = []
+    paths_backend.each do |pb|
+      paths << pb.map { |x| x.resource_id.value }
+    end
+
+    path_0 = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Text_Mining",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Mining_and_Inference",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"]
+
+    path_1 = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Text_Mining",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Natural_Language_Processing",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"] 
+   
+    path_2 = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Text_Mining",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Mining_and_Inference",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Analysis",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"]
+
+    paths.each do |path|
+      assert (path == path_0 || path == path_1 || path == path_2)
+    end
+    assert paths.length == 3
+    assert paths[0] != paths[1]
+    assert paths[1] != paths[2]
+    assert paths[0] != paths[2]
+
+
+  end
+
 end
