@@ -45,7 +45,8 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("children", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", s) }, self.type_uri),
               LinkedData::Hypermedia::Link.new("parents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", s) }, self.type_uri),
               LinkedData::Hypermedia::Link.new("descendents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendents", s) }, self.type_uri),
-              LinkedData::Hypermedia::Link.new("ancestors", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", s) }, self.type_uri)
+              LinkedData::Hypermedia::Link.new("ancestors", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", s) }, self.type_uri),
+              LinkedData::Hypermedia::Link.new("tree", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/tree", s) }, self.type_uri)
 
       def get_index_doc
         attrs = {

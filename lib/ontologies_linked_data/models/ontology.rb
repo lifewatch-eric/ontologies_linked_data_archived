@@ -28,10 +28,12 @@ module LinkedData
       serialize_default :administeredBy, :acronym, :name
       link_to LinkedData::Hypermedia::Link.new("submissions", "ontologies/:acronym/submissions", LinkedData::Models::OntologySubmission.type_uri),
               LinkedData::Hypermedia::Link.new("classes", "ontologies/:acronym/classes", LinkedData::Models::Class.type_uri),
+              LinkedData::Hypermedia::Link.new("single_class", "ontologies/:acronym/classes/{class_id}", LinkedData::Models::Class.type_uri),
               LinkedData::Hypermedia::Link.new("roots", "ontologies/:acronym/classes/roots", LinkedData::Models::Class.type_uri),
               LinkedData::Hypermedia::Link.new("reviews", "ontologies/:acronym/reviews", LinkedData::Models::Review.type_uri),
               LinkedData::Hypermedia::Link.new("groups", "ontologies/:acronym/groups", LinkedData::Models::Group.type_uri),
               LinkedData::Hypermedia::Link.new("categories", "ontologies/:acronym/categories", LinkedData::Models::Category.type_uri),
+              LinkedData::Hypermedia::Link.new("latest_submission", "ontologies/:acronym/latest_submission", LinkedData::Models::OntologySubmission.type_uri),
               LinkedData::Hypermedia::Link.new("projects", "ontologies/:acronym/projects", LinkedData::Models::Project.type_uri)
               # LinkedData::Hypermedia::Link.new("metrics", "ontologies/:acronym/metrics", LinkedData::Models::Metrics.type_uri),
 
