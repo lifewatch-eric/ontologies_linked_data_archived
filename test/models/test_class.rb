@@ -197,7 +197,42 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert cls.my_new_attr == ["blah"]
   end
 
-  def test_bro_trees
+  def test_bro_tree
+    #just one path with children
+    if !LinkedData::Models::Ontology.find("BROTEST123")
+      submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
+    end
+    os = LinkedData::Models::Ontology.find("BROTEST123").latest_submission
+    statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
+    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os)
+
+    root_backend = cls.tree
+    root_backend.resource_id.value == "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"
+    tree_backend = root_backend
+    root_backend.children.each do |c|
+      assert c.childrenCount > 0
+    end
+    levels = 0
+    while tree_backend and tree_backend.children.length > 0 do
+      cc = 0
+      next_tree = nil
+      tree_backend.children.each do |c|
+        next_tree = c if c.children.length > 0
+      end
+      assert cc < 2
+      if next_tree.nil?
+        tree_backend.children.select { |x| x.resource_id.value == "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis" }.length == 1
+        assert tree_backend.children.length == 2
+        assert tree_backend.children.first.childrenCount == 0
+        assert tree_backend.children[1].childrenCount == 0
+      end
+      tree_backend = next_tree
+      levels += 1
+    end
+  end
+
+
+  def test_bro_paths_to_root
     if !LinkedData::Models::Ontology.find("BROTEST123")
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
     end
@@ -216,14 +251,14 @@ class TestClassModel < LinkedData::TestOntologyCommon
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Mining_and_Inference",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
- "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"]
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"].reverse
 
     path_1 = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Text_Mining",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Natural_Language_Processing",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
- "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"] 
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"].reverse
    
     path_2 = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Text_Mining",
@@ -231,7 +266,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Analysis",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
- "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"]
+ "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"].reverse
 
     paths.each do |path|
       assert (path == path_0 || path == path_1 || path == path_2)
@@ -240,7 +275,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert paths[0] != paths[1]
     assert paths[1] != paths[2]
     assert paths[0] != paths[2]
-
 
   end
 
