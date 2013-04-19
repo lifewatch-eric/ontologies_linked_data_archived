@@ -217,6 +217,8 @@ class TestClassModel < LinkedData::TestOntologyCommon
       cc = 0
       next_tree = nil
       tree_backend.children.each do |c|
+        assert c.childrenCount != nil
+        assert c.prefLabel != nil
         next_tree = c if c.children.length > 0
       end
       assert cc < 2

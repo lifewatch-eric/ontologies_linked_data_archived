@@ -116,6 +116,13 @@ module LinkedData
         self.class.where( items: items_hash , load_attrs: { :children => true, :prefLabel => true, :childrenCount => true }, submission: self.submission)
         path.reverse!
         path.last.children.delete_if { |x| true }
+        childrens_hash = {}
+        path.each do |m|
+          m.children.each do |c|
+            childrens_hash[c.resource_id.value] = c
+          end
+        end
+        self.class.where( items: childrens_hash , load_attrs: { :prefLabel => true, :childrenCount => true }, submission: self.submission)
         #build the tree
         root_node = path.first
         tree_node = path.first
