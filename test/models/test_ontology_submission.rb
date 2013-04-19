@@ -312,6 +312,22 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     sbo.process_submission Logger.new(STDOUT)
     assert sbo.submissionStatus.parsed?
 
+    page_classes = LinkedData::Models::Class.page submission: sbo,
+                                             page: 1, size: 1000,
+                                             load_attrs: { prefLabel: true, synonym: true},
+                                             query_options: { rules: :SUBP }
+    page_classes.each do |c|
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000004"
+        assert c.prefLabel == "modelling framework"
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000011"
+        assert c.prefLabel == "product"
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000236"
+        assert c.prefLabel == "physical entity representation"
+      end
+    end
+
     sbo = LinkedData::Models::Ontology.find(acronym)
     if not sbo.nil?
       sub = sbo.submissions || []
@@ -417,6 +433,25 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     aero.ontology.load unless aero.ontology.loaded?
     aero.process_submission Logger.new(STDOUT)
     assert aero.submissionStatus.parsed?
+
+    page_classes = LinkedData::Models::Class.page submission: aero,
+                                             page: 1, size: 1000,
+                                             load_attrs: { prefLabel: true, synonym: true},
+                                             query_options: { rules: :SUBP }
+    page_classes.each do |c|
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/UBERON_0004535"
+        assert c.prefLabel == "cardiovascular system"
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/ogms/OMRE_0000105"
+        assert c.prefLabel == "angioedema"
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/ogms/OMRE_0000104"
+        assert c.prefLabel == "generalized erythema"
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/UBERON_0012125"
+        assert c.prefLabel == "dermatological-mucosal system"
+      end
+    end
 
     aero = LinkedData::Models::Ontology.find(acronym)
     if not aero.nil?

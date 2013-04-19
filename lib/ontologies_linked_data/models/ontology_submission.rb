@@ -291,13 +291,14 @@ module LinkedData
           label_triples = []
           page_classes = LinkedData::Models::Class.page submission: self,
                                                    page: page, size: size,
-                                                   load_attrs: { prefLabel: true, synonym: true },
+                                                   load_attrs: { prefLabel: true, synonym: true, label: true },
                                                    query_options: { rules: :SUBP }
           logger.info("#{page_classes.length} in page #{page} classes for #{self.resource_id.value} (#{t1 - t0} sec). Total pages #{page_classes.page_count}.")
           logger.flush
           page_classes.each do |c|
             if c.prefLabel.nil?
-              rdfs_labels = c.synonym
+              rdfs_labels = c.label
+              rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
               label = nil
               if rdfs_labels && rdfs_labels.length > 0
                 label = rdfs_labels[0].value
