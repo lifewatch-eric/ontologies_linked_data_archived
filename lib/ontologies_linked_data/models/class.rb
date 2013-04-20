@@ -38,6 +38,7 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
+      embed :children
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
@@ -113,7 +114,7 @@ module LinkedData
         path.each do |t|
           items_hash[t.resource_id.value] = t
         end
-        
+
         self.class.where( items: items_hash , load_attrs: { :children => true, :prefLabel => true, :childrenCount => true }, submission: self.submission)
         path.reverse!
         path.last.children.delete_if { |x| true }
@@ -159,7 +160,7 @@ module LinkedData
         recursions = [path_i]
         recurse_on_path = [false]
         if parents.length > 1 and not tree
-          (parents.length-1).times do 
+          (parents.length-1).times do
             paths << paths[path_i].clone
             recursions << (paths.length - 1)
             recurse_on_path << false
