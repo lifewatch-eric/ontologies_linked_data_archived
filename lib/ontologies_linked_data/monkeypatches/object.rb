@@ -24,7 +24,7 @@ class Object
     end
 
     # Determine whether to use defaults from the DSL or all attributes
-    hash = populate_attributes(hash, all)
+    hash = populate_attributes(hash, all, only)
 
     # Remove banned attributes (from DSL or defined here)
     hash = remove_bad_attributes(hash)
@@ -149,7 +149,7 @@ class Object
     }
   end
 
-  def populate_attributes(hash, all = false)
+  def populate_attributes(hash, all = false, only = [])
     # Look for default attributes or use all
     if !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_default].empty? || all
       # Look for table attribute or get all instance variables
@@ -157,13 +157,29 @@ class Object
         hash.replace(instance_variable_get("@attributes"))
       end
       instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
+    elsif !only.empty?
+      # Only get stuff we need
+      hash = populate_hash_from_list(hash, only)
     else
-      self.class.hypermedia_settings[:serialize_default].each do |var|
-        # TODO: use this when setting instnace vars is done
-        # hash[var.to_sym] = self.instance_variable_get("@#{var}")
-        hash[var.to_sym] = self.send(var)
+      hash = populate_hash_from_list(hash, self.class.hypermedia_settings[:serialize_default])
+    end
+    hash
+  end
+
+  def populate_hash_from_list(hash, attributes)
+    attributes.each do |attribute|
+      attribute = attribute.to_sym
+
+      # TODO: use this when setting instnace vars is done
+      hash[attribute] = self.instance_variable_get("@#{attribute}")
+      # hash[attribute.to_sym] = self.send(attribute)
+
+      # Try to populate from attributes hash
+      if instance_variables.include?(:@attributes) && hash[attribute].nil?
+        hash[attribute] = @attributes[attribute]
       end
     end
+
     hash
   end
 
@@ -181,10 +197,13 @@ class Object
     sample_object = value.is_a?(Enumerable) && !value.is_a?(Hash) ? value.first : value
 
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
+      # Use options if the embedded object is the same as the current one
+      options = sample_object.class == self.class ? options : {}
+
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.to_flex_hash({}, &block)}
+        values = value.map {|e| e.to_flex_hash(options, &block)}
       else
-        values = value.to_flex_hash({}, &block)
+        values = value.to_flex_hash(options, &block)
       end
       hash[attribute] = values
       return hash, true
