@@ -36,7 +36,7 @@ module LinkedData
 
     begin
       puts ">> Connecting to rdf store #{host}:#{port} and search server at #{search_server_url}"
-      Goo.configure do |conf|
+      ::Goo.configure do |conf|
         conf[:stores] = [ { :name => :main , :host => host, :port => port, :options => { :rules => :NONE} } ]
         conf[:search_conf] = { :search_server => search_server_url }
       end
@@ -49,7 +49,7 @@ module LinkedData
   # Configure ontologies_linked_data namespaces
   # We do this at initial runtime because goo needs namespaces for its DSL
   def goo_namespaces
-    Goo.configure do |conf|
+    ::Goo.configure do |conf|
       conf[:namespaces] = {
         :metadata => "http://data.bioontology.org/metadata/",
         :omv => "http://omv.ontoware.org/2005/05/ontology#",
