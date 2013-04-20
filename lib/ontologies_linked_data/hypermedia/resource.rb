@@ -35,6 +35,11 @@ module LinkedData
           special_attrs = {}
           self.hypermedia_settings[:embed].each do |e|
             embed_class = Goo.find_model_by_name(e)
+
+            # TODO: we should actually do find by model name based on the inverse_of or instance_of values for the embedded attribute
+            # This gets around where it breaks
+            next if embed_class.nil?
+
             special_attrs[e] = array_to_goo_hash(embed_class.defined_attributes_not_transient)
           end
           embed_values = (self.hypermedia_settings[:embed_values].first || {}).dup
