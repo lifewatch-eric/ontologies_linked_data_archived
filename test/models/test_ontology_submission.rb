@@ -294,7 +294,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, sbo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, sbo, user, status, contact = submission_dependent_objects("OBO", acronym, "test_linked_models", "UPLOADED", name)
     sbo.administeredBy = user
     ont_submision.contact = contact
     ont_submision.released = DateTime.now - 4
@@ -325,6 +325,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
       if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000236"
         assert c.prefLabel == "physical entity representation"
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000306"
+        assert c.prefLabel == "pK"
+        assert c.synonym[0] == "dissociation potential"
       end
     end
 
@@ -436,11 +440,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     page_classes = LinkedData::Models::Class.page submission: aero,
                                              page: 1, size: 1000,
-                                             load_attrs: { prefLabel: true, synonym: true},
+                                             load_attrs: { prefLabel: true, synonym: true, definition: true},
                                              query_options: { rules: :SUBP }
     page_classes.each do |c|
       if c.resource_id.value == "http://purl.obolibrary.org/obo/UBERON_0004535"
         assert c.prefLabel == "cardiovascular system"
+        assert c.definition[0] == "Anatomical system that has as its parts the heart and blood vessels."
       end
       if c.resource_id.value == "http://purl.obolibrary.org/obo/ogms/OMRE_0000105"
         assert c.prefLabel == "angioedema"
@@ -450,6 +455,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
       if c.resource_id.value == "http://purl.obolibrary.org/obo/UBERON_0012125"
         assert c.prefLabel == "dermatological-mucosal system"
+        assert c.definition == "Anatomical system that consists of the integumental system plus all mucosae and submucosae."
+      end
+      if c.resource_id.value == "http://purl.obolibrary.org/obo/IAO_0000578"
+        assert c.prefLabel == "CRID"
+        assert c.synonym[0] == "Centrally Registered IDentifier"
       end
     end
 

@@ -27,6 +27,16 @@ module LinkedData
         unless ont_sub.authorProperty.nil?
           triples << "<#{ont_sub.authorProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.dc_creator}> ."
         end
+
+        if ont_sub.hasOntologyLanguage.obo?
+          #obo syns
+          triples << "<#{names.gen_sy}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
+          triples << "<#{names.obo_sy}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
+          
+          #obo defs
+          triples << "<#{names.rdfs_comment}> <#{names.rdfs_subPropertyOf}> <#{names.skos_definition}> ."
+          triples << "<#{names.obo_def}> <#{names.rdfs_subPropertyOf}> <#{names.skos_definition}> ."
+        end
         return (triples.join "\n")
       end
 
