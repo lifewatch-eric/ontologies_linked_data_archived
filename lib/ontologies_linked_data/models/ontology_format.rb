@@ -12,6 +12,16 @@ module LinkedData
           end
         end
       end
+
+      def obo?
+        return resource_id.value.end_with? "OBO"
+      end
+      def owl?
+        return resource_id.value.end_with? "OWL"
+      end      
+      def umls?
+        return resource_id.value.end_with? "UMLS"
+      end
     end
   end
 end
