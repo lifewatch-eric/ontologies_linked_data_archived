@@ -10,6 +10,8 @@ module LinkedData
       DC = "http://purl.org/dc/elements/1.1/"
       XSD = "http://www.w3.org/2001/XMLSchema#"
       META = "http://bioportal.bioontology.org/metadata/def/"
+      GENO = "http://www.geneontology.org/formats/oboInOWL#"
+      OBOPURL = "http://purl.obolibrary.org/obo/"
 
       def self.meta_prefLabel
         META + "prefLabel"
@@ -32,6 +34,9 @@ module LinkedData
       def self.rdfs_label
         RDFS + "label"
       end
+      def self.rdfs_comment
+        RDFS + "comment"
+      end
       def self.owl_class
         OWL + "Class"
       end
@@ -40,6 +45,15 @@ module LinkedData
       end
       def self.xsd_string
         return XSD + "string"
+      end
+      def self.gen_sy
+        return GENO + "hasExactSynonym"
+      end
+      def self.obo_sy
+        return OBOPURL + "synonym"
+      end
+      def self.obo_def
+        return OBOPURL + "def"
       end
       def self.default_pref_label_iri
         RDF::IRI.new(skos_prefLabel)
@@ -62,7 +76,18 @@ module LinkedData
       def self.rdfs_label_iri
         RDF::IRI.new(rdfs_label)
       end
-
+      def self.rdfs_comment_iri
+        RDF::IRI.new(rdfs_comment)
+      end
+      def self.gen_sy_iri
+        RDF::IRI.new(obo_sy)
+      end
+      def self.obo_sy_iri
+        RDF::IRI.new(obo_sy)
+      end
+      def self.obo_def_iri
+        RDF::IRI.new(obo_def)
+      end
 
       #TODO: to move somewhere else
       def self.last_iri_fragment str
