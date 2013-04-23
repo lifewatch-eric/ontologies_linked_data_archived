@@ -235,7 +235,7 @@ module LinkedData
         logger.flush
       end
 
-      def index(logger)
+      def index(logger, optimize = true)
         page = 1
         size = 2500
 
@@ -253,12 +253,14 @@ module LinkedData
           LinkedData::Models::Class.indexCommit()
         end
         logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec.")
-        logger.info("Optimizing index...")
 
-        time = Benchmark.realtime do
-          LinkedData::Models::Class.indexOptimize()
+        if optimize
+          logger.info("Optimizing index...")
+          time = Benchmark.realtime do
+            LinkedData::Models::Class.indexOptimize()
+          end
+          logger.info("Completed optimizing index in #{time} sec.")
         end
-        logger.info("Completed optimizing index in #{time} sec.")
       end
 
       # Override delete to add removal from the search index
