@@ -26,6 +26,10 @@ module LinkedData
     @settings.redis_host        ||= "localhost"
     @settings.redis_port        ||= 6379
 
+    puts ">> Using rdf store #{@settings.goo_host}:#{@settings.goo_port}"
+    puts ">> Using search server at #{@settings.search_server_url}"
+    puts ">> Using Redis instance at #{@settings.redis_host}:#{@settings.redis_port}"
+
     connect_goo unless overide_connect_goo
   end
 
@@ -37,7 +41,6 @@ module LinkedData
     search_server_url ||= @settings.search_server_url
 
     begin
-      puts ">> Connecting to rdf store #{host}:#{port} and search server at #{search_server_url}"
       ::Goo.configure do |conf|
         conf[:stores] = [ { :name => :main , :host => host, :port => port, :options => { :rules => :NONE} } ]
         conf[:search_conf] = { :search_server => search_server_url }
