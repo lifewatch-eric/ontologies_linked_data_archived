@@ -23,6 +23,8 @@ module LinkedData
     @settings.repository_folder ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix   ||= "http://data.bioontology.org/"
     @settings.enable_security   ||= false
+    @settings.redis_host        ||= "localhost"
+    @settings.redis_port        ||= 6379
 
     connect_goo unless overide_connect_goo
   end
