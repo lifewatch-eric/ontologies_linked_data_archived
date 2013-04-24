@@ -19,7 +19,7 @@ module LinkedData
       private
 
       def self.unique_value(object, attributes)
-        self.goop_settings[:attributes].each {|k,v| naming_attr = k if v[:validators] && v[:validators][:unique]}
+        naming_attr = self.goop_settings[:attributes].select {|k,v| v[:validators] && v[:validators][:unique]}.keys.first
         value = object.instance_variable_get("@"+naming_attr.to_s)
         CGI.escape(value.to_s)
       end
