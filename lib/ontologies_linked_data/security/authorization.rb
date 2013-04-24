@@ -20,6 +20,7 @@ module LinkedData
         # Skip auth unless security is enabled or for routes we know should be allowed
         return @app.call(env) unless LinkedData.settings.enable_security
         return @app.call(env) if ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"])
+        return @app.call(env) if env["HTTP_REFERER"] && env["HTTP_REFERER"].start_with?(LinkedData.settings.rest_url_prefix)
 
         params = env["rack.request.query_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
 
