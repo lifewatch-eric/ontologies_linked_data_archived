@@ -81,8 +81,10 @@ module LinkedData
       end
 
       def self.link_path(path, cls)
-        if cls.attributes[:internals] && cls.attributes[:internals].read_only
-          path.sub!(":submission.ontology.acronym", cls.submissionAcronym.first.value)
+        if cls.attributes[:internals] && cls.attributes[:internals].read_only && !cls.instance_variable_get("@submissionAcronym").nil?
+          ontology_id = cls.submissionAcronym.first.value
+          ontology_id = ontology_id.split("/").last if ontology_id.start_with?("http://")
+          path.sub!(":submission.ontology.acronym", ontology_id)
         end
         LinkedData::Hypermedia::expand_link(path, cls)
       end
