@@ -7,7 +7,7 @@ module LinkedData
       include LinkedData::Hypermedia::Resource
 
       def self.plural_resource_id(object)
-        RDF::IRI.new("#{resource_id_prefix}#{unique_value(object, self.goop_settings[:attributes], naming_attr)}")
+        RDF::IRI.new("#{resource_id_prefix}#{unique_value(object, self.goop_settings[:attributes])}")
       end
 
       def self.resource_id_prefix
@@ -20,7 +20,7 @@ module LinkedData
 
       def self.unique_value(object, attributes)
         self.goop_settings[:attributes].each {|k,v| naming_attr = k if v[:validators] && v[:validators][:unique]}
-        value = object.instance_variable_get("@"+naming_attr.to_s) || object.send(naming_attr)
+        value = object.instance_variable_get("@"+naming_attr.to_s)
         CGI.escape(value.to_s)
       end
     end
