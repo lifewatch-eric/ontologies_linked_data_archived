@@ -41,11 +41,11 @@ module LinkedData
         status = options[:status] || :parsed
         submission_id = highest_submission_id(status)
         return nil if submission_id.nil?
-        OntologySubmission.where({ontology: { acronym: acronym }, submissionId: submission_id}).first
+        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id, load_attrs: OntologySubmission.goo_attrs_to_load).first
       end
 
       def submission(submission_id)
-        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id.to_i).first
+        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id.to_i, load_attrs: OntologySubmission.goo_attrs_to_load).first
       end
 
       def next_submission_id
