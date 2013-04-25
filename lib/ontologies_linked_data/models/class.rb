@@ -81,7 +81,7 @@ module LinkedData
       end
 
       def self.link_path(path, cls)
-        if cls.attributes[:internals] && cls.attributes[:internals].read_only && !cls.instance_variable_get("@submissionAcronym").nil?
+        if cls.attributes[:internals] && cls.attributes[:internals].read_only && !cls.attributes[:submissionAcronym].nil?
           ontology_id = cls.submissionAcronym.first.value
           ontology_id = ontology_id.split("/").last if ontology_id.start_with?("http://")
           path.sub!(":submission.ontology.acronym", ontology_id)
