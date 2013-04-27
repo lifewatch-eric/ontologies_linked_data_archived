@@ -127,7 +127,6 @@ class Object
       pageCount: self.page_count,
       prevPage: self.prev_page,
       nextPage: self.next_page,
-      totalResults: self.totalResults,
       links: generate_page_links(options, self.page, self.page_count),
       collection: []
     }
