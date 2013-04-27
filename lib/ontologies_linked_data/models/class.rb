@@ -29,7 +29,7 @@ module LinkedData
                 :inverse_of => { :with => :class , :attribute => :parents }
 
       #transitive children
-      attribute :descendents, :use => :children,
+      attribute :descendants, :use => :children,
                 :query_options => { :rules => :SUBC }
 
       attribute :childrenCount, :aggregate => { :attribute => :children, :with => :count }

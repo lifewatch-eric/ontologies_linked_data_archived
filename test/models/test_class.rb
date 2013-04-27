@@ -89,12 +89,12 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.children[0].submission, os)
 
     #transitive
-    descendents = cls.descendents
-    descendents.map! { |a| a.resource_id.value }
-    data_descendents = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
+    descendants = cls.descendants
+    descendants.map! { |a| a.resource_id.value }
+    data_descendants = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
     "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
-    assert descendents.sort == data_descendents.sort
+    assert descendants.sort == data_descendants.sort
 
   end
 
@@ -261,7 +261,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Analysis_Software",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Software",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"].reverse
-   
+
     path_2 = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Text_Mining",
  "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Mining_and_Inference",
