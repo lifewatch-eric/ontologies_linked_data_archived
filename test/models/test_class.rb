@@ -234,6 +234,16 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
 
+  def test_include_ancestors
+   if !LinkedData::Models::Ontology.find("BROTEST123")
+      submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
+    end
+    os = LinkedData::Models::Ontology.find("BROTEST123").latest_submission
+ statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
+    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os,load_attrs: [ :ancestors => true ])
+    assert cls.attributes[:ancestors].length == 1
+  end
+
   def test_bro_paths_to_root
     if !LinkedData::Models::Ontology.find("BROTEST123")
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)

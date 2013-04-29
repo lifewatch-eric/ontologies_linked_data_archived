@@ -1,4 +1,5 @@
 require "set"
+require 'redis'
 
 module LinkedData
   module Models
@@ -19,7 +20,8 @@ module LinkedData
       attribute :definition, :namespace => :skos
       attribute :deprecated, :namespace => :owl, :single_value => true
 
-      attribute :parents, :namespace => :rdfs, :alias => :subClassOf
+      attribute :parents, :namespace => :rdfs, :alias => :subClassOf,
+                  :instance_of => { :with => :class }
 
       #transitive parent
       attribute :ancestors, :use => :parents,
@@ -146,6 +148,44 @@ module LinkedData
         end
 
         return root_node
+      end
+
+      def self.page(*args)
+        parsing = args.last.delete(:parsing)
+        if parsing
+          return super(args.last)
+        end
+        redis_cl = LinkedData.redis_client
+        if !redis_cl.exists(args.last[:submission].cache_pagination_key)
+          return super(args.last)
+        end
+        page_n = args.last.delete(:page)
+        size = args.last.delete(:size)
+        count = redis_cl.llen(args.last[:submission].cache_pagination_key)
+        page_count = ((count+0.0)/size).ceil
+        offset = (page_n-1) * size
+        ids = redis_cl.lrange(args.last[:submission].cache_pagination_key, offset, offset + size)
+        items_hash = {}
+        ids.each do |id|
+          resource_id = SparqlRd::Resultset::IRI.new id
+          item = self.new
+          item.internals.lazy_loaded
+          item.resource_id = resource_id
+          items_hash[resource_id.value] = item
+          collection = args.last[:submission]
+          item.internals.collection = collection
+          item.internals.graph_id = collection
+          item.internals.lazy_loaded
+        end
+        items = nil
+        if items_hash.length > 0 and count > 0
+          items = self.where(args[-1].merge({ items: items_hash }))
+        else
+          items = []
+        end
+        next_page = items.size > size
+        items = items[0..-2] if items.length > size
+        return Goo::Base::Page.new(page_n,next_page,page_count,items)
       end
 
       private
