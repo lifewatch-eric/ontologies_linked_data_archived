@@ -144,8 +144,8 @@ class Object
     if request
       params = request.params.dup
       request_path = "#{LinkedData.settings.rest_url_prefix.chomp("/")}#{request.path}"
-      next_page = page == page_count ? nil : "#{request_path}?#{Rack::Utils.build_nested_query(params.merge("page" => page + 1))}"
-      prev_page = page == 1 ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => page - 1))}"
+      next_page = page == page_count ? nil : "#{request_path}?#{Rack::Utils.build_nested_query(params.merge("page" => (page + 1).to_s))}"
+      prev_page = page == 1 ? nil : "#{request_path}?#{Rack::Utils.build_query(params.merge("page" => (page - 1).to_s))}"
     else
       next_page = "?#{Rack::Utils.build_query("page" => page + 1)}"
       prev_page = "?#{Rack::Utils.build_query("page" => page - 1)}"
