@@ -40,7 +40,7 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
-      embed :children
+      embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
