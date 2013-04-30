@@ -32,7 +32,8 @@ module LinkedData
 
       #transitive children
       attribute :descendants, :use => :children,
-                :query_options => { :rules => :SUBC }
+                :query_options => { :rules => :SUBC },
+                :instance_of => { :with => :class }
 
       attribute :childrenCount, :aggregate => { :attribute => :children, :with => :count }
 
