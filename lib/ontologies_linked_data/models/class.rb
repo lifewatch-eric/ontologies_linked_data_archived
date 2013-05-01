@@ -1,5 +1,5 @@
 require "set"
-require 'redis'
+#require 'redis'
 
 module LinkedData
   module Models
