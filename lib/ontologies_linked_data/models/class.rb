@@ -154,6 +154,10 @@ module LinkedData
       end
 
 #      def self.page(*args)
+      #
+      #      consider this
+      #      params[:filter]="FILTER(!isBlank(?subject))"
+      #
 #        parsing = args.last.delete(:parsing)
 #        if parsing
 #          return super(args.last)
