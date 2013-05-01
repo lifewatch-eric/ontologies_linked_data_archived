@@ -240,8 +240,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").latest_submission
  statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
-    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os,load_attrs: [ :ancestors => true, :prefLabel => true ])
-    assert cls.attributes[:ancestors].length == 1
+    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os,load_attrs: [ :ancestors => true, :prefLabel => true ], query_options: { rules: "SUBP+SUBC"})
+    binding.pry
+    assert cls.attributes[:ancestors].length == 3
     assert_instance_of String, cls.attributes[:prefLabel].value
   end
 

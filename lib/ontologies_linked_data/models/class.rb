@@ -78,7 +78,9 @@ module LinkedData
       end
 
       def self.find(*args)
-        args[-1][:query_options] = { rules: :SUBP }
+        unless args[-1].include?:query_options
+          args[-1][:query_options] = { rules: :SUBP }
+        end
         super(*args)
       end
 
