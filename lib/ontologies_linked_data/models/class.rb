@@ -20,6 +20,8 @@ module LinkedData
       attribute :definition, :namespace => :skos
       attribute :deprecated, :namespace => :owl, :single_value => true
 
+      attribute :notation, :namespace => :skos
+
       attribute :parents, :namespace => :rdfs, :alias => :subClassOf,
                   :instance_of => { :with => :class }
 
