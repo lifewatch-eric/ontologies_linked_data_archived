@@ -248,7 +248,7 @@ module LinkedData
           begin #per page
             page_classes = LinkedData::Models::Class.page submission: self,
                                                           page: page, size: size,
-                                                          load_attrs: { prefLabel: true, synonym: true, definition: true }
+                                                          load_attrs: :all
             LinkedData::Models::Class.indexBatch(page_classes)
             page = page_classes.next_page
           end while !page.nil?

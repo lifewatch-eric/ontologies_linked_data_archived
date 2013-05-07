@@ -39,7 +39,7 @@ module LinkedData
 
       attribute :childrenCount, :aggregate => { :attribute => :children, :with => :count }
 
-      search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
+      search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym.value}_#{t.submission.submissionId.value}" },
                      :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
@@ -56,18 +56,33 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("tree", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/tree", s) }, self.type_uri)
 
       def get_index_doc
-        attrs = {
+        doc = {
+            :resource_id => self.resource_id.value,
+            :prefLabel => self.prefLabel,
+            :synonym => self.synonym,
+            :notation => self.notation,
             :submissionAcronym => self.submission.ontology.acronym,
-            :submissionId => self.submission.submissionId
+            :submissionId => self.submission.submissionId,
+            :definition => self.definition
         }
+        all_attrs = self.attributes.dup
+        all_attrs.delete :internals
+        all_attrs.delete :uuid
+        all_attrs.delete :id
+        props = []
 
-        object_id = self.resource_id.value
-        doc = self.attributes.dup
-        doc.delete :internals
-        doc.delete :uuid
-        doc = doc.merge(attrs)
-        doc[:resource_id] = object_id
-
+        all_attrs.each do |attr_key, attr_val|
+          if (!doc.include?(attr_key))
+            if (attr_val.is_a?(Array))
+              attr_val.uniq!
+              attr_val.map { |val| props << val.value.strip }
+            else
+              props << attr_val.value.strip
+            end
+          end
+        end
+        props.uniq!
+        doc[:property] = props
         return doc
       end
 
