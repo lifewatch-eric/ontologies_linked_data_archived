@@ -241,6 +241,7 @@ module LinkedData
         page = 1
         size = 2500
 
+        count_classes = 0
         time = Benchmark.realtime do
           self.ontology.unindex()
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
@@ -249,12 +250,13 @@ module LinkedData
             page_classes = LinkedData::Models::Class.page submission: self,
                                                           page: page, size: size,
                                                           load_attrs: :all
+            count_classes += page_classes.length
             LinkedData::Models::Class.indexBatch(page_classes)
             page = page_classes.next_page
           end while !page.nil?
           LinkedData::Models::Class.indexCommit()
         end
-        logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec.")
+        logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
 
         if optimize
           logger.info("Optimizing index...")
