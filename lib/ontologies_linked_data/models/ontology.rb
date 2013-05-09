@@ -24,6 +24,12 @@ module LinkedData
       attribute :hasDomain, :namespace => :omv, :instance_of => { :with => :category }
       attribute :acl, :instance_of => { :with => :user }
 
+      attribute :viewOf, :instance_of => { :with => :ontology }
+
+      attribute :views,
+                  :inverse_of => { :with => :ontology,
+                  :attribute => :viewOf }
+
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
       link_to LinkedData::Hypermedia::Link.new("submissions", "ontologies/:acronym/submissions", LinkedData::Models::OntologySubmission.type_uri),
