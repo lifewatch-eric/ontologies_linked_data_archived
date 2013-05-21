@@ -35,18 +35,22 @@ module LinkedData
 
   ##
   # Connect to goo by configuring the store and search server
-  def connect_goo(host = nil, port = nil, search_server_url = nil)
+  def connect_goo
     port              ||= @settings.goo_port
     host              ||= @settings.goo_host
-    search_server_url ||= @settings.search_server_url
 
     begin
-      ::Goo.configure do |conf|
-        conf[:stores] = [ { :name => :main , :host => host, :port => port, :options => { :rules => :NONE} } ]
-        conf[:search_conf] = { :search_server => search_server_url }
+      Goo.configure do |conf|
+        conf.add_sparql_backend(:main, query: "http://#{host}:#{port}/sparql/",
+                                data: "http://#{host}:#{port}/data/",
+                                update: "http://#{host}:#{port}/update/",
+                                options: { rules: :NONE })
+
+        conf.add_search_backend(:main, service: @settings.search_server_url)
+        conf.add_redis_backend(host: @settings.redis_host)
       end
     rescue Exception => e
-      abort("EXITING: Cannot connect to triplestore and/or search server:\n  #{e}")
+      abort("EXITING: Cannot connect to triplestore and/or search server:\n  #{e}\n#{e.backtrace.join("\n")}")
     end
   end
 
@@ -54,15 +58,12 @@ module LinkedData
   # Configure ontologies_linked_data namespaces
   # We do this at initial runtime because goo needs namespaces for its DSL
   def goo_namespaces
-    ::Goo.configure do |conf|
-      conf[:namespaces] = {
-        :metadata => "http://data.bioontology.org/metadata/",
-        :omv => "http://omv.ontoware.org/2005/05/ontology#",
-        :skos => "http://www.w3.org/2004/02/skos/core#",
-        :owl => "http://www.w3.org/2002/07/owl#",
-        :rdfs => "http://www.w3.org/2000/01/rdf-schema#",
-        :default => :metadata
-      }
+    Goo.configure do |conf|
+      conf.add_namespace(:omv, RDF::Vocabulary.new("http://omv.org/ontology/"), default = true)
+      conf.add_namespace(:skos, RDF::Vocabulary.new("http://www.w3.org/2004/02/skos/core#"))
+      conf.add_namespace(:owl, RDF::Vocabulary.new("http://www.w3.org/2002/07/owl#"))
+      conf.add_namespace(:rdfs, RDF::Vocabulary.new("http://www.w3.org/2000/01/rdf-schema#"))
+      conf.add_namespace(:metadata, RDF::Vocabulary.new("http://data.bioontology.org/metadata/"))
     end
   end
   self.goo_namespaces
