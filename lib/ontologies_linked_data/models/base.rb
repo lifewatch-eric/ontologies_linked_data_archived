@@ -13,7 +13,7 @@ module LinkedData
       def self.resource_id_prefix
         model_name ||= (model_name || self.goo_name.to_s).pluralize
         prefix_base = LinkedData.settings.rest_url_prefix || self.namespace(:default)
-        "#{prefix_base}#{model_name}/"
+        RDF::IRI.new("#{prefix_base}#{model_name}/")
       end
 
       private
