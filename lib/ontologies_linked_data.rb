@@ -27,5 +27,5 @@ require_relative "ontologies_linked_data/models/base"
 # Require all models
 project_root = File.dirname(File.absolute_path(__FILE__))
 #Dir.glob(project_root + '/ontologies_linked_data/models/**/*.rb', &method(:require))
-require_relative "ontologies_linked_data/models/category"
+require_relative "ontologies_linked_data/models/users/user"
 $project_bin = project_root + '/../bin/'
