@@ -42,8 +42,6 @@ module LinkedData
 
     def after_suites
       # code to run after the last test (gets inherited in sub-tests)
-      # TODO: Re-enable after goo update/ontology is ready
-      #LinkedData::SampleData::Ontology.delete_ontologies_and_submissions
     end
 
     def _run_suites(suites, type)
@@ -65,7 +63,7 @@ module LinkedData
     end
   end
 
-  LinkedData::Unit.runner = LinkedData::Unit.new
+  MiniTest::Unit.runner = LinkedData::Unit.new
 
   class TestCase < MiniTest::Unit::TestCase
     def submission_dependent_objects(format,acronym,user_name,status_code)
@@ -106,10 +104,6 @@ module LinkedData
 
       #Submission Status
       return owl, ont, user, status
-    end
-
-    def teardown
-      delete_ontologies_and_submissions
     end
 
     ##

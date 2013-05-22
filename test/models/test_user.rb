@@ -2,6 +2,14 @@ require_relative "../test_case"
 
 class TestUser < LinkedData::TestCase
 
+  def self.before_suite
+    self.new("before_suite").teardown
+  end
+
+  def self.after_suite
+    self.new("after_suite").teardown
+  end
+
   def setup
     @u = LinkedData::Models::User.new({
         username: "test_user",
@@ -13,7 +21,7 @@ class TestUser < LinkedData::TestCase
 
   def teardown
     ["test_user1", "test_user", "test_user_datetime", "test_user_uuid"].each do |username|
-      u = LinkedData::Models::User.find(username)
+      u = LinkedData::Models::User.where(username: username).first
       u.delete unless u.nil?
     end
   end
@@ -39,16 +47,13 @@ class TestUser < LinkedData::TestCase
 
   def test_user_role_assign
     u = @u
-    u.role = LinkedData::Models::Users::Role.find("ADMINISTRATOR")
+    u.role = [ LinkedData::Models::Users::Role.find("ADMINISTRATOR").include(:role).first ]
 
     assert u.valid?
     u.save
     assert u.role.length == 1
 
-    u.role.each do |rr|
-      rr.load unless rr.loaded?
-    end
-    assert_equal u.role.first.role,  "ADMINISTRATOR"
+    assert_equal u.role.first.role, "ADMINISTRATOR"
     u.delete
   end
 
