@@ -15,7 +15,6 @@ gem 'minitest', '< 5.0'
 
 # Testing
 gem 'simplecov', :require => false, :group => :test
-gem 'webmock', :group => :test
 
 gem 'sparql-client', :git => 'https://github.com/ncbo/sparql-client.git'
 

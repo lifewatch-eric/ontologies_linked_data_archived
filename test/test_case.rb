@@ -14,8 +14,6 @@ require_relative "../config/config.rb"
 
 require 'minitest/unit'
 MiniTest::Unit.autorun
-require "webmock/minitest"
-WebMock.allow_net_connect!
 
 # Check to make sure you want to run if not pointed at localhost
 safe_host = Regexp.new(/localhost|ncbo-dev*/)
