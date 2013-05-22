@@ -8,48 +8,46 @@ require 'benchmark'
 module LinkedData
   module Models
 
-    IRI = SparqlRd::Resultset::IRI
-
     class OntologySubmission < LinkedData::Models::Base
       model :ontology_submission, :name_with => lambda { |s| submission_id_generator(s) }
-      attribute :submissionId, :instance_of =>  { :with => Fixnum }, :single_value => true, :not_nil => true
+      attribute :submissionId, enforce: [:integer, :existence]
 
       # Configurable properties for processing
-      attribute :prefLabelProperty, :instance_of => { :with => IRI }, :single_value => true
-      attribute :definitionProperty, :instance_of => { :with => IRI }, :single_value  => true
-      attribute :synonymProperty, :instance_of => { :with => IRI }, :single_value  => true
-      attribute :authorProperty, :instance_of => { :with => IRI }, :single_value  => true
-      attribute :classType, :instance_of => { :with => IRI }, :single_value  => true
-      attribute :hierarchyProperty, :instance_of =>  { :with => IRI }, :single_value  => true
-      attribute :obsoleteProperty, :instance_of => { :with => IRI }, :single_value => true
-      attribute :obsoleteParent, :instance_of => { :with => IRI }, :single_value => true
+      attribute :prefLabelProperty, enforce: [RDF::URI]
+      attribute :definitionProperty, enforce: [RDF::URI]
+      attribute :synonymProperty, enforce: [RDF::URI]
+      attribute :authorProperty, enforce: [RDF::URI]
+      attribute :classType, :enforce: [RDF::URI]
+      attribute :hierarchyProperty, enforce: [RDF::URI]
+      attribute :obsoleteProperty, enforce: [RDF::URI]
+      attribute :obsoleteParent, enforce: [RDF::URI]
 
       # Ontology metadata
-      attribute :hasOntologyLanguage, :namespace => :omv, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology_format }
-      attribute :homepage, :single_value => true
-      attribute :publication, :single_value => true
-      attribute :uri, :namespace => :omv, :single_value => true
-      attribute :naturalLanguage, :namespace => :omv, :single_value => true
-      attribute :documentation, :namespace => :omv, :single_value => true
-      attribute :version, :namespace => :omv, :single_value => true
-      attribute :creationDate, :namespace => :omv, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :description, :namespace => :omv, :single_value => true
-      attribute :status, :namespace => :omv, :single_value => true
-      attribute :contact, :not_nil => true, :instance_of => { :with => :contact }
-      attribute :released, :date_time_xsd => true, :single_value => true, :not_nil => true
+      attribute :hasOntologyLanguage, :namespace => :omv, enforce: [:existence, :ontology_format]
+      attribute :homepage
+      attribute :publication
+      attribute :uri, :namespace => :omv
+      attribute :naturalLanguage, :namespace => :omv
+      attribute :documentation, :namespace => :omv
+      attribute :version, :namespace => :omv
+      attribute :creationDate, :namespace => :omv, enforce: [:date_time, :existence], default: lambda { |record| DateTime.now }
+      attribute :description, :namespace => :omv
+      attribute :status, :namespace => :omv
+      attribute :contact, enforce: [:existence, :contact]
+      attribute :released, enforce: [:date_time, :existence]
 
       # Internal values for parsing - not definitive
-      attribute :uploadFilePath, :single_value =>true
-      attribute :masterFileName, :single_value =>true
-      attribute :summaryOnly, :single_value => true
-      attribute :submissionStatus, :instance_of => { :with => :submission_status }, :single_value  => true, :not_nil => true
-      attribute :missingImports
+      attribute :uploadFilePath
+      attribute :masterFileName
+      attribute :summaryOnly
+      attribute :submissionStatus, enforce: [:submission_status, :existence] 
+      attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
-      attribute :pullLocation, :single_value => true, :instance_of => { :with => IRI }
+      attribute :pullLocation, enforce: [RDF::URI]
 
       # Link to ontology
-      attribute :ontology, :single_value => true, :not_nil => true, :instance_of => { :with => :ontology }
+      attribute :ontology, enforce: [:existence, :ontology]
 
       # Hypermedia settings
       embed :contact, :ontology
@@ -64,7 +62,7 @@ module LinkedData
         if ss.ontology.acronym.nil?
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
-        return RDF::IRI.new(
+        return RDF::URI.new(
           # TODO: Change self.namespace to LinkedData.settings.rest_uri_prefix
           "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
         )

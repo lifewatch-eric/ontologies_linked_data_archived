@@ -8,27 +8,25 @@ module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
       model :ontology, :name_with => lambda { |s| plural_resource_id(s) }
-      attribute :acronym, :unique => true, :namespace => :omv
-      attribute :name, :not_nil => true, :single_value => true, :namespace => :omv
+      attribute :acronym, namespace: :omv, enforce: [:unique, :existence]
+      attribute :name, :namespace => :omv, enforce: [:unique, :existence]
       attribute :submissions,
-                  :inverse_of => { :with => :ontology_submission,
-                  :attribute => :ontology }
+                  inverse: { on: :ontology_submission, attribute: :ontology }
       attribute :projects,
-                  :inverse_of => { :with => :project,
-                  :attribute => :ontologyUsed }
-      attribute :administeredBy, :not_nil => true, :instance_of => { :with => :user }
-      attribute :group, :instance_of => { :with => :group }
-      attribute :viewingRestriction, :single_value => true, :default => lambda {|x| "public"}
-      attribute :doNotUpdate, :single_value => true
-      attribute :flat, :single_value => true
-      attribute :hasDomain, :namespace => :omv, :instance_of => { :with => :category }
-      attribute :acl, :instance_of => { :with => :user }
+                  inverse: { on: :project, attribute: :ontologyUsed }
+      attribute :administeredBy, enforce: [:existence, :user, :list]
+      attribute :group, enforce: [:list, :group]
 
-      attribute :viewOf, :instance_of => { :with => :ontology }
+      attribute :viewingRestriction, :default => lambda {|x| "public"}
+      attribute :doNotUpdate, enforce: [:boolean]
+      attribute :flat, enforce: [:boolean]
+      attribute :hasDomain, namespace: :omv, enforce: [:list, :category]
 
-      attribute :views,
-                  :inverse_of => { :with => :ontology,
-                  :attribute => :viewOf }
+      attribute :acl, enforce: [:list, :user]
+
+      attribute :viewOf, enforce: [:list, :ontology] 
+
+      attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
