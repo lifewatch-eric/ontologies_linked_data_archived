@@ -3,24 +3,38 @@ module LinkedData
     module Users
       class Role < LinkedData::Models::Base
         DEFAULT = "LIBRARIAN"
+        VALUES = ["LIBRARIAN", "ADMINISTRATOR", "DEVELOPER"]
 
-        attribute :role, :unique => true, :single_value => true, :not_nil => true
+        # Value stored on class so we only initialize once
+        class << self
+          attr_accessor :initialized
+        end
 
-        def self.init(values = ["LIBRARIAN", "ADMINISTRATOR", "DEVELOPER"])
-          values.each do |role|
+        model :role, name_with: :role
+        attribute :role, enforce: [:unique, :existence]
+
+        def self.init
+          return false if self.initialized
+          VALUES.each do |role|
             user_role = LinkedData::Models::Users::Role.new(:role => role)
-            user_role.save unless user_role.exist?
+            user_role.save(force = true) unless user_role.exist?
           end
+          self.initialized = true
         end
 
         def self.default
-          LinkedData::Models::Users::Role.init
+          init
           self.find(DEFAULT)
         end
 
         def self.find(param, store_name=nil)
-          LinkedData::Models::Users::Role.init
+          init
           super(param, store_name)
+        end
+
+        def save(force = false)
+          raise "Do not save this object unless from init" unless force
+          super()
         end
       end
     end
