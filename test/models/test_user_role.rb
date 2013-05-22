@@ -2,22 +2,23 @@ require_relative "../test_case"
 
 class TestUserRole < LinkedData::TestCase
 
-  def teardown
-    #roles = LinkedData::Models::Users::Role.where.all
-    #roles.each do |role|
-    #  role.load
-    #  role.delete
-    #end
+  def after_suites
+    puts "Deleting user roles"
+    roles = LinkedData::Models::Users::Role.where.all
+    roles.each do |role|
+      role.delete(force = true)
+    end
   end
 
   def test_formats
     teardown
+    LinkedData::Models::Users::Role.init
 
     LinkedData::Models::Users::Role::VALUES.each do |role|
-      list = LinkedData::Models::Users::Role.where(role: role)
+      list = LinkedData::Models::Users::Role.where(role: role).include(:role)
       assert_equal 1, list.length
-      assert_instance_of LinkedData::Models::Users::Role, list[0]
-      assert_equal role, list[0].role
+      assert_instance_of LinkedData::Models::Users::Role, list.first
+      assert_equal role, list.first.role
     end
   end
 
