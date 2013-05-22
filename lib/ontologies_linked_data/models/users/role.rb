@@ -36,6 +36,11 @@ module LinkedData
           raise "Do not save this object unless from init" unless force
           super()
         end
+
+        def delete(force = false)
+          raise "Do not delete this object unless overriding" unless force
+          super()
+        end
       end
     end
   end
