@@ -1,6 +1,7 @@
 require 'bcrypt'
 require 'securerandom'
 require_relative 'authentication'
+require_relative 'role'
 
 module LinkedData
   module Models
@@ -9,14 +10,14 @@ module LinkedData
       include LinkedData::Models::Users::Authentication
 
       model :user, :name_with => lambda { |s| plural_resource_id(s) }
-      attribute :username, :unique => true, :single_value => true, :not_nil => true
-      attribute :email, :single_value => true, :not_nil => true
-      attribute :role, :not_nil => true, :instance_of => {:with => :role}, :default => lambda {|x| LinkedData::Models::Users::Role.default}
-      attribute :firstName, :single_value => true
-      attribute :lastName, :single_value => true
-      attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :passwordHash, :single_value => true, :not_nil => true, :read_only => true
-      attribute :apikey, :single_value => true, :not_nil => true, :read_only => true, :default => lambda {|x| SecureRandom.uuid}
+      attribute :username, enforce: [:unique, :existence]
+      attribute :email, enforce: [:existence]
+      attribute :role, enforce: [:existence, :role], :default => lambda {|x| LinkedData::Models::Users::Role.default}
+      attribute :firstName
+      attribute :lastName
+      attribute :created, enforce: [:date_time, :existence], :default => lambda { |record| DateTime.now }
+      attribute :passwordHash, enforce: [:existence]
+      attribute :apikey, enforce: [:existence], :default => lambda {|x| SecureRandom.uuid}
 
       # Hypermedia settings
       embed_values :role => [:role]
