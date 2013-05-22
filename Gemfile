@@ -11,7 +11,7 @@ gem 'multi_json'
 gem 'oj'
 gem 'libxml-ruby'
 gem 'rsolr'
-gem 'minitest'
+gem 'minitest', '< 5.0'
 
 # Testing
 gem 'simplecov', :require => false, :group => :test
