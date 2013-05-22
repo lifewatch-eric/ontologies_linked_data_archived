@@ -63,7 +63,7 @@ module LinkedData
     end
   end
 
-  LinkedData::Unit.runner = LinkedData::Unit.new
+  MiniTest::Unit.runner = LinkedData::Unit.new
 
   class TestCase < MiniTest::Unit::TestCase
     def submission_dependent_objects(format,acronym,user_name,status_code)
