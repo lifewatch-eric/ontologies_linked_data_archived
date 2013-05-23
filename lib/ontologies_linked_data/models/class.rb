@@ -7,53 +7,50 @@ module LinkedData
     end
 
     class Class < LinkedData::Models::Base
-      model :class,
-            :namespace => :owl, :schemaless => :true
+      model :class, name_with: :id, collection: :submission,
+            namespace: :owl, :schemaless => :true
 
       attribute :resource_id #special attribute to name the object manually
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
-      attribute :label, :single_value => true , :namespace => :rdfs
-      attribute :prefLabel, :single_value => true , :namespace => :skos # :not_nil => false
-      attribute :synonym, :namespace => :skos, :alias => :altLabel
-      attribute :definition, :namespace => :skos
-      attribute :deprecated, :namespace => :owl, :single_value => true
+      attribute :label, namespace: :rdfs
+      attribute :prefLabel, namespace: :skos # :not_nil => false
+      attribute :synonym, namespace: :skos, property: :altLabel
+      attribute :definition, namespace: :skos, enforce: [:list]
+      attribute :deprecated, namespace: :owl, enforce: [:list]
 
-      attribute :notation, :namespace => :skos
+      attribute :notation, namespace: :skos
 
-      attribute :parents, :namespace => :rdfs, :alias => :subClassOf,
-                  :instance_of => { :with => :class }
+      attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
 
       #transitive parent
-      attribute :ancestors, :use => :parents,
-                :query_options => { :rules => :SUBC } #enable subclass of reasoning
+      attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
+                  transitive: true
 
-      attribute :children, :namespace => :rdfs, :alias => :subClassOf,
-                :inverse_of => { :with => :class , :attribute => :parents }
+      attribute :children, namespace: :rdfs, property: :subClassOf, 
+                  inverse: { on: :class , :attribute => :parents }
 
       #transitive children
-      attribute :descendants, :use => :children,
-                :query_options => { :rules => :SUBC },
-                :instance_of => { :with => :class }
+      attribute :descendants, namespace: :rdfs, property: :subClassOf, 
+                    inverse: { on: :class , attribute: :parents },
+                    transitive: true
 
-      attribute :childrenCount, :aggregate => { :attribute => :children, :with => :count }
-
-      search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym.value}_#{t.submission.submissionId.value}" },
-                     :document => lambda { |t| t.get_index_doc }
+      #search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym.value}_#{t.submission.submissionId.value}" },
+      #               :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
-      link_to LinkedData::Hypermedia::Link.new("self", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value", s) }, self.type_uri),
-              LinkedData::Hypermedia::Link.new("ontology", lambda { |s| link_path("ontologies/:submission.ontology.acronym", s) },  Goo.namespaces[Goo.namespaces[:default]]+"Ontology"),
-              LinkedData::Hypermedia::Link.new("children", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", s) }, self.type_uri),
-              LinkedData::Hypermedia::Link.new("parents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", s) }, self.type_uri),
-              LinkedData::Hypermedia::Link.new("descendants", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendants", s) }, self.type_uri),
-              LinkedData::Hypermedia::Link.new("ancestors", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", s) }, self.type_uri),
-              LinkedData::Hypermedia::Link.new("tree", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/tree", s) }, self.type_uri)
+      link_to LinkedData::Hypermedia::Link.new("self", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value", s) }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ontology", lambda { |s| link_path("ontologies/:submission.ontology.acronym", s) },  Goo.vocabulary["Ontology"]),
+              LinkedData::Hypermedia::Link.new("children", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", s) }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("parents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", s) }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("descendants", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendants", s) }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ancestors", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", s) }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("tree", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/tree", s) }, self.uri_type)
 
       def get_index_doc
         doc = {

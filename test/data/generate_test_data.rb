@@ -58,25 +58,16 @@ module LinkedData
         end
       end
 
-      def self.create_ontology_formats
-        puts "Creating ontology formats..."
-        ONT_FORMATS.each do |format|
-          of = LinkedData::Models::OntologyFormat.new(acronym: format.upcase)
-          of.save if of.valid?
-        end
-      end
-
       def self.delete_ontology_formats
         puts "Deleting ontology formats..."
         ONT_FORMATS.each do |format|
-          of = LinkedData::Models::OntologyFormat.find(format.upcase)
+          of = LinkedData::Models::OntologyFormat.find(format.upcase).to_a.first
           of.delete unless of.nil?
         end
       end
 
       def self.create_ontologies(limit = 50)
         self.create_users
-        self.create_ontology_formats
         puts "Creating ontology metadata..."
 
         contact_name = "Sheila"

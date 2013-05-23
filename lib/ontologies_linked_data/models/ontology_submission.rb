@@ -13,26 +13,26 @@ module LinkedData
       attribute :submissionId, enforce: [:integer, :existence]
 
       # Configurable properties for processing
-      attribute :prefLabelProperty, enforce: [RDF::URI]
-      attribute :definitionProperty, enforce: [RDF::URI]
-      attribute :synonymProperty, enforce: [RDF::URI]
-      attribute :authorProperty, enforce: [RDF::URI]
-      attribute :classType, :enforce: [RDF::URI]
-      attribute :hierarchyProperty, enforce: [RDF::URI]
-      attribute :obsoleteProperty, enforce: [RDF::URI]
-      attribute :obsoleteParent, enforce: [RDF::URI]
+      attribute :prefLabelProperty, enforce: [:uri]
+      attribute :definitionProperty, enforce: [:uri]
+      attribute :synonymProperty, enforce: [:uri]
+      attribute :authorProperty, enforce: [:uri]
+      attribute :classType, enforce: [:uri]
+      attribute :hierarchyProperty, enforce: [:uri]
+      attribute :obsoleteProperty, enforce: [:uri]
+      attribute :obsoleteParent, enforce: [:uri]
 
       # Ontology metadata
-      attribute :hasOntologyLanguage, :namespace => :omv, enforce: [:existence, :ontology_format]
+      attribute :hasOntologyLanguage, namespace: :omv, enforce: [:existence, :ontology_format]
       attribute :homepage
       attribute :publication
-      attribute :uri, :namespace => :omv
-      attribute :naturalLanguage, :namespace => :omv
-      attribute :documentation, :namespace => :omv
-      attribute :version, :namespace => :omv
-      attribute :creationDate, :namespace => :omv, enforce: [:date_time, :existence], default: lambda { |record| DateTime.now }
-      attribute :description, :namespace => :omv
-      attribute :status, :namespace => :omv
+      attribute :uri, namespace: :omv
+      attribute :naturalLanguage, namespace: :omv
+      attribute :documentation, namespace: :omv
+      attribute :version, namespace: :omv
+      attribute :creationDate, namespace: :omv, enforce: [:date_time, :existence], default: lambda { |record| DateTime.now }
+      attribute :description, namespace: :omv
+      attribute :status, namespace: :omv
       attribute :contact, enforce: [:existence, :contact]
       attribute :released, enforce: [:date_time, :existence]
 
@@ -44,7 +44,7 @@ module LinkedData
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
-      attribute :pullLocation, enforce: [RDF::URI]
+      attribute :pullLocation, enforce: [:uri]
 
       # Link to ontology
       attribute :ontology, enforce: [:existence, :ontology]

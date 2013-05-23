@@ -8,8 +8,8 @@ module LinkedData
     class TermMapping < LinkedData::Models::Base
 
       model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s) }
-      attribute :term, :not_nil => true, :instance_of => { :with => IRI }
-      attribute :ontology, :not_nil => true, :single_value => true, :instance_of => { :with => IRI }
+      attribute :term, enforce: [ :uri, :existence ]
+      attribute :ontology, enforce: [ :uri, :existence, :ontology ]
 
       def self.term_mapping_id_generator(ins)
         term_vals=ins.term.map { |t| t.value }
@@ -23,8 +23,8 @@ module LinkedData
 
     class Mapping < LinkedData::Models::Base
       model :mapping, :name_with => lambda { |s| mapping_id_generator(s) }
-      attribute :terms, :cardinality => { :min => 2 }, :instance_of => { :with => :term_mapping }
-      attribute :process, :instance_of => { :with => :mapping_process }
+      attribute :terms, enforce: [ :term_mapping, :existence, :list ] 
+      attribute :process, enforce: [ :process, :existence, :list ]
 
       def self.mapping_id_generator(ins)
         return mapping_id_generator_iris(*ins.terms)
