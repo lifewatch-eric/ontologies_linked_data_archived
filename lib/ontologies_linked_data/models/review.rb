@@ -1,18 +1,18 @@
 module LinkedData
   module Models
     class Review < LinkedData::Models::Base
-      model :review, :name_with => lambda { |r| generate_review_iri(r) }
-      attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
-      attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :updated, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
-      attribute :body, :single_value => true, :not_nil => true
-      attribute :ontologyReviewed, :instance_of => { :with => :ontology }, :single_value => true, :not_nil => true
-      attribute :usabilityRating, :single_value => true
-      attribute :coverageRating, :single_value => true
-      attribute :qualityRating, :single_value => true
-      attribute :formalityRating, :single_value => true
-      attribute :correctnessRating, :single_value => true
-      attribute :documentationRating, :single_value => true
+      model :review, name_with: lambda {|s| generate_review_iri(s)}
+      attribute :creator, enforce: [:user, :existence]
+      attribute :created, enforce: [:date_time], :default => lambda { |record| DateTime.now }
+      attribute :updated, enforce: [:date_time], :default => lambda {|x| DateTime.new }
+      attribute :body, enforce: [:existence]
+      attribute :ontologyReviewed, enforce: [:ontology, :existence]
+      attribute :usabilityRating
+      attribute :coverageRating
+      attribute :qualityRating
+      attribute :formalityRating
+      attribute :correctnessRating
+      attribute :documentationRating
 
       def self.generate_review_iri(review)
         if !review.ontologyReviewed.loaded? and review.ontologyReviewed.persistent?

@@ -22,10 +22,10 @@ class TestReview < LinkedData::TestCase
   end
 
   def teardown
-    delete_goo_models(LinkedData::Models::Review.all)
-    delete_goo_models(LinkedData::Models::Ontology.all)
-    delete_goo_models(LinkedData::Models::User.all)
-    delete_goo_models(LinkedData::Models::Users::Role.all)
+    delete_goo_models(LinkedData::Models::Review.where.all)
+    delete_goo_models(LinkedData::Models::Ontology.where.all)
+    delete_goo_models(LinkedData::Models::User.where.all)
+    delete_goo_models(LinkedData::Models::Users::Role.where.all)
     @review_params = nil
     @ont = nil
     @user = nil

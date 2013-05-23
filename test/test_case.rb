@@ -125,7 +125,6 @@ module LinkedData
 
     def delete_goo_models(gooModelArray)
       gooModelArray.each do |m|
-        m.load
         m.delete
         assert_equal(false, m.exist?(reload=true), "Failed to delete a goo model.")
       end
