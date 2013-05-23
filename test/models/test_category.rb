@@ -1,6 +1,15 @@
 require_relative "../test_case"
 
 class TestCategory < LinkedData::TestCase
+
+  def self.before_suite
+    self.new("before_suite").teardown
+  end
+
+  def self.after_suite
+    self.new("before_suite").teardown
+  end
+
   def setup
     _delete
     @category = LinkedData::Models::Category.new({
@@ -17,7 +26,7 @@ class TestCategory < LinkedData::TestCase
   end
 
   def _delete
-    category = LinkedData::Models::Category.find("TCG")
+    category = LinkedData::Models::Category.find("TCG").first
     category.delete unless category.nil?
   end
 
@@ -62,13 +71,6 @@ class TestCategory < LinkedData::TestCase
     assert_equal true, c.exist?(reload=true)
     c.delete
     assert_equal false, c.exist?(reload=true)
-  end
-
-  def test_category_default_datetime
-    c = LinkedData::Models::Category.new
-    #This is nil unless it is saved see goo #65
-    #assert c.created.instance_of? DateTime
-    assert c.created.nil?
   end
 
   def test_category_inverse_of

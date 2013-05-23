@@ -2,11 +2,19 @@ require_relative "../test_case"
 
 class TestProject < LinkedData::TestCase
 
+  def self.before_suite
+    self.new("before_suite").teardown
+  end
+
+  def self.after_suite
+    self.new("after_suite").teardown
+  end
+
   def setup
     super
-    @user = LinkedData::Models::User.new({:username => "test_user",:email => "test_user@example.org", :password => "password"})
+    @user = LinkedData::Models::User.new({:username => "test_user", :email => "test_user@example.org", :password => "password"})
     @user.save
-    @ont = LinkedData::Models::Ontology.new({:acronym => "TST_ONT",:name => "Test Ontology",:administeredBy => @user})
+    @ont = LinkedData::Models::Ontology.new({:acronym => "TST_ONT", :name => "Test Ontology", :administeredBy => [@user]})
     @ont.save
     # Create valid project parameters
     @project_params = {
@@ -16,7 +24,7 @@ class TestProject < LinkedData::TestCase
       :created => DateTime.new,
       :institution => "A university.",
       :contacts => "Anonymous Funk, Anonymous Miller.",
-      :homePage => "http://valid.uri.com",
+      :homePage => RDF::IRI.new("http://valid.uri.com"),
       :description => "This is a test project",
       :ontologyUsed => [@ont],
     }
@@ -24,9 +32,9 @@ class TestProject < LinkedData::TestCase
 
   def teardown
     super
-    delete_goo_models(LinkedData::Models::User.all)
-    delete_goo_models(LinkedData::Models::Ontology.all)
-    delete_goo_models(LinkedData::Models::Project.all)
+    delete_goo_models(LinkedData::Models::User.where.all)
+    delete_goo_models(LinkedData::Models::Ontology.where.all)
+    delete_goo_models(LinkedData::Models::Project.where.all)
     @user = nil
     @ont = nil
     @project_params = nil
@@ -57,7 +65,7 @@ class TestProject < LinkedData::TestCase
   end
 
   def test_project_creator
-    model_creator_test(LinkedData::Models::Project, @user)
+    model_creator_test(LinkedData::Models::Project.new(acronym: "TST_PRJ"), @user)
   end
 
   def test_project_description

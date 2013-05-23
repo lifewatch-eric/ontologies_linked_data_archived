@@ -5,19 +5,22 @@ require_relative "../../config/config"
 
 class TestSerializerOutput < MiniTest::Unit::TestCase
   class Car < LinkedData::Models::Base
-    attribute :model, :unique => true
+    model :car, name_with: :model, namespace: :omv
+    attribute :model, enforce: [:unique]
   end
 
   class House < LinkedData::Models::Base
-    attribute :location, :unique => true
+    model :house, name_with: :location, namespace: :rdfs
+    attribute :location, enforce: [:unique]
   end
 
   class Person < LinkedData::Models::Base
-    attribute :name, :unique => true
+    model :person, name_with: :name
+    attribute :name, enforce: [:unique]
     attribute :age
     attribute :height
-    attribute :carOwned, :instance_of => {:with => :car}
-    attribute :houseOwned, :instance_of => {:with => House}
+    attribute :carOwned, enforce: [:car]
+    attribute :houseOwned, enforce: [House]
   end
 
   def setup
@@ -66,14 +69,13 @@ class TestSerializerOutput < MiniTest::Unit::TestCase
   end
 
   def test_sparql_http_object_serialization
-    iri_str = "http://example.org"
-    iri = SparqlRd::Resultset::IRI.new(iri_str)
-    int = SparqlRd::Resultset::IntegerLiteral.new(1)
-    bool = SparqlRd::Resultset::BooleanLiteral.new("false", false)
+    iri = "http://example.org"
+    int = 1
+    bool = false
     hash = {iri: iri, int: int, bool: bool}
     json = LinkedData::Serializers.serialize(hash, :json)
     reference = MultiJson.load(json)
-    assert reference["iri"].eql?(iri_str)
+    assert reference["iri"].eql?(iri)
     assert reference["int"] == 1
     assert reference["bool"] == false
   end

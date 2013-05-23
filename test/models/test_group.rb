@@ -1,6 +1,12 @@
 require_relative "../test_case"
 
 class TestGroup < LinkedData::TestCase
+
+  def self.after_suite
+    group = LinkedData::Models::Group.find("TGRP").first
+    group.delete unless group.nil?
+  end
+
   def test_valid_group
     g = LinkedData::Models::Group.new
     assert (not g.valid?)
