@@ -134,9 +134,9 @@ module LinkedData
     # @note This method name cannot begin with 'test_' or it will be called as a test
     # @param [LinkedData::Models] model_class a GOO model class, e.g. LinkedData::Models::Project
     # @param [LinkedData::Models::User] user a valid instance of LinkedData::Models::User
-    def model_creator_test(model_class, user)
+    def model_creator_test(model, user)
       # TODO: if the input argument is an instance, use the .class.new methods?
-      m = model_class.new
+      m = model.is_a?(Class) ? model.new : model
       assert_equal(false, m.valid?, "#{m} .valid? returned true, it was expected to be invalid.")
       m.creator = "test name" # string is not valid
       assert_equal(false, m.valid?, "#{m} .valid? returned true, it was expected to be invalid.")
@@ -164,7 +164,7 @@ module LinkedData
       # The value should be an XSD date time.
       m.created = DateTime.new
       assert m.valid?
-      assert_instance_of(SparqlRd::Resultset::DatetimeLiteral, m.created)
+      assert_instance_of(DateTime, m.created)
       assert_equal(true, m.errors[:created].nil?, "#{m.errors}")
     end
 
