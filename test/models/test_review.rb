@@ -2,11 +2,20 @@ require_relative "../test_case"
 
 class TestReview < LinkedData::TestCase
 
+  def self.before_suite
+    self.new("before_suite").teardown
+  end
+
+  def self.after_suite
+    self.new("after_suite").teardown
+  end
+
   def setup
     @user = LinkedData::Models::User.new(username: "test_user", email: "test_user@example.org", password: "password")
-    @user.save
-    @ont = LinkedData::Models::Ontology.new(acronym: "TST", name: "Test Ontology", administeredBy: @user)
-    @ont.save
+    @user.save if @user.valid?
+    @ont = LinkedData::Models::Ontology.new(acronym: "TST", name: "Test Ontology", administeredBy: [@user])
+    @ont.save if @ont.valid?
+    @ont = LinkedData::Models::Ontology.find("TST").first
     @review_params = {
         :creator => @user,
         :created => DateTime.new,
@@ -25,7 +34,6 @@ class TestReview < LinkedData::TestCase
     delete_goo_models(LinkedData::Models::Review.where.all)
     delete_goo_models(LinkedData::Models::Ontology.where.all)
     delete_goo_models(LinkedData::Models::User.where.all)
-    delete_goo_models(LinkedData::Models::Users::Role.where.all)
     @review_params = nil
     @ont = nil
     @user = nil
@@ -56,10 +64,6 @@ class TestReview < LinkedData::TestCase
     r.formalityRating = @review_params[:formalityRating]
     r.correctnessRating = @review_params[:correctnessRating]
     r.documentationRating = @review_params[:documentationRating]
-    assert (not r.valid?)
-    # Still not valid because not all attributes are typed properly
-    r.creator = "string" # must be instance of LinkedData::Models::User
-    r.ontologyReviewed = "TST" # must be instance of LinkedData::Models::Ontology
     assert (not r.valid?)
     # Fix typing
     r.creator = @review_params[:creator]

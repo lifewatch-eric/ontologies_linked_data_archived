@@ -15,21 +15,12 @@ module LinkedData
       attribute :documentationRating
 
       def self.generate_review_iri(review)
-        if !review.ontologyReviewed.loaded? and review.ontologyReviewed.persistent?
-          review.ontologyReviewed.load
-        end
-        if review.ontologyReviewed.acronym.nil?
-          raise ArgumentError, "Review cannot be saved if ontology has no acronym."
-        end
-        if !review.creator.loaded? and review.creator.persistent?
-          review.creator.load
-        end
-        if review.creator.username.nil?
-          raise ArgumentError, "Review cannot be saved if creator has no username."
-        end
-        ontologyURL = "#{(self.namespace :default)}ontologies/#{review.ontologyReviewed.acronym}"
-        reviewURL = ontologyURL + "/reviews/#{review.creator.username}"
-        return RDF::IRI.new(reviewURL)
+        return RDF::IRI.new if review.ontologyReviewed.nil? || review.creator.nil?
+        review.ontologyReviewed.bring(:acronym)
+        review.creator.bring(:username)
+        ontology_url = "#{Goo.vocabulary}ontologies/#{review.ontologyReviewed.acronym}"
+        review_url = ontology_url + "/reviews/#{review.creator.username}"
+        RDF::IRI.new(review_url)
       end
 
     end
