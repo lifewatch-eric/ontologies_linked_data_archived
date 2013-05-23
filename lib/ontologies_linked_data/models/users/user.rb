@@ -9,7 +9,7 @@ module LinkedData
       include BCrypt
       include LinkedData::Models::Users::Authentication
 
-      model :user, :name_with => lambda { |s| plural_resource_id(s, :username) }
+      model :user, name_with: :username
       attribute :username, enforce: [:unique, :existence]
       attribute :email, enforce: [:existence]
       attribute :role, enforce: [:role, :list], :default => lambda {|x| LinkedData::Models::Users::Role.default}
