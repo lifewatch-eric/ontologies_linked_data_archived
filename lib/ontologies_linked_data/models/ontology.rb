@@ -79,8 +79,11 @@ module LinkedData
       ##
       # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
       def delete(in_update=false)
-        submissions.each do |s|
-          s.delete(in_update, false)
+        self.bring(:submissions)
+        unless self.submissions.nil?
+          submissions.each do |s|
+            s.delete(in_update, false)
+          end
         end
         super(in_update)
       end
