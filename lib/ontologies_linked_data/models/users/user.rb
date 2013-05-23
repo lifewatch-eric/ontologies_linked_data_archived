@@ -48,7 +48,7 @@ module LinkedData
       private
 
       def set_passwordHash(password)
-        @passwordHash = password
+        self.passwordHash = password
       end
 
     end

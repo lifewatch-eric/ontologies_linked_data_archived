@@ -2,7 +2,7 @@ require_relative "../test_case"
 
 class TestUserAuthentication < LinkedData::TestCase
   def teardown
-    u = LinkedData::Models::User.find("test_user")
+    u = LinkedData::Models::User.find("test_user").first
     u.delete unless u.nil?
   end
 
@@ -44,7 +44,7 @@ class TestUserAuthentication < LinkedData::TestCase
     assert u.valid?
     u.save
 
-    u1 = LinkedData::Models::User.find("test_user")
+    u1 = LinkedData::Models::User.find("test_user").include(:passwordHash).first
     assert hash.eql?(u1.passwordHash)
   end
 
@@ -58,7 +58,7 @@ class TestUserAuthentication < LinkedData::TestCase
         email: "test@example.com"
       })
 
-    u.attributes[:passwordHash] = hash
+    u.passwordHash = hash
     assert u.valid?
     u.save
 
