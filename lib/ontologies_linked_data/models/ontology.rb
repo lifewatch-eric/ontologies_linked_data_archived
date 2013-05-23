@@ -7,7 +7,7 @@ require_relative 'project'
 module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
-      model :ontology, :name_with => lambda { |s| plural_resource_id(s) }
+      model :ontology, :name_with => :acronym 
       attribute :acronym, namespace: :omv, enforce: [:unique, :existence]
       attribute :name, :namespace => :omv, enforce: [:unique, :existence]
       attribute :submissions,
@@ -57,6 +57,11 @@ module LinkedData
       end
 
       def highest_submission_id(status = nil)
+        if !self.loaded_attributes.include?(:submissions) ||
+          (submissions.nil? || (submissions.first && !submissions.first.loaded_attributes.include?(:submissionStatus)))
+          self.bring(submissions: [:submissionId, submissionStatus: [:code]])
+        end
+
         # This is the first!
         tmp_submissions = submissions
         return 0 if tmp_submissions.nil? || tmp_submissions.empty?

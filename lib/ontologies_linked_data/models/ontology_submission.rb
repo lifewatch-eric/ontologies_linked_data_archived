@@ -9,7 +9,7 @@ module LinkedData
   module Models
 
     class OntologySubmission < LinkedData::Models::Base
-      model :ontology_submission, :name_with => lambda { |s| submission_id_generator(s) }
+      model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
 
       # Configurable properties for processing
@@ -30,10 +30,10 @@ module LinkedData
       attribute :naturalLanguage, namespace: :omv
       attribute :documentation, namespace: :omv
       attribute :version, namespace: :omv
-      attribute :creationDate, namespace: :omv, enforce: [:date_time, :existence], default: lambda { |record| DateTime.now }
+      attribute :creationDate, namespace: :omv, enforce: [:date_time], default: lambda { |record| DateTime.now }
       attribute :description, namespace: :omv
       attribute :status, namespace: :omv
-      attribute :contact, enforce: [:existence, :contact]
+      attribute :contact, enforce: [:existence, :contact, :list]
       attribute :released, enforce: [:date_time, :existence]
 
       # Internal values for parsing - not definitive
@@ -56,15 +56,15 @@ module LinkedData
                         :publication, :documentation, :version, :description, :status, :submissionId
 
       def self.submission_id_generator(ss)
-        if !ss.ontology.loaded? and ss.ontology.persistent?
-          ss.ontology.load
+        if !ss.ontology.loaded_attributes.include?(:acronym) 
+          LinkedData::Models::Ontology.models([ss.ontology]).include(:acronym).all
         end
         if ss.ontology.acronym.nil?
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::URI.new(
           # TODO: Change self.namespace to LinkedData.settings.rest_uri_prefix
-          "#{(self.namespace :default)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
+          "#{(self.namespace.to_s)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
         )
       end
 
