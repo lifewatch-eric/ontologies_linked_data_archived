@@ -2,8 +2,11 @@ require 'set'
 
 class Object
 
+  DO_NOT_SERIALIZE = %w(attributes table _cached_exist internals captures splat uuid apikey password inverse_atttributes loaded_attributes modified_attributes previous_values persistent aggregates unmapped errors id)
+  CONVERT_TO_STRING = Set.new([RDF::IRI])
+
   def to_flex_hash(options = {}, &block)
-    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float)
+    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass)
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
@@ -55,7 +58,7 @@ class Object
         hash[convert_nonstandard_types(k, options, &block)] = v
       end
 
-      unless k.kind_of? Symbol
+      unless k.is_a?(Symbol)
         hash.delete(k)
         hash[k.to_sym] = v
       end
@@ -91,8 +94,17 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
-    value = convert_bnode(value, options, &block)
     value = convert_goo_objects(value)
+    value = convert_to_string(value)
+    value
+  end
+
+  ##
+  # Convert values that should be a string to a string
+  def convert_to_string(value)
+    if CONVERT_TO_STRING.include?(value.class)
+      value = value.to_s
+    end
     value
   end
 
@@ -188,7 +200,7 @@ class Object
   end
 
   def remove_bad_attributes(hash)
-    bad_attributes = %w(attributes table _cached_exist internals captures splat uuid apikey password inverse_atttributes)
+    bad_attributes = DO_NOT_SERIALIZE.dup
     bad_attributes.concat(self.class.hypermedia_settings[:serialize_never]) unless !self.is_a?(LinkedData::Hypermedia::Resource)
     bad_attributes.each do |bad_attribute|
       hash.delete(bad_attribute)
@@ -263,24 +275,14 @@ class Object
 
   def convert_goo_objects(object)
     # Convert linked objects to id
-    new_value = object.is_a?(Goo::Base::Resource) ? object.resource_id.value : object
+    new_value = object.is_a?(Goo::Base::Resource) ? object.id : object
 
     # Convert arrays of linked objects
     if object.kind_of?(Enumerable) && object.first.is_a?(Goo::Base::Resource)
-      new_value = object.map {|e| e.resource_id.value }
+      new_value = object.map {|e| e.id }
     end
 
     return new_value
   end
-
-  ##
-  # Deal with bnodes (should overwrite other values)
-  def convert_bnode(object, options, &block)
-    element = object.kind_of?(Array) || object.kind_of?(Set) ? object.first : object
-    bnode = element.resource_id.bnode? rescue false
-    new_value = object.to_flex_hash(options, &block) if bnode
-    return new_value || object
-  end
-
 
 end
