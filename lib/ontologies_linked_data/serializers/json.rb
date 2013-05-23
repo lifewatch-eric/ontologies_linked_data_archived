@@ -5,8 +5,8 @@ module LinkedData
 
       def self.serialize(obj, options = {})
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
-          hash["@id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
-          hash["@type"] = hashed_obj.class.type_uri if hash["@id"] && hashed_obj.class.respond_to?(:type_uri)
+          hash["@id"] = hashed_obj.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if hashed_obj.is_a?(Goo::Base::Resource)
+          hash["@type"] = hashed_obj.class.type_uri.to_s if hash["@id"] && hashed_obj.class.respond_to?(:type_uri)
           links = LinkedData::Hypermedia.generate_links(hashed_obj)
           unless links.empty?
             hash["links"] = links
@@ -25,26 +25,23 @@ module LinkedData
       private
 
       def self.generate_context(object, serialized_attrs = [], options = {})
-        return {} if object.resource_id.bnode?
         return remove_unused_attrs(CONTEXTS[object.hash], serialized_attrs) unless CONTEXTS[object.hash].nil?
         hash = {}
-        class_attributes = object.class.goop_settings[:attributes]
-        hash["@vocab"] = "#{Goo.namespaces[Goo.namespaces[:default]]}"
-        class_attributes.each do |attr, settings|
-          if settings && settings[:validators] && settings[:validators][:instance_of]
-            linked_model = settings[:validators][:instance_of][:with]
-            unless linked_model.is_a?(Class)
-              linked_model = Goo.find_model_by_name(settings[:validators][:instance_of][:with])
-            end
+        class_attributes = object.class.attributes
+        hash["@vocab"] = Goo.vocabulary
+        class_attributes.each do |attr|
+          if object.class.model_settings[:range].key?(attr)
+            linked_model = object.class.model_settings[:range][attr]
           end
 
           predicate = nil
-          if linked_model && linked_model.ancestors.include?(Goo::Base::Resource) && !object.resource_id.bnode? && !embedded?(object, attr)
+          if linked_model && linked_model.ancestors.include?(Goo::Base::Resource) && !embedded?(object, attr)
             # linked object
-            predicate = {"@id" => linked_model.type_uri, "@type" => "@id"}
-          elsif settings[:namespace]
+            predicate = {"@id" => linked_model.type_uri.to_s, "@type" => "@id"}
+          elsif object.class.model_settings[:attributes][attr][:namespace]
+            binding.pry
             # predicate with custom namespace
-            predicate = "#{Goo.namespaces[settings[:namespace]]}#{attr}"
+            predicate = "#{Goo.vocabulary[object.class.model_settings[:attributes][attr][:namespace]].to_s}#{attr}"
           end
           hash[attr] = predicate unless predicate.nil?
         end
