@@ -77,7 +77,7 @@ class Object
     # Don't show nil properties for read_only objects. We do this because
     # we could be showing a term, but only know its id. If we showed prefLabel
     # as nil, it would be misleading, because the term likely has a prefLabel.
-    if self.is_a?(Goo::Base::Resource) && self.read_only?
+    if self.respond_to?(:klass)
       hash.delete_if {|k,v| v.nil?}
     end
 
