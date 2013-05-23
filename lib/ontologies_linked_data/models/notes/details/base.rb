@@ -5,10 +5,11 @@ module LinkedData
     module Notes
       module Details
         class Base < LinkedData::Models::Base
-          attribute :type, :instance_of => {:with => LinkedData::Models::Notes::Enums::Details}, :single_value => true, :not_nil => true
-          attribute :contactInfo
-          attribute :reasonForChange, :not_nil => true, :single_value => true
-          attribute :content, :instance_of => {:with => LinkedData::Models::Notes::Details::Base}, :not_nil => true, :single_value => true
+          model :base, name_with: lambda { |s| uuid_uri_generator(inst) } 
+          attribute :type, enforce: [:details, :existence]
+          attribute :contactInfo, enforce: [:list]
+          attribute :reasonForChange, enforce: [:existence]
+          attribute :content, enforce: [:existence, :base]
 
           embed_values :type => [:type]
 

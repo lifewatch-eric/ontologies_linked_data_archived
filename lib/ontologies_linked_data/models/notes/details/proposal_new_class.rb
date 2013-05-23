@@ -5,10 +5,11 @@ module LinkedData
     module Notes
       module Details
         class ProposalNewClass < LinkedData::Models::Notes::Details::Base
-          attribute :classId, :not_nil => true, :single_value => true
-          attribute :prefLabel, :not_nil => true, :single_value => true
-          attribute :synonyms
-          attribute :definitions
+          model :proposal_new_class, name_with: lambda { |s| uuid_uri_generator(inst) } 
+          attribute :classId, enforce: [:existence]
+          attribute :prefLabel, enforce: [:existence]
+          attribute :synonyms, enforce: [:list]
+          attribute :definitions, enforce: [:list]
           attribute :parent
         end
       end

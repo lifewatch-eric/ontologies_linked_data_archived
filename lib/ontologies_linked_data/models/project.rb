@@ -1,17 +1,17 @@
 module LinkedData
   module Models
     class Project < LinkedData::Models::Base
-      model :project, :name_with => lambda { |s| plural_resource_id(s) }
-      attribute :acronym, :unique => true, :single_value => true, :not_nil => true
-      attribute :creator, :instance_of => { :with => :user }, :single_value => true, :not_nil => true
-      attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
-      attribute :updated, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda {|x| DateTime.new }
-      attribute :name, :single_value => true, :not_nil => true
-      attribute :homePage, :uri => true, :single_value => true, :not_nil => true
-      attribute :description, :single_value => true, :not_nil => true
-      attribute :contacts, :single_value => true
-      attribute :institution, :single_value => true
-      attribute :ontologyUsed, :instance_of => { :with => :ontology }
+      model :project, :name_with => :acronym
+      attribute :acronym, enforce: [:unique, :existence]
+      attribute :creator, enforce: [:unique, :existence, :user]
+      attribute :created, enforce: [:date_time], :default => lambda {|x| DateTime.new }
+      attribute :updated, enforce: [:date_time], :default => lambda {|x| DateTime.new }
+      attribute :name
+      attribute :homePage, enforce: [:uri]
+      attribute :description, enforce: [:existence]
+      attribute :contacts
+      attribute :institution
+      attribute :ontologyUsed, enforce: [:ontology, :list]
     end
   end
 end

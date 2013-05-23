@@ -5,15 +5,16 @@ require_relative '../class'
 module LinkedData
   module Models
     class Note < LinkedData::Models::Base
-      attribute :noteId, :single_value => true, :not_nil => true
-      attribute :creator, :instance_of => {:with => :user}, :single_value => true, :not_nil => true
-      attribute :created, :date_time_xsd => true, :single_value => true, :not_nil => true, :default => lambda { |record| DateTime.now }
-      attribute :body, :single_value => true
-      attribute :subject, :single_value => true
-      attribute :relatedOntology, :instance_of => {:with => LinkedData::Models::Ontology}
-      attribute :relatedClass, :instance_of => {:with => LinkedData::Models::Class}
-      attribute :createdInSubmission, :single_value => true
-      attribute :details, :instance_of => {:with => LinkedData::Models::Notes::Details::Base}, :single_value => true
+      model :note, name_with: :noteId 
+      attribute :noteId, enforce: [:existence, :unique]
+      attribute :creator, enforce: [:existence, :user]
+      attribute :created, enforce: [:date_time], :default => lambda { |record| DateTime.now }
+      attribute :body
+      attribute :subject
+      attribute :relatedOntology, enforce: [:ontology]
+      attribute :relatedClass, enforce: [:class]
+      attribute :createdInSubmission, enforce: [:ontology_submission]
+      attribute :details,  enforce: [:details]
     end
   end
 end
