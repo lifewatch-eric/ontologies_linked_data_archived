@@ -44,13 +44,13 @@ module LinkedData
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
-      link_to LinkedData::Hypermedia::Link.new("self", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value", s) }, self.uri_type),
-              LinkedData::Hypermedia::Link.new("ontology", lambda { |s| link_path("ontologies/:submission.ontology.acronym", s) },  Goo.vocabulary["Ontology"]),
-              LinkedData::Hypermedia::Link.new("children", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/children", s) }, self.uri_type),
-              LinkedData::Hypermedia::Link.new("parents", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/parents", s) }, self.uri_type),
-              LinkedData::Hypermedia::Link.new("descendants", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/descendants", s) }, self.uri_type),
-              LinkedData::Hypermedia::Link.new("ancestors", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/ancestors", s) }, self.uri_type),
-              LinkedData::Hypermedia::Link.new("tree", lambda { |s| link_path("ontologies/:submission.ontology.acronym/classes/:resource_id.value/tree", s) }, self.uri_type)
+      link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}"} }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.ontology.acronym}"} },  Goo.vocabulary["Ontology"]),
+              LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/children"} }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("parents", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/parents"} }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/descendants"} }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/ancestors"} }, self.uri_type),
+              LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/tree"} }, self.uri_type)
 
       def get_index_doc
         doc = {
@@ -97,15 +97,6 @@ module LinkedData
           args[-1][:query_options] = { rules: :SUBP }
         end
         super(*args)
-      end
-
-      def self.link_path(path, cls)
-        if cls.attributes[:internals] && cls.attributes[:internals].read_only && !cls.attributes[:submissionAcronym].nil?
-          ontology_id = cls.submissionAcronym.first.value
-          ontology_id = ontology_id.split("/").last if ontology_id.start_with?("http://")
-          path.sub!(":submission.ontology.acronym", ontology_id)
-        end
-        LinkedData::Hypermedia::expand_link(path, cls)
       end
 
       def properties
