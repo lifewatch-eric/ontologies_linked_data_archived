@@ -42,14 +42,17 @@ module LinkedData
               # LinkedData::Hypermedia::Link.new("metrics", "ontologies/:acronym/metrics", LinkedData::Models::Metrics.type_uri),
 
       def latest_submission(options = {})
+        self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
         status = options[:status] || :parsed
         submission_id = highest_submission_id(status)
         return nil if submission_id.nil?
-        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id, load_attrs: OntologySubmission.goo_attrs_to_load).first
+        OntologySubmission.where(ontology: [ acronym: acronym ], 
+                                 submissionId: submission_id).include(OntologySubmission.goo_attrs_to_load).first
       end
 
       def submission(submission_id)
-        OntologySubmission.where(ontology: { acronym: acronym }, submissionId: submission_id.to_i, load_attrs: OntologySubmission.goo_attrs_to_load).first
+        OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: submission_id.to_i)
+                                .include(OntologySubmission.goo_attrs_to_load).first
       end
 
       def next_submission_id
@@ -57,10 +60,8 @@ module LinkedData
       end
 
       def highest_submission_id(status = nil)
-        if !self.loaded_attributes.include?(:submissions) ||
-          (submissions.nil? || (submissions.first && !submissions.first.loaded_attributes.include?(:submissionStatus)))
-          self.bring(submissions: [:submissionId, submissionStatus: [:code]])
-        end
+        #just reload submissions - TODO: smarter
+        self.bring(submissions: [:submissionId, submissionStatus: [:code]])
 
         # This is the first!
         tmp_submissions = submissions
@@ -80,6 +81,7 @@ module LinkedData
       # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
       def delete(in_update=false)
         self.bring(:submissions)
+        self.bring(:acronym) unless self.loaded_attributes.include?:acronym
         unless self.submissions.nil?
           submissions.each do |s|
             s.delete(in_update, false)
@@ -89,9 +91,10 @@ module LinkedData
       end
 
       def unindex
+        self.bring(:acronym) unless self.loaded_attributes.include?:acronym
         query = "submissionAcronym:#{acronym}"
-        Ontology.unindexByQuery(query)
-        Ontology.indexCommit()
+        #Ontology.unindexByQuery(query)
+        #Ontology.indexCommit()
       end
     end
   end

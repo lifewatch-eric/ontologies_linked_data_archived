@@ -92,14 +92,15 @@ module LinkedData
       end
 
       def sanity_check
+        self.bring(:summaryOnly) unless self.loaded_attributes.include?(:summaryOnly)
         if self.summaryOnly
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
           return false
         elsif self.pullLocation
-          self.errors[:pullLocation] = ["File at #{self.pullLocation.value} does not exist"]
-          return remote_file_exists?(self.pullLocation.value)
+          self.errors[:pullLocation] = ["File at #{self.pullLocation.to_s} does not exist"]
+          return remote_file_exists?(self.pullLocation.to_s)
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
