@@ -51,28 +51,25 @@ module LinkedData
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
       ont_submision.uploadFilePath = uploadFilePath
       owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
-      ont_submision.contact = contact
+      ont_submision.contact = [contact]
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = bro
       ont_submision.submissionStatus = status
+      binding.pry if !ont_submision.valid?
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
-      uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED")
+      uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED").include(:submissions).first
       uploded_ontologies = uploaded.submissions
       uploaded_ont = nil
       uploded_ontologies.each do |ont|
-        ont.load unless ont.loaded?
-        ont.ontology.load unless ont.ontology.loaded?
+        ont.bring(ontology: [:acronym])
         if ont.ontology.acronym == acronym
           uploaded_ont = ont
         end
       end
       assert (not uploaded_ont.nil?)
-      if not uploaded_ont.ontology.loaded?
-        uploaded_ont.ontology.load
-      end
       uploaded_ont.process_submission Logger.new(STDOUT)
     end
 

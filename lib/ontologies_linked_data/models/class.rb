@@ -10,15 +10,13 @@ module LinkedData
       model :class, name_with: :id, collection: :submission,
             namespace: :owl, :schemaless => :true
 
-      attribute :resource_id #special attribute to name the object manually
-
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
-      attribute :label, namespace: :rdfs
-      attribute :prefLabel, namespace: :skos # :not_nil => false
-      attribute :synonym, namespace: :skos, property: :altLabel
-      attribute :definition, namespace: :skos, enforce: [:list]
-      attribute :deprecated, namespace: :owl, enforce: [:list]
+      attribute :label, namespace: :rdfs, alias: true
+      attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
+      attribute :synonym, namespace: :skos, property: :altLabel, alias: true
+      attribute :definition, namespace: :skos, enforce: [:list], alias: true
+      attribute :deprecated, namespace: :owl, enforce: [:list], alias: true 
 
       attribute :notation, namespace: :skos
 
@@ -36,8 +34,8 @@ module LinkedData
                     inverse: { on: :class , attribute: :parents },
                     transitive: true
 
-      #search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym.value}_#{t.submission.submissionId.value}" },
-      #               :document => lambda { |t| t.get_index_doc }
+      search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
+                     :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
@@ -54,49 +52,36 @@ module LinkedData
 
       def get_index_doc
         doc = {
-            :resource_id => self.resource_id.value,
-            :prefLabel => self.prefLabel,
-            :synonym => self.synonym,
-            :notation => self.notation,
+            :resource_id => self.id.to_s,
+            :ontologyId => self.submission.id.to_s,
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
-            :definition => self.definition
         }
-        all_attrs = self.attributes.dup
-        all_attrs.delete :internals
-        all_attrs.delete :uuid
-        all_attrs.delete :id
+        all_attrs = self.to_hash
+        std = [:id, :prefLabel, :notation, :synonym, :definition]
+        std.each do |att|
+          doc[att] = all_attrs[att].to_s
+          all_attrs.delete att
+        end
+        all_attrs.delete :submission
         props = []
+
+        #for redundancy with prefLabel
+        all_attrs.delete :label
 
         all_attrs.each do |attr_key, attr_val|
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
-              attr_val.uniq!
-              attr_val.map { |val| props << val.value.strip }
+              attr_val = attr_val.uniq
+              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) } rescue binding.pry
             else
-              props << attr_val.value.strip
+              props << attr_val.to_s.strip
             end
           end
         end
         props.uniq!
         doc[:property] = props
         return doc
-      end
-
-      def self.where(*args)
-        params = args[0].dup
-        missing_labels_generation = params.delete :missing_labels_generation
-
-        inject_subproperty_query_option(params)
-        params[:filter]="FILTER(!isBlank(?subject))"
-        super(params)
-      end
-
-      def self.find(*args)
-        unless args[-1].include?:query_options
-          args[-1][:query_options] = { rules: :SUBP }
-        end
-        super(*args)
       end
 
       def properties
@@ -124,7 +109,7 @@ module LinkedData
         path = paths.first
         items_hash = {}
         path.each do |t|
-          items_hash[t.resource_id.value] = t
+          items_hash[t.id.to_s] = t
         end
 
         self.class.where( items: items_hash , load_attrs: { :children => true, :prefLabel => true, :childrenCount => true }, submission: self.submission)
@@ -133,7 +118,7 @@ module LinkedData
         childrens_hash = {}
         path.each do |m|
           m.children.each do |c|
-            childrens_hash[c.resource_id.value] = c
+            childrens_hash[c.id.to_s] = c
           end
         end
         self.class.where( items: childrens_hash , load_attrs: { :prefLabel => true, :childrenCount => true }, submission: self.submission)
@@ -144,7 +129,7 @@ module LinkedData
         while tree_node.children.length > 0 and path.length > 0 do
           next_tree_node = nil
           tree_node.children.each_index do |i|
-            if tree_node.children[i].resource_id.value == path.first.resource_id.value
+            if tree_node.children[i].id.to_s == path.first.id.to_s
               next_tree_node = path.first
               tree_node.children[i] = path.first
             else
@@ -203,7 +188,7 @@ module LinkedData
       private
 
       def append_if_not_there_already(path,r)
-        return nil if (path.select { |x| x.resource_id.value == r.resource_id.value }).length > 0
+        return nil if (path.select { |x| x.id.to_s == r.id.to_s }).length > 0
         path << r
       end
 
