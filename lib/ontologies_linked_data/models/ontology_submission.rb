@@ -92,7 +92,7 @@ module LinkedData
       end
 
       def sanity_check
-        self.bring(:summaryOnly) unless self.loaded_attributes.include?(:summaryOnly)
+        self.bring(:summaryOnly) if self.persistent? && !self.loaded_attributes.include?(:summaryOnly)
         if self.summaryOnly
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?

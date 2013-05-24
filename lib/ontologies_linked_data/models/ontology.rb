@@ -47,12 +47,13 @@ module LinkedData
         submission_id = highest_submission_id(status)
         return nil if submission_id.nil?
         OntologySubmission.where(ontology: [ acronym: acronym ], 
-                                 submissionId: submission_id).include(OntologySubmission.goo_attrs_to_load).first
+                                 submissionId: submission_id).include(:submissionId).first
       end
 
       def submission(submission_id)
+        self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
         OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: submission_id.to_i)
-                                .include(OntologySubmission.goo_attrs_to_load).first
+                                .include(:submissionId).first
       end
 
       def next_submission_id

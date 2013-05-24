@@ -109,9 +109,9 @@ class TestOntology < LinkedData::TestCase
 
   def test_ontology_deletes_submissions
     _create_ontology_with_submissions
-    ont = LinkedData::Models::Ontology.find(@acronym)
+    ont = LinkedData::Models::Ontology.find(@acronym).first
     ont.delete
-    submissions = LinkedData::Models::OntologySubmission.where(ontology: {acronym: @acronym})
+    submissions = LinkedData::Models::OntologySubmission.where(ontology: [acronym: @acronym])
     assert submissions.empty?
   end
 
@@ -143,15 +143,16 @@ class TestOntology < LinkedData::TestCase
 
   def test_all_submission_retrieval
     count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3)
+    ont = ont.first
     ont.bring(:submissions)
-    all_submissions = ont.first.submissions
+    all_submissions = ont.submissions
     assert_equal 3, all_submissions.length
   end
 
   def test_duplicate_contacts
     _create_ontology_with_submissions
-    ont = LinkedData::Models::Ontology.find(@acronym)
-    ont.bring(:submissions [:contact])
+    ont = LinkedData::Models::Ontology.find(@acronym).first
+    ont.bring(submissions: [:contact])
     sub = ont.submissions.first
     assert sub.contact.length == 1
   end
