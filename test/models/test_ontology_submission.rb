@@ -11,7 +11,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       raise ArgumentError, "Too many ontologies in triple store. TESTS WILL DELETE DATA"
     end
     l.each do |os|
-      os.load
       os.delete
     end
   end
@@ -19,7 +18,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   def test_valid_ontology
     return if ENV["SKIP_PARSING"]
 
-    acronym = "SNOMED-TST"
+    acronym = "BRO-TST"
     name = "SNOMED-CT TEST"
     ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
     id = 10
@@ -29,9 +28,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.new
     assert (not os.valid?)
 
-    bogus.acronym = acronym
+    assert_raises ArgumentError do 
+      bogus.acronym = acronym
+    end
     os.submissionId = id
-    os.contact = contact
+    os.contact = [contact]
     os.released = DateTime.now - 4
     bogus.name = name
     o = LinkedData::Models::Ontology.find(acronym)
@@ -63,7 +64,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
-    ont_submision.contact = contact
+    ont_submision.contact = [contact]
     ont_submision.released = DateTime.now - 4
     ont_submision.uploadFilePath = uploadFilePath
     ont_submision.hasOntologyLanguage = owl
@@ -99,7 +100,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     owl, dup, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
-    ont_submision.contact = contact
+    ont_submision.contact = [contact]
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     dup.administeredBy = user
@@ -107,7 +108,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert (!ont_submision.valid?)
     assert_equal 2, ont_submision.errors.length
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
-    assert_instance_of String, ont_submision.errors[:submissionStatus][0]
+    assert_instance_of String, ont_submision.errors[:submissionStatus][:existence]
   end
 
   def test_submission_parse

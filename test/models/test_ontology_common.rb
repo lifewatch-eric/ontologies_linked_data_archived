@@ -4,46 +4,31 @@ module LinkedData
   class TestOntologyCommon < LinkedData::TestCase
     def submission_dependent_objects(format,acronym,user_name,status_code, name_ont)
       #ontology format
-      LinkedData::Models::OntologyFormat.init
-      owl = LinkedData::Models::OntologyFormat.where(:acronym => format)[0]
+      owl = LinkedData::Models::OntologyFormat.where(:acronym => format).first
       assert_instance_of LinkedData::Models::OntologyFormat, owl
 
+      #user test_linked_models
+      user = LinkedData::Models::User.where(:username => user_name).first
+      if user.nil?
+        user = LinkedData::Models::User.new(:username => user_name, :email => "some@email.org" )
+        user.passwordHash = "some random pass hash"
+        user.save
+      end
+      #
       #ontology
-      LinkedData::Models::OntologyFormat.init
-      ont = LinkedData::Models::Ontology.where(:acronym => acronym)
-      LinkedData::Models::OntologyFormat.init
-      assert(ont.length < 2)
-      if ont.length == 0
-        ont = LinkedData::Models::Ontology.new({:acronym => acronym, :name => name_ont})
-      else
-        ont = ont[0]
+      ont = LinkedData::Models::Ontology.where(:acronym => acronym).first
+      if ont.nil?
+        ont = LinkedData::Models::Ontology.new(:acronym => acronym, :name => name_ont, administeredBy: [user]).save
       end
 
       #user test_linked_models
-      users = LinkedData::Models::User.where(:username => user_name)
-      assert(users.length < 2)
-      if users.length == 0
-        user = LinkedData::Models::User.new({:username => user_name, :email => "some@email.org" })
-        user.attributes[:passwordHash] = "some random pass hash"
-      else
-        user = users[0]
-      end
-
-          #user test_linked_models
-      LinkedData::Models::SubmissionStatus.init
-      status = LinkedData::Models::SubmissionStatus.where(:code => status_code)
-      assert(status.length < 2)
-      if status.length == 0
-        status = LinkedData::Models::SubmissionStatus.new({:code => status_code})
-      else
-        status = status[0]
-      end
+      status = LinkedData::Models::SubmissionStatus.where(:code => status_code).first
 
       # contact
       contact_name = "Peter"
       contact_email = "peter@example.org"
-      contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email).first rescue nil
-      contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email) if contact.nil?
+      contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email).first
+      contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email).save if contact.nil?
 
       #Submission Status
       return owl, ont, user, status, contact
@@ -66,7 +51,6 @@ module LinkedData
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
       ont_submision.uploadFilePath = uploadFilePath
       owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
-      bro.administeredBy = user
       ont_submision.contact = contact
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl

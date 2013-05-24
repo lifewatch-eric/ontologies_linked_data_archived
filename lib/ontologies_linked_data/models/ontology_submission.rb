@@ -56,8 +56,9 @@ module LinkedData
                         :publication, :documentation, :version, :description, :status, :submissionId
 
       def self.submission_id_generator(ss)
+        binding.pry if ss.ontology.nil?
         if !ss.ontology.loaded_attributes.include?(:acronym) 
-          LinkedData::Models::Ontology.models([ss.ontology]).include(:acronym).all
+          ss.ontology.bring(:acronym)
         end
         if ss.ontology.acronym.nil?
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
