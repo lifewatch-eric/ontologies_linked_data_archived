@@ -30,16 +30,16 @@ module LinkedData
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
-      link_to LinkedData::Hypermedia::Link.new("submissions", "ontologies/:acronym/submissions", LinkedData::Models::OntologySubmission.uri_type),
-              LinkedData::Hypermedia::Link.new("classes", "ontologies/:acronym/classes", LinkedData::Models::Class.uri_type),
-              LinkedData::Hypermedia::Link.new("single_class", "ontologies/:acronym/classes/{class_id}", LinkedData::Models::Class.uri_type),
-              LinkedData::Hypermedia::Link.new("roots", "ontologies/:acronym/classes/roots", LinkedData::Models::Class.uri_type),
-              LinkedData::Hypermedia::Link.new("reviews", "ontologies/:acronym/reviews", LinkedData::Models::Review.uri_type),
-              LinkedData::Hypermedia::Link.new("groups", "ontologies/:acronym/groups", LinkedData::Models::Group.uri_type),
-              LinkedData::Hypermedia::Link.new("categories", "ontologies/:acronym/categories", LinkedData::Models::Category.uri_type),
-              LinkedData::Hypermedia::Link.new("latest_submission", "ontologies/:acronym/latest_submission", LinkedData::Models::OntologySubmission.uri_type),
-              LinkedData::Hypermedia::Link.new("projects", "ontologies/:acronym/projects", LinkedData::Models::Project.uri_type)
-              # LinkedData::Hypermedia::Link.new("metrics", "ontologies/:acronym/metrics", LinkedData::Models::Metrics.type_uri),
+      link_to LinkedData::Hypermedia::Link.new("submissions", lambda {|s| "ontologies/#{s.acronym}/submissions"}, LinkedData::Models::OntologySubmission.uri_type),
+              LinkedData::Hypermedia::Link.new("classes", lambda {|s| "ontologies/#{s.acronym}/classes"}, LinkedData::Models::Class.uri_type),
+              LinkedData::Hypermedia::Link.new("single_class", lambda {|s| "ontologies/#{s.acronym}/classes/{class_id}"}, LinkedData::Models::Class.uri_type),
+              LinkedData::Hypermedia::Link.new("roots", lambda {|s| "ontologies/#{s.acronym}/classes/roots"}, LinkedData::Models::Class.uri_type),
+              LinkedData::Hypermedia::Link.new("reviews", lambda {|s| "ontologies/#{s.acronym}/reviews"}, LinkedData::Models::Review.uri_type),
+              LinkedData::Hypermedia::Link.new("groups", lambda {|s| "ontologies/#{s.acronym}/groups"}, LinkedData::Models::Group.uri_type),
+              LinkedData::Hypermedia::Link.new("categories", lambda {|s| "ontologies/#{s.acronym}/categories"}, LinkedData::Models::Category.uri_type),
+              LinkedData::Hypermedia::Link.new("latest_submission", lambda {|s| "ontologies/#{s.acronym}/latest_submission"}, LinkedData::Models::OntologySubmission.uri_type),
+              LinkedData::Hypermedia::Link.new("projects", lambda {|s| "ontologies/#{s.acronym}/projects"}, LinkedData::Models::Project.uri_type)
+              # LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.acronym}/metrics"}, LinkedData::Models::Metrics.type_uri),
 
       def latest_submission(options = {})
         self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
