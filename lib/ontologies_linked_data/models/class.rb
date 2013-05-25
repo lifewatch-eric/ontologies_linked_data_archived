@@ -12,11 +12,11 @@ module LinkedData
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
-      attribute :label, namespace: :rdfs, alias: true
+      attribute :label, namespace: :rdfs,enforce: [:list], alias: true
       attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
-      attribute :synonym, namespace: :skos, property: :altLabel, alias: true
+      attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
-      attribute :deprecated, namespace: :owl, enforce: [:list], alias: true 
+      attribute :deprecated, namespace: :owl
 
       attribute :notation, namespace: :skos
 

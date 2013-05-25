@@ -300,7 +300,8 @@ module LinkedData
         t1 = Time.now
         fsave = File.open(save_in_file,"w")
         fsave.write(property_triples)
-        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).page(page,size)
+        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label)
+                    .page(page,size)
         begin #per page
           label_triples = []
           page_classes = paging.page(page,size).read_only.all
@@ -310,7 +311,11 @@ module LinkedData
           logger.flush
           page_classes.each do |c|
             if c.prefLabel.nil?
-              rdfs_labels = c.label
+              rdfs_labels = c.label.first
+              if rdfs_labels.length > 1 && c.synonym.length > 0
+                rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
+                rdfs_labels = c.label if rdfs_labels.length == 0
+              end
               rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
               label = nil
               if rdfs_labels && rdfs_labels.length > 0
@@ -349,12 +354,14 @@ module LinkedData
       end
 
       def roots
-        classes = LinkedData::Models::Class.where(submission: self, parents: :unbound,
-                                                  load_attrs: [:prefLabel, :definition, :synonym, :deprecated])
+        f = Goo::Filter.new(:parents).unbound
+        classes = LinkedData::Models::Class.in(self)
+                                           .include(:prefLabel, :definition, :synonym, :deprecated)
+                                           .filter(f)
+                                           .all
         roots = []
         classes.each do |c|
-          next if c.resource_id.bnode?
-          roots << c if (c.attributes[:deprecated].nil?) || (c.attributes[:deprecated] == false)
+          roots << c if (c.deprecated.nil?) || (c.deprecated == false)
         end
         return roots
       end

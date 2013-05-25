@@ -143,6 +143,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
+    ont_submision.prefLabelProperty = RDF::URI.new("http://bioontology.org/projects/ontologies/radlex/radlexOwl#Preferred_name")
     ont_submision.ontology = bro
     ont_submision.submissionStatus = status
     ont_submision.contact = [contact]
@@ -151,9 +152,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.process_submission Logger.new(STDOUT)
     assert ont_submision.submissionStatus.parsed?
 
-      binding.pry
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
-      binding.pry
       assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
       assert_instance_of String, cls.prefLabel
     end
@@ -194,11 +193,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], submissionId: 1)
+            .include(LinkedData::Models::OntologySubmission.attributes).all
     assert(os.length == 1)
     os = os[0]
 
-    roots = os.roots
+   roots = os.roots
     assert_instance_of(Array, roots)
     assert_equal(2, roots.length)
     root_ids = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
@@ -206,15 +206,14 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
      # class 3 is now subClass of some anonymous thing.
      # "http://bioportal.bioontology.org/ontologies/msotes#class3"]
     roots.each do |r|
-      assert(root_ids.include? r.resource_id.value)
-      root_ids.delete_at(root_ids.index(r.resource_id.value))
+      assert(root_ids.include? r.id.to_s)
+      root_ids.delete_at(root_ids.index(r.id.to_s))
     end
     #I have found them all
     assert(root_ids.length == 0)
 
     ontology = os.ontology
     os.delete
-    ontology.load
     ontology.delete
   end
 
@@ -244,14 +243,12 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
-    assert_equal true, ont_submision.exist?(reload=true)
 
-    sub = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.load unless sub.loaded?
-    sub.ontology.load unless sub.ontology.loaded?
 
-    sub = LinkedData::Models::Ontology.find(acronym)
+    sub = LinkedData::Models::Ontology.find(acronym).first
+    sub.bring(:submissions)
     if not sub.nil?
       sub = sub.submissions || []
       sub.each do |s|
@@ -268,8 +265,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/SBO.obo"
     id = 10
 
-    sbo = LinkedData::Models::Ontology.find(acronym)
+    sbo = LinkedData::Models::Ontology.find(acronym).first
     if not sbo.nil?
+      sbo.bring(:submissions)
       sub = sbo.submissions || []
       sub.each do |s|
         s.delete
@@ -282,45 +280,42 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     owl, sbo, user, status, contact = submission_dependent_objects("OBO", acronym, "test_linked_models", "UPLOADED", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
+    ont_submision.contact = [contact]
     ont_submision.ontology = sbo
     ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
 
-    sbo = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
-    sbo = sbo[0]
-    sbo.load unless sbo.loaded?
-    sbo.ontology.load unless sbo.ontology.loaded?
-    sbo.process_submission Logger.new(STDOUT)
-    assert sbo.submissionStatus.parsed?
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
+    sub = sub[0]
+    sub.process_submission Logger.new(STDOUT)
+    assert sub.submissionStatus.parsed?
 
-    page_classes = LinkedData::Models::Class.page submission: sbo,
-                                             page: 1, size: 1000,
-                                             load_attrs: { prefLabel: true, synonym: true},
-                                             query_options: { rules: :SUBP }
+    page_classes = LinkedData::Models::Class.in(sub)
+                                             .page(1,1000)
+                                             .include(:prefLabel, :synonym).all
     page_classes.each do |c|
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000004"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/SBO_0000004"
         assert c.prefLabel == "modelling framework"
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000011"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/SBO_0000011"
         assert c.prefLabel == "product"
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000236"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/SBO_0000236"
         assert c.prefLabel == "physical entity representation"
+        assert c.synonym[0] == "new synonym"
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/SBO_0000306"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/SBO_0000306"
         assert c.prefLabel == "pK"
         assert c.synonym[0] == "dissociation potential"
       end
     end
 
-    sbo = LinkedData::Models::Ontology.find(acronym)
-    if not sbo.nil?
-      sub = sbo.submissions || []
-      sub.each do |s|
+    sbo.bring(:submissions)
+    sub = sbo.submissions || []
+    sub.each do |s|
         s.delete
-      end
     end
   end
 
@@ -348,33 +343,23 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = emo
+    ont_submision.contact = [contact]
     ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
-    assert_equal true, ont_submision.exist?(reload=true)
 
-    sub = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.load unless sub.loaded?
-    sub.ontology.load unless sub.ontology.loaded?
     sub.process_submission Logger.new(STDOUT)
     assert sub.submissionStatus.parsed?
 
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
-    sub = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
-    sub = sub[0]
-    sub.load unless sub.loaded?
-    assert sub.missingImports.length == 1
-    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
-
-    sub = LinkedData::Models::Ontology.find(acronym)
-    if not sub.nil?
-      sub = sub.submissions || []
-      sub.each do |s|
-        s.delete
-      end
+    emo.bring(:submissions)
+    sub = emo.submissions || []
+    sub.each do |s|
+      s.delete
     end
   end
 
@@ -399,50 +384,50 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.uploadFilePath = uploadFilePath
     owl, aero, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
     ont_submision.released = DateTime.now - 4
-    ont_submision.prefLabelProperty =  RDF::IRI.new "http://www.w3.org/2000/01/rdf-schema#label"
-    ont_submision.synonymProperty = RDF::IRI.new "http://purl.obolibrary.org/obo/IAO_0000118"
-    ont_submision.definitionProperty = RDF::IRI.new "http://purl.obolibrary.org/obo/IAO_0000115"
-    ont_submision.authorProperty = RDF::IRI.new "http://purl.obolibrary.org/obo/IAO_0000117"
+    ont_submision.prefLabelProperty =  RDF::URI.new "http://www.w3.org/2000/01/rdf-schema#label"
+    ont_submision.synonymProperty = RDF::URI.new "http://purl.obolibrary.org/obo/IAO_0000118"
+    ont_submision.definitionProperty = RDF::URI.new "http://purl.obolibrary.org/obo/IAO_0000115"
+    ont_submision.authorProperty = RDF::URI.new "http://purl.obolibrary.org/obo/IAO_0000117"
     ont_submision.hasOntologyLanguage = owl
+    ont_submision.contact = [contact]
     ont_submision.ontology = aero
     ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
 
-    aero = LinkedData::Models::OntologySubmission.where ontology: { acronym: acronym }, submissionId: id
-    aero = aero[0]
-    aero.load unless aero.loaded?
-    aero.ontology.load unless aero.ontology.loaded?
-    aero.process_submission Logger.new(STDOUT)
-    assert aero.submissionStatus.parsed?
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
+    sub = sub[0]
+    sub.process_submission Logger.new(STDOUT)
+    assert sub.submissionStatus.parsed?
 
-    page_classes = LinkedData::Models::Class.page submission: aero,
-                                             page: 1, size: 1000,
-                                             load_attrs: { prefLabel: true, synonym: true, definition: true},
-                                             query_options: { rules: :SUBP }
+    page_classes = LinkedData::Models::Class.in(sub)
+                                             .page(1,1000)
+                                             .read_only
+                                             .include(:prefLabel, :synonym, :definition).all
     page_classes.each do |c|
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/UBERON_0004535"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/UBERON_0004535"
         assert c.prefLabel == "cardiovascular system"
         assert c.definition[0] == "Anatomical system that has as its parts the heart and blood vessels."
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/ogms/OMRE_0000105"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/ogms/OMRE_0000105"
         assert c.prefLabel == "angioedema"
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/ogms/OMRE_0000104"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/ogms/OMRE_0000104"
         assert c.prefLabel == "generalized erythema"
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/UBERON_0012125"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/UBERON_0012125"
         assert c.prefLabel == "dermatological-mucosal system"
-        assert c.definition == "Anatomical system that consists of the integumental system plus all mucosae and submucosae."
+        assert c.definition == ["Anatomical system that consists of the integumental system plus all mucosae and submucosae."]
       end
-      if c.resource_id.value == "http://purl.obolibrary.org/obo/IAO_0000578"
+      if c.id.to_s == "http://purl.obolibrary.org/obo/IAO_0000578"
         assert c.prefLabel == "CRID"
         assert c.synonym[0] == "Centrally Registered IDentifier"
       end
     end
 
-    aero = LinkedData::Models::Ontology.find(acronym)
+    aero = LinkedData::Models::Ontology.find(acronym).first
+    aero.bring(:submissions)
     if not aero.nil?
       sub = aero.submissions || []
       sub.each do |s|
