@@ -312,7 +312,7 @@ module LinkedData
           page_classes.each do |c|
             if c.prefLabel.nil?
               rdfs_labels = c.label.first
-              if rdfs_labels.length > 1 && c.synonym.length > 0
+              if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
                 rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
                 rdfs_labels = c.label if rdfs_labels.length == 0
               end
