@@ -251,12 +251,16 @@ module LinkedData
                                   .page(page,size)
           begin #per page
             page_classes = paging.page(page,size).all
+            logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved")
             page_classes.each do |c|
               LinkedData::Models::Class.map_attributes(c)
             end
+            logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped")
             count_classes += page_classes.length
             LinkedData::Models::Class.indexBatch(page_classes)
-            page = page_classes.next_page
+
+            page = page_classes.next? ? page + 1 : nil
+            logger.info("Page #{page} of #{page_classes.total_pages} completed")
           end while !page.nil?
           LinkedData::Models::Class.indexCommit()
         end
@@ -294,24 +298,24 @@ module LinkedData
                       property_triples,
                       mime_type="application/x-turtle")
         count_classes = 0
-        t0 = Time.now
         page = 1
         size = 2500
-        t1 = Time.now
         fsave = File.open(save_in_file,"w")
         fsave.write(property_triples)
         paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label)
                     .page(page,size)
         begin #per page
           label_triples = []
+          t0 = Time.now
           page_classes = paging.page(page,size).read_only.all
+          t1 = Time.now
           logger.info(
             "#{page_classes.length} in page #{page} classes for #{self.id.to_ntriples} (#{t1 - t0} sec)." +
             " Total pages #{page_classes.total_pages}.")
           logger.flush
           page_classes.each do |c|
             if c.prefLabel.nil?
-              rdfs_labels = c.label.first
+              rdfs_labels = c.label
               if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
                 rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
                 rdfs_labels = c.label if rdfs_labels.length == 0
@@ -345,7 +349,7 @@ module LinkedData
             logger.info("No labels generated in page #{page_classes.total_pages}.")
             logger.flush
           end
-          page = page_classes.next_page
+          page = page_classes.next? ? page + 1 : nil
         end while !page.nil?
         logger.info("end missing_labels_generation traversed #{count_classes} classes")
         logger.info("Saved generated labels in #{save_in_file}")

@@ -3,35 +3,18 @@ require "logger"
 
 class TestClassModel < LinkedData::TestOntologyCommon
 
-  def setup
-  end
-
-  def test_terms_custom_props
-    return if ENV["SKIP_PARSING"]
-
-    acr = "CSTPROPS"
-    init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
-    assert(os.length == 1)
-    os = os[0]
-    os_classes = os.classes :load_attrs => [:prefLabel]
-    os_classes.each do |c|
-      assert(!c.prefLabel.nil?, "Class #{c.resource_id.value} does not have a label")
-    end
-  end
-
   def test_class_parents
     return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr }, :submissionId => 1
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+                                                      submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
-    os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_7"
-    cls = LinkedData::Models::Class.find(class_id, submission: os )
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:parents).to_a[0]
 
     pp = cls.parents[0]
     assert pp.parents.length == 1
@@ -51,6 +34,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.parents[0].submission, os)
 
     #transitive
+    cls.bring(:ancestors)
     ancestors = cls.ancestors
     ancestors.each do |a|
       assert !a.submission.nil?
@@ -71,15 +55,17 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
-      :submissionId => 1
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+                                                      submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
-    os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class1"
-    cls = LinkedData::Models::Class.find(class_id, submission: os, load_attrs: { prefLabel: true, children: true })
-    assert cls.prefLabel == 'class 1 literal'
+
+    cls = LinkedData::Models::Class.find(class_id).in(os)
+                .include(:parents)
+                .include(:children)
+                .to_a[0]
     children = cls.children
     assert_equal(1, cls.children.length)
     children_id = "http://bioportal.bioontology.org/ontologies/msotes#class2"
@@ -103,14 +89,15 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
-      :submissionId => 1
+
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+                                                      submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
-    os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_7"
-    cls = LinkedData::Models::Class.find(class_id, submission: os )
+
+    cls = LinkedData::Models::Class.find(class_id).in(os).first
 
     paths = cls.paths_to_root
     assert paths.length == 1
@@ -127,14 +114,14 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
-      :submissionId => 1
+
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+                                                      submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
-    os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_5"
-    cls = LinkedData::Models::Class.find(class_id, submission: os )
+    cls = LinkedData::Models::Class.find(class_id).in(os).first
 
     paths = cls.paths_to_root
     assert paths.length == 2
@@ -160,7 +147,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
       :submissionId => 1
     assert(os.length == 1)
     os = os[0]
-    os.load unless os.loaded?
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
     cls = LinkedData::Models::Class.find(class_id, submission: os , load_attrs: :all)
