@@ -20,17 +20,17 @@ module LinkedData
         triples << triple(Goo.vocabulary(:rdfs)[:comment], subPropertyOf, Goo.vocabulary(:skos)[:definition])
 
         unless ont_sub.prefLabelProperty.nil?
-          unless ont_sub.prefLabelProperty.value == names.rdfs_label
+          unless ont_sub.prefLabelProperty == Goo.vocabulary(:rdfs)[:label]
             triples << triple(ont_sub.prefLabelProperty, subPropertyOf, Goo.vocabulary(:metadata_def)[:prefLabel])
           end
         end
         unless ont_sub.definitionProperty.nil?
-          unless ont_sub.definitionProperty.value == names.rdfs_label
+          unless ont_sub.definitionProperty == Goo.vocabulary(:rdfs)[:label]
             triples << triple(ont_sub.definitionProperty, subPropertyOf, Goo.vocabulary(:skos)[:definition])
           end
         end
         unless ont_sub.synonymProperty.nil?
-          unless ont_sub.synonymProperty.value == names.rdfs_label
+          unless ont_sub.synonymProperty == Goo.vocabulary(:rdfs)[:label]
             triples << triple(ont_sub.synonymProperty, subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
           end
         end

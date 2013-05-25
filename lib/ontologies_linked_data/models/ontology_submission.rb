@@ -252,7 +252,7 @@ module LinkedData
           begin #per page
             page_classes = paging.page(page,size).all
             page_classes.each do |c|
-              c.map_attributes
+              LinkedData::Models::Class.map_attributes(c)
             end
             count_classes += page_classes.length
             LinkedData::Models::Class.indexBatch(page_classes)
@@ -303,7 +303,7 @@ module LinkedData
         paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).page(page,size)
         begin #per page
           label_triples = []
-          page_classes = paging.page(page,size).all
+          page_classes = paging.page(page,size).read_only.all
           logger.info(
             "#{page_classes.length} in page #{page} classes for #{self.id.to_ntriples} (#{t1 - t0} sec)." +
             " Total pages #{page_classes.total_pages}.")
@@ -346,14 +346,6 @@ module LinkedData
         logger.info("Saved generated labels in #{save_in_file}")
         fsave.close()
         logger.flush
-      end
-
-      def classes(*args)
-        args = [{}] if args.nil? || args.length == 0
-        args[0] = args[0].merge({ :submission => self })
-        clss = LinkedData::Models::Class.where(*args)
-        clss.select! { |c| !c.resource_id.bnode? }
-        return clss
       end
 
       def roots
