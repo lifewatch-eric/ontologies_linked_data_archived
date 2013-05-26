@@ -75,14 +75,15 @@ class TestClassModel < LinkedData::TestOntologyCommon
     children = cls.children
     assert_equal(1, cls.children.length)
     children_id = "http://bioportal.bioontology.org/ontologies/msotes#class2"
-    assert_equal(children_id,cls.children[0].resource_id.value)
+    assert_equal(children_id,cls.children[0].id.to_s)
 
     #they should have the same submission
     assert_equal(cls.children[0].submission, os)
 
     #transitive
-    descendants = cls.descendants
-    descendants.map! { |a| a.resource_id.value }
+    cls.bring(:descendants)
+    descendants = cls.descendants.dup
+    descendants.map! { |a| a.id.to_s }
     data_descendants = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
     "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
