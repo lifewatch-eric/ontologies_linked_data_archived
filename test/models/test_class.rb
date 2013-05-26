@@ -20,6 +20,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(os.id,pp.submission.id)
     pp.bring(:parents)
     assert pp.parents.length == 1
+    assert_equal(os.id, pp.parents.first.submission.id)
 
     #read_only
     cls = LinkedData::Models::Class.find(class_id).in(os).include(:parents).read_only.all[0]
@@ -134,14 +135,14 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert paths.length == 2
     path = paths[1]
     assert path.length == 3
-    assert path[0].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
-    assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
-    assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
+    assert path[2].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    assert path[1].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    assert path[0].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class1"
     path = paths[0]
     assert path.length == 3
-    assert path[0].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
-    assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class4"
-    assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class3"
+    assert path[2].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    assert path[1].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class4"
+    assert path[0].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class3"
 
   end
 
