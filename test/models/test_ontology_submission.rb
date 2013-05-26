@@ -185,7 +185,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       if c.id.to_s.include? "class1"
         assert_equal "class 1 literal", c.prefLabel
       end
-      binding.pry #cls 6 label ?
     end
   end
 
