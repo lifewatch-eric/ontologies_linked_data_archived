@@ -84,8 +84,11 @@ module LinkedData
         return doc
       end
 
-      def children_count
-        binding.pry
+      def childrenCount
+        raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates 
+        cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
+        raise ArgumentError, "No aggregate for attribute children and cound found in #{self.id.to_ntriples}" if !cc
+        return cc.value
       end
 
       def properties
@@ -109,6 +112,7 @@ module LinkedData
       end
 
       def tree
+        self.bring(:parents) if self.bring?(:parents)
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
@@ -119,12 +123,13 @@ module LinkedData
         end
 
         self.class.in(self.submission)
-              .models(items_hash.value)
+              .models(items_hash.values)
               .include(:prefLabel, :children)
               .aggregate(:count, :children).all
 
         path.reverse!
-        path.last.children.delete_if { |x| true }
+        #binding.pry
+        path.last.instance_variable_set("@children",[])
         childrens_hash = {}
         path.each do |m|
           m.children.each do |c|
@@ -133,7 +138,7 @@ module LinkedData
         end
 
         self.class.in(self.submission)
-              .models(childrens_hash.value)
+              .models(childrens_hash.values)
               .include(:prefLabel, :children)
               .aggregate(:count, :children).all
 
@@ -146,7 +151,9 @@ module LinkedData
           tree_node.children.each_index do |i|
             if tree_node.children[i].id.to_s == path.first.id.to_s
               next_tree_node = path.first
-              tree_node.children[i] = path.first
+              children = tree_node.children.dup
+              children[i] = path.first
+              tree_node.instance_variable_set("@children",children)
             else
               tree_node.children[i].instance_variable_set("@children",[])
             end

@@ -186,23 +186,17 @@ class TestClassModel < LinkedData::TestOntologyCommon
     end
   end
 
-  def test_class_nil_values
-    cls = LinkedData::Models::Class.new
-    cls.my_new_attr = "blah"
-    assert cls.my_new_attr == ["blah"]
-  end
-
   def test_bro_tree
     #just one path with children
-    if !LinkedData::Models::Ontology.find("BROTEST123")
+    if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
     end
-    os = LinkedData::Models::Ontology.find("BROTEST123").latest_submission
+    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
-    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os)
+    cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os).first
 
     root_backend = cls.tree
-    root_backend.resource_id.value == "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"
+    root_backend.id.to_s == "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Resource"
     tree_backend = root_backend
     root_backend.children.each do |c|
       assert c.childrenCount > 0
@@ -218,7 +212,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
       end
       assert cc < 2
       if next_tree.nil?
-        tree_backend.children.select { |x| x.resource_id.value == "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis" }.length == 1
+        tree_backend.children.select { |x| x.id.to_s == "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis" }.length == 1
         assert tree_backend.children.length == 2
         assert tree_backend.children.first.childrenCount == 0
         assert tree_backend.children[1].childrenCount == 0
