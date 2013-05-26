@@ -151,15 +151,16 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where :ontology => { :acronym => acr },
-      :submissionId => 1
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+                                                      submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
 
-    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
-    cls = LinkedData::Models::Class.find(class_id, submission: os , load_attrs: :all)
-    assert (cls.attributes[:versionInfo][0].value == "some version info")
-    assert (cls.attributes[RDF::IRI.new("http://www.w3.org/2002/07/owl#versionInfo")][0].value == "some version info")
+    class_id = RDF::URI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:unmapped).first
+
+    versionInfo = Goo.vocabulary(:owl)[:versionInfo]
+    assert (cls.unmapped[versionInfo][0].value == "some version info")
   end
 
   def test_children_count
