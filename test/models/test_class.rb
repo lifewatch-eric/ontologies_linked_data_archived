@@ -110,9 +110,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert paths.length == 1
     path = paths[0]
     assert path.length == 3
-    assert path[0].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class_7"
-    assert path[1].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class2"
-    assert path[2].resource_id.value == "http://bioportal.bioontology.org/ontologies/msotes#class1"
+    assert path[2].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class_7"
+    assert path[1].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class2"
+    assert path[0].id.to_s  == "http://bioportal.bioontology.org/ontologies/msotes#class1"
 
   end
 

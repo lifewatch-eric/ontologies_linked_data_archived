@@ -84,6 +84,10 @@ module LinkedData
         return doc
       end
 
+      def children_count
+        binding.pry
+      end
+
       def properties
         cls_all = self.class.find self.resource_id, submission: self.submission, load_attrs: :all
         properties = cls_all.attributes.select {|k,v| k.is_a?(SparqlRd::Resultset::IRI)}
@@ -93,9 +97,11 @@ module LinkedData
       end
 
       def paths_to_root
+        self.bring(:parents) if self.bring?(:parents)
+
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
-        traverse_path_to_root(self.parents, paths, 0)
+        traverse_path_to_root(self.parents.dup, paths, 0)
         paths.each do |p|
           p.reverse!
         end
@@ -105,14 +111,18 @@ module LinkedData
       def tree
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
-        traverse_path_to_root(self.parents, paths, 0, tree=true)
+        traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
         path = paths.first
         items_hash = {}
         path.each do |t|
           items_hash[t.id.to_s] = t
         end
 
-        self.class.where( items: items_hash , load_attrs: { :children => true, :prefLabel => true, :childrenCount => true }, submission: self.submission)
+        self.class.in(self.submission)
+              .models(items_hash.value)
+              .include(:prefLabel, :children)
+              .aggregate(:count, :children).all
+
         path.reverse!
         path.last.children.delete_if { |x| true }
         childrens_hash = {}
@@ -121,7 +131,12 @@ module LinkedData
             childrens_hash[c.id.to_s] = c
           end
         end
-        self.class.where( items: childrens_hash , load_attrs: { :prefLabel => true, :childrenCount => true }, submission: self.submission)
+
+        self.class.in(self.submission)
+              .models(childrens_hash.value)
+              .include(:prefLabel, :children)
+              .aggregate(:count, :children).all
+
         #build the tree
         root_node = path.first
         tree_node = path.first
@@ -152,7 +167,6 @@ module LinkedData
 
       def traverse_path_to_root(parents, paths, path_i,tree=false)
         return if (tree and parents.length == 0)
-        parents.select! { |s| !s.resource_id.bnode?}
         recurse_on_path = []
         recursions = [path_i]
         recurse_on_path = [false]
@@ -165,7 +179,8 @@ module LinkedData
 
           parents.each_index do |i|
             rec_i = recursions[i]
-            recurse_on_path[i] = recurse_on_path[i] || !append_if_not_there_already(paths[rec_i], parents[i]).nil?
+            recurse_on_path[i] = recurse_on_path[i] || 
+                !append_if_not_there_already(paths[rec_i], parents[i]).nil?
           end
         else
           path = paths[path_i]
@@ -176,8 +191,9 @@ module LinkedData
           rec_i = recursions[i]
           path = paths[rec_i]
           p = path.last
+          p.bring(:parents) if p.bring?(:parents)
           if (recurse_on_path[i] && p.parents && p.parents.length > 0)
-            traverse_path_to_root(p.parents, paths, rec_i, tree=tree)
+            traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end
       end
