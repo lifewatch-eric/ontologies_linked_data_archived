@@ -224,14 +224,18 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
 
   def test_include_ancestors
-   if !LinkedData::Models::Ontology.find("BROTEST123")
+    if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
     end
-    os = LinkedData::Models::Ontology.find("BROTEST123").latest_submission
- statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
-    cls = LinkedData::Models::Class.find(RDF::IRI.new(statistical_Text_Analysis), submission: os,load_attrs: [ :ancestors => true, :prefLabel => true ], query_options: { rules: "SUBP+SUBC"})
-    assert cls.attributes[:ancestors].length == 3
-    assert_instance_of String, cls.attributes[:prefLabel].value
+    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission
+    statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
+    cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
+                                      .include(:prefLabel,ancestors: [:prefLabel]).first
+    assert cls.ancestors.length == 3
+    cls.ancestors.each do |a|
+      assert_instance_of String, a.prefLabel
+    end
+    assert_instance_of String, cls.prefLabel
   end
 
   def test_bro_paths_to_root
