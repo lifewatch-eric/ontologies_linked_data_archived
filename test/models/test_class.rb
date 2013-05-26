@@ -14,19 +14,26 @@ class TestClassModel < LinkedData::TestOntologyCommon
     os = os[0]
 
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_7"
-    cls = LinkedData::Models::Class.find(class_id).in(os).include(:parents).to_a[0]
 
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:parents).to_a[0]
     pp = cls.parents[0]
+    assert_equal(os.id,pp.submission.id)
+    pp.bring(:parents)
     assert pp.parents.length == 1
 
+    #read_only
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:parents).read_only.all[0]
+    pp = cls.parents[0]
+    assert_equal(os.id,pp.submission.id)
+
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_5"
-    cls = LinkedData::Models::Class.find(class_id, submission: os )
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:parents).first
     parents = cls.parents
     assert_equal(parents, cls.parents)
     assert_equal(2, cls.parents.length)
     parent_ids = [ "http://bioportal.bioontology.org/ontologies/msotes#class2",
       "http://bioportal.bioontology.org/ontologies/msotes#class4" ]
-    parent_id_db = cls.parents.map { |x| x.resource_id.value }
+    parent_id_db = cls.parents.map { |x| x.id.to_s }
     assert_equal(parent_id_db.sort, parent_ids.sort)
 
     assert !cls.parents[0].submission.nil?
@@ -35,13 +42,12 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     #transitive
     cls.bring(:ancestors)
-    ancestors = cls.ancestors
+    ancestors = cls.ancestors.dup
     ancestors.each do |a|
       assert !a.submission.nil?
     end
     assert ancestors.length == cls.ancestors.length
-    ancestors.select! { |b| !b.resource_id.bnode? }
-    ancestors.map! { |a| a.resource_id.value }
+    ancestors.map! { |a| a.id.to_s }
     data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
  "http://bioportal.bioontology.org/ontologies/msotes#class4",

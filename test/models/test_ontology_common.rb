@@ -75,13 +75,13 @@ module LinkedData
 
     def init_test_ontology_msotest(acr)
       ont = LinkedData::Models::Ontology.find(acr)
+                .include(submissions: [:submissionStatus]).first
       if not ont.nil?
         sub = ont.submissions || []
         if sub.length > 0
           return if sub[0].submissionStatus.parsed?
         end
         sub.each do |s|
-          s.load unless s.loaded?
           s.delete
         end
         ont.delete
