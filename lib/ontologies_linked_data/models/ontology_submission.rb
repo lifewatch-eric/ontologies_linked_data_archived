@@ -360,10 +360,14 @@ module LinkedData
       def roots
         f = Goo::Filter.new(:parents).unbound
         classes = LinkedData::Models::Class.in(self)
-                                           .include(:prefLabel, :definition, :synonym, :deprecated)
                                            .filter(f)
+                                           .disable_rules
                                            .all
         roots = []
+        LinkedData::Models::Class.in(self)
+                     .models(classes)
+                     .include(:prefLabel, :definition, :synonym, :deprecated)
+                     .all
         classes.each do |c|
           roots << c if (c.deprecated.nil?) || (c.deprecated == false)
         end

@@ -185,6 +185,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       if c.id.to_s.include? "class1"
         assert_equal "class 1 literal", c.prefLabel
       end
+      binding.pry #cls 6 label ?
     end
   end
 
@@ -200,6 +201,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
    roots = os.roots
     assert_instance_of(Array, roots)
+    binding.pry
     assert_equal(2, roots.length)
     root_ids = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
       "http://bioportal.bioontology.org/ontologies/msotes#class6" ]
