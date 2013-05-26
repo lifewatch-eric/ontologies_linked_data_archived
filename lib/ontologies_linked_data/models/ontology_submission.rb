@@ -238,7 +238,6 @@ module LinkedData
       end
 
       def index(logger, optimize = true)
-        return
         page = 1
         size = 2500
 
