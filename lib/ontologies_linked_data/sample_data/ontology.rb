@@ -25,6 +25,7 @@ module LinkedData
         if acronym
           ont = LinkedData::Models::Ontology.find(acronym).first
           if ont && process_submission
+            ont.bring(:submissions)
             subs = ont.submissions
             subs.each do |sub|
               return 1, [acronym], [ont] if sub.submissionStatus.parsed?
@@ -35,6 +36,7 @@ module LinkedData
         end
 
         u, of, contact = ontology_objects()
+        contact.save if contact.modified?
 
         ont_acronyms = []
         ontologies = []
@@ -89,6 +91,7 @@ module LinkedData
 
         if process_submission
           ontologies.each do |o|
+            o.bring(:submissions)
             o.submissions.each do |ss|
               next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
               ss.process_submission Logger.new(STDOUT)
@@ -126,9 +129,6 @@ module LinkedData
 
         u = LinkedData::Models::User.find("tim").first
         u.delete unless u.nil?
-
-        of = LinkedData::Models::OntologyFormat.find("OWL").first
-        of.delete unless of.nil?
       end
 
       def self.sample_owl_ontologies

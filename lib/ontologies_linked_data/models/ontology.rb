@@ -7,7 +7,7 @@ require_relative 'project'
 module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
-      model :ontology, :name_with => :acronym 
+      model :ontology, :name_with => :acronym
       attribute :acronym, namespace: :omv, enforce: [:unique, :existence]
       attribute :name, :namespace => :omv, enforce: [:unique, :existence]
       attribute :submissions,
@@ -24,7 +24,7 @@ module LinkedData
 
       attribute :acl, enforce: [:list, :user]
 
-      attribute :viewOf, enforce: [:list, :ontology] 
+      attribute :viewOf, enforce: [:list, :ontology]
 
       attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
 
@@ -46,7 +46,7 @@ module LinkedData
         status = options[:status] || :parsed
         submission_id = highest_submission_id(status)
         return nil if submission_id.nil?
-        OntologySubmission.where(ontology: [ acronym: acronym ], 
+        OntologySubmission.where(ontology: [ acronym: acronym ],
                                  submissionId: submission_id).include(:submissionId).first
       end
 
