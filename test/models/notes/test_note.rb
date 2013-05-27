@@ -1,22 +1,38 @@
 require_relative "../../test_case"
 
 class TestNote < LinkedData::TestCase
+  def self.before_suite
+    self.new("before_suite").delete_ontologies_and_submissions
+    @@ontology, @@cls = self.new("before_suite")._ontology_and_class
+  end
+
+  def self.after_suite
+    self.new("after_suite").delete_ontologies_and_submissions
+  end
+
+  def _ontology_and_class
+    count, acronyms, ontologies = create_ontologies_and_submissions(ont_count: 1, submission_count: 1, process_submission: true)
+    ontology = ontologies.first
+    # TODO: Fix parsing issue (look at code in ontologies_api/test_case.rb)
+    # cls = ontology.latest_submission.classes.first
+    return ontology
+  end
+
   def setup
     _variables
     _delete
     user = _user
-    ontology, cls = _ontology_and_class
     @note = LinkedData::Models::Note.new({
       noteId: @noteId,
       creator: user,
-      relatedOntology: ontology,
+      relatedOntology: [@@ontology],
     })
+    assert @note.valid?
     @note.save
   end
 
   def teardown
     _delete
-    delete_ontologies_and_submissions
   end
 
   def _variables
@@ -31,25 +47,17 @@ class TestNote < LinkedData::TestCase
       password: "note_user_pass"
     )
     if user.exist?
-      user = LinkedData::Models::User.find(@note_user)
+      user = LinkedData::Models::User.find(@note_user).first
     else
       user.save
     end
     user
   end
 
-  def _ontology_and_class
-    count, acronyms, ontologies = create_ontologies_and_submissions(ont_count: 1, submission_count: 1, process_submission: true)
-    ontology = ontologies.first
-    # TODO: Fix parsing issue (look at code in ontologies_api/test_case.rb)
-    # cls = ontology.latest_submission.classes.first
-    return ontology
-  end
-
   def _delete
     note = LinkedData::Models::Note.where(noteId: @noteId).first
     note.delete unless note.nil?
-    user = LinkedData::Models::User.find(@note_user)
+    user = LinkedData::Models::User.find(@note_user).first
     user.delete unless user.nil?
   end
 
@@ -63,12 +71,12 @@ class TestNote < LinkedData::TestCase
   end
 
   def test_note_lifecycle
-    ontology = _ontology_and_class
+    ontology = @@ontology
 
     n = LinkedData::Models::Note.new({
       noteId: "Note_UUID_TESTING2",
       creator: _user,
-      relatedOntology: ontology,
+      relatedOntology: [ontology],
     })
 
     assert_equal false, n.exist?(reload=true)
@@ -79,18 +87,24 @@ class TestNote < LinkedData::TestCase
   end
 
   def test_note_class_proposal
-    details = LinkedData::Models::Notes::Details::Base.new
-    details.type = LinkedData::Models::Notes::Enums::Details.find("ProposalNewClass")
-    details.reasonForChange = "Need new term"
+    begin
+      new_cls = LinkedData::Models::Notes::Details::ProposalNewClass.new
+      new_cls.prefLabel = "New Label"
+      new_cls.classId = "http://example.org/new/id"
+      new_cls.save
 
-    new_cls = LinkedData::Models::Notes::Details::ProposalNewClass.new
-    new_cls.prefLabel = "New Label"
-    new_cls.classId = "http://example.org/new/id"
+      details = LinkedData::Models::Notes::Details::Base.new
+      details.type = LinkedData::Models::Notes::Enums::Details.find("ProposalNewClass").first
+      details.reasonForChange = "Need new term"
+      details.content = new_cls
+      details.save
 
-    details.content = new_cls
-
-    @note.details = details
-    assert @note.valid?
+      @note.details = details
+      assert @note.valid?
+    ensure
+      details.delete unless details.nil?
+      new_cls.delete unless new_cls.nil?
+    end
   end
 
 end
