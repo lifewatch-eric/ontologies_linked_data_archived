@@ -28,7 +28,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os = LinkedData::Models::OntologySubmission.new
     assert (not os.valid?)
 
-    assert_raises ArgumentError do 
+    assert_raises ArgumentError do
       bogus.acronym = acronym
     end
     os.submissionId = id
@@ -200,7 +200,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
    roots = os.roots
     assert_instance_of(Array, roots)
-    binding.pry
     assert_equal(2, roots.length)
     root_ids = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
       "http://bioportal.bioontology.org/ontologies/msotes#class6" ]

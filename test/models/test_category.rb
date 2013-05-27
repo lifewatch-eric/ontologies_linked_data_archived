@@ -77,9 +77,11 @@ class TestCategory < LinkedData::TestCase
     delete_ontologies_and_submissions
     ont_count, ont_acronyms, onts = create_ontologies_and_submissions(ont_count: 1)
     ont = onts.first
-    ont.hasDomain = @category
+    ont.hasDomain = [@category]
+    ont.bring(:acronym, :name, :administeredBy)
     ont.save
 
+    @category.bring(ontologies: [:acronym])
     category_ont = @category.ontologies.first
 
     assert_equal category_ont.acronym, ont.acronym
