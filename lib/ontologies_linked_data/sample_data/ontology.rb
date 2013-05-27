@@ -28,6 +28,7 @@ module LinkedData
             ont.bring(:submissions)
             subs = ont.submissions
             subs.each do |sub|
+              sub.bring(:submissionStatus)
               return 1, [acronym], [ont] if sub.submissionStatus.parsed?
             end
           elsif ont
