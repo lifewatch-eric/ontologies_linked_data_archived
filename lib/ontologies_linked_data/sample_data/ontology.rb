@@ -23,7 +23,7 @@ module LinkedData
 
         # If ontology exists and is parsed (when requested), return it here
         if acronym
-          ont = LinkedData::Models::Ontology.find(acronym)
+          ont = LinkedData::Models::Ontology.find(acronym).first
           if ont && process_submission
             subs = ont.submissions
             subs.each do |sub|
@@ -46,7 +46,7 @@ module LinkedData
           o = LinkedData::Models::Ontology.new({
             acronym: acronym,
             name: "Test Ontology ##{count}",
-            administeredBy: u
+            administeredBy: [u]
           })
 
           o.save unless o.exist?
@@ -57,11 +57,11 @@ module LinkedData
             os = LinkedData::Models::OntologySubmission.new({
               ontology: o,
               hasOntologyLanguage: of,
-              submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED"),
+              submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").first,
               submissionId: o.next_submission_id,
               definitionProperty: (RDF::IRI.new "http://bioontology.org/ontologies/biositemap.owl#definition"),
               summaryOnly: true,
-              contact: contact,
+              contact: [contact],
               released: DateTime.now - 3
             })
 
@@ -84,7 +84,7 @@ module LinkedData
 
         # Get ontology objects if empty
         ont_acronyms.each do |ont_id|
-          ontologies << LinkedData::Models::Ontology.find(ont_id)
+          ontologies << LinkedData::Models::Ontology.find(ont_id).first
         end
 
         if process_submission
@@ -100,26 +100,19 @@ module LinkedData
       end
 
       def self.ontology_objects
-        LinkedData::Models::SubmissionStatus.init
-
         u = LinkedData::Models::User.new(username: "tim", email: "tim@example.org", password: "password")
         if u.exist?
-          u = LinkedData::Models::User.find("tim")
+          u = LinkedData::Models::User.find("tim").first
         else
           u.save
         end
 
-        of = LinkedData::Models::OntologyFormat.new(acronym: "OWL")
-        if of.exist?
-          of = LinkedData::Models::OntologyFormat.find("OWL")
-        else
-          of.save
-        end
+        of = LinkedData::Models::OntologyFormat.find("OWL").include(:acronym).first
 
         contact_name = "Sheila"
         contact_email = "sheila@example.org"
-        contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email)
-        contact = contact.empty? ? LinkedData::Models::Contact.new(name: contact_name, email: contact_email) : contact.first
+        contact = LinkedData::Models::Contact.where(name: contact_name, email: contact_email).to_a
+        contact = contact.empty? ? LinkedData::Models::Contact.new(name: contact_name, email: contact_email).save : contact.first
 
         return u, of, contact
       end
@@ -131,10 +124,10 @@ module LinkedData
           ont.delete
         end
 
-        u = LinkedData::Models::User.find("tim")
+        u = LinkedData::Models::User.find("tim").first
         u.delete unless u.nil?
 
-        of = LinkedData::Models::OntologyFormat.find("OWL")
+        of = LinkedData::Models::OntologyFormat.find("OWL").first
         of.delete unless of.nil?
       end
 

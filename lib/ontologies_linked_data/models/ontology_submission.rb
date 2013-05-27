@@ -56,8 +56,9 @@ module LinkedData
                         :publication, :documentation, :version, :description, :status, :submissionId
 
       def self.submission_id_generator(ss)
+        binding.pry if ss.ontology.nil?
         if !ss.ontology.loaded_attributes.include?(:acronym) 
-          LinkedData::Models::Ontology.models([ss.ontology]).include(:acronym).all
+          ss.ontology.bring(:acronym)
         end
         if ss.ontology.acronym.nil?
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
@@ -88,18 +89,19 @@ module LinkedData
         return valid_result && sc
       end
 
-      def filename
-      end
-
       def sanity_check
+        self.bring(:summaryOnly) if self.bring?(:summaryOnly)
+        self.bring(:uploadFilePath) if self.bring?(:uploadFilePath)
+        self.bring(:pullLocation) if self.bring?(:pullLocation)
+        self.bring(:masterFileName) if self.bring?(:masterFileName)
         if self.summaryOnly
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
           return false
         elsif self.pullLocation
-          self.errors[:pullLocation] = ["File at #{self.pullLocation.value} does not exist"]
-          return remote_file_exists?(self.pullLocation.value)
+          self.errors[:pullLocation] = ["File at #{self.pullLocation.to_s} does not exist"]
+          return remote_file_exists?(self.pullLocation.to_s)
         end
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
@@ -145,7 +147,6 @@ module LinkedData
       end
 
       def data_folder
-        self.ontology.load unless self.ontology.loaded?
         return File.join(LinkedData.settings.repository_folder, self.ontology.acronym.to_s, self.submissionId.to_s)
       end
 
@@ -154,6 +155,10 @@ module LinkedData
       end
 
       def process_submission(logger)
+
+        self.bring_remaining
+        self.ontology.bring_remaining
+
         if not self.valid?
           error = "Submission is not valid, it cannot be processed. Check errors"
           logger.info(error)
@@ -170,9 +175,6 @@ module LinkedData
 
         logger.info("Starting parse for #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
-
-        self.load unless self.loaded?
-        self.ontology.load unless self.ontology.loaded?
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
@@ -195,7 +197,7 @@ module LinkedData
         end
         LinkedData::Parser.logger = logger
 
-        if self.hasOntologyLanguage.acronym.eql?("UMLS")
+        if self.hasOntologyLanguage.umls?
           file_name = zip ? File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
           triples_file_path = File.expand_path(file_name)
           logger.info("Using UMLS turtle file, skipping OWLAPI parse")
@@ -221,7 +223,7 @@ module LinkedData
         #index this ontology
         index(logger)
 
-        rdf_status = SubmissionStatus.find("RDF")
+        rdf_status = SubmissionStatus.find("RDF").first
         self.submissionStatus = rdf_status
 
         if missing_imports && missing_imports.length > 0
@@ -244,13 +246,21 @@ module LinkedData
           self.ontology.unindex()
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
 
+
+          paging = LinkedData::Models::Class.in(self).include(:unmapped)
+                                  .page(page,size)
           begin #per page
-            page_classes = LinkedData::Models::Class.page submission: self,
-                                                          page: page, size: size,
-                                                          load_attrs: :all
+            page_classes = paging.page(page,size).all
+            logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved")
+            page_classes.each do |c|
+              LinkedData::Models::Class.map_attributes(c)
+            end
+            logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped")
             count_classes += page_classes.length
             LinkedData::Models::Class.indexBatch(page_classes)
-            page = page_classes.next_page
+
+            page = page_classes.next? ? page + 1 : nil
+            logger.info("Page #{page} of #{page_classes.total_pages} completed")
           end while !page.nil?
           LinkedData::Models::Class.indexCommit()
         end
@@ -283,52 +293,63 @@ module LinkedData
 
       def missing_labels_generation(logger,save_in_file)
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
-        Goo.store.append_in_graph(property_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+        result = Goo.sparql_data_client.append_triples(
+                      self.id,
+                      property_triples,
+                      mime_type="application/x-turtle")
         count_classes = 0
-        t0 = Time.now
         page = 1
         size = 2500
-        t1 = Time.now
         fsave = File.open(save_in_file,"w")
         fsave.write(property_triples)
+        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label)
+                    .page(page,size)
         begin #per page
           label_triples = []
-          page_classes = LinkedData::Models::Class.page submission: self,
-                                                   page: page, size: size,
-                                                   load_attrs: { prefLabel: true, synonym: true, label: true },
-                                                   query_options: { rules: :SUBP }
-          logger.info("#{page_classes.length} in page #{page} classes for #{self.resource_id.value} (#{t1 - t0} sec). Total pages #{page_classes.page_count}.")
+          t0 = Time.now
+          page_classes = paging.page(page,size).read_only.all
+          t1 = Time.now
+          logger.info(
+            "#{page_classes.length} in page #{page} classes for #{self.id.to_ntriples} (#{t1 - t0} sec)." +
+            " Total pages #{page_classes.total_pages}.")
           logger.flush
           page_classes.each do |c|
             if c.prefLabel.nil?
               rdfs_labels = c.label
+              if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
+                rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
+                rdfs_labels = c.label if rdfs_labels.length == 0
+              end
               rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
               label = nil
               if rdfs_labels && rdfs_labels.length > 0
-                label = rdfs_labels[0].value
+                label = rdfs_labels[0]
               else
-                label = LinkedData::Utils::Namespaces.last_iri_fragment c.resource_id.value
+                label = LinkedData::Utils::Triples.last_iri_fragment c.id.to_s
               end
-              label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.resource_id,
-                                                     LinkedData::Utils::Namespaces.meta_prefLabel_iri,label)
+              label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.id,
+                                                     Goo.vocabulary(:metadata_def)[:prefLabel],label)
             end
             count_classes += 1
           end
           if (label_triples.length > 0)
-            logger.info("Asserting #{label_triples.length} labels in #{self.resource_id.value}")
+            logger.info("Asserting #{label_triples.length} labels in #{self.id.to_ntriples}")
             logger.flush
             label_triples = label_triples.join "\n"
             fsave.write(label_triples)
             t0 = Time.now
-            Goo.store.append_in_graph(label_triples, self.resource_id.value, SparqlRd::Utils::MimeType.turtle)
+            result = Goo.sparql_data_client.append_triples(
+                      self.id,
+                      label_triples,
+                      mime_type="application/x-turtle")
             t1 = Time.now
             logger.info("Labels asserted in #{t1 - t0} sec.")
             logger.flush
           else
-            logger.info("No labels generated in page #{page_classes.page_count}.")
+            logger.info("No labels generated in page #{page_classes.total_pages}.")
             logger.flush
           end
-          page = page_classes.next_page
+          page = page_classes.next? ? page + 1 : nil
         end while !page.nil?
         logger.info("end missing_labels_generation traversed #{count_classes} classes")
         logger.info("Saved generated labels in #{save_in_file}")
@@ -336,21 +357,19 @@ module LinkedData
         logger.flush
       end
 
-      def classes(*args)
-        args = [{}] if args.nil? || args.length == 0
-        args[0] = args[0].merge({ :submission => self })
-        clss = LinkedData::Models::Class.where(*args)
-        clss.select! { |c| !c.resource_id.bnode? }
-        return clss
-      end
-
       def roots
-        classes = LinkedData::Models::Class.where(submission: self, parents: :unbound,
-                                                  load_attrs: [:prefLabel, :definition, :synonym, :deprecated])
+        f = Goo::Filter.new(:parents).unbound
+        classes = LinkedData::Models::Class.in(self)
+                                           .filter(f)
+                                           .disable_rules
+                                           .all
         roots = []
+        LinkedData::Models::Class.in(self)
+                     .models(classes)
+                     .include(:prefLabel, :definition, :synonym, :deprecated)
+                     .all
         classes.each do |c|
-          next if c.resource_id.bnode?
-          roots << c if (c.attributes[:deprecated].nil?) || (c.attributes[:deprecated].parsed_value == false)
+          roots << c if (c.deprecated.nil?) || (c.deprecated == false)
         end
         return roots
       end
@@ -379,9 +398,9 @@ module LinkedData
       private
 
       def delete_and_append(triples_file_path, logger, mime_type = nil)
-        Goo.store.delete_graph(self.resource_id.value)
-        Goo.store.put_file_in_graph(triples_file_path, self.resource_id.value, mime_type)
-        logger.info("Triples #{triples_file_path} appended in #{self.resource_id.value}")
+        Goo.sparql_data_client.delete_graph(self.id)
+        Goo.sparql_data_client.put_triples(self.id, triples_file_path, mime_type)
+        logger.info("Triples #{triples_file_path} appended in #{self.id.to_ntriples}")
         logger.flush
       end
 

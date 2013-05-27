@@ -10,15 +10,13 @@ module LinkedData
       model :class, name_with: :id, collection: :submission,
             namespace: :owl, :schemaless => :true
 
-      attribute :resource_id #special attribute to name the object manually
-
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
-      attribute :label, namespace: :rdfs
-      attribute :prefLabel, namespace: :skos # :not_nil => false
-      attribute :synonym, namespace: :skos, property: :altLabel
-      attribute :definition, namespace: :skos, enforce: [:list]
-      attribute :deprecated, namespace: :owl, enforce: [:list]
+      attribute :label, namespace: :rdfs,enforce: [:list], alias: true
+      attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
+      attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
+      attribute :definition, namespace: :skos, enforce: [:list], alias: true
+      attribute :deprecated, namespace: :owl
 
       attribute :notation, namespace: :skos
 
@@ -36,8 +34,8 @@ module LinkedData
                     inverse: { on: :class , attribute: :parents },
                     transitive: true
 
-      #search_options :index_id => lambda { |t| "#{t.resource_id.value}_#{t.submission.ontology.acronym.value}_#{t.submission.submissionId.value}" },
-      #               :document => lambda { |t| t.get_index_doc }
+      search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
+                     :document => lambda { |t| t.get_index_doc }
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
@@ -54,27 +52,30 @@ module LinkedData
 
       def get_index_doc
         doc = {
-            :resource_id => self.resource_id.value,
-            :prefLabel => self.prefLabel,
-            :synonym => self.synonym,
-            :notation => self.notation,
+            :resource_id => self.id.to_s,
+            :ontologyId => self.submission.id.to_s,
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
-            :definition => self.definition
         }
-        all_attrs = self.attributes.dup
-        all_attrs.delete :internals
-        all_attrs.delete :uuid
-        all_attrs.delete :id
+        all_attrs = self.to_hash
+        std = [:id, :prefLabel, :notation, :synonym, :definition]
+        std.each do |att|
+          doc[att] = all_attrs[att].to_s
+          all_attrs.delete att
+        end
+        all_attrs.delete :submission
         props = []
+
+        #for redundancy with prefLabel
+        all_attrs.delete :label
 
         all_attrs.each do |attr_key, attr_val|
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
-              attr_val.uniq!
-              attr_val.map { |val| props << val.value.strip }
+              attr_val = attr_val.uniq
+              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) } rescue binding.pry
             else
-              props << attr_val.value.strip
+              props << attr_val.to_s.strip
             end
           end
         end
@@ -83,20 +84,11 @@ module LinkedData
         return doc
       end
 
-      def self.where(*args)
-        params = args[0].dup
-        missing_labels_generation = params.delete :missing_labels_generation
-
-        inject_subproperty_query_option(params)
-        params[:filter]="FILTER(!isBlank(?subject))"
-        super(params)
-      end
-
-      def self.find(*args)
-        unless args[-1].include?:query_options
-          args[-1][:query_options] = { rules: :SUBP }
-        end
-        super(*args)
+      def childrenCount
+        raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates 
+        cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
+        raise ArgumentError, "No aggregate for attribute children and cound found in #{self.id.to_ntriples}" if !cc
+        return cc.value
       end
 
       def properties
@@ -108,9 +100,11 @@ module LinkedData
       end
 
       def paths_to_root
+        self.bring(:parents) if self.bring?(:parents)
+
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
-        traverse_path_to_root(self.parents, paths, 0)
+        traverse_path_to_root(self.parents.dup, paths, 0)
         paths.each do |p|
           p.reverse!
         end
@@ -118,25 +112,36 @@ module LinkedData
       end
 
       def tree
+        self.bring(:parents) if self.bring?(:parents)
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
-        traverse_path_to_root(self.parents, paths, 0, tree=true)
+        traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
         path = paths.first
         items_hash = {}
         path.each do |t|
-          items_hash[t.resource_id.value] = t
+          items_hash[t.id.to_s] = t
         end
 
-        self.class.where( items: items_hash , load_attrs: { :children => true, :prefLabel => true, :childrenCount => true }, submission: self.submission)
+        self.class.in(self.submission)
+              .models(items_hash.values)
+              .include(:prefLabel, :children)
+              .aggregate(:count, :children).all
+
         path.reverse!
-        path.last.children.delete_if { |x| true }
+        #binding.pry
+        path.last.instance_variable_set("@children",[])
         childrens_hash = {}
         path.each do |m|
           m.children.each do |c|
-            childrens_hash[c.resource_id.value] = c
+            childrens_hash[c.id.to_s] = c
           end
         end
-        self.class.where( items: childrens_hash , load_attrs: { :prefLabel => true, :childrenCount => true }, submission: self.submission)
+
+        self.class.in(self.submission)
+              .models(childrens_hash.values)
+              .include(:prefLabel, :children)
+              .aggregate(:count, :children).all
+
         #build the tree
         root_node = path.first
         tree_node = path.first
@@ -144,9 +149,11 @@ module LinkedData
         while tree_node.children.length > 0 and path.length > 0 do
           next_tree_node = nil
           tree_node.children.each_index do |i|
-            if tree_node.children[i].resource_id.value == path.first.resource_id.value
+            if tree_node.children[i].id.to_s == path.first.id.to_s
               next_tree_node = path.first
-              tree_node.children[i] = path.first
+              children = tree_node.children.dup
+              children[i] = path.first
+              tree_node.instance_variable_set("@children",children)
             else
               tree_node.children[i].instance_variable_set("@children",[])
             end
@@ -158,58 +165,15 @@ module LinkedData
         return root_node
       end
 
-#      def self.page(*args)
-      #
-      #      consider this
-      #      params[:filter]="FILTER(!isBlank(?subject))"
-      #
-#        parsing = args.last.delete(:parsing)
-#        if parsing
-#          return super(args.last)
-#        end
-#        redis_cl = LinkedData.redis_client
-#        if !redis_cl.exists(args.last[:submission].cache_pagination_key)
-#          return super(args.last)
-#        end
-#        page_n = args.last.delete(:page)
-#        size = args.last.delete(:size)
-#        count = redis_cl.llen(args.last[:submission].cache_pagination_key)
-#        page_count = ((count+0.0)/size).ceil
-#        offset = (page_n-1) * size
-#        ids = redis_cl.lrange(args.last[:submission].cache_pagination_key, offset, offset + size)
-#        items_hash = {}
-#        ids.each do |id|
-#          resource_id = SparqlRd::Resultset::IRI.new id
-#          item = self.new
-#          item.internals.lazy_loaded
-#          item.resource_id = resource_id
-#          items_hash[resource_id.value] = item
-#          collection = args.last[:submission]
-#          item.internals.collection = collection
-#          item.internals.graph_id = collection
-#          item.internals.lazy_loaded
-#        end
-#        items = nil
-#        if items_hash.length > 0 and count > 0
-#          items = self.where(args[-1].merge({ items: items_hash }))
-#        else
-#          items = []
-#        end
-#        next_page = items.size > size
-#        items = items[0..-2] if items.length > size
-#        return Goo::Base::Page.new(page_n,next_page,page_count,items)
-#      end
-
       private
 
       def append_if_not_there_already(path,r)
-        return nil if (path.select { |x| x.resource_id.value == r.resource_id.value }).length > 0
+        return nil if (path.select { |x| x.id.to_s == r.id.to_s }).length > 0
         path << r
       end
 
       def traverse_path_to_root(parents, paths, path_i,tree=false)
         return if (tree and parents.length == 0)
-        parents.select! { |s| !s.resource_id.bnode?}
         recurse_on_path = []
         recursions = [path_i]
         recurse_on_path = [false]
@@ -222,7 +186,8 @@ module LinkedData
 
           parents.each_index do |i|
             rec_i = recursions[i]
-            recurse_on_path[i] = recurse_on_path[i] || !append_if_not_there_already(paths[rec_i], parents[i]).nil?
+            recurse_on_path[i] = recurse_on_path[i] || 
+                !append_if_not_there_already(paths[rec_i], parents[i]).nil?
           end
         else
           path = paths[path_i]
@@ -233,8 +198,9 @@ module LinkedData
           rec_i = recursions[i]
           path = paths[rec_i]
           p = path.last
+          p.bring(:parents) if p.bring?(:parents)
           if (recurse_on_path[i] && p.parents && p.parents.length > 0)
-            traverse_path_to_root(p.parents, paths, rec_i, tree=tree)
+            traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end
       end

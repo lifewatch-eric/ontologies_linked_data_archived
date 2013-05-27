@@ -34,7 +34,7 @@ module LinkedData
           end
           special_attrs = {}
           self.hypermedia_settings[:embed].each do |e|
-            embed_class = Goo.find_model_by_name(e)
+            embed_class = Goo.models[e]
 
             # TODO: we should actually do find by model name based on the inverse_of or instance_of values for the embedded attribute
             # This gets around where it breaks

@@ -15,7 +15,7 @@ module LinkedData
 
       def parsed?
         #TODO eventually this has to check for READY.
-        return (self.code == self.class.parsed_code)
+        return (self.id.to_s.end_with?(self.class.parsed_code))
       end
     end
   end

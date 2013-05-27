@@ -1,41 +1,50 @@
 module LinkedData
   module Utils
     module Triples
-      def self.names
-        LinkedData::Utils::Namespaces
+      def self.last_iri_fragment str
+        token = (str.include? "#") ? "#" : "/"
+        return (str.split token)[-1]
       end
+
+      def self.triple(subject, predicate, object)
+        return "#{subject.to_ntriples} #{predicate.to_ntriples} #{object.to_ntriples} ."
+      end
+
       def self.rdf_for_custom_properties(ont_sub)
         triples = []
-        triples << "<#{names.meta_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.skos_prefLabel}> ."
+        subPropertyOf = Goo.vocabulary(:rdfs)[:subPropertyOf]
+
+        triples << triple(Goo.vocabulary(:metadata_def)[:prefLabel], subPropertyOf, Goo.vocabulary(:skos)[:prefLabel])
+        triples << triple(Goo.vocabulary(:skos)[:prefLabel], subPropertyOf, Goo.vocabulary(:rdfs)[:label])
+        triples << triple(Goo.vocabulary(:skos)[:altLabel], subPropertyOf, Goo.vocabulary(:rdfs)[:label])
+        triples << triple(Goo.vocabulary(:rdfs)[:comment], subPropertyOf, Goo.vocabulary(:skos)[:definition])
+
         unless ont_sub.prefLabelProperty.nil?
-          unless ont_sub.prefLabelProperty.value == names.rdfs_label
-            triples << "<#{ont_sub.prefLabelProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.meta_prefLabel}> ."
-            triples << "<#{names.skos_prefLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
+          unless ont_sub.prefLabelProperty == Goo.vocabulary(:rdfs)[:label]
+            triples << triple(ont_sub.prefLabelProperty, subPropertyOf, Goo.vocabulary(:metadata_def)[:prefLabel])
           end
         end
         unless ont_sub.definitionProperty.nil?
-          unless ont_sub.definitionProperty.value == names.rdfs_label
-          triples << "<#{ont_sub.definitionProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.skos_definition}> ."
+          unless ont_sub.definitionProperty == Goo.vocabulary(:rdfs)[:label]
+            triples << triple(ont_sub.definitionProperty, subPropertyOf, Goo.vocabulary(:skos)[:definition])
           end
         end
         unless ont_sub.synonymProperty.nil?
-          unless ont_sub.synonymProperty.value == names.rdfs_label
-            triples << "<#{ont_sub.synonymProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
-            triples << "<#{names.skos_altLabel}> <#{names.rdfs_subPropertyOf}> <#{names.rdfs_label}> ."
+          unless ont_sub.synonymProperty == Goo.vocabulary(:rdfs)[:label]
+            triples << triple(ont_sub.synonymProperty, subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
           end
         end
         unless ont_sub.authorProperty.nil?
-          triples << "<#{ont_sub.authorProperty.value}> <#{names.rdfs_subPropertyOf}> <#{names.dc_creator}> ."
+          triples << triple(ont_sub.authorProperty, subPropertyOf, Goo.vocabulary(:dc)[:creator])
         end
 
         if ont_sub.hasOntologyLanguage.obo?
           #obo syns
-          triples << "<#{names.gen_sy}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
-          triples << "<#{names.obo_sy}> <#{names.rdfs_subPropertyOf}> <#{names.skos_altLabel}> ."
+          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasExactSynonym], subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
+          triples << triple(Goo.vocabulary(:obo_purl)[:synonym], subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
           
           #obo defs
-          triples << "<#{names.rdfs_comment}> <#{names.rdfs_subPropertyOf}> <#{names.skos_definition}> ."
-          triples << "<#{names.obo_def}> <#{names.rdfs_subPropertyOf}> <#{names.skos_definition}> ."
+          triples << triple(Goo.vocabulary(:obo_purl)[:def], subPropertyOf, Goo.vocabulary(:skos)[:definition])
         end
         return (triples.join "\n")
       end
@@ -43,7 +52,7 @@ module LinkedData
       def self.label_for_class_triple(class_id,property,label)
         label = label.gsub('\\','\\\\\\\\')
         label = label.gsub('"','\"')
-        "<#{class_id.value}> <#{property.value}> \"\"\"#{label}\"\"\"^^<#{names.xsd_string}> ."
+        return triple(class_id,property,RDF::Literal.new(label, :datatype => RDF::XSD.string))
       end
     end
   end
