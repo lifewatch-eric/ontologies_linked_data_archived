@@ -37,7 +37,7 @@ class TestRackAuthorization < MiniTest::Unit::TestCase
   end
 
   def _delete_user
-    user = LinkedData::Models::User.find(@username)
+    user = LinkedData::Models::User.find(@username).first
     user.delete unless user.nil?
   end
 
