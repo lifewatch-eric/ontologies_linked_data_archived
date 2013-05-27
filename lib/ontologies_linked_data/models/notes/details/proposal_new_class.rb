@@ -5,7 +5,7 @@ module LinkedData
     module Notes
       module Details
         class ProposalNewClass < LinkedData::Models::Notes::Details::Base
-          model :proposal_new_class, name_with: lambda { |s| uuid_uri_generator(inst) } 
+          model :proposal_new_class, name_with: lambda { |inst| uuid_uri_generator(inst) }
           attribute :classId, enforce: [:existence]
           attribute :prefLabel, enforce: [:existence]
           attribute :synonyms, enforce: [:list]
