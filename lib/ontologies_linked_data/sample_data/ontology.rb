@@ -127,8 +127,6 @@ module LinkedData
         u = LinkedData::Models::User.find("tim").first
         u.delete unless u.nil?
 
-        of = LinkedData::Models::OntologyFormat.find("OWL").first
-        of.delete unless of.nil?
       end
 
       def self.sample_owl_ontologies
