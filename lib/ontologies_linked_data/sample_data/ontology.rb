@@ -42,7 +42,7 @@ module LinkedData
         ont_acronyms = []
         ontologies = []
         ont_count.to_i.times do |count|
-          acr_suffix = ont_count > 1 ? "-#{count}" : ""
+          acr_suffix = "-#{count}"
           acronym = "#{acronym}#{acr_suffix}"
           ont_acronyms << acronym
 
@@ -52,7 +52,11 @@ module LinkedData
             administeredBy: [u]
           })
 
-          o.save unless o.exist?
+          if o.exist?
+            o = LinkedData::Models::Ontology.find(acronym).first
+          else
+            o.save rescue binding.pry
+          end
 
           # Random submissions (between 1 and max)
           max = random_submission_count ? (1..submission_count.to_i).to_a.shuffle.first : submission_count
