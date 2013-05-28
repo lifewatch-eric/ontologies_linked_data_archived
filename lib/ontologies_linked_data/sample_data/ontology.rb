@@ -21,21 +21,6 @@ module LinkedData
         name = options[:name]
         file_path = options[:file_path]
 
-        # If ontology exists and is parsed (when requested), return it here
-        if acronym
-          ont = LinkedData::Models::Ontology.find(acronym).first
-          if ont && process_submission
-            ont.bring(:submissions)
-            subs = ont.submissions
-            subs.each do |sub|
-              sub.bring(:submissionStatus)
-              return 1, [acronym], [ont] if sub.submissionStatus.parsed?
-            end
-          elsif ont
-            return 1, [acronym], [ont]
-          end
-        end
-
         u, of, contact = ontology_objects()
         contact.save if contact.modified?
 
@@ -59,8 +44,10 @@ module LinkedData
           end
 
           # Random submissions (between 1 and max)
-          max = random_submission_count ? (1..submission_count.to_i).to_a.shuffle.first : submission_count
+          max = random_submission_count ? (1.submission_count.to_i).to_a.shuffle.first : submission_count
           max.times do
+            #refresh submission to get new next submission ID after saving in a loop
+            o.bring(:submissions)
             os = LinkedData::Models::OntologySubmission.new({
               ontology: o,
               hasOntologyLanguage: of,
@@ -73,12 +60,13 @@ module LinkedData
             })
 
             if process_submission && (submissions_to_process.nil? || submissions_to_process.include?(os.submissionId))
-              file_path ||= "../../../../test/data/ontology_files/BRO_v3.#{os.submissionId}.owl"
+              file_path = "../../../../test/data/ontology_files/BRO_v3.#{os.submissionId}.owl"
               file_path = File.expand_path(file_path, __FILE__)
               raise ArgumentError, "File located at #{file_path} does not exist" unless File.exist?(file_path)
               if os.submissionId > 2
                 raise ArgumentError, "create_ontologies_and_submissions does not support process submission with more than 2 versions"
               end
+              o.bring(:acronym) if o.bring?(:acronym)
               uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(o.acronym, os.submissionId, file_path)
               os.uploadFilePath = uploadFilePath
             else

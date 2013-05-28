@@ -40,7 +40,6 @@ module LinkedData
             # linked object
             predicate = {"@id" => linked_model.type_uri.to_s, "@type" => "@id"}
           elsif object.class.model_settings[:attributes][attr][:namespace]
-            binding.pry
             # predicate with custom namespace
             predicate = "#{Goo.vocabulary[object.class.model_settings[:attributes][attr][:namespace]].to_s}#{attr}"
           end
