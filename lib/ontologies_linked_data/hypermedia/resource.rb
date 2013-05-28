@@ -53,7 +53,7 @@ module LinkedData
 
 
           # Merge all embedded with the default (provided, all, default)
-          default_attrs.concat(embed_attrs)
+          default_attrs << embed_attrs if embed_attrs.length > 0
           return default_attrs
         end
 
