@@ -19,6 +19,7 @@ module LinkedData
             end
           end
         end
+
         MultiJson.dump(hash)
       end
 
@@ -28,7 +29,7 @@ module LinkedData
         return remove_unused_attrs(CONTEXTS[object.hash], serialized_attrs) unless CONTEXTS[object.hash].nil?
         hash = {}
         class_attributes = object.class.attributes
-        hash["@vocab"] = Goo.vocabulary
+        hash["@vocab"] = Goo.vocabulary.to_s
         class_attributes.each do |attr|
           if object.class.model_settings[:range].key?(attr)
             linked_model = object.class.model_settings[:range][attr]
@@ -55,7 +56,7 @@ module LinkedData
         links = object.class.hypermedia_settings[:link_to]
         links_context = {}
         links.each do |link|
-          links_context[link.type] = link.type_uri
+          links_context[link.type] = link.type_uri.to_s
         end
         return {"@context" => links_context}
       end
