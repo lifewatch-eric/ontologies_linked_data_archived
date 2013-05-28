@@ -116,7 +116,7 @@ class Object
   ##
   # Handle enumerables by recursing
   def enumerable_handling(options, &block)
-    if kind_of?(Enumerable) && !kind_of?(Hash) && !kind_of?(Goo::Base::Page)
+    if (self.is_a?(Array) || self.is_a?(Set)) && !self.is_a?(Goo::Base::Page)
       new_enum = self.class.new
       each do |item|
         new_enum << item.to_flex_hash(options, &block)
