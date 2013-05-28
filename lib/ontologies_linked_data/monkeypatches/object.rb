@@ -136,11 +136,11 @@ class Object
 
   def convert_goo_page(options, &block)
     page = {
-      page: self.page,
-      pageCount: self.page_count,
-      prevPage: self.prev_page,
+      page: self.page_number,
+      pageCount: self.total_pages,
+      prevPage: self.page_number - 1,
       nextPage: self.next_page,
-      links: generate_page_links(options, self.page, self.page_count),
+      links: generate_page_links(options, self.page_number, self.total_pages),
       collection: []
     }
 
