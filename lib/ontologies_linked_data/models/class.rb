@@ -26,11 +26,11 @@ module LinkedData
       attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
                   transitive: true
 
-      attribute :children, namespace: :rdfs, property: :subClassOf, 
+      attribute :children, namespace: :rdfs, property: :subClassOf,
                   inverse: { on: :class , :attribute => :parents }
 
       #transitive children
-      attribute :descendants, namespace: :rdfs, property: :subClassOf, 
+      attribute :descendants, namespace: :rdfs, property: :subClassOf,
                     inverse: { on: :class , attribute: :parents },
                     transitive: true
 
@@ -42,13 +42,13 @@ module LinkedData
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
-      link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.ontology.acronym}"},  Goo.vocabulary["Ontology"]),
-              LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/children"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("parents", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/parents"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/descendants"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/ancestors"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.ontology.acronym}/classes/#{s.id}/tree"}, self.uri_type)
+      link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.submission.ontology.acronym}"},  Goo.vocabulary["Ontology"]),
+              LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/children"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("parents", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/parents"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/descendants"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/ancestors"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/tree"}, self.uri_type)
 
       def get_index_doc
         doc = {
@@ -85,7 +85,7 @@ module LinkedData
       end
 
       def childrenCount
-        raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates 
+        raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates
         cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
         raise ArgumentError, "No aggregate for attribute children and cound found in #{self.id.to_ntriples}" if !cc
         return cc.value
@@ -186,7 +186,7 @@ module LinkedData
 
           parents.each_index do |i|
             rec_i = recursions[i]
-            recurse_on_path[i] = recurse_on_path[i] || 
+            recurse_on_path[i] = recurse_on_path[i] ||
                 !append_if_not_there_already(paths[rec_i], parents[i]).nil?
           end
         else

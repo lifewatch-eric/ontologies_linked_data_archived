@@ -51,7 +51,6 @@ module LinkedData
           embed_values = (self.hypermedia_settings[:embed_values].first || {}).dup
           embed_attrs.merge!(embed_values)
 
-
           # Merge all embedded with the default (provided, all, default)
           default_attrs << embed_attrs if embed_attrs.length > 0
           return default_attrs
