@@ -21,18 +21,22 @@ module LinkedData
         # a list of attributes and nested values to load
         def goo_attrs_to_load(attributes = [])
           raise ArgumentError, "`attributes` should be an array" unless attributes.is_a?(Array)
+
+          # Get attributes, either provided, all, or default
           if !attributes.empty?
             if attributes.first == :all
-              default_attrs = array_to_goo_hash(self.defined_attributes_not_transient)
+              default_attrs = self.attributes
             else
-              default_attrs = array_to_goo_hash(attributes)
+              default_attrs = attributes
             end
           elsif self.hypermedia_settings[:serialize_default].empty?
-            default_attrs = array_to_goo_hash(self.defined_attributes_not_transient)
+            default_attrs = self.attributes
           else
-            default_attrs = array_to_goo_hash(self.hypermedia_settings[:serialize_default].dup)
+            default_attrs = self.hypermedia_settings[:serialize_default].dup
           end
-          special_attrs = {}
+
+          # Also include attributes that are embedded
+          embed_attrs = {}
           self.hypermedia_settings[:embed].each do |e|
             embed_class = Goo.models[e]
 
@@ -40,12 +44,16 @@ module LinkedData
             # This gets around where it breaks
             next if embed_class.nil?
 
-            special_attrs[e] = array_to_goo_hash(embed_class.defined_attributes_not_transient)
+            embed_attrs[e] = embed_class.attributes
           end
+
+          # Merge embedded with embedded values
           embed_values = (self.hypermedia_settings[:embed_values].first || {}).dup
-          embed_values.dup.each {|k,v| embed_values[k] = array_to_goo_hash(v)}
-          special_attrs.merge!(embed_values)
-          default_attrs.merge!(special_attrs)
+          embed_attrs.merge!(embed_values)
+
+
+          # Merge all embedded with the default (provided, all, default)
+          default_attrs.concat(embed_attrs)
           return default_attrs
         end
 
