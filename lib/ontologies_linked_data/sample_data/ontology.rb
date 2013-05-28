@@ -98,6 +98,7 @@ module LinkedData
           ontologies.each do |o|
             o.bring(:submissions)
             o.submissions.each do |ss|
+              ss.bring(:submissionId) if ss.bring?(:submissionId)
               next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
               ss.process_submission Logger.new(STDOUT)
             end

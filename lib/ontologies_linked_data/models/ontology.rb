@@ -46,13 +46,26 @@ module LinkedData
         status = options[:status] || :parsed
         submission_id = highest_submission_id(status)
         return nil if submission_id.nil?
-        OntologySubmission.where(ontology: [ acronym: acronym ],
-                                 submissionId: submission_id).include(:submissionId).first
+        self.submissions.each do |s|
+          return s if s.submissionId == submission_id
+        end
+        raise ArgumentError, "Inconsistent submissionID #{submission_id} for #{self.id.to_ntriples}"
       end
 
       def submission(submission_id)
+        submission_id = submission_id.to_i
         self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
+        if self.loaded_attributes.include?(:submissions)
+          self.submissions.each do |s|
+            if s.submissionId == submission_id
+              s.bring(:submissionStatus) if s.bring?(:submissionStatus)
+              s.bring(:submissionId) if s.bring?(:submissionId)
+              return s
+            end
+          end
+        end
         OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: submission_id.to_i)
+                                .include(:submissionStatus)
                                 .include(:submissionId).first
       end
 
@@ -62,7 +75,13 @@ module LinkedData
 
       def highest_submission_id(status = nil)
         #just reload submissions - TODO: smarter
-        self.bring(submissions: [:submissionId, submissionStatus: [:code]])
+        if self.bring?(:submissions) ||
+            (self.submissions.first &&
+             (self.submissions.first.bring?(:submissionId) ||
+              self.submissions.first.bring?(:submissionStatus)))
+
+          self.bring(submissions: [:submissionId, :submissionStatus])
+        end
 
         # This is the first!
         tmp_submissions = submissions

@@ -138,7 +138,7 @@ class Object
     page = {
       page: self.page_number,
       pageCount: self.total_pages,
-      prevPage: self.page_number - 1,
+      prevPage: self.prev_page,
       nextPage: self.next_page,
       links: generate_page_links(options, self.page_number, self.total_pages),
       collection: []
