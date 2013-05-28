@@ -3,7 +3,7 @@ require 'set'
 class Object
 
   DO_NOT_SERIALIZE = %w(attributes table _cached_exist internals captures splat uuid apikey password inverse_atttributes loaded_attributes modified_attributes previous_values persistent aggregates unmapped errors id)
-  CONVERT_TO_STRING = Set.new([RDF::IRI])
+  CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI])
 
   def to_flex_hash(options = {}, &block)
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass)
@@ -102,8 +102,13 @@ class Object
   ##
   # Convert values that should be a string to a string
   def convert_to_string(value)
-    if CONVERT_TO_STRING.include?(value.class)
-      value = value.to_s
+    sample_class = value.is_a?(Array) ? value.first.class : value.class
+    if CONVERT_TO_STRING.include?(sample_class)
+      if value.is_a?(Array)
+        value = value.map {|e| e.to_s}
+      else
+        value = value.to_s
+      end
     end
     value
   end
