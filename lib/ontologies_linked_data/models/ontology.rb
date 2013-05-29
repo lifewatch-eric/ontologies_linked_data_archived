@@ -57,9 +57,9 @@ module LinkedData
         self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
         if self.loaded_attributes.include?(:submissions)
           self.submissions.each do |s|
+            s.bring(:submissionId) if s.bring?(:submissionId)
             if s.submissionId == submission_id
               s.bring(:submissionStatus) if s.bring?(:submissionStatus)
-              s.bring(:submissionId) if s.bring?(:submissionId)
               return s
             end
           end
@@ -70,6 +70,7 @@ module LinkedData
       end
 
       def next_submission_id
+        self.bring(:submissions)
         (highest_submission_id || 0) + 1
       end
 
