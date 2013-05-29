@@ -87,7 +87,7 @@ module LinkedData
       def childrenCount
         raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates
         cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
-        raise ArgumentError, "No aggregate for attribute children and cound found in #{self.id.to_ntriples}" if !cc
+        raise ArgumentError, "No aggregate for attribute children and count found in #{self.id.to_ntriples}" if !cc
         return cc.value
       end
 
@@ -100,7 +100,7 @@ module LinkedData
       end
 
       def paths_to_root
-        self.bring(:parents) if self.bring?(:parents)
+        self.bring(parents: [:prefLabel,:synonym]) if self.bring?(:parents)
 
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
@@ -112,7 +112,7 @@ module LinkedData
       end
 
       def tree
-        self.bring(:parents) if self.bring?(:parents)
+        self.bring(parents: [:prefLabel]) if self.bring?(:parents)
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
@@ -198,7 +198,7 @@ module LinkedData
           rec_i = recursions[i]
           path = paths[rec_i]
           p = path.last
-          p.bring(:parents) if p.bring?(:parents)
+          p.bring(parents: [:prefLabel,:synonym] ) if p.bring?(:parents)
           if (recurse_on_path[i] && p.parents && p.parents.length > 0)
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end

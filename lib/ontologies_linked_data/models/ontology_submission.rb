@@ -357,17 +357,20 @@ module LinkedData
         logger.flush
       end
 
-      def roots
+      def roots(extra_include=nil,aggregate_children=false)
         f = Goo::Filter.new(:parents).unbound
         classes = LinkedData::Models::Class.in(self)
                                            .filter(f)
                                            .disable_rules
                                            .all
         roots = []
-        LinkedData::Models::Class.in(self)
+        where = LinkedData::Models::Class.in(self)
                      .models(classes)
                      .include(:prefLabel, :definition, :synonym, :deprecated)
-                     .all
+        where.include(extra_include) if extra_include
+        where.aggregate(:count,:children) if aggregate_children
+        where.all
+
         classes.each do |c|
           roots << c if (c.deprecated.nil?) || (c.deprecated == false)
         end
