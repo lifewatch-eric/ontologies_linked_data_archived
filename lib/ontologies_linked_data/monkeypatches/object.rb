@@ -171,18 +171,20 @@ class Object
   end
 
   def populate_attributes(hash, all = false, only = [])
+    current_cls = self.respond_to?(:klass) ? self.klass : self.class
+
     # Look for default attributes or use all
-    if !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_default].empty? || all
-      # Look for table attribute or get all instance variables
-      if instance_variables.include?(:@attributes)
-        hash.replace(instance_variable_get("@attributes"))
+    if !current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) || current_cls.hypermedia_settings[:serialize_default].empty? || all
+      attributes = self.is_a?(Struct) ? self.members : self.instance_variables.map {|e| e.to_s.delete("@").to_sym }
+      attributes.each do |attribute|
+        next unless self.respond_to?(attribute)
+        hash[attribute] = self.send(attribute)
       end
-      instance_variables.each {|var| hash[var.to_s.delete("@").to_sym] = instance_variable_get(var) }
     elsif !only.empty?
       # Only get stuff we need
       hash = populate_hash_from_list(hash, only)
     else
-      hash = populate_hash_from_list(hash, self.class.hypermedia_settings[:serialize_default])
+      hash = populate_hash_from_list(hash, current_cls.hypermedia_settings[:serialize_default])
     end
     hash
   end
@@ -191,16 +193,9 @@ class Object
     attributes.each do |attribute|
       attribute = attribute.to_sym
 
-      # TODO: use this when setting instnace vars is done
-      hash[attribute] = self.instance_variable_get("@#{attribute}")
-      # hash[attribute.to_sym] = self.send(attribute)
-
-      # Try to populate from attributes hash
-      if instance_variables.include?(:@attributes) && hash[attribute].nil?
-        hash[attribute] = @attributes[attribute]
-      end
+      next unless self.respond_to?(attribute)
+      hash[attribute] = self.send(attribute)
     end
-
     hash
   end
 
