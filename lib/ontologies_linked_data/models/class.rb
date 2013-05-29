@@ -100,7 +100,7 @@ module LinkedData
       end
 
       def paths_to_root
-        self.bring(parents: [:prefLabel,:synonym]) if self.bring?(:parents)
+        self.bring(parents: [:prefLabel,:synonym, :definition]) if self.bring?(:parents)
 
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
@@ -198,7 +198,7 @@ module LinkedData
           rec_i = recursions[i]
           path = paths[rec_i]
           p = path.last
-          p.bring(parents: [:prefLabel,:synonym] ) if p.bring?(:parents)
+          p.bring(parents: [:prefLabel,:synonym, :definition] ) if p.bring?(:parents)
           if (recurse_on_path[i] && p.parents && p.parents.length > 0)
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
