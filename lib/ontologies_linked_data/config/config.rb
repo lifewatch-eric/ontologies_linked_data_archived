@@ -69,6 +69,7 @@ module LinkedData
       conf.add_namespace(:xsd, RDF::Vocabulary.new("http://www.w3.org/2001/XMLSchema#"))
       conf.add_namespace(:oboinowl_gen, RDF::Vocabulary.new("http://www.geneontology.org/formats/oboInOWL#"))
       conf.add_namespace(:obo_purl, RDF::Vocabulary.new("http://purl.obolibrary.org/obo/"))
+      conf.id_prefix= "http://data.bioontology.org/"
       conf.pluralize_models(true)
     end
   end
