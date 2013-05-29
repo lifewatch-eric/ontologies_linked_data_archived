@@ -70,6 +70,7 @@ module LinkedData
         end
       end
       assert (not uploaded_ont.nil?)
+      uploaded_ont.bring_remaining
       uploaded_ont.process_submission Logger.new(STDOUT)
     end
 

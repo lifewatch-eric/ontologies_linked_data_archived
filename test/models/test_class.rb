@@ -199,6 +199,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
+    assert os
     cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os).first
 
     root_backend = cls.tree
@@ -237,7 +238,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
     cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
                                       .include(:prefLabel,ancestors: [:prefLabel]).first
-    assert cls.ancestors.length == 3
+    assert cls.ancestors.length == 7
     cls.ancestors.each do |a|
       assert_instance_of String, a.prefLabel
     end
