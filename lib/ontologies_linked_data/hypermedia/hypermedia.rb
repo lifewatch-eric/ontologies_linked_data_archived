@@ -5,8 +5,9 @@ require_relative 'resource'
 module LinkedData
   module Hypermedia
     def self.generate_links(object)
-      return {} if !object.is_a?(LinkedData::Hypermedia::Resource) || object.class.hypermedia_settings[:link_to].empty?
-      links = object.class.hypermedia_settings[:link_to]
+      current_cls = object.respond_to?(:klass) ? object.klass : object.class
+      return {} if !current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) || current_cls.hypermedia_settings[:link_to].empty?
+      links = current_cls.hypermedia_settings[:link_to]
       links_output = {}
       links.each do |link|
         links_output[link.type] = LinkedData.settings.rest_url_prefix + expand_link(link, object)

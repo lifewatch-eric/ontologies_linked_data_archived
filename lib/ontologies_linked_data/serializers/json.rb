@@ -5,14 +5,15 @@ module LinkedData
 
       def self.serialize(obj, options = {})
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
-          hash["@id"] = hashed_obj.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if hashed_obj.is_a?(Goo::Base::Resource)
-          hash["@type"] = hashed_obj.class.type_uri.to_s if hash["@id"] && hashed_obj.class.respond_to?(:type_uri)
+          current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
+          hash["@id"] = hashed_obj.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if current_cls.ancestors.include?(Goo::Base::Resource)
+          hash["@type"] = current_cls.type_uri.to_s if hash["@id"] && current_cls.respond_to?(:type_uri)
           links = LinkedData::Hypermedia.generate_links(hashed_obj)
           unless links.empty?
             hash["links"] = links
             hash["links"].merge!(generate_links_context(hashed_obj))
           end
-          if hashed_obj.is_a?(Goo::Base::Resource)
+          if current_cls.ancestors.include?(Goo::Base::Resource)
             if options[:params].nil? || options[:params]["no_context"].nil? || !options[:params]["no_context"].eql?("true")
               context = generate_context(hashed_obj, hash.keys, options)
               hash.merge!(context)
@@ -28,20 +29,21 @@ module LinkedData
       def self.generate_context(object, serialized_attrs = [], options = {})
         return remove_unused_attrs(CONTEXTS[object.hash], serialized_attrs) unless CONTEXTS[object.hash].nil?
         hash = {}
-        class_attributes = object.class.attributes
+        current_cls = object.respond_to?(:klass) ? object.klass : object.class
+        class_attributes = current_cls.attributes
         hash["@vocab"] = Goo.vocabulary.to_s
         class_attributes.each do |attr|
-          if object.class.model_settings[:range].key?(attr)
-            linked_model = object.class.model_settings[:range][attr]
+          if current_cls.model_settings[:range].key?(attr)
+            linked_model = current_cls.model_settings[:range][attr]
           end
 
           predicate = nil
           if linked_model && linked_model.ancestors.include?(Goo::Base::Resource) && !embedded?(object, attr)
             # linked object
             predicate = {"@id" => linked_model.type_uri.to_s, "@type" => "@id"}
-          elsif object.class.model_settings[:attributes][attr][:namespace]
+          elsif current_cls.model_settings[:attributes][attr][:namespace]
             # predicate with custom namespace
-            predicate = "#{Goo.vocabulary[object.class.model_settings[:attributes][attr][:namespace]].to_s}#{attr}"
+            predicate = "#{Goo.vocabulary[current_cls.model_settings[:attributes][attr][:namespace]].to_s}#{attr}"
           end
           hash[attr] = predicate unless predicate.nil?
         end
@@ -52,7 +54,8 @@ module LinkedData
       end
 
       def self.generate_links_context(object)
-        links = object.class.hypermedia_settings[:link_to]
+        current_cls = object.respond_to?(:klass) ? object.klass : object.class
+        links = current_cls.hypermedia_settings[:link_to]
         links_context = {}
         links.each do |link|
           links_context[link.type] = link.type_uri.to_s
@@ -66,10 +69,11 @@ module LinkedData
       end
 
       def self.embedded?(object, attribute)
+        current_cls = object.respond_to?(:klass) ? object.klass : object.class
         embedded = false
-        embedded = true if object.class.hypermedia_settings[:embed].include?(attribute)
+        embedded = true if current_cls.hypermedia_settings[:embed].include?(attribute)
         embedded = true if (
-          !object.class.hypermedia_settings[:embed_values].empty? && object.class.hypermedia_settings[:embed_values].first.key?(attribute)
+          !current_cls.hypermedia_settings[:embed_values].empty? && current_cls.hypermedia_settings[:embed_values].first.key?(attribute)
         )
         embedded
       end
