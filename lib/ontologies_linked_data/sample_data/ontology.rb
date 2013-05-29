@@ -48,14 +48,14 @@ module LinkedData
 
           o = LinkedData::Models::Ontology.new({
             acronym: acronym,
-            name: "Test Ontology ##{count}",
+            name: name || "Test Ontology ##{count}",
             administeredBy: [u]
           })
 
           if o.exist?
-            o = LinkedData::Models::Ontology.find(acronym).first
+            o = LinkedData::Models::Ontology.find(acronym).include(LinkedData::Models::Ontology.attributes(:all)).first
           else
-            o.save rescue binding.pry
+            o.save
           end
 
           # Random submissions (between 1 and max)
