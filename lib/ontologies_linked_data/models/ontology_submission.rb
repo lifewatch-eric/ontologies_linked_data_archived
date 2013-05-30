@@ -40,7 +40,7 @@ module LinkedData
       attribute :uploadFilePath
       attribute :masterFileName
       attribute :summaryOnly
-      attribute :submissionStatus, enforce: [:submission_status, :existence] 
+      attribute :submissionStatus, enforce: [:submission_status, :existence]
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
@@ -56,7 +56,7 @@ module LinkedData
                         :publication, :documentation, :version, :description, :status, :submissionId
 
       def self.submission_id_generator(ss)
-        if !ss.ontology.loaded_attributes.include?(:acronym) 
+        if !ss.ontology.loaded_attributes.include?(:acronym)
           ss.ontology.bring(:acronym)
         end
         if ss.ontology.acronym.nil?
@@ -200,7 +200,7 @@ module LinkedData
           triples_file_path = File.expand_path(file_name)
           logger.info("Using UMLS turtle file, skipping OWLAPI parse")
           logger.flush
-          delete_and_append(triples_file_path, logger, SparqlRd::Utils::MimeType.turtle)
+          delete_and_append(triples_file_path, logger, LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE))
         else
           input_data = zip_dst || self.uploadFilePath
           labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
@@ -319,7 +319,7 @@ module LinkedData
               rdfs_labels = c.label
               if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
                 rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
-                rdfs_labels = c.label if rdfs_labels.length == 0
+                rdfs_labels = c.label if rdfs_labels.nil? || rdfs_labels.length == 0
               end
               rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
               label = nil
