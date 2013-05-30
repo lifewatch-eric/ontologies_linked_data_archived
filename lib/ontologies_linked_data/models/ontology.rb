@@ -13,6 +13,7 @@ module LinkedData
       attribute :submissions,
                   inverse: { on: :ontology_submission, attribute: :ontology }
       attribute :projects,
+<<<<<<< HEAD
                   inverse: { on: :project, attribute: :ontologyUsed }
       attribute :administeredBy, enforce: [:existence, :user, :list]
       attribute :group, enforce: [:list, :group]
@@ -39,7 +40,12 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("categories", lambda {|s| "ontologies/#{s.acronym}/categories"}, LinkedData::Models::Category.uri_type),
               LinkedData::Hypermedia::Link.new("latest_submission", lambda {|s| "ontologies/#{s.acronym}/latest_submission"}, LinkedData::Models::OntologySubmission.uri_type),
               LinkedData::Hypermedia::Link.new("projects", lambda {|s| "ontologies/#{s.acronym}/projects"}, LinkedData::Models::Project.uri_type)
+              LinkedData::Hypermedia::Link.new("views", lambda {|s| "ontologies/#{s.acronym}/views"}, LinkedData::Models::Ontology.type_uri)
               # LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.acronym}/metrics"}, LinkedData::Models::Metrics.type_uri),
+
+              # view attributes
+      attribute :viewOf, :enforce => [:ontology]
+      attribute :views, :inverse => { :on => :ontology, :attribute => :viewOf }
 
       def latest_submission(options = {})
         self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
