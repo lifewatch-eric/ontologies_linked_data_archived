@@ -2,11 +2,16 @@ module LinkedData
   module Serializers
     class JSON
       CONTEXTS = {}
+      @@replace_default_uri_prefix = nil
 
       def self.serialize(obj, options = {})
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
-          hash["@id"] = hashed_obj.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix) if current_cls.ancestors.include?(Goo::Base::Resource)
+          @@replace_default_uri_prefix ||= !LinkedData.settings.rest_url_prefix.eql?("http://data.bioontology.org/")
+          if current_cls.ancestors.include?(Goo::Base::Resource)
+            prefixed_id = @@replace_default_uri_prefix ? hashed_obj.id.to_s.gsub("http://data.bioontology.org/", LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
+            hash["@id"] = prefixed_id
+          end
           hash["@type"] = current_cls.type_uri.to_s if hash["@id"] && current_cls.respond_to?(:type_uri)
           links = LinkedData::Hypermedia.generate_links(hashed_obj)
           unless links.empty?
