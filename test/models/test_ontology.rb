@@ -30,6 +30,7 @@ class TestOntology < LinkedData::TestCase
   def teardown
     super
     _delete_objects
+    delete_ontologies_and_submissions
   end
 
   def _create_ontology_with_submissions

@@ -5,6 +5,7 @@ require_relative "../../lib/ontologies_linked_data"
 
 class TestSerializerXML < MiniTest::Unit::TestCase
   class Person
+    attr_accessor :name
     def initialize(name)
       @name = name
     end
@@ -152,27 +153,27 @@ class TestSerializerXML < MiniTest::Unit::TestCase
 
   def test_hash_to_xml
     xml = LinkedData::Serializers::XML.send("convert_hash", USERS_HASH, "user")
-    assert_equal xml.to_s.gsub(/\s+/, ""), USER_XML
+    assert_equal USER_XML, xml.to_s.gsub(/\s+/, "")
   end
 
   def test_array_to_xml
     xml = LinkedData::Serializers::XML.send("convert_array", USERS_ARRAY, "user")
-    assert_equal xml.to_s.gsub(/\s+/, ""), USERS_XML
+    assert_equal USERS_XML, xml.to_s.gsub(/\s+/, "")
   end
 
   def test_person_to_xml
     xml = LinkedData::Serializers::XML.serialize(PERSON, {})
-    assert_equal xml.to_s.gsub(/\s+/, ""), PERSON_XML
+    assert_equal PERSON_XML, xml.to_s.gsub(/\s+/, "")
   end
 
   def test_people_to_xml
     xml = LinkedData::Serializers::XML.serialize(PEOPLE, {})
-    assert_equal xml.to_s.gsub(/\s+/, ""), PEOPLE_XML
+    assert_equal PEOPLE_XML, xml.to_s.gsub(/\s+/, "")
   end
 
   def test_nil_to_xml
     xml = LinkedData::Serializers::XML.serialize(nil, {})
-    assert_equal xml.to_s.gsub(/\s+/, ""), NIL_XML
+    assert_equal NIL_XML, xml.to_s.gsub(/\s+/, "")
   end
 
 end
