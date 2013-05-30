@@ -24,7 +24,7 @@ module LinkedData
 
       attribute :acl, enforce: [:list, :user]
 
-      attribute :viewOf, enforce: [:list, :ontology]
+      attribute :viewOf, enforce: [:ontology]
 
       attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
 
