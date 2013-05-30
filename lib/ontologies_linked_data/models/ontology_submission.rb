@@ -56,7 +56,6 @@ module LinkedData
                         :publication, :documentation, :version, :description, :status, :submissionId
 
       def self.submission_id_generator(ss)
-        binding.pry if ss.ontology.nil?
         if !ss.ontology.loaded_attributes.include?(:acronym) 
           ss.ontology.bring(:acronym)
         end
@@ -282,10 +281,13 @@ module LinkedData
 
         if remove_index
           # need to re-index the previous submission (if exists)
-          prev_sub = self.ontology.latest_submission()
+          self.ontology.bring(:submissions)
+          if self.ontology.submissions.length > 0
+            prev_sub = self.ontology.latest_submission()
 
-          if prev_sub
-            prev_sub.index(LinkedData::Parser.logger || $stderr)
+            if prev_sub
+              prev_sub.index(LinkedData::Parser.logger || $stderr)
+            end
           end
         end
       end
