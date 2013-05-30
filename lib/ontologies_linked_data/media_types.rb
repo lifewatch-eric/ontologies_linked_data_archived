@@ -32,7 +32,7 @@ module LinkedData
     DEFAULT_TYPES = {
       JSON => "application/json",
       HTML => "text/html",
-      TURTLE => "application/rdf+turtle",
+      TURTLE => "application/x-turtle",
       XML => "application/rdf+xml",
       JSONP => "application/javascript"
     }
