@@ -200,7 +200,7 @@ module LinkedData
           triples_file_path = File.expand_path(file_name)
           logger.info("Using UMLS turtle file, skipping OWLAPI parse")
           logger.flush
-          delete_and_append(triples_file_path, logger, SparqlRd::Utils::MimeType.turtle)
+          delete_and_append(triples_file_path, logger, "application/x-turtle")
         else
           input_data = zip_dst || self.uploadFilePath
           labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
