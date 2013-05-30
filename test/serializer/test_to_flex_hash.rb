@@ -6,6 +6,7 @@ class ToHashTest < MiniTest::Unit::TestCase
   class Person
     include LinkedData::Hypermedia::Resource
 
+    attr_accessor :name, :age, :height
     serialize_methods :relative_age, :name_upcase, :person_is_how_old
 
     def initialize(name, age, height = 6)
