@@ -94,9 +94,9 @@ module LinkedData
       end
 
       def properties
-        cls_all = self.class.find self.resource_id, submission: self.submission, load_attrs: :all
-        properties = cls_all.attributes.select {|k,v| k.is_a?(SparqlRd::Resultset::IRI)}
-        bad_iri = SparqlRd::Resultset::IRI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
+        cls_all = self.class.find(self.resource_id).in(self.submission).include(:unmapped).first
+        properties = cls_all.unmapped.keys
+        bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
         properties
       end
