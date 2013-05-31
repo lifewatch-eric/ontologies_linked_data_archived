@@ -17,10 +17,12 @@ class TestRackAuthorization < MiniTest::Unit::TestCase
     _delete_user
     user = _create_user
     @apikey = user.apikey
+    @security = LinkedData.settings.enable_security
   end
 
   def teardown
     _delete_user
+    LinkedData.settings.enable_security = @security
   end
 
   def _variables
@@ -42,6 +44,7 @@ class TestRackAuthorization < MiniTest::Unit::TestCase
   end
 
   def test_authorize
+    LinkedData.settings.enable_security = true
     get "/", {}, {"Authorization" => 'apikey token="'+@apikey+'"'}
     assert last_response.status != 403
     get "/", {}, {"Authorization" => "apikey token=#{@apikey}"}
