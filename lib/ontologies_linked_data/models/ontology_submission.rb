@@ -219,7 +219,7 @@ module LinkedData
         end
 
         #index this ontology
-        index(logger)
+        index(logger, false)
 
         rdf_status = SubmissionStatus.find("RDF").first
         self.submissionStatus = rdf_status
