@@ -84,7 +84,7 @@ module LinkedData
         if APIKEYS_FOR_AUTHORIZATION.key?(apikey)
           env["REMOTE_USER"] = APIKEYS_FOR_AUTHORIZATION[apikey]
         else
-          users = LinkedData::Models::User.where(apikey: apikey).to_a
+          users = LinkedData::Models::User.where(apikey: apikey).include(LinkedData::Models::User.attributes(:all)).to_a
           return false if users.empty?
           # This will kind-of break if multiple apikeys exist
           # Though it is also kind-of ok since we just want to know if a user with corresponding key exists

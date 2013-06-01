@@ -56,7 +56,6 @@ module LinkedData
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = bro
       ont_submision.submissionStatus = status
-      binding.pry if !ont_submision.valid?
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
