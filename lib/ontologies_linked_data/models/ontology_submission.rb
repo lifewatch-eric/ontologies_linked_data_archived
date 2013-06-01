@@ -257,9 +257,10 @@ module LinkedData
             count_classes += page_classes.length
             LinkedData::Models::Class.indexBatch(page_classes)
 
-            page = page_classes.next? ? page + 1 : nil
             logger.info("Page #{page} of #{page_classes.total_pages} completed")
             logger.flush
+
+            page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
           LinkedData::Models::Class.indexCommit()
         end
