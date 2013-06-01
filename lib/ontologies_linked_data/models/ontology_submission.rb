@@ -259,6 +259,7 @@ module LinkedData
 
             page = page_classes.next? ? page + 1 : nil
             logger.info("Page #{page} of #{page_classes.total_pages} completed")
+            logger.flush
           end while !page.nil?
           LinkedData::Models::Class.indexCommit()
         end
