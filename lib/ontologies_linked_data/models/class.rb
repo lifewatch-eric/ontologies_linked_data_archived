@@ -37,7 +37,7 @@ module LinkedData
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
 
-      attribute :semanticType, :namespace => :umls, :property => :hasSTY
+      attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
