@@ -38,13 +38,16 @@ module LinkedData
           # Also include attributes that are embedded
           embed_attrs = {}
           self.hypermedia_settings[:embed].each do |e|
-            embed_class = Goo.models[e]
-
-            # TODO: we should actually do find by model name based on the inverse_of or instance_of values for the embedded attribute
-            # This gets around where it breaks
-            next if embed_class.nil?
-
-            embed_attrs[e] = embed_class.attributes
+            next unless default_attrs.include?(e)
+            embed_class = self.range(e)
+            next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
+            nested_default = embed_class.hypermedia_settings[:serialize_default]
+            if embed_class.ancestors.include?(LinkedData::Hypermedia::Resource) && !nested_default.empty?
+              nested_attributes = nested_default
+            else
+              nested_attributes = embed_class.attributes
+            end
+            embed_attrs[e] = nested_attributes
           end
 
           # Merge embedded with embedded values
