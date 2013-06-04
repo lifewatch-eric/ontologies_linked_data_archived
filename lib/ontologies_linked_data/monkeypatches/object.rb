@@ -194,6 +194,8 @@ class Object
         hash[attribute] = self.send(attribute)
       rescue Goo::Base::AttributeNotLoaded
         next
+      rescue ArgumentError
+        next
       end
     end
     hash
@@ -213,13 +215,10 @@ class Object
     sample_object = value.is_a?(Enumerable) && !value.is_a?(Hash) ? value.first : value
 
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
-      # Use options if the embedded object is the same as the current one
-      options = sample_object.class == self.class ? options : {}
-
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.to_flex_hash(options, &block)}
+        values = value.map {|e| e.to_flex_hash({}, &block)}
       else
-        values = value.to_flex_hash(options, &block)
+        values = value.to_flex_hash({}, &block)
       end
       hash[attribute] = values
       return hash, true
