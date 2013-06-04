@@ -51,7 +51,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id)}/descendants"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id)}/ancestors"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id)}/tree"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("tree", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=terms&class=#{CGI.escape(s.id)}"}, self.uri_type)
+              LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=terms&class=#{CGI.escape(s.id)}"}, self.uri_type)
 
       def get_index_doc
         doc = {
