@@ -39,6 +39,7 @@ module LinkedData
           embed_attrs = {}
           self.hypermedia_settings[:embed].each do |e|
             next unless default_attrs.include?(e)
+            default_attrs.delete(e)
             embed_class = self.range(e)
             next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
             nested_default = embed_class.hypermedia_settings[:serialize_default]
