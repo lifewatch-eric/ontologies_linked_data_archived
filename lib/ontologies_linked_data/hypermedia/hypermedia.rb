@@ -10,7 +10,11 @@ module LinkedData
       links = current_cls.hypermedia_settings[:link_to]
       links_output = {}
       links.each do |link|
-        links_output[link.type] = LinkedData.settings.rest_url_prefix + expand_link(link, object)
+        expanded_link = expand_link(link, object)
+        unless expanded_link.start_with?("http")
+          expanded_link = LinkedData.settings.rest_url_prefix + expanded_link
+        end
+        links_output[link.type] = expanded_link
       end
       links_output
     end
