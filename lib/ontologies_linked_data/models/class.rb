@@ -88,14 +88,14 @@ module LinkedData
       end
 
       def childrenCount
-        raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates
+        raise ArgumentError, "No aggregates included in #{self.id.to_ntriples}" if !self.aggregates
         cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
         raise ArgumentError, "No aggregate for attribute children and count found in #{self.id.to_ntriples}" if !cc
         return cc.value
       end
 
       def properties
-        cls_all = self.class.find(self.resource_id).in(self.submission).include(:unmapped).first
+        cls_all = self.class.find(self.id).in(self.submission).include(:unmapped).first
         properties = cls_all.unmapped.keys
         bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
@@ -131,7 +131,6 @@ module LinkedData
               .aggregate(:count, :children).all
 
         path.reverse!
-        #binding.pry
         path.last.instance_variable_set("@children",[])
         childrens_hash = {}
         path.each do |m|
