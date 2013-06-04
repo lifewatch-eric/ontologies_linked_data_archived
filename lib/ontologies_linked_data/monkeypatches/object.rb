@@ -58,11 +58,6 @@ class Object
         hash[convert_nonstandard_types(k, options, &block)] = v
       end
 
-      unless k.is_a?(Symbol)
-        hash.delete(k)
-        hash[k.to_sym] = v
-      end
-
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       hash, modified = embed_goo_objects(hash, k, v, options, &block)
       next if modified
@@ -94,6 +89,7 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
+    return value.to_flex_hash(options, &block) if value.is_a?(Struct) && value.respond_to?(:klass)
     value = convert_goo_objects(value)
     value = convert_to_string(value)
     value
@@ -194,7 +190,11 @@ class Object
       attribute = attribute.to_sym
 
       next unless self.respond_to?(attribute)
-      hash[attribute] = self.send(attribute)
+      begin
+        hash[attribute] = self.send(attribute)
+      rescue Goo::Base::AttributeNotLoaded
+        next
+      end
     end
     hash
   end
@@ -253,14 +253,10 @@ class Object
     if attributes_to_embed.length > 1
       embedded_values_hash = {}
       attributes_to_embed.each do |a|
-        # TODO: use this when setting instnace vars is done
-        # embedded_values_hash[a] = convert_nonstandard_types(goo_object.instance_variable_get("@#{a}"), options, &block)
         embedded_values_hash[a] = convert_nonstandard_types(goo_object.send(a), options, &block)
         embedded_values << embedded_values_hash
       end
     else
-      # TODO: use this when setting instnace vars is done
-      # embedded_values << convert_nonstandard_types(goo_object.instance_variable_get("@#{attributes_to_embed.first}"), options, &block)
       embedded_values << convert_nonstandard_types(goo_object.send(attributes_to_embed.first), options, &block)
     end
   end
