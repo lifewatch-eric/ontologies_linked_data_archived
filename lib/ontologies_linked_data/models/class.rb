@@ -96,7 +96,7 @@ module LinkedData
 
       def properties
         cls_all = self.class.find(self.id).in(self.submission).include(:unmapped).first
-        properties = cls_all.unmapped.keys
+        properties = cls_all.unmapped
         bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
         properties
