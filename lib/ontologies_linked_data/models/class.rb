@@ -12,7 +12,7 @@ module LinkedData
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
-      attribute :label, namespace: :rdfs,enforce: [:list], alias: true
+      attribute :label, namespace: :rdfs, enforce: [:list], alias: true
       attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
       attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
@@ -44,6 +44,7 @@ module LinkedData
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
+      aggregates childrenCount: [:count, :children]
       link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id)}"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.submission.ontology.acronym}"},  Goo.vocabulary["Ontology"]),
               LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id)}/children"}, self.uri_type),

@@ -73,6 +73,15 @@ module LinkedData
           return default_attrs
         end
 
+        def goo_aggregates_to_load(attributes = [])
+          included_aggregates = []
+          return included_aggregates if attributes.empty?
+          aggregates = self.hypermedia_settings[:aggregates].first
+          aggregate_attribute, aggregate_syntax = aggregates.first
+          included_aggregates = aggregate_syntax if attributes.delete(aggregate_attribute)
+          included_aggregates
+        end
+
         # Methods with these names will be created
         # for each entry, allowing values to be
         # stored on a per-class basis
@@ -81,6 +90,7 @@ module LinkedData
           :embed_values,
           :link_to,
           :load_for_links,
+          :aggregates,
           :serialize_default,
           :serialize_never,
           :serialize_owner,
