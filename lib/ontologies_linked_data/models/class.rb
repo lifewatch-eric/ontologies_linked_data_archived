@@ -175,7 +175,7 @@ module LinkedData
         path << r
       end
 
-      def traverse_path_to_root(parents, paths, path_i,tree=false)
+      def traverse_path_to_root(parents, paths, path_i, tree=false)
         return if (tree and parents.length == 0)
         recurse_on_path = []
         recursions = [path_i]

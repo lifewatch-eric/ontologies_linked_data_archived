@@ -37,7 +37,7 @@ class Object
 
     # Add methods
     methods.each do |method|
-      hash[method] = self.send(method.to_s) if self.respond_to?(method)
+      hash[method] = self.send(method.to_s) if self.respond_to?(method) rescue next
     end
 
     # Get rid of everything except the 'only'
@@ -214,11 +214,14 @@ class Object
   def embed_goo_objects(hash, attribute, value, options, &block)
     sample_object = value.is_a?(Enumerable) && !value.is_a?(Hash) ? value.first : value
 
+    # Use the same options if the object to serialize is the same as the one containing it
+    options = sample_object.class == self.class ? options : {}
+
     if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
-        values = value.map {|e| e.to_flex_hash({}, &block)}
+        values = value.map {|e| e.to_flex_hash(options, &block)}
       else
-        values = value.to_flex_hash({}, &block)
+        values = value.to_flex_hash(options, &block)
       end
       hash[attribute] = values
       return hash, true
