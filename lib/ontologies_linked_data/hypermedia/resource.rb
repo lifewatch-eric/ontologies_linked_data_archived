@@ -55,8 +55,21 @@ module LinkedData
           embed_values = (self.hypermedia_settings[:embed_values].first || {}).dup
           embed_attrs.merge!(embed_values)
 
+          # These attributes need to be loaded to support link generation
+          load_for_links = self.hypermedia_settings[:load_for_links]
+          unless load_for_links.empty?
+            load_for_links.each do |attr|
+              if attr.is_a?(Hash)
+                embed_attrs.merge!(attr)
+              else
+                default_attrs << attr
+              end
+            end
+          end
+
           # Merge all embedded with the default (provided, all, default)
           default_attrs << embed_attrs if embed_attrs.length > 0
+          default_attrs.uniq!
           return default_attrs
         end
 
@@ -67,6 +80,7 @@ module LinkedData
           :embed,
           :embed_values,
           :link_to,
+          :load_for_links,
           :serialize_default,
           :serialize_never,
           :serialize_owner,
