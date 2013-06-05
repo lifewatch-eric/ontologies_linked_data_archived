@@ -29,13 +29,17 @@ module LinkedData
         )
       rescue Exception => e
         begin
-          if env["rack.test"] || development?
+          if print_stacktrace?
             message = e.message + "\n\n  " + e.backtrace.join("\n  ")
             LOGGER.debug message
             response(:status => 500, :body => message)
+          else
+            response(:status => 500, :body => "Internal server error")
           end
-        rescue
-          # Do nothing
+        rescue Exception => e1
+          message = e1.message + "\n\n  " + e1.backtrace.join("\n  ")
+          LOGGER.debug message
+          response(:status => 500, :body => "Internal server error")
         end
       end
     end
@@ -78,6 +82,18 @@ module LinkedData
 
     def self.expires
       (Time.now + 300).httpdate
+    end
+
+    def self.print_stacktrace?
+      if respond_to?("development?")
+        development?
+      elsif ENV["rack.test"]
+        true
+      elsif ENV['RACK_ENV'].downcase.eql?("development")
+        true
+      else
+        false
+      end
     end
 
   end
