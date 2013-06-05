@@ -116,7 +116,7 @@ module LinkedData
 
       def tree
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
-        return self if self.parents.nil? or self.parents.length == 0
+        return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
         path = paths.first
@@ -145,6 +145,7 @@ module LinkedData
               .aggregate(:count, :children).all
 
         #build the tree
+        root_node = path.first
         tree_node = path.first
         path.delete_at(0)
         while tree_node.children.length > 0 and path.length > 0 do
@@ -163,7 +164,7 @@ module LinkedData
           path.delete_at(0)
         end
 
-        return tree_node
+        return root_node
       end
 
       private
