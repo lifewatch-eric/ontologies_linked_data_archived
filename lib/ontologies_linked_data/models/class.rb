@@ -116,7 +116,7 @@ module LinkedData
 
       def tree
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
-        return [] if self.parents.nil? or self.parents.length == 0
+        return self if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
         path = paths.first
