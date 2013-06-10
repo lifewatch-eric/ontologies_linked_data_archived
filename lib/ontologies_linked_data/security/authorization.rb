@@ -31,7 +31,7 @@ module LinkedData
           response = {
             status: status,
             error: "You must provide an API Key either using the query-string parameter `apikey` or the `Authorization` header: `Authorization: apikey token=my_apikey`. " + \
-              "An API Key can be obtained by logging in at http://bioportal.bioontology.org/account"
+              "Your API Key can be obtained by logging in at http://bioportal.bioontology.org/account"
           }
         end
 
@@ -40,7 +40,7 @@ module LinkedData
           response = {
             status: status,
             error: "You must provide a valid API Key. " + \
-              "An API Key can be obtained by logging in at http://bioportal.bioontology.org/account"
+              "Your API Key can be obtained by logging in at http://bioportal.bioontology.org/account"
           }
         end
 
@@ -65,10 +65,11 @@ module LinkedData
 
       def find_apikey(env, params)
         apikey = nil
+        header_auth = env["HTTP_AUTHORIZATION"] || env["Authorization"]
         if params["apikey"]
           apikey = params["apikey"]
-        elsif apikey.nil? && env["HTTP_AUTHORIZATION"]
-          token = Rack::Utils.parse_query(env["HTTP_AUTHORIZATION"].split(" ")[1])
+        elsif apikey.nil? && header_auth
+          token = Rack::Utils.parse_query(header_auth.split(" ")[1])
           # Strip spaces from start and end of string
           apikey = token["token"].sub(/^\"(.*)\"$/) { $1 }
         elsif apikey.nil? && env["HTTP_COOKIE"] && env["HTTP_COOKIE"].include?("ncbo_apikey")
@@ -83,7 +84,7 @@ module LinkedData
         if APIKEYS_FOR_AUTHORIZATION.key?(apikey)
           env["REMOTE_USER"] = APIKEYS_FOR_AUTHORIZATION[apikey]
         else
-          users = LinkedData::Models::User.where(apikey: apikey)
+          users = LinkedData::Models::User.where(apikey: apikey).include(LinkedData::Models::User.attributes(:all)).to_a
           return false if users.empty?
           # This will kind-of break if multiple apikeys exist
           # Though it is also kind-of ok since we just want to know if a user with corresponding key exists

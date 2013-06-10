@@ -1,5 +1,5 @@
 require "set"
-#require 'redis'
+require "cgi"
 
 module LinkedData
   module Models
@@ -12,7 +12,7 @@ module LinkedData
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
-      attribute :label, namespace: :rdfs,enforce: [:list], alias: true
+      attribute :label, namespace: :rdfs, enforce: [:list], alias: true
       attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
       attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
@@ -37,20 +37,22 @@ module LinkedData
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
 
-      attribute :semanticType, :namespace => :umls, :property => :hasSTY
+      attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
-      link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}"}, self.uri_type),
+      aggregates childrenCount: [:count, :children]
+      link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.submission.ontology.acronym}"},  Goo.vocabulary["Ontology"]),
-              LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/children"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("parents", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/parents"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/descendants"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/ancestors"}, self.uri_type),
-              LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{s.id}/tree"}, self.uri_type)
+              LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/children"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("parents", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/parents"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/descendants"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/ancestors"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/tree"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=terms&conceptid=#{CGI.escape(s.id.to_s)}"}, self.uri_type)
 
       def get_index_doc
         doc = {
@@ -87,15 +89,15 @@ module LinkedData
       end
 
       def childrenCount
-        raise ArgumentError, "No aggregates include in #{self.id.to_ntriples}" if !self.aggregates
+        raise ArgumentError, "No aggregates included in #{self.id.to_ntriples}" if !self.aggregates
         cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
         raise ArgumentError, "No aggregate for attribute children and count found in #{self.id.to_ntriples}" if !cc
         return cc.value
       end
 
       def properties
-        cls_all = self.class.find(self.resource_id).in(self.submission).include(:unmapped).first
-        properties = cls_all.unmapped.keys
+        cls_all = self.class.find(self.id).in(self.submission).include(:unmapped).first
+        properties = cls_all.unmapped
         bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
         properties
@@ -115,7 +117,7 @@ module LinkedData
 
       def tree
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
-        return [] if self.parents.nil? or self.parents.length == 0
+        return self if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
         path = paths.first
@@ -130,7 +132,6 @@ module LinkedData
               .aggregate(:count, :children).all
 
         path.reverse!
-        #binding.pry
         path.last.instance_variable_set("@children",[])
         childrens_hash = {}
         path.each do |m|
@@ -174,7 +175,7 @@ module LinkedData
         path << r
       end
 
-      def traverse_path_to_root(parents, paths, path_i,tree=false)
+      def traverse_path_to_root(parents, paths, path_i, tree=false)
         return if (tree and parents.length == 0)
         recurse_on_path = []
         recursions = [path_i]

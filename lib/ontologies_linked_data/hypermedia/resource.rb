@@ -38,22 +38,48 @@ module LinkedData
           # Also include attributes that are embedded
           embed_attrs = {}
           self.hypermedia_settings[:embed].each do |e|
-            embed_class = Goo.models[e]
-
-            # TODO: we should actually do find by model name based on the inverse_of or instance_of values for the embedded attribute
-            # This gets around where it breaks
-            next if embed_class.nil?
-
-            embed_attrs[e] = embed_class.attributes
+            next unless default_attrs.include?(e)
+            default_attrs.delete(e)
+            embed_class = self.range(e)
+            next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
+            nested_default = embed_class.hypermedia_settings[:serialize_default]
+            if embed_class.ancestors.include?(LinkedData::Hypermedia::Resource) && !nested_default.empty?
+              nested_attributes = nested_default
+            else
+              nested_attributes = embed_class.attributes
+            end
+            embed_attrs[e] = nested_attributes
           end
 
           # Merge embedded with embedded values
           embed_values = (self.hypermedia_settings[:embed_values].first || {}).dup
           embed_attrs.merge!(embed_values)
 
+          # These attributes need to be loaded to support link generation
+          load_for_links = self.hypermedia_settings[:load_for_links]
+          unless load_for_links.empty?
+            load_for_links.each do |attr|
+              if attr.is_a?(Hash)
+                embed_attrs.merge!(attr)
+              else
+                default_attrs << attr
+              end
+            end
+          end
+
           # Merge all embedded with the default (provided, all, default)
           default_attrs << embed_attrs if embed_attrs.length > 0
+          default_attrs.uniq!
           return default_attrs
+        end
+
+        def goo_aggregates_to_load(attributes = [])
+          included_aggregates = []
+          return included_aggregates if attributes.empty?
+          aggregates = self.hypermedia_settings[:aggregates].first
+          aggregate_attribute, aggregate_syntax = aggregates.first
+          included_aggregates = aggregate_syntax if attributes.delete(aggregate_attribute)
+          included_aggregates
         end
 
         # Methods with these names will be created
@@ -63,6 +89,8 @@ module LinkedData
           :embed,
           :embed_values,
           :link_to,
+          :load_for_links,
+          :aggregates,
           :serialize_default,
           :serialize_never,
           :serialize_owner,

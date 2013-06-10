@@ -10,40 +10,19 @@ module LinkedData
       links = current_cls.hypermedia_settings[:link_to]
       links_output = {}
       links.each do |link|
-        links_output[link.type] = LinkedData.settings.rest_url_prefix + expand_link(link, object)
+        expanded_link = expand_link(link, object)
+        unless expanded_link.start_with?("http")
+          expanded_link = LinkedData.settings.rest_url_prefix + expanded_link
+        end
+        links_output[link.type] = expanded_link
       end
       links_output
     end
 
     ##
-    # Take a provided link and expand tokens to their values
-    # Handles calling methods on nested objects
-    # link syntax:
-    #   path/to/:ontology
-    #     :ontology is an attribute on object
-    #   path/to/:ontology.acronym
-    #     :ontology.acronym will call `ontology` on object then `acronym` on the returned object from `ontology`
-    #   path/to/:submission.ontology.acronym
-    #     :submission.ontology.acronym will recurse even deeper
-    #
-    # PROTIP: Avoid recursing in loops with objects that contain each other as attributes
+    # Take a provided link as proc or string and return the result
     def self.expand_link(link, object)
-      if link.is_a?(String)
-        path = link
-      else
-        path = link.path.is_a?(Proc) ? link.path.call(object) : link.path
-      end
-
-      new_path = path.gsub(/(:[\w|\.]+)/).each do |match|
-        if match.include?(".")
-          method_queue = match.split(".")
-          match = get_nested_value(object, method_queue)
-        elsif match.include?(":")
-          match = object.send(match.to_s.gsub(":", ""))
-        end
-        CGI.escape(match)
-      end
-      new_path
+      link.path.is_a?(Proc) ? link.path.call(object) : link.path
     end
 
     ##

@@ -37,7 +37,7 @@ class Object
 
     # Add methods
     methods.each do |method|
-      hash[method] = self.send(method.to_s) if self.respond_to?(method)
+      hash[method] = self.send(method.to_s) if self.respond_to?(method) rescue next
     end
 
     # Get rid of everything except the 'only'
@@ -56,11 +56,6 @@ class Object
       unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
         hash.delete(k)
         hash[convert_nonstandard_types(k, options, &block)] = v
-      end
-
-      unless k.is_a?(Symbol)
-        hash.delete(k)
-        hash[k.to_sym] = v
       end
 
       # Look at the Hypermedia DSL to determine if we should embed this attribute
@@ -94,6 +89,7 @@ class Object
   # Convert types from goo and elsewhere using custom methods
   def convert_nonstandard_types(value, options, &block)
     return convert_value_hash(value, options, &block) if value.is_a?(Hash)
+    return value.to_flex_hash(options, &block) if value.is_a?(Struct) && value.respond_to?(:klass)
     value = convert_goo_objects(value)
     value = convert_to_string(value)
     value
@@ -194,7 +190,13 @@ class Object
       attribute = attribute.to_sym
 
       next unless self.respond_to?(attribute)
-      hash[attribute] = self.send(attribute)
+      begin
+        hash[attribute] = self.send(attribute)
+      rescue Goo::Base::AttributeNotLoaded
+        next
+      rescue ArgumentError
+        next
+      end
     end
     hash
   end
@@ -212,10 +214,10 @@ class Object
   def embed_goo_objects(hash, attribute, value, options, &block)
     sample_object = value.is_a?(Enumerable) && !value.is_a?(Hash) ? value.first : value
 
-    if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
-      # Use options if the embedded object is the same as the current one
-      options = sample_object.class == self.class ? options : {}
+    # Use the same options if the object to serialize is the same as the one containing it
+    options = sample_object.class == self.class ? options : {}
 
+    if sample_object.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
         values = value.map {|e| e.to_flex_hash(options, &block)}
       else
@@ -253,14 +255,10 @@ class Object
     if attributes_to_embed.length > 1
       embedded_values_hash = {}
       attributes_to_embed.each do |a|
-        # TODO: use this when setting instnace vars is done
-        # embedded_values_hash[a] = convert_nonstandard_types(goo_object.instance_variable_get("@#{a}"), options, &block)
         embedded_values_hash[a] = convert_nonstandard_types(goo_object.send(a), options, &block)
         embedded_values << embedded_values_hash
       end
     else
-      # TODO: use this when setting instnace vars is done
-      # embedded_values << convert_nonstandard_types(goo_object.instance_variable_get("@#{attributes_to_embed.first}"), options, &block)
       embedded_values << convert_nonstandard_types(goo_object.send(attributes_to_embed.first), options, &block)
     end
   end

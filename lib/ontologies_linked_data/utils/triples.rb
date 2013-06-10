@@ -42,7 +42,7 @@ module LinkedData
           #obo syns
           triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasExactSynonym], subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
           triples << triple(Goo.vocabulary(:obo_purl)[:synonym], subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
-          
+
           #obo defs
           triples << triple(Goo.vocabulary(:obo_purl)[:def], subPropertyOf, Goo.vocabulary(:skos)[:definition])
         end
@@ -50,7 +50,7 @@ module LinkedData
       end
 
       def self.label_for_class_triple(class_id,property,label)
-        label = label.gsub('\\','\\\\\\\\')
+        label = label.to_s.gsub('\\','\\\\\\\\')
         label = label.gsub('"','\"')
         return triple(class_id,property,RDF::Literal.new(label, :datatype => RDF::XSD.string))
       end
