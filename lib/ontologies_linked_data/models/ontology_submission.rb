@@ -248,12 +248,14 @@ module LinkedData
           paging = LinkedData::Models::Class.in(self).include(:unmapped)
                                   .page(page,size)
           begin #per page
+            t0 = Time.now
             page_classes = paging.page(page,size).all
-            logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved")
+            logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved in #{Time.now - t0} sec.")
+            t0 = Time.now
             page_classes.each do |c|
               LinkedData::Models::Class.map_attributes(c)
             end
-            logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped")
+            logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
             LinkedData::Models::Class.indexBatch(page_classes)
 
