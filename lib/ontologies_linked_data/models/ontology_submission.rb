@@ -136,7 +136,8 @@ module LinkedData
             if self.errors[:uploadFilePath].nil?
               self.errors[:uploadFilePath] = []
               self.errors[:uploadFilePath] << {
-                :message => "The selected file `#{self.masterFileName}` is not included in the zip file",
+                :message => 
+              "The selected file `#{self.masterFileName}` is not included in the zip file",
                 :options => files }
             end
           end
@@ -145,7 +146,9 @@ module LinkedData
       end
 
       def data_folder
-        return File.join(LinkedData.settings.repository_folder, self.ontology.acronym.to_s, self.submissionId.to_s)
+        return File.join(LinkedData.settings.repository_folder, 
+                         self.ontology.acronym.to_s, 
+                         self.submissionId.to_s)
       end
 
       def zip_folder
@@ -204,7 +207,10 @@ module LinkedData
         else
           input_data = zip_dst || self.uploadFilePath
           labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
-          owlapi = LinkedData::Parser::OWLAPICommand.new(File.expand_path(input_data.to_s),File.expand_path(self.data_folder.to_s),self.masterFileName)
+          owlapi = LinkedData::Parser::OWLAPICommand.new(
+                      File.expand_path(input_data.to_s),
+                      File.expand_path(self.data_folder.to_s),
+                      self.masterFileName)
           triples_file_path, missing_imports = owlapi.parse
           if missing_imports
             missing_imports.each do |imp|
