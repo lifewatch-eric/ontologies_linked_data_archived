@@ -4,8 +4,8 @@ module LinkedData
       def self.serialize(obj, options)
         links = {}
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
-          if hashed_obj.is_a?(Goo::Base::Resource) && !hashed_obj.resource_id.bnode?
-            hash["id"] = hashed_obj.resource_id.value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)
+          if hashed_obj.is_a?(Goo::Base::Resource)
+            hash["id"] = hashed_obj.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)
             links_xml = generate_links(hashed_obj)
             links[hash["id"]] = links_xml unless links_xml.empty?
           end
@@ -41,13 +41,13 @@ module LinkedData
         links = object.class.hypermedia_settings[:link_to]
         links_output = ::XML::Node.new("links")
         self_link = ::XML::Node.new("self")
-        self_link['href'] = object.resource_id.value.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)
-        self_link['rel'] = object.class.type_uri
+        self_link['href'] = object.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)
+        self_link['rel'] = object.class.type_uri.to_s
         links_output << self_link
         links.each do |link|
           link_xml = ::XML::Node.new(link.type)
           link_xml['href'] = LinkedData::Hypermedia.expand_link(link, object)
-          link_xml['rel'] = link.type_uri if link.type_uri
+          link_xml['rel'] = link.type_uri.to_s if link.type_uri
           links_output << link_xml
         end
         return links_output

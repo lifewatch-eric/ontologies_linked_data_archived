@@ -1,5 +1,3 @@
-require "xml"
-require "date"
 require_relative "media_types"
 require_relative "serializers/serializers"
 
@@ -67,8 +65,6 @@ module LinkedData
       content_length = options[:content_length] || body.bytesize.to_s
       raise ArgumentError("Body must be a string") unless body.kind_of?(String)
       headers.merge!({"Content-Type" => content_type, "Content-Length" => content_length})
-      # Cache headers
-      headers.merge!({"Vary" => "User-Agent, Accept, Accept-Language", "Cache-Control" => "public, max-age=1209600"})
       [status, headers, [body]]
     end
 
@@ -78,10 +74,6 @@ module LinkedData
       only, all = [], true if only[0].eql?("all")
       options = {:only => only, :all => all, :params => params, :request => request}
       LinkedData::Serializers.serialize(obj, type, options)
-    end
-
-    def self.expires
-      (Time.now + 300).httpdate
     end
 
     def self.print_stacktrace?
