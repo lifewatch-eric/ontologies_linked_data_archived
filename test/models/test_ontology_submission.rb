@@ -158,6 +158,17 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     end
   end
 
+  def test_semantic_types
+    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1)
+    ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel).read_only.to_a
+    assert_equal 133, classes.length
+    classes.each do |cls|
+      assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
+      assert_instance_of String, cls.prefLabel
+    end
+  end
+
   def test_custom_property_generation
     return if ENV["SKIP_PARSING"]
 
