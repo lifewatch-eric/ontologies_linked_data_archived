@@ -63,10 +63,20 @@ module LinkedData
         }
         all_attrs = self.to_hash
         std = [:id, :prefLabel, :notation, :synonym, :definition]
+
         std.each do |att|
-          doc[att] = all_attrs[att].to_s
+          cur_val = all_attrs[att]
+
+          if (cur_val.is_a?(Array))
+            doc[att] = []
+            cur_val = cur_val.uniq
+            cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
+          else
+            doc[att] = cur_val.to_s.strip
+          end
           all_attrs.delete att
         end
+
         all_attrs.delete :submission
         props = []
 
@@ -77,7 +87,7 @@ module LinkedData
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
               attr_val = attr_val.uniq
-              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) } rescue binding.pry
+              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) } #rescue binding.pry
             else
               props << attr_val.to_s.strip
             end
