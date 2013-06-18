@@ -8,16 +8,16 @@ module LinkedData
     class TermMapping < LinkedData::Models::Base
 
       model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s) }
-      attribute :term, enforce: [ :uri, :existence ]
-      attribute :ontology, enforce: [ :uri, :existence, :ontology ]
+      attribute :term, enforce: [ :uri, :existence , :list]
+      attribute :ontology, enforce: [:existence, :ontology ]
 
       def self.term_mapping_id_generator(ins)
-        term_vals=ins.term.map { |t| t.value }
+        term_vals=ins.term.map { |t| t.to_s }
         term_vals.sort!
         val_to_hash = term_vals.join("-")
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
-        "#{(self.namespace :default)}termmapping/#{ins.ontology.value}/#{hashed_value}") rescue binding.pry
+        "#{(self.namespace)}termmapping/#{ins.ontology.acronym}/#{hashed_value}")
       end
     end
 
@@ -34,10 +34,10 @@ module LinkedData
         terms.each do |t|
           raise ArgumentError, "Terms must be TermMapping" if !(t.instance_of? TermMapping)
         end
-        val_to_hash = (terms.map{ |t| t.resource_id.value}).sort.join("-")
+        val_to_hash = (terms.map{ |t| t.id.to_s}).sort.join("-")
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
-          "#{(self.namespace :default)}mapping/#{hashed_value}")
+          "#{(self.namespace)}mapping/#{hashed_value}")
       end
     end
   end
