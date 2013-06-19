@@ -151,4 +151,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     mappings = LinkedData::Models::Mapping.where(terms: [ ontology: ont3 ]).to_a
     assert mappings.length == 11
   end
+
+
+  def test_loom
+  end
 end

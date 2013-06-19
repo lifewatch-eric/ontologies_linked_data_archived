@@ -37,6 +37,11 @@ module LinkedData
 
     class BatchProcess
       def initialize(process,*onts)
+        self.mappings_folder = File.join([LinkedData.settings.repository_folder,"mappings"])
+        if not Dir.exist?(mappings_folder)
+          FileUtils.mkdir_p(mappings_folder)
+        end
+
         @onts = onts
         @process = process
         raise Exception "Only support for two ontologies" if onts.length != 2
@@ -46,6 +51,14 @@ module LinkedData
         @new_mappings = {}
       end
 
+      def mappings_ontology_folder(ont)
+        ont_folder = File.join([LinkedData.settings.repository_folder,ont.acronym])
+        if not Dir.exist?(ont_folder)
+          FileUtils.mkdir_p(ont_folder)
+        end
+        return ont_folder
+      end
+
       def load_cache()
         #this load in memory all the mappings for the two ontologies
         #keep in the cache only the ones that have procs
@@ -53,6 +66,8 @@ module LinkedData
 
       def start()
       end
+
+      def 
 
       def new_mapping(*term_mappings)
         id = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mappings)
@@ -89,3 +104,4 @@ module LinkedData
     end
   end
 end
+
