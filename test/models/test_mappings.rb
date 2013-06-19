@@ -154,5 +154,11 @@ class TestMapping < LinkedData::TestOntologyCommon
 
 
   def test_loom
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0]
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0]
+
+    loom = LinkedData::Mappings::Loom.new(ont1, ont2)
+
+
   end
 end
