@@ -155,7 +155,7 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
-      def process_submission(logger)
+      def process_submission(logger,index_search=true)
 
         self.bring_remaining
         self.ontology.bring_remaining
@@ -225,7 +225,10 @@ module LinkedData
         end
 
         #index this ontology
-        index(logger, false)
+        #this is disable for the moment
+        if index_search
+          index(logger, false)
+        end
 
         rdf_status = SubmissionStatus.find("RDF").first
         self.submissionStatus = rdf_status
