@@ -275,9 +275,12 @@ module LinkedData
 
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
+          t0 = Time.now
           LinkedData::Models::Class.indexCommit()
+          logger.info("Solr index commit in #{Time.now - t0} sec.")
         end
         logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
+        logger.flush
 
         if optimize
           logger.info("Optimizing index...")
