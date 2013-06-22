@@ -453,7 +453,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
       end
       paging.page(page.next_page) if page.next?
     end while(page.next?)
-    binding.pry
     assert defs == 26
     assert syns == 285
     aero = LinkedData::Models::Ontology.find(acronym).first
