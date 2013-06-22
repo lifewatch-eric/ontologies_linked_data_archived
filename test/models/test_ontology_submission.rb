@@ -382,7 +382,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/aero.owl"
     id = 10
 
-    aero = LinkedData::Models::Ontology.find(acronym)
+    aero = LinkedData::Models::Ontology.find(acronym).first
     if not aero.nil?
       sub = aero.submissions || []
       sub.each do |s|
@@ -409,7 +409,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission Logger.new(STDOUT)
+    sub.process_submission(Logger.new(STDOUT),index_search=false)
     assert sub.submissionStatus.parsed?
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -436,7 +436,26 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
         assert c.synonym[0] == "Centrally Registered IDentifier"
       end
     end
-
+    
+    #for indexing in search
+    paging = LinkedData::Models::Class.in(sub).page(1,100)
+                                              .include(:unmapped)
+    page = nil
+    defs = 0
+    syns = 0
+    begin
+      page = paging.all
+      page.each do |c|
+        LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
+        assert_instance_of(String, c.prefLabel)
+        defs += c.synonym.length
+        syns += c.definition.length
+      end
+      paging.page(page.next_page) if page.next?
+    end while(page.next?)
+    binding.pry
+    assert defs == 26
+    assert syns == 285
     aero = LinkedData::Models::Ontology.find(acronym).first
     aero.bring(:submissions)
     if not aero.nil?
