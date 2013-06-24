@@ -19,6 +19,13 @@ module LinkedData
 
       embed :details
       link_to LinkedData::Hypermedia::Link.new("replies", lambda {|n| "notes/#{n.id.to_s.split('/').last}/replies"}, LinkedData::Models::Notes::Reply.type_uri)
+
+      def delete
+        bring(:reply, :details)
+        reply.each {|r| r.delete if r.exist?}
+        details.delete if !details.nil? && details.exist?
+        super
+      end
     end
   end
 end
