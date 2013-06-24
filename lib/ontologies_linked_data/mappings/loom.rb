@@ -2,29 +2,7 @@ module LinkedData
   module Mappings
     class Loom < LinkedData::Mappings::BatchProcess
       def initialize(ontA,ontB)
-        process = create_process() 
-        super(process,ontA, ontB)
-      end
-
-      def get_process(name)
-        #process
-        ps = LinkedData::Models::MappingProcess.where({:name => "loom" })
-        if ps.length > 0
-          return ps.first
-        end
-
-        #just some user
-        user = LinkedData::Models::User.where(username: "loom").include(:username).first
-        if user.nil?
-          #probably devel environment - create it
-          user = LinkedData::Models::User.new(:username => "loom", :email => "admin@bioontology.org" ) 
-          user.save
-        end
-
-        p = LinkedData::Models::MappingProcess.new(:owner => user, :name => "loom")
-        p.save
-        ps = LinkedData::Models::MappingProcess.where({:name => name }).to_a
-        return ps[0]
+        super("loom",ontA, ontB)
       end
 
       def self.transmform_literal(lit)

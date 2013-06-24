@@ -36,8 +36,9 @@ module LinkedData
     end
 
     class BatchProcess
-      def initialize(process,*onts)
-        self.mappings_folder = File.join([LinkedData.settings.repository_folder,"mappings"])
+      def initialize(process_name,*onts)
+        process = get_process(process_name)
+        mappings_folder = File.join([LinkedData.settings.repository_folder,"mappings"])
         if not Dir.exist?(mappings_folder)
           FileUtils.mkdir_p(mappings_folder)
         end
@@ -49,6 +50,28 @@ module LinkedData
         @existing_mappings_other_process = {}
         @existing_mappings_same_process = {}
         @new_mappings = {}
+      end
+
+      def get_process(name)
+        #process
+        ps = LinkedData::Models::MappingProcess.where({:name => name })
+        if ps.length > 0
+          return ps.first
+        end
+
+        #just some user
+        user = LinkedData::Models::User.where(username: name).include(:username).first
+        if user.nil?
+          #probably devel environment - create it
+          user = LinkedData::Models::User.new(:username => name, :email => "admin@bioontology.org" ) 
+          user.password = "test"
+          user.save
+        end
+
+        p = LinkedData::Models::MappingProcess.new(:owner => user, :name => name)
+        p.save
+        ps = LinkedData::Models::MappingProcess.where({:name => name }).to_a
+        return ps[0]
       end
 
       def mappings_ontology_folder(ont)
@@ -66,8 +89,6 @@ module LinkedData
 
       def start()
       end
-
-      def 
 
       def new_mapping(*term_mappings)
         id = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mappings)
