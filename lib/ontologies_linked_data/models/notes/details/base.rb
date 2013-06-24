@@ -11,6 +11,7 @@ module LinkedData
           attribute :reasonForChange, enforce: [:existence]
           attribute :content, enforce: [:existence, LinkedData::Models::Notes::Details::Base]
 
+          embed :content
           embed_values :type => [:type]
         end
       end
