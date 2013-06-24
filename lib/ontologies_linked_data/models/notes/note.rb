@@ -15,6 +15,9 @@ module LinkedData
       attribute :relatedClass, enforce: [:list, :class]
       attribute :createdInSubmission, enforce: [:ontology_submission]
       attribute :details, enforce: [LinkedData::Models::Notes::Details::Base]
+
+      embed :details
+      link_to LinkedData::Hypermedia::Link.new("replies", lambda {|n| "notes/#{n.id.to_s.split('/').last}/replies"}, LinkedData::Models::Notes::Reply.type_uri)
     end
   end
 end
