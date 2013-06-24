@@ -155,7 +155,7 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
-      def process_submission(logger)
+      def process_submission(logger,index_search=true)
 
         self.bring_remaining
         self.ontology.bring_remaining
@@ -225,7 +225,10 @@ module LinkedData
         end
 
         #index this ontology
-        index(logger, false)
+        #this is disable for the moment
+        if index_search
+          index(logger, false)
+        end
 
         rdf_status = SubmissionStatus.find("RDF").first
         self.submissionStatus = rdf_status
@@ -263,16 +266,21 @@ module LinkedData
             end
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
+            t0 = Time.now
             LinkedData::Models::Class.indexBatch(page_classes)
+            logger.info("Page #{page} of #{page_classes.total_pages} indexed solr in #{Time.now - t0} sec.")
 
             logger.info("Page #{page} of #{page_classes.total_pages} completed")
             logger.flush
 
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
+          t0 = Time.now
           LinkedData::Models::Class.indexCommit()
+          logger.info("Solr index commit in #{Time.now - t0} sec.")
         end
         logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
+        logger.flush
 
         if optimize
           logger.info("Optimizing index...")
