@@ -36,16 +36,19 @@ module LinkedData
     end
 
     class BatchProcess
-      def initialize(process_name,*onts)
+      def initialize(process_name,logger,*onts)
+        @process_name = process_name
+        @logger = logger || Logger.new(STDOUT)
         process = get_process(process_name)
+        @logger.info("using process id #{process.id.to_ntriples}")
         mappings_folder = File.join([LinkedData.settings.repository_folder,"mappings"])
         if not Dir.exist?(mappings_folder)
           FileUtils.mkdir_p(mappings_folder)
         end
 
-        @onts = onts
+        @ontologies = onts
         @process = process
-        raise Exception "Only support for two ontologies" if onts.length != 2
+        raise Exception "Only support for two ontologies" if @ontologies.length != 2
         @term_mappings = {}
         @existing_mappings_other_process = {}
         @existing_mappings_same_process = {}
@@ -60,10 +63,10 @@ module LinkedData
         end
 
         #just some user
-        user = LinkedData::Models::User.where(username: name).include(:username).first
+        user = LinkedData::Models::User.where(username: "ncbo").include(:username).first
         if user.nil?
           #probably devel environment - create it
-          user = LinkedData::Models::User.new(:username => name, :email => "admin@bioontology.org" ) 
+          user = LinkedData::Models::User.new(:username => "ncbo", :email => "admin@bioontology.org" ) 
           user.password = "test"
           user.save
         end
@@ -74,8 +77,8 @@ module LinkedData
         return ps[0]
       end
 
-      def mappings_ontology_folder(ont)
-        ont_folder = File.join([LinkedData.settings.repository_folder,ont.acronym])
+      def self.mappings_ontology_folder(ont)
+        ont_folder = File.join([LinkedData.settings.repository_folder,ont.acronym,'mappings'])
         if not Dir.exist?(ont_folder)
           FileUtils.mkdir_p(ont_folder)
         end
@@ -88,6 +91,15 @@ module LinkedData
       end
 
       def start()
+        unless self.respond_to?run
+          raise ArgumentError, "Batch Process '#{@process_name}' needs to implement 'run()'"
+        end
+
+        t0 = Time.now 
+        @logger.info("Starting batch ...")
+        run()
+        @logger.info("Total batch process time #{Time.now - t0} sec.")
+
       end
 
       def new_mapping(*term_mappings)

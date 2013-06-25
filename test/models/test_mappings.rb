@@ -2,6 +2,7 @@ require_relative "./test_ontology_common"
 require "logger"
 
 class TestMapping < LinkedData::TestOntologyCommon
+
   def setup
     if LinkedData::Models::Mapping.all.length > 100
       puts "KB with too many mappings to run test. Is this pointing to a TEST KB?"
@@ -24,6 +25,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     submission_parse("MappingOntTest1", "MappingOntTest1", "./test/data/ontology_files/BRO_v3.2.owl", 11)
     submission_parse("MappingOntTest2", "MappingOntTest2", "./test/data/ontology_files/CNO_05.owl", 22)
     submission_parse("MappingOntTest3", "MappingOntTest3", "./test/data/ontology_files/aero.owl", 33)
+    submission_parse("MappingOntTest4", "MappingOntTest4", "./test/data/ontology_files/fake_for_mappings.owl", 44)
   end
 
   def get_process(name)
@@ -155,10 +157,11 @@ class TestMapping < LinkedData::TestOntologyCommon
 
   def test_loom
     ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0]
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0]
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0]
 
-    loom = LinkedData::Mappings::Loom.new(ont1, ont2)
-
+    $MAPPING_RELOAD_LABELS = true
+    loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
+    loom.start()
 
   end
 end
