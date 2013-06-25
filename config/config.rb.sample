@@ -6,3 +6,6 @@ LinkedData.config do |config|
   config.rest_url_prefix   = "http://data.bioontology.org/"
   config.enable_security   = false
 end
+
+#sometimes tmp by default cannot allocate large files
+$TMP_SORT_FOLDER = "SOME TMP FOLDER"
