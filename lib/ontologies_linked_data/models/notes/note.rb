@@ -1,6 +1,4 @@
 require_relative 'details/base'
-require_relative '../ontology'
-require_relative '../class'
 require_relative 'reply'
 
 module LinkedData
