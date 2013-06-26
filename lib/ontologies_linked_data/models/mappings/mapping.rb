@@ -7,17 +7,17 @@ module LinkedData
   module Models
     class TermMapping < LinkedData::Models::Base
 
-      model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s) }
+      model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s.term,s.ontology.acronym) }
       attribute :term, enforce: [ :uri, :existence , :list]
       attribute :ontology, enforce: [:existence, :ontology ]
 
-      def self.term_mapping_id_generator(ins)
-        term_vals=ins.term.map { |t| t.to_s }
+      def self.term_mapping_id_generator(term,acronym)
+        term_vals=term.map { |t| t.to_s }
         term_vals.sort!
         val_to_hash = term_vals.join("-")
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
-        "#{(self.namespace)}termmapping/#{ins.ontology.acronym}/#{hashed_value}")
+        "#{(self.namespace)}termmapping/#{acronym}/#{hashed_value}")
       end
     end
 
@@ -27,14 +27,14 @@ module LinkedData
       attribute :process, enforce: [ :process, :existence, :list ]
 
       def self.mapping_id_generator(ins)
-        return mapping_id_generator_iris(*ins.terms)
+        return mapping_id_generator_iris(*ins.terms.map { |x| x.id })
       end
 
-      def self.mapping_id_generator_iris(*terms)
-        terms.each do |t|
-          raise ArgumentError, "Terms must be TermMapping" if !(t.instance_of? TermMapping)
+      def self.mapping_id_generator_iris(*term_ids)
+        term_ids.each do |t|
+          raise ArgumentError, "Terms must be URIs" if !(t.instance_of? RDF::URI)
         end
-        val_to_hash = (terms.map{ |t| t.id.to_s}).sort.join("-")
+        val_to_hash = (term_ids.map{ |t| t.to_s}).sort.join("-")
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
           "#{(self.namespace)}mapping/#{hashed_value}")
