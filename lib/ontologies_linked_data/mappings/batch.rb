@@ -1,5 +1,15 @@
 module LinkedData
   module Mappings
+    module Batch
+      def self.redis_cache
+        unless @redis
+          @redis = Redis.new(
+              :host => LinkedData.settings.redis_host, 
+              :port => LinkedData.settings.redis_port)
+        end
+        return @redis
+      end
+     end
     def self.exist?(*term_mappings)
      id = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mappings)
       
