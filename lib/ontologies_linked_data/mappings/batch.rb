@@ -91,7 +91,7 @@ module LinkedData
       end
 
       def start()
-        unless self.respond_to?run
+        unless self.respond_to?(:run)
           raise ArgumentError, "Batch Process '#{@process_name}' needs to implement 'run()'"
         end
 
