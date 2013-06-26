@@ -19,6 +19,11 @@ module LinkedData
         return RDF::IRI.new(
         "#{(self.namespace)}termmapping/#{acronym}/#{hashed_value}")
       end
+
+      def delete
+        redis = LinkedData::Mappings::Batch.redis_cache
+        redis.del(LinkedData::Mappings.term_mapping_key(self.id))
+        super()
     end
 
     class Mapping < LinkedData::Models::Base
@@ -40,6 +45,13 @@ module LinkedData
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
           "#{(self.namespace)}mapping/#{hashed_value}")
+      end
+
+      def delete
+        redis = LinkedData::Mappings::Batch.redis_cache
+        redis.del(LinkedData::Mappings.mapping_key(self.id))
+        redis.del(LinkedData::Mappings.mapping_procs_key(self.id))
+        super()
       end
     end
   end
