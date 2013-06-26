@@ -4,6 +4,7 @@ require 'csv'
 module LinkedData
   module Mappings
     class Loom < LinkedData::Mappings::BatchProcess
+
       def initialize(ontA,ontB, logger)
         @record_tuple = Struct.new(:record_a,:record_b)
         @record = Struct.new(:acronym,:term_id,:label,:type)
@@ -38,7 +39,16 @@ module LinkedData
         end
         @logger.info("sort success. run in #{Time.now - t0} sec.")
         mapping_pairs = process_sort_results(all_labels_file)
-        binding.pry
+        mapping_pairs.each do |pair|
+          id_t_a = LinkedData::Mappings.create_term_mapping([pair.record_a.term_id],
+                                    pair.record_a.acronym)
+          id_t_b = LinkedData::Mappings.create_term_mapping([pair.record_b.term_id],
+                                    pair.record_b.acronym)
+          mapping_id = LinkedData::Mappings.create_mapping([id_t_a, id_t_b])
+          LinkedData::Mappings.connect_mapping_process(mapping_id, @process)
+
+          #register(mapping_id)
+        end
       end
 
       def record_from_line(line)
@@ -46,7 +56,7 @@ module LinkedData
         line_parts = line.split(",")
         r = @record.new
         r.acronym = line_parts.first
-        r.term_id = line_parts[1]
+        r.term_id = RDF::URI.new(line_parts[1])
         r.label = line_parts[2]
         r.type = line_parts[3]
         return r
@@ -62,6 +72,7 @@ module LinkedData
           if record_a && record_b
             next if record_a.acronym == record_b.acronym
             next if record_a.term_id == record_b.term_id
+            next if record_a.type == 'sy' && record_b.type == 'sy'
             if record_a.label == record_b.label
               tuple = @record_tuple.new
               if record_a.acronym < record_b.acronym
