@@ -24,7 +24,9 @@ module LinkedData
     class Mapping < LinkedData::Models::Base
       model :mapping, :name_with => lambda { |s| mapping_id_generator(s) }
       attribute :terms, enforce: [ :term_mapping, :existence, :list ] 
-      attribute :process, enforce: [ :process, :existence, :list ]
+
+      #mappings can exist without process
+      attribute :process, enforce: [ :process, :list ]
 
       def self.mapping_id_generator(ins)
         return mapping_id_generator_iris(*ins.terms.map { |x| x.id })
