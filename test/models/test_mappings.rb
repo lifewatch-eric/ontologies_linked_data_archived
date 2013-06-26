@@ -156,12 +156,49 @@ class TestMapping < LinkedData::TestOntologyCommon
 
 
   def test_loom
+    LinkedData::Models::TermMapping.all.each do |map|
+      map.delete
+    end
+    LinkedData::Models::Mapping.all.each do |map|
+      map.delete
+    end
+
     ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0]
     ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0]
 
-    $MAPPING_RELOAD_LABELS = true
+    #$MAPPING_RELOAD_LABELS = true
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
+
+    mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
+                                 .and(terms: [ontology: ont2 ])
+                                 .include(terms: [ :term, ontology: [ :acronym ] ])
+                                 .include(process: [:name])
+                                 .all
+    mappings.each do |map|
+      bro_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
+      fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
+      
+
+      #it would get map on syn <-> syn
+      assert(fake_term.term.first.to_s != 
+              "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/nomapped")
+
+
+      if fake_term.term.first.to_s == 
+          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
+#      elsif fake_term.term.first.to_s ==
+        #      "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource"
+#      elsif fake_term.term.first.to_s ==
+#      elsif fake_term.term.first.to_s ==
+#      elsif fake_term.term.first.to_s ==
+      else
+        #assert 1!=0, "Outside of controlled set of mappings"
+      end 
+      binding.pry
+    end
+    binding.pry
+                                    
 
   end
 end
