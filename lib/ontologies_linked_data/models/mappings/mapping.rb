@@ -24,6 +24,7 @@ module LinkedData
         redis = LinkedData::Mappings::Batch.redis_cache
         redis.del(LinkedData::Mappings.term_mapping_key(self.id))
         super()
+      end
     end
 
     class Mapping < LinkedData::Models::Base
