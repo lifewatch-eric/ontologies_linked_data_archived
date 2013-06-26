@@ -1,3 +1,4 @@
+
 module LinkedData
   module Mappings
     module Batch
@@ -10,10 +11,13 @@ module LinkedData
         return @redis
       end
      end
+
+    #TODO these methods are not really necessary
     def self.exist?(*term_mappings)
      id = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mappings)
       
-     query =  """SELECT * WHERE { GRAPH ?g { <#{id.value}> a <#{LinkedData::Models::Mapping.type_uri}> }} LIMIT 1"""
+     query =  
+       """SELECT * WHERE { GRAPH ?g { <#{id.value}> a <#{LinkedData::Models::Mapping.type_uri}> }} LIMIT 1"""
      epr = Goo.store(@store_name)
      epr.query(query).each_solution do |sol|
        return true
@@ -44,6 +48,7 @@ module LinkedData
       map.process = procs
       map.save
     end
+    #TODO end this unnecesary methods
 
     class BatchProcess
       def initialize(process_name,logger,*onts)
