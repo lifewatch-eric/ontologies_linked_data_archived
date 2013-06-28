@@ -82,6 +82,14 @@
     
 
 
+    <!-- http://www.semanticweb.org/manuelso/ontologies/mappings/fake/defined_type_of_model -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/defined_type_of_model">
+        <rdfs:label>defined type of model</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf">
