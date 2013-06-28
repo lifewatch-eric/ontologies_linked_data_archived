@@ -3,6 +3,7 @@ require_relative 'review'
 require_relative 'group'
 require_relative 'category'
 require_relative 'project'
+require_relative 'notes/note'
 
 module LinkedData
   module Models
@@ -14,6 +15,8 @@ module LinkedData
                   inverse: { on: :ontology_submission, attribute: :ontology }
       attribute :projects,
                   inverse: { on: :project, attribute: :ontologyUsed }
+      attribute :notes,
+                  inverse: { on: :note, attribute: :relatedOntology }
       attribute :administeredBy, enforce: [:existence, :user, :list]
       attribute :group, enforce: [:list, :group]
 
@@ -34,6 +37,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("single_class", lambda {|s| "ontologies/#{s.acronym}/classes/{class_id}"}, LinkedData::Models::Class.uri_type),
               LinkedData::Hypermedia::Link.new("roots", lambda {|s| "ontologies/#{s.acronym}/classes/roots"}, LinkedData::Models::Class.uri_type),
               LinkedData::Hypermedia::Link.new("reviews", lambda {|s| "ontologies/#{s.acronym}/reviews"}, LinkedData::Models::Review.uri_type),
+              LinkedData::Hypermedia::Link.new("notes", lambda {|s| "ontologies/#{s.acronym}/notes"}, LinkedData::Models::Note.uri_type),
               LinkedData::Hypermedia::Link.new("groups", lambda {|s| "ontologies/#{s.acronym}/groups"}, LinkedData::Models::Group.uri_type),
               LinkedData::Hypermedia::Link.new("categories", lambda {|s| "ontologies/#{s.acronym}/categories"}, LinkedData::Models::Category.uri_type),
               LinkedData::Hypermedia::Link.new("latest_submission", lambda {|s| "ontologies/#{s.acronym}/latest_submission"}, LinkedData::Models::OntologySubmission.uri_type),

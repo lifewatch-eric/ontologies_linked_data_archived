@@ -1,5 +1,6 @@
 require "set"
 require "cgi"
+require_relative "notes/note"
 
 module LinkedData
   module Models
@@ -39,6 +40,10 @@ module LinkedData
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
 
+      attribute :notes,
+            inverse: { on: :note, attribute: :relatedClass }
+
+
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition
@@ -52,6 +57,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("descendants", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/descendants"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ancestors", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/ancestors"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/tree"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("notes", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/notes"}, LinkedData::Models::Note.type_uri),
               LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=terms&conceptid=#{CGI.escape(s.id.to_s)}"}, self.uri_type)
 
       def get_index_doc
