@@ -185,19 +185,30 @@ class TestMapping < LinkedData::TestOntologyCommon
               "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/nomapped")
 
 
-      if fake_term.term.first.to_s == 
+      if fake_term.term.first.to_s ==
           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
-#      elsif fake_term.term.first.to_s ==
-        #      "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource"
-#      elsif fake_term.term.first.to_s ==
-#      elsif fake_term.term.first.to_s ==
-#      elsif fake_term.term.first.to_s ==
+        assert bro_term.term.first.to_s ==
+                "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Federal_Funding_Resource"
+      elsif fake_term.term.first.to_s ==
+            "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource"
+        assert bro_term.term.first.to_s ==
+          "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Material_Resource"
+      elsif fake_term.term.first.to_s ==
+              "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/dataprocess"
+        assert bro_term.term.first.to_s ==
+          "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Processing_Software"
+      elsif fake_term.term.first.to_s ==
+              "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/process"
+        assert bro_term.term.first.to_s ==
+          "http://bioontology.org/ontologies/Activity.owl#Activity"
+      elsif fake_term.term.first.to_s ==
+              "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Funding"
+        assert bro_term.term.first.to_s ==
+          "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Funding_Resource"
       else
-        #assert 1!=0, "Outside of controlled set of mappings"
+        assert 1!=0, "Outside of controlled set of mappings"
       end 
-      binding.pry
     end
-    binding.pry
                                     
 
   end
