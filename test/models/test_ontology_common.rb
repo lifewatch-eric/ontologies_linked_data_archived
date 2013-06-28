@@ -37,11 +37,11 @@ module LinkedData
     def submission_parse( acronym, name, ontologyFile, id)
       return if ENV["SKIP_PARSING"]
 
-      bro = LinkedData::Models::Ontology.find(acronym)
+      bro = LinkedData::Models::Ontology.find(acronym).first
       if not bro.nil?
+        bro.bring(:submissions)
         sub = bro.submissions || []
         sub.each do |s|
-          s.load
           s.delete
         end
       end
