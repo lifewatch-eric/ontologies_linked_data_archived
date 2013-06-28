@@ -163,10 +163,10 @@ class TestMapping < LinkedData::TestOntologyCommon
       map.delete
     end
 
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0]
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0]
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
 
-    #$MAPPING_RELOAD_LABELS = true
+    $MAPPING_RELOAD_LABELS = true
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
 
@@ -179,7 +179,6 @@ class TestMapping < LinkedData::TestOntologyCommon
       bro_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
       fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
       
-
       #it would get map on syn <-> syn
       assert(fake_term.term.first.to_s != 
               "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/nomapped")
@@ -209,7 +208,21 @@ class TestMapping < LinkedData::TestOntologyCommon
         assert 1!=0, "Outside of controlled set of mappings"
       end 
     end
-                                    
+    term_mapping_count = LinkedData::Models::TermMapping.where.all.length
+    assert term_mapping_count == 10
+
+
+    #testing for same process
+    $MAPPING_RELOAD_LABELS = true
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #CNO
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
+    
+    process_count = LinkedData::Models::MappingProcess.where.all.length
+    loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
+    loom.start()
+    new_term_mapping_count = LinkedData::Models::TermMapping.where.all.length
+    #this process only adds to TermMappings
+    assert new_term_mapping_count == 12
 
   end
 end
