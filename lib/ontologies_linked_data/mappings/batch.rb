@@ -92,6 +92,18 @@ module LinkedData
         return ps[0]
       end
 
+      def create_record_tuple(record_a,record_b)
+        tuple = @record_tuple.new
+        if record_a.acronym < record_b.acronym
+          tuple.record_a = record_a
+          tuple.record_b = record_b
+        else
+          tuple.record_a = record_b
+          tuple.record_b = record_a
+        end
+        return tuple
+      end
+
       def self.mappings_ontology_folder(ont)
         ont_folder = File.join([LinkedData.settings.repository_folder,ont.acronym,'mappings'])
         if not Dir.exist?(ont_folder)

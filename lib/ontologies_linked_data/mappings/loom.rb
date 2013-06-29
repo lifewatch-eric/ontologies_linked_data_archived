@@ -66,7 +66,13 @@ module LinkedData
         record_a = nil
         record_b = nil
         tuples = []
+        backlog = []
         File.open(sorted_labels_file,"r").each do |line|
+          if record_b && (record_a.label == record_b.label)
+            backlog << record_b
+          else
+            backlog = []
+          end
           record_b = record_a
           record_a = record_from_line(line)
           if record_a && record_b
@@ -74,15 +80,12 @@ module LinkedData
             next if record_a.term_id == record_b.term_id
             next if record_a.type == 'sy' && record_b.type == 'sy'
             if record_a.label == record_b.label
-              tuple = @record_tuple.new
-              if record_a.acronym < record_b.acronym
-                tuple.record_a = record_a
-                tuple.record_b = record_b
-              else
-                tuple.record_a = record_b
-                tuple.record_b = record_a
+              tuples << create_record_tuple(record_a,record_b)
+              if backlog.length > 0
+                backlog.each do |back_log_tuple|
+                  tuples << create_record_tuple(record_a,back_log_tuple)
+                end
               end
-              tuples << tuple
             end
           end
         end
