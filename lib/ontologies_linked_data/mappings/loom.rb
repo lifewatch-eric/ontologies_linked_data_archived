@@ -107,7 +107,7 @@ module LinkedData
         latest_submission = ont.latest_submission
 
         labels_file = File.join([BatchProcess.mappings_ontology_folder(ont), 
-                                 "loom_labels_#{ont.acronym}_#{latest_submission.submissionId}.txt"])
+                       "loom_labels_#{ont.acronym}_#{latest_submission.submissionId}.txt"])
         if $MAPPING_RELOAD_LABELS ||
           !File.exist?(labels_file) || File.size(labels_file) == 0
           t0 = Time.now
@@ -115,7 +115,8 @@ module LinkedData
             logger.info("dumping labels in loom for #{ont.acronym} ...")
           end
           page_i = 1
-          paging = LinkedData::Models::Class.in(latest_submission).include(:prefLabel,:synonym).page(page_i,2500)
+          paging = LinkedData::Models::Class.in(latest_submission)
+                        .include(:prefLabel,:synonym).page(page_i,2500)
           page = nil
           pref_label_count = 0
           sy_label_count = 0
