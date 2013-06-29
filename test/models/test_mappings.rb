@@ -309,46 +309,47 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
                                  .include(process: [:name])
                                  .all
-     #there are two terms in CNO mapping to one.
-     #that is why there are 5 termmappings for 3 mappings
-     assert LinkedData::Models::TermMapping.where.all.length == 5
-     assert mappings.length == 3
-     cno_terms =
-       [ "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000194",
-        "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#fakething",
-         "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000160"]
-     fake_terms = 
-       ["http://www.semanticweb.org/manuelso/ontologies/mappings/fake/onlycui",
-          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf",
-           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"]
-     mappings.each do |map|
-        cno = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
-        fake = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
-        if cno.term.first.to_s == 
-          "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000160"
-          assert fake.term.first.to_s ==
-            "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
-        else
-          assert(cno_terms.index(cno.term.first.to_s) == 
-                    fake_terms.index(fake.term.first.to_s))
-        end
-        assert cno_terms.index(cno.term.first.to_s)
-        assert fake_terms.index(fake.term.first.to_s)
-     end
-     assert LinkedData::Models::MappingProcess.all.length == 1
-     ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
-     ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
-     cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
-     cui.start()
-     assert LinkedData::Models::MappingProcess.all.length == 1
-     assert LinkedData::Models::Mapping.all.length == 4
-     assert LinkedData::Models::TermMapping.all.length == 6
+    #there are two terms in CNO mapping to one.
+    #that is why there are 5 termmappings for 3 mappings
+    assert LinkedData::Models::TermMapping.where.all.length == 5
+    assert mappings.length == 3
+    cno_terms =
+      [ "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000194",
+       "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#fakething",
+        "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000160"]
+    fake_terms = 
+      ["http://www.semanticweb.org/manuelso/ontologies/mappings/fake/onlycui",
+         "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf",
+          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"]
+    mappings.each do |map|
+       cno = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
+       fake = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
+       if cno.term.first.to_s == 
+         "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000160"
+         assert fake.term.first.to_s ==
+           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
+       else
+         assert(cno_terms.index(cno.term.first.to_s) == 
+                   fake_terms.index(fake.term.first.to_s))
+       end
+       assert cno_terms.index(cno.term.first.to_s)
+       assert fake_terms.index(fake.term.first.to_s)
+    end
+    assert LinkedData::Models::MappingProcess.all.length == 1
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
+    $MAPPING_RELOAD_LABELS = false
+    cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
+    cui.start()
+    assert LinkedData::Models::MappingProcess.all.length == 1
+    assert LinkedData::Models::Mapping.all.length == 4
+    assert LinkedData::Models::TermMapping.all.length == 6
 
-     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
-                                   .and(terms: [ontology: ont2 ])
-                                   .include(terms: [ :term, ontology: [ :acronym ] ])
-                                   .include(process: [:name])
-                                   .all
+    mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
+                                  .and(terms: [ontology: ont2 ])
+                                  .include(terms: [ :term, ontology: [ :acronym ] ])
+                                  .include(process: [:name])
+                                  .all
     assert mappings.length == 1
     map = mappings.first
     bro = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
@@ -357,6 +358,5 @@ class TestMapping < LinkedData::TestOntologyCommon
               "http://bioontology.org/ontologies/Activity.owl#IRB"
     assert fake.term.first.to_s ==
               "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
-   
   end
 end
