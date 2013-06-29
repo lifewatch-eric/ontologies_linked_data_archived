@@ -1,5 +1,6 @@
 require_relative "batch"
 require_relative "loom"
+require_relative "cuis"
 
 module LinkedData
 module Mappings
