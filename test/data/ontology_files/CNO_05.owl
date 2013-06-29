@@ -15,6 +15,7 @@
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
     <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
     <!ENTITY xsp "http://www.owl-ontologies.com/2005/08/07/xsp.owl#" >
+    <!ENTITY umls "http://bioportal.bioontology.org/ontologies/umls/" >
     <!ENTITY obo_annot "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#" >
 ]>
 
@@ -26,6 +27,7 @@
      xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
      xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
      xmlns:snap="http://www.ifomis.org/bfo/1.1/snap#"
+     xmlns:umls="http://bioportal.bioontology.org/ontologies/umls/"
      xmlns:obo_annot="http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl#"
      xmlns:obo="http://purl.obolibrary.org/obo/"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
@@ -73,7 +75,11 @@ The source of the definition can be defined with class from OBO-annotation</rdfs
      -->
 
     <owl:AnnotationProperty rdf:about="&obo;IAO_0000115"/>
+    <owl:AnnotationProperty rdf:about="&umls;cui"/>
     <owl:AnnotationProperty rdf:about="&obo;IAO_0000119"/>
+    <rdf:Description rdf:about="&obo_annot;UmlsCui">
+        <rdfs:subPropertyOf rdf:resource="&umls;cui"/>
+    </rdf:Description>
     
 
 
@@ -1864,6 +1870,7 @@ The model can be enriched with particular spatial embedding.</rdfs:comment>
         <rdfs:label rdf:datatype="&xsd;string">pre-synaptic variable</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000181"/>
         <core:definition rdf:datatype="&xsd;string">elementary model component that specifies the variable of the neuronal model used into the equations of the synapse model.</core:definition>
+        <umls:cui>0123456789</umls:cui>
     </owl:Class>
     
 
@@ -2224,6 +2231,7 @@ The model can be enriched with particular spatial embedding.</rdfs:comment>
     <owl:Class rdf:about="http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000194">
         <rdfs:label rdf:datatype="&xsd;string">rate</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000181"/>
+        <umls:cui>0987654321</umls:cui>
     </owl:Class>
     
 
@@ -2513,6 +2521,7 @@ The model can be enriched with particular spatial embedding.</rdfs:comment>
 
     <owl:Class rdf:about="http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#fakething">
         <rdfs:label>Federal Funding Resource</rdfs:label>
+        <umls:cui>0123456789</umls:cui>
     </owl:Class>
     
 

@@ -221,7 +221,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
     new_term_mapping_count = LinkedData::Models::TermMapping.where.all.length
-    #this process only adds to TermMappings
+    #this process only adds two TermMappings
+    binding.pry
     assert new_term_mapping_count == 12
 
     #process has been reused
@@ -276,5 +277,29 @@ class TestMapping < LinkedData::TestOntologyCommon
       assert (icno != nil && ibro != nil)
       assert icno == ibro
     end
+  end
+
+  def test_cui
+    LinkedData::Models::TermMapping.all.each do |map|
+      map.delete
+    end
+    LinkedData::Models::Mapping.all.each do |map|
+      map.delete
+    end
+
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #cno
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
+
+    $MAPPING_RELOAD_LABELS = true
+    cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
+    cui.start()
+
+    mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
+                                 .and(terms: [ontology: ont2 ])
+                                 .include(terms: [ :term, ontology: [ :acronym ] ])
+                                 .include(process: [:name])
+                                 .all
+   #there are two terms in CNO mapping to one
+   binding.pry
   end
 end
