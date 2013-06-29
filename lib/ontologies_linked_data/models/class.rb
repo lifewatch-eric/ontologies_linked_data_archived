@@ -39,6 +39,7 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
+      attribute :cui, :namespace => :umls, alias: true
 
       attribute :notes,
             inverse: { on: :note, attribute: :relatedClass }
