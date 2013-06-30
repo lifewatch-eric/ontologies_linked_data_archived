@@ -157,6 +157,42 @@ module LinkedData
         @existing_mappings_same_process[mapping.id] = mapping
       end
 
+      def self.create_ontology_dump(ont,proc_name,paging,dumper,logger=nil)
+        ont.bring(submissions: [:submissionId])
+        latest_submission = ont.latest_submission
+
+        dump_file_path = File.join([BatchProcess.mappings_ontology_folder(ont),
+                       "#{proc_name}_dump_#{ont.acronym}_#{latest_submission.submissionId}.txt"])
+        if $MAPPING_RELOAD_LABELS ||
+          !File.exist?(dump_file_path) || File.size(dump_file_path) == 0
+          t0 = Time.now
+          if logger
+            logger.info("dumping labels in #{proc_name} for #{ont.acronym} ...")
+          end
+          page_i = 1
+          page = nil
+          entry_count = 0
+          CSV::open(dump_file_path,'wb') do |csv|
+            begin
+              page = paging.all
+              page.each do |c|
+                dumper.call(c).each do |entry|
+                  csv << entry
+                  entry_count += 1
+                end
+              end
+              page_i += 1
+              paging.page(page_i)
+            end while(page.next?)
+          end
+          if logger
+            logger.info("dumped #{entry_count} entries "+
+                         " in #{Time.now - t0} sec.")
+          end
+        end
+        return dump_file_path
+      end
+
       def finish()
         #place to detect deletes
       end

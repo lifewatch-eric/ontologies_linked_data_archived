@@ -104,7 +104,7 @@ module LinkedData
           page_i = 1
           f = Goo::Filter.new(:cui).bound 
           paging = LinkedData::Models::Class.where.filter(f)
-                                      .in(latest_submission).include(:prefLabel,:cui).page(page_i,2500)
+                          .in(latest_submission).include(:prefLabel,:cui).page(page_i,2500)
 
           page = nil
           cui_count = 0
