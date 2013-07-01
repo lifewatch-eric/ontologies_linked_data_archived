@@ -359,4 +359,37 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert fake.term.first.to_s ==
               "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
   end
+
+  def test_uri
+    LinkedData::Models::MappingProcess.all.each do |p|
+      p.delete
+    end
+    LinkedData::Models::TermMapping.all.each do |map|
+      map.delete
+    end
+    LinkedData::Models::Mapping.all.each do |map|
+      map.delete
+    end
+
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #cno
+
+    $MAPPING_RELOAD_LABELS = true
+    cui = LinkedData::Mappings::SameURI.new(ont1, ont2,Logger.new(STDOUT))
+    cui.start()
+
+    mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
+                                 .and(terms: [ontology: ont2 ])
+                                 .include(terms: [ :term, ontology: [ :acronym ] ])
+                                 .include(process: [:name])
+                                 .all
+    assert LinkedData::Models::TermMapping.where.all.length == 10
+    assert mappings.length == 5
+    mappings.each do |map|
+       cno = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
+       bro = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
+       assert cno.term.first.to_s == bro.term.first.to_s
+    end
+    assert LinkedData::Models::MappingProcess.all.length == 1
+  end
 end
