@@ -78,90 +78,76 @@ class TestNote < LinkedData::TestCase
 
   def test_note_class_proposal
     begin
-      proposal = LinkedData::Models::Notes::Details::ProposalNewClass.new
-      proposal.prefLabel = "New Label"
+      proposal = LinkedData::Models::Notes::Proposal.new
+      proposal.label = "New Label"
       proposal.classId = "http://example.org/new/id"
+      proposal.type = LinkedData::Models::Notes::ProposalType.find("ProposalNewClass").first
+      proposal.reasonForChange = "Need new term"
       proposal.save
 
-      details = LinkedData::Models::Notes::Details::Base.new
-      details.type = LinkedData::Models::Notes::Enums::Details.find("ProposalNewClass").first
-      details.reasonForChange = "Need new term"
-      details.content = proposal
-      details.save
-
-      @note.details = details
+      @note.proposal = proposal
       assert @note.valid?
     ensure
-      details.delete unless details.nil? && details.persistent?
-      proposal.delete unless proposal.nil? && proposal.persistent?
+      proposal.delete if !proposal.nil? && proposal.persistent?
     end
   end
 
   def test_note_change_hierarchy_proposal
     begin
-      proposal = LinkedData::Models::Notes::Details::ProposalChangeHierarchy.new
+      proposal = LinkedData::Models::Notes::Proposal.new
       proposal.newTarget = "http://example.org/new/class"
+      proposal.type = LinkedData::Models::Notes::ProposalType.find("ProposalChangeHierarchy").first
+      proposal.reasonForChange = "Need new hierarchy"
       proposal.save
 
-      details = LinkedData::Models::Notes::Details::Base.new
-      details.type = LinkedData::Models::Notes::Enums::Details.find("ProposalChangeHierarchy").first
-      details.reasonForChange = "Need new hierarchy"
-      details.content = proposal
-      details.save
-
-      @note.details = details
+      @note.proposal = proposal
       assert @note.valid?
     ensure
-      details.delete unless details.nil? && details.persistent?
-      proposal.delete unless proposal.nil? && proposal.persistent?
+      proposal.delete if !proposal.nil? && proposal.persistent?
     end
   end
 
   def test_note_change_property
     begin
-      proposal = LinkedData::Models::Notes::Details::ProposalChangeProperty.new
+      proposal = LinkedData::Models::Notes::Proposal.new
       proposal.propertyId = "http://example.org/property1"
       proposal.newValue = "My great value"
+      proposal.type = LinkedData::Models::Notes::ProposalType.find("ProposalChangeProperty").first
+      proposal.reasonForChange = "Need new property value"
       proposal.save
 
-      details = LinkedData::Models::Notes::Details::Base.new
-      details.type = LinkedData::Models::Notes::Enums::Details.find("ProposalChangeProperty").first
-      details.reasonForChange = "Need new property value"
-      details.content = proposal
-      details.save
-
-      @note.details = details
+      @note.proposal = proposal
       assert @note.valid?
     ensure
-      details.delete unless details.nil? && details.persistent?
-      proposal.delete unless proposal.nil? && proposal.persistent?
+      proposal.delete if !proposal.nil? && proposal.persistent?
     end
   end
 
   def test_note_related_resource_delete
-    note = LinkedData::Models::Note.new({
-      creator: @@user,
-      relatedOntology: [@@ontology],
-    })
+    begin
+      note = LinkedData::Models::Note.new({
+        creator: @@user,
+        relatedOntology: [@@ontology],
+      })
 
-    proposal = LinkedData::Models::Notes::Details::ProposalChangeProperty.new
-    proposal.propertyId = "http://example.org/property1"
-    proposal.newValue = "My great value"
-    proposal.save
+      proposal = LinkedData::Models::Notes::Proposal.new
+      proposal.propertyId = "http://example.org/property1"
+      proposal.newValue = "My great value"
+      proposal.type = LinkedData::Models::Notes::ProposalType.find("ProposalChangeProperty").first
+      proposal.reasonForChange = "Need new property value"
+      proposal.save
 
-    details = LinkedData::Models::Notes::Details::Base.new
-    details.type = LinkedData::Models::Notes::Enums::Details.find("ProposalChangeProperty").first
-    details.reasonForChange = "Need new property value"
-    details.content = proposal
-    details.save
+      note.proposal = proposal
+      note.save
 
-    note.details = details
-    note.save
-
-    details_id = details.id
-    note.delete
-    retrieved_details = LinkedData::Models::Notes::Details::Base.find(details_id)
-    assert_nil retrieved_details
+      proposal_id = proposal.id
+      note.delete
+      retrieved_proposal = LinkedData::Models::Notes::Proposal.find(proposal_id)
+      assert_nil retrieved_proposal
+    ensure
+      proposal.delete if !proposal.nil? && proposal.persistent?
+      note.delete if !note.nil? && note.persistent?
+    end
   end
 
   def test_reply
