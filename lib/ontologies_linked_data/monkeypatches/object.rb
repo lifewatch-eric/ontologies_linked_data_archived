@@ -46,11 +46,22 @@ class Object
     # Make sure we're not returning things to be excepted
     hash.delete_if {|k,v| except.include?(k) } unless except.empty?
 
+    # Filter to use if we need to remove attributes (done when we iterate the hash below)
+    do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless self.class.hypermedia_settings[:serialize_filter].empty?
+
     # Special processing for each attribute in the new hash
     # This will handle serializing linked goo objects
     keys = hash.keys
     keys.each do |k|
       v = hash[k]
+
+      # Filter out values on a per-instance basis
+      # If the attributes list contains a proc, call it to get values
+      filtered_attribute = do_not_filter && !do_not_filter.include?(k)
+      if self.is_a?(LinkedData::Hypermedia::Resource) && filtered_attribute
+        hash.delete(k)
+        next
+      end
 
       # Convert keys from IRIs to strings
       unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
@@ -180,7 +191,8 @@ class Object
       # Only get stuff we need
       hash = populate_hash_from_list(hash, only)
     else
-      hash = populate_hash_from_list(hash, current_cls.hypermedia_settings[:serialize_default])
+      attributes = current_cls.hypermedia_settings[:serialize_default]
+      hash = populate_hash_from_list(hash, attributes)
     end
     hash
   end
