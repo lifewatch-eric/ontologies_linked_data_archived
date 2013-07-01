@@ -230,7 +230,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom.start()
     new_term_mapping_count = LinkedData::Models::TermMapping.where.all.length
     #this process only adds two TermMappings
-    assert new_term_mapping_count == 12
+    assert new_term_mapping_count == 14
 
     #process has been reused
     assert process_count == LinkedData::Models::MappingProcess.where.all.length
@@ -240,7 +240,7 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
                                  .include(process: [:name])
                                  .all
-    assert mappings.length == 2
+    assert mappings.length == 3
     mappings.each do |map|
       cno_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
       fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
@@ -252,6 +252,10 @@ class TestMapping < LinkedData::TestOntologyCommon
             "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
         assert cno_term.term.first.to_s ==
           "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#fakething"
+      elsif fake_term.term.first.to_s ==
+          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/process"
+        assert cno_term.term.first.to_s ==
+          "http://www.ifomis.org/bfo/1.1/span#Process"
       else
         assert 1!=0, "Outside of controlled set of mappings"
       end
@@ -265,24 +269,23 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
     #same number - new mappingterms no created
-    assert new_term_mapping_count == 12
+    assert new_term_mapping_count == 14
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
                                  .and(terms: [ontology: ont2 ])
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
                                  .include(process: [:name])
                                  .all
-    assert mappings.length == 2
+    assert mappings.length == 3
     mappings.each do |map|
       cno_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
       bro_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
-      icno = ["http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000010",
-        "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#fakething"
-      ].index cno_term.term.first.to_s
-      ibro = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Network_model",
-        "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Federal_Funding_Resource"
-      ].index bro_term.term.first.to_s
-      assert (icno != nil && ibro != nil)
-      assert icno == ibro
+      if bro_term.term.first.to_s["Network_Model"] || bro_term.term.first.to_s["Network_model"]
+        assert cno_term.term.first.to_s["cno_0000010"]
+      elsif bro_term.term.first.to_s["Federal_Funding_Resource"]
+        assert cno_term.term.first.to_s["fakething"]
+      else
+        assert 1!=0, "Outside of controlled set of mappings"
+      end
     end
   end
 
