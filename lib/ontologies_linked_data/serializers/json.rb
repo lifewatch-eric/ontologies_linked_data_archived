@@ -10,7 +10,7 @@ module LinkedData
           @@replace_default_uri_prefix ||= !LinkedData.settings.rest_url_prefix.eql?("http://data.bioontology.org/")
 
           # Add the id to json-ld attribute
-          if current_cls.ancestors.include?(Goo::Base::Resource)
+          if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
             prefixed_id = @@replace_default_uri_prefix ? hashed_obj.id.to_s.gsub("http://data.bioontology.org/", LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
             hash["@id"] = prefixed_id
           end
@@ -18,7 +18,8 @@ module LinkedData
           hash["@type"] = current_cls.type_uri.to_s if hash["@id"] && current_cls.respond_to?(:type_uri)
 
           # Generate links
-          if options[:params].nil? || options[:params]["no_links"].nil? || !options[:params]["no_links"].eql?("true")
+          show_links = options[:params].nil? || options[:params]["no_links"].nil? || !options[:params]["no_links"].eql?("true")
+          if show_links
             links = LinkedData::Hypermedia.generate_links(hashed_obj)
             unless links.empty?
               hash["links"] = links
@@ -27,7 +28,7 @@ module LinkedData
           end
 
           # Generate context
-          if current_cls.ancestors.include?(Goo::Base::Resource)
+          if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
             if options[:params].nil? || options[:params]["no_context"].nil? || !options[:params]["no_context"].eql?("true")
               context = generate_context(hashed_obj, hash.keys, options)
               hash.merge!(context)
