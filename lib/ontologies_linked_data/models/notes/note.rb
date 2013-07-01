@@ -1,4 +1,4 @@
-require_relative 'details/base'
+require_relative 'proposal'
 require_relative 'reply'
 
 module LinkedData
@@ -14,15 +14,16 @@ module LinkedData
       attribute :reply, enforce: [LinkedData::Models::Notes::Reply, :list]
       attribute :relatedOntology, enforce: [:list, :ontology]
       attribute :relatedClass, enforce: [:list, :class]
-      attribute :details, enforce: [LinkedData::Models::Notes::Details::Base]
+      attribute :proposal, enforce: [LinkedData::Models::Notes::Proposal]
 
-      embed :details
+      embed :reply, :proposal
+      embed_values proposal: LinkedData::Models::Notes::Proposal.goo_attrs_to_load
       link_to LinkedData::Hypermedia::Link.new("replies", lambda {|n| "notes/#{n.id.to_s.split('/').last}/replies"}, LinkedData::Models::Notes::Reply.type_uri)
 
       def delete
-        bring(:reply, :details)
+        bring(:reply, :proposal)
         reply.each {|r| r.delete if r.exist?}
-        details.delete if !details.nil? && details.exist?
+        proposal.delete if !proposal.nil? && proposal.exist?
         super
       end
     end
