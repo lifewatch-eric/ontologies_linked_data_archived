@@ -140,7 +140,7 @@ module LinkedData
         tuples = []
         backlog = []
         File.open(sorted_labels_file,"r").each do |line|
-          if record_b && (record_a.cui == record_b.cui)
+          if record_b && @ok_mapping.call(record_a,record_b)
             backlog << record_b
           else
             backlog = []
