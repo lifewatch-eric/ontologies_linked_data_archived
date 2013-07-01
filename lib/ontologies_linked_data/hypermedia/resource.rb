@@ -82,19 +82,25 @@ module LinkedData
           included_aggregates
         end
 
+        def embedded?
+          self.hypermedia_settings[:embedded].first
+        end
+
         # Methods with these names will be created
         # for each entry, allowing values to be
         # stored on a per-class basis
         SETTINGS = [
           :embed,
           :embed_values,
+          :embedded,
           :link_to,
           :load_for_links,
           :aggregates,
           :serialize_default,
           :serialize_never,
           :serialize_owner,
-          :serialize_methods
+          :serialize_methods,
+          :serialize_filter
         ]
 
         ##
