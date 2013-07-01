@@ -21,7 +21,6 @@ class TestMapping < LinkedData::TestOntologyCommon
   end
 
   def ontologies_parse()
-    return
     submission_parse("MappingOntTest1", 
                      "MappingOntTest1", 
                      "./test/data/ontology_files/BRO_v3.2.owl", 11,false)
