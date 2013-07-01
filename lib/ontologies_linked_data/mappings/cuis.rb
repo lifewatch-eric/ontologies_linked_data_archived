@@ -1,6 +1,3 @@
-require 'open3'
-require 'csv'
-
 module LinkedData
   module Mappings
     class CUI < LinkedData::Mappings::BatchProcess
