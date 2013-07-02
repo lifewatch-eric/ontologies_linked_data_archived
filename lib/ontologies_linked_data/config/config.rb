@@ -27,6 +27,11 @@ module LinkedData
     @settings.redis_host          ||= "localhost"
     @settings.redis_port          ||= 6379
     @settings.ui_host             ||= "bioportal.bioontology.org"
+    @settings.replace_url_prefix  ||= false
+    @settings.id_url_prefix       ||= "http://data.bioontology.org/"
+
+    # Check to make sure url prefix has trailing slash
+    @settings.rest_url_prefix = @settings.rest_url_prefix + "/" unless @settings.rest_url_prefix[-1].eql?("/")
 
     puts ">> Using rdf store #{@settings.goo_host}:#{@settings.goo_port}"
     puts ">> Using search server at #{@settings.search_server_url}"
