@@ -32,7 +32,7 @@ module LinkedData
       attribute :terms, enforce: [ :term_mapping, :existence, :list ] 
 
       #mappings can exist without process
-      attribute :process, enforce: [ :process, :list ]
+      attribute :process, enforce: [ :mapping_process, :list ]
 
       def self.mapping_id_generator(ins)
         return mapping_id_generator_iris(*ins.terms.map { |x| x.id })
