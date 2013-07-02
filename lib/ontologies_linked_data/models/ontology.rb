@@ -17,6 +17,8 @@ module LinkedData
                   inverse: { on: :project, attribute: :ontologyUsed }
       attribute :notes,
                   inverse: { on: :note, attribute: :relatedOntology }
+      attribute :provisionalClasses,
+                inverse: { on: :provisional_class, attribute: :ontology }
       attribute :administeredBy, enforce: [:existence, :user, :list]
       attribute :group, enforce: [:list, :group]
 
