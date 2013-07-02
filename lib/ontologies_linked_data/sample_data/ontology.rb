@@ -62,7 +62,11 @@ module LinkedData
             if process_submission && (submissions_to_process.nil? || submissions_to_process.include?(os.submissionId))
               file_path = options[:file_path] 
               file_path = "../../../../test/data/ontology_files/BRO_v3.#{os.submissionId}.owl" if file_path.nil?
-              file_path = File.expand_path(file_path, __FILE__)
+              if File.exist?(file_path)
+                file_path = File.expand_path(file_path)
+              else
+                file_path = File.expand_path(file_path, __FILE__)
+              end
               raise ArgumentError, "File located at #{file_path} does not exist" unless File.exist?(file_path)
               if os.submissionId > 2
                 raise ArgumentError, "create_ontologies_and_submissions does not support process submission with more than 2 versions"
