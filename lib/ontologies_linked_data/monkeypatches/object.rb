@@ -47,7 +47,7 @@ class Object
     hash.delete_if {|k,v| except.include?(k) } unless except.empty?
 
     # Filter to use if we need to remove attributes (done when we iterate the hash below)
-    do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless self.class.hypermedia_settings[:serialize_filter].empty?
+    do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_filter].empty?
 
     # Special processing for each attribute in the new hash
     # This will handle serializing linked goo objects
@@ -78,6 +78,7 @@ class Object
       next if modified
 
       new_value = convert_nonstandard_types(v, options, &block)
+
       hash[k] = new_value
     end
 
@@ -103,6 +104,22 @@ class Object
     return value.to_flex_hash(options, &block) if value.is_a?(Struct) && value.respond_to?(:klass)
     value = convert_goo_objects(value)
     value = convert_to_string(value)
+    value = convert_url_prefix(value)
+    value
+  end
+
+  ##
+  # If the config option is set, turn http://data.bioontology.org urls into the configured REST url
+  def convert_url_prefix(value)
+    if LinkedData.settings.replace_url_prefix
+      if value.is_a?(String) && value.start_with?(LinkedData.settings.id_url_prefix)
+        value = value.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix)
+      end
+
+      if value.is_a?(Array) || value.is_a?(Set) && value.first.is_a?(String) && value.first.start_with?(LinkedData.settings.id_url_prefix)
+        value = value.map {|v| v.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix)}
+      end
+    end
     value
   end
 

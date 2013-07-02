@@ -2,16 +2,14 @@ module LinkedData
   module Serializers
     class JSON
       CONTEXTS = {}
-      @@replace_default_uri_prefix = nil
 
       def self.serialize(obj, options = {})
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
-          @@replace_default_uri_prefix ||= !LinkedData.settings.rest_url_prefix.eql?("http://data.bioontology.org/")
 
           # Add the id to json-ld attribute
           if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
-            prefixed_id = @@replace_default_uri_prefix ? hashed_obj.id.to_s.gsub("http://data.bioontology.org/", LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
+            prefixed_id = LinkedData.settings.replace_url_prefix ? hashed_obj.id.to_s.gsub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
             hash["@id"] = prefixed_id
           end
           # Add the type

@@ -1,3 +1,5 @@
+require 'xml'
+
 module LinkedData
   module Serializers
     class XML
