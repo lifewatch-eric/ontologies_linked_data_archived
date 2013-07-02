@@ -13,7 +13,6 @@ module LinkedData
         serialize_default :body, :creator, :created, :children
         serialize_filter lambda {|inst| serialize_filter(inst)}
         embed :children
-        embedded true
 
         def self.serialize_filter(inst)
           attributes = self.hypermedia_settings[:serialize_default].dup
