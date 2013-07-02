@@ -199,11 +199,16 @@ module LinkedData
         LinkedData::Parser.logger = logger
 
         if self.hasOntologyLanguage.umls?
-          file_name = zip ? File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
+          file_name = zip ? 
+            File.join(File.expand_path(self.data_folder.to_s), self.masterFileName)
+                                                 : self.uploadFilePath.to_s
           triples_file_path = File.expand_path(file_name)
           logger.info("Using UMLS turtle file, skipping OWLAPI parse")
           logger.flush
-          delete_and_append(triples_file_path, logger, LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE))
+          delete_and_append(triples_file_path, 
+                            logger, 
+                            LinkedData::MediaTypes
+                                .media_type_from_base(LinkedData::MediaTypes::TURTLE))
         else
           input_data = zip_dst || self.uploadFilePath
           labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
