@@ -47,7 +47,7 @@ class Object
     hash.delete_if {|k,v| except.include?(k) } unless except.empty?
 
     # Filter to use if we need to remove attributes (done when we iterate the hash below)
-    do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless self.class.hypermedia_settings[:serialize_filter].empty?
+    do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_filter].empty?
 
     # Special processing for each attribute in the new hash
     # This will handle serializing linked goo objects
