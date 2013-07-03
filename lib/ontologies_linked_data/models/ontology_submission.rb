@@ -259,7 +259,6 @@ module LinkedData
           self.ontology.unindex()
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
 
-
           paging = LinkedData::Models::Class.in(self).include(:unmapped)
                                   .page(page,size)
           begin #per page
@@ -273,6 +272,7 @@ module LinkedData
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
             t0 = Time.now
+
             LinkedData::Models::Class.indexBatch(page_classes)
             logger.info("Page #{page} of #{page_classes.total_pages} indexed solr in #{Time.now - t0} sec.")
 
