@@ -255,6 +255,7 @@ module LinkedData
 
         count_classes = 0
         time = Benchmark.realtime do
+          self.bring(:ontology) if self.bring?(:ontology)
           self.ontology.unindex()
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
 
@@ -309,7 +310,7 @@ module LinkedData
             prev_sub = self.ontology.latest_submission()
 
             if prev_sub
-              prev_sub.index(LinkedData::Parser.logger || $stderr)
+              prev_sub.index(LinkedData::Parser.logger || Logger.new($stderr))
             end
           end
         end
