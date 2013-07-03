@@ -116,8 +116,8 @@ class Object
         value = value.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix)
       end
 
-      if value.is_a?(Array) || value.is_a?(Set) && value.first.is_a?(String) && value.first.start_with?(LinkedData.settings.id_url_prefix)
-        value = value.map {|v| v.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix)}
+      if (value.is_a?(Array) || value.is_a?(Set)) && value.first.is_a?(String) && value.first.start_with?(LinkedData.settings.id_url_prefix)
+        value = value.map {|v| v.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix) rescue binding.pry}
       end
     end
     value
