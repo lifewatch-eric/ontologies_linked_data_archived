@@ -268,7 +268,7 @@ module LinkedData
             logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved in #{Time.now - t0} sec.")
             t0 = Time.now
             page_classes.each do |c|
-              LinkedData::Models::Class.map_attributes(c)
+              LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
             end
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
