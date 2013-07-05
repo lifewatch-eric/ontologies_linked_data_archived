@@ -394,4 +394,45 @@ class TestMapping < LinkedData::TestOntologyCommon
     end
     assert LinkedData::Models::MappingProcess.all.length == 1
   end
+
+  def test_xref
+    LinkedData::Models::MappingProcess.all.each do |p|
+      p.delete
+    end
+    LinkedData::Models::TermMapping.all.each do |map|
+      map.delete
+    end
+    LinkedData::Models::Mapping.all.each do |map|
+      map.delete
+    end
+
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
+
+    $MAPPING_RELOAD_LABELS = true
+    xref = LinkedData::Mappings::XREF.new(ont1, ont2,Logger.new(STDOUT))
+    xref.start()
+
+    mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
+                                 .and(terms: [ontology: ont2 ])
+                                 .include(terms: [ :term, ontology: [ :acronym ] ])
+                                 .include(process: [:name])
+                                 .all
+    assert LinkedData::Models::TermMapping.where.all.length == 4
+    assert mappings.length == 2
+    mappings.each do |map|
+      fake = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
+      bro = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
+      if bro.term.first.to_s["Biositemaps_Information_Model"]
+        assert fake.term.first.to_s ==
+          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/process"
+      elsif bro.term.first.to_s["Information_Resource"]
+        assert fake.term.first.to_s == 
+          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource"
+      else
+        assert 1==0, "XREF mapping error. Uncontrolled mapping"
+      end
+    end
+    assert LinkedData::Models::MappingProcess.all.length == 1
+  end
 end
