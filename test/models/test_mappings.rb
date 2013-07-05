@@ -44,7 +44,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     ps.each do |p| 
       p.delete
     end
-    p = LinkedData::Models::MappingProcess.new(:owner => user, :name => name)
+    p = LinkedData::Models::MappingProcess.new(:creator => user, :name => name)
     assert p.valid?
     p.save
     ps = LinkedData::Models::MappingProcess.where({:name => name }).to_a

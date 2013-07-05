@@ -55,7 +55,7 @@ module LinkedData
           user.save
         end
 
-        p = LinkedData::Models::MappingProcess.new(:owner => user, :name => name)
+        p = LinkedData::Models::MappingProcess.new(:creator => user, :name => name)
         p.save
         ps = LinkedData::Models::MappingProcess.where({:name => name }).to_a
         return ps[0]
