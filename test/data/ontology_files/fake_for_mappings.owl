@@ -7,6 +7,7 @@
     <!ENTITY skos "http://www.w3.org/2004/02/skos/core#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY oboInOWL "http://www.geneontology.org/formats/oboInOWL#" >
     <!ENTITY umls "http://bioportal.bioontology.org/ontologies/umls/" >
 ]>
 
@@ -14,6 +15,7 @@
 <rdf:RDF xmlns="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/"
      xml:base="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:oboInOWL="http://www.geneontology.org/formats/oboInOWL#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -34,6 +36,7 @@
      -->
 
     <owl:AnnotationProperty rdf:about="&umls;cui"/>
+    <owl:AnnotationProperty rdf:about="&oboInOWL;xref"/>
     
 
 
@@ -71,6 +74,7 @@
     <!-- http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource">
+        <oboInOWL:xref>xref0000001</oboInOWL:xref>
         <skos:prefLabel>Material Resource</skos:prefLabel>
     </owl:Class>
     
@@ -127,6 +131,7 @@
     <owl:Class rdf:about="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/process">
         <skos:prefLabel>process</skos:prefLabel>
         <skos:altLabel>proc</skos:altLabel>
+        <oboInOWL:xref>xref0000000</oboInOWL:xref>
         <skos:altLabel>activity</skos:altLabel>
     </owl:Class>
 </rdf:RDF>
