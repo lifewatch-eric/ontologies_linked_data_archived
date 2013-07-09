@@ -25,7 +25,7 @@ module Mappings
     term = LinkedData::Models::TermMapping.new
     term.ontology = LinkedData::Models::Ontology.find(acronym).include(:acronym).first
     term.term = term_uris
-    term.save
+    term.save unless term.exist?
     term_m_key = term_mapping_key(id_term_mapping)
     redis = LinkedData::Mappings::Batch.redis_cache
     redis.hset term_m_key, "ontology", acronym
@@ -45,7 +45,7 @@ module Mappings
     mapping = LinkedData::Models::Mapping.new
     term_mappings = term_mapping_ids.map { |x| LinkedData::Models::TermMapping.find(x).first }
     mapping.terms = term_mappings
-    mapping.save
+    mapping.save unless mapping.exist?
     redis = LinkedData::Mappings::Batch.redis_cache
     redis.rpush(mapping_key(id_mapping), term_mapping_ids)
     return id_mapping
