@@ -9,6 +9,8 @@ module LinkedData
       include BCrypt
       include LinkedData::Models::Users::Authentication
 
+      attr_accessor :show_apikey
+
       model :user, name_with: :username
       attribute :username, enforce: [:unique, :existence]
       attribute :email, enforce: [:existence]
@@ -21,9 +23,19 @@ module LinkedData
 
       # Hypermedia settings
       embed_values :role => [:role]
-      serialize_default :username, :email, :role
-      serialize_never :passwordHash
-      serialize_owner :apikey
+      serialize_default :username, :email, :role, :apikey
+      serialize_never :passwordHash, :show_apikey
+      serialize_filter lambda {|inst| show_apikey?(inst)}
+
+      def self.show_apikey?(inst)
+        # This could get called when we have an instance (serialization)
+        # or when we are asking which attributes to load (controller)
+        if inst.show_apikey
+          return attributes
+        else
+          return attributes - [:apikey]
+        end
+      end
 
       def initialize(attributes = {})
         # Don't allow passwordHash to be set here

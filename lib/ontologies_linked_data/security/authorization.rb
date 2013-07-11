@@ -27,7 +27,7 @@ module LinkedData
         apikey = find_apikey(env, params)
 
         unless apikey
-          status = 403
+          status = 401
           response = {
             status: status,
             error: "You must provide an API Key either using the query-string parameter `apikey` or the `Authorization` header: `Authorization: apikey token=my_apikey`. " + \
@@ -35,8 +35,8 @@ module LinkedData
           }
         end
 
-        if status != 403 && !authorized?(apikey, env)
-          status = 403
+        if status != 401 && !authorized?(apikey, env)
+          status = 401
           response = {
             status: status,
             error: "You must provide a valid API Key. " + \
@@ -44,7 +44,7 @@ module LinkedData
           }
         end
 
-        if status == 403
+        if status == 401
           LinkedData::Serializer.build_response(env, status: status, body: response)
         else
           status, headers, response = @app.call(env)
