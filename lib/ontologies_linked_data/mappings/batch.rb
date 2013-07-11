@@ -87,6 +87,7 @@ module LinkedData
         label_dumps_file_paths = dumps()
         sorted_file_path = sort(label_dumps_file_paths,@sort_field)
         mapping_pairs = process_sort_results(sorted_file_path)
+        @logger.info("Mappings pairs found #{mapping_pairs.length}")
         mapping_pairs.each do |pair|
           id_t_a = LinkedData::Mappings.create_term_mapping([pair.record_a.term_id],
                                     pair.record_a.acronym)
@@ -103,6 +104,8 @@ module LinkedData
         record_b = nil
         tuples = []
         backlog = []
+        t0 = Time.now
+        @logger.info("process sort results ...")
         File.open(sorted_labels_file,"r").each do |line|
           if record_b && @ok_mapping.call(record_a,record_b)
             backlog << record_b
@@ -123,6 +126,7 @@ module LinkedData
             end
           end
         end
+        @logger.info("End process sort results in #{Time.now - t0} sec.")
         return tuples
       end
 
