@@ -40,13 +40,13 @@ module Mappings
     return redis.exists(term_mapping_key(id_term_mapping))
   end
 
-  def self.create_mapping(term_mapping_ids)
+  def self.create_mapping(term_mapping_ids,batch_update_file=nil)
     id_mapping = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mapping_ids)
     return id_mapping if exist_mapping?(term_mapping_ids)
     mapping = LinkedData::Models::Mapping.new
     term_mappings = term_mapping_ids.map { |x| LinkedData::Models::TermMapping.read_only(id: x) }
     mapping.terms = term_mappings
-    mapping.save unless mapping.exist?
+    mapping.save(batch: batch_update_file)
     redis = LinkedData::Mappings::Batch.redis_cache
     redis.rpush(mapping_key(id_mapping), term_mapping_ids)
     return id_mapping
@@ -58,7 +58,7 @@ module Mappings
     return redis.exists(mapping_key(id_mapping))
   end
 
-  def self.connect_mapping_process(mapping_id,process)
+  def self.connect_mapping_process(mapping_id,process,batch_update_file=nil)
     redis = LinkedData::Mappings::Batch.redis_cache
     unless redis.exists(mapping_key(mapping_id))
       raise ArgumentError, "Mapping id #{mapping_id.to_ntriples} not found"
@@ -66,15 +66,24 @@ module Mappings
     map_proc_key = mapping_procs_key(mapping_id)
     procs = redis.lrange(map_proc_key,0,-1)
     return if procs.index(process.id.to_s)
-    mapping = LinkedData::Models::Mapping.find(mapping_id)
-                                            .include(:process)
-                                            .include(:terms)
-                                            .first
-    map_procs = mapping.process.dup
-    return if map_procs.map { |x| x.id.to_s }.index(process.id.to_s)
-    map_procs << process
-    mapping.process = map_procs
-    mapping.save
+    if batch_update_file.nil?
+      mapping = LinkedData::Models::Mapping.find(mapping_id)
+                                              .include(:process)
+                                              .include(:terms)
+                                              .first
+      map_procs = mapping.process.dup
+      return if map_procs.map { |x| x.id.to_s }.index(process.id.to_s)
+      map_procs << process
+      mapping.process = map_procs
+      mapping.save
+    else
+      triple =
+      [mapping_id.to_ntriples,
+       LinkedData::Models::Mapping.attribute_uri(:process).to_ntriples,
+       process.id.to_ntriples ].join(" ") + " .\n"
+      batch_update_file.write(triple)
+      batch_update_file.flush()
+    end
     redis.rpush(map_proc_key, [process.id.to_s])
     nil
   end
