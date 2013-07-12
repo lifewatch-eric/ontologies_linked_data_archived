@@ -92,6 +92,16 @@ module LinkedData
         @ontologies.each do |ont|
           onts_by_acronym[ont.acronym] = ont
         end
+        batch_triples = nil
+        batch_triples_file = nil
+        if mapping_pairs.length > 0
+          ontologies_sorted = @ontologies.sort_by { |ont| ont.acronym }
+          ont_first = ontologies_sorted.first
+          batch_triples = File.join([BatchProcess.mappings_ontology_folder(ont_first),
+                                    "batch_triples.nq"])
+          batch_triples_file = File.open(batch_triples, 'w')
+          @logger.info("Using batch file #{batch_triples}")
+        end
         mapping_pairs.each do |pair|
           id_t_a = LinkedData::Mappings.create_term_mapping([pair.record_a.term_id],
                                     pair.record_a.acronym, onts_by_acronym[pair.record_a.acronym],
@@ -99,6 +109,17 @@ module LinkedData
           id_t_b = LinkedData::Mappings.create_term_mapping([pair.record_b.term_id],
                                     pair.record_b.acronym, onts_by_acronym[pair.record_b.acronym],
                                                            batch_triples_file)
+          mapping_id = LinkedData::Mappings.create_mapping([id_t_a, id_t_b],batch_triples_file)
+          LinkedData::Mappings.connect_mapping_process(mapping_id, @process,
+                                                      batch_triples_file)
+        end
+        if batch_triples_file
+          batch_triples_file.close()
+          @logger.info("Appending triples in batch ...")
+          tt = Time.now
+          Goo.sparql_data_client.append_triples_from_file(
+                          RDF::URI.new("http://bogus"), batch_triples, "text/x-nquads")
+        @logger.info("Triples asserted in #{Time.now - tt} sec.")
         end
         @logger.info("Total batch process time #{Time.now - t0} sec.")
       end
