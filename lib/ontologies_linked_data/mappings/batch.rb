@@ -119,7 +119,7 @@ module LinkedData
           tt = Time.now
           Goo.sparql_data_client.append_triples_from_file(
                           RDF::URI.new("http://bogus"), batch_triples, "text/x-nquads")
-        @logger.info("Triples asserted in #{Time.now - tt} sec.")
+          @logger.info("Triples asserted in #{Time.now - tt} sec.")
         end
         @logger.info("Total batch process time #{Time.now - t0} sec.")
       end
