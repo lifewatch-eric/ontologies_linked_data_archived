@@ -102,6 +102,10 @@ module LinkedData
           batch_triples_file = File.open(batch_triples, 'w')
           @logger.info("Using batch file #{batch_triples}")
         end
+
+        #file sort is of no use any more
+        FileUtils.rm(sorted_file_path)
+
         mapping_pairs.each do |pair|
           id_t_a = LinkedData::Mappings.create_term_mapping([pair.record_a.term_id],
                                     pair.record_a.acronym, onts_by_acronym[pair.record_a.acronym],
