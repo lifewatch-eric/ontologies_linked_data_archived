@@ -88,13 +88,17 @@ module LinkedData
         sorted_file_path = sort(label_dumps_file_paths,@sort_field)
         mapping_pairs = process_sort_results(sorted_file_path)
         @logger.info("Mappings pairs found #{mapping_pairs.length}")
+        onts_by_acronym = {}
+        @ontologies.each do |ont|
+          onts_by_acronym[ont.acronym] = ont
+        end
         mapping_pairs.each do |pair|
           id_t_a = LinkedData::Mappings.create_term_mapping([pair.record_a.term_id],
-                                    pair.record_a.acronym)
+                                    pair.record_a.acronym, onts_by_acronym[pair.record_a.acronym],
+                                                           batch_triples_file)
           id_t_b = LinkedData::Mappings.create_term_mapping([pair.record_b.term_id],
-                                    pair.record_b.acronym)
-          mapping_id = LinkedData::Mappings.create_mapping([id_t_a, id_t_b])
-          LinkedData::Mappings.connect_mapping_process(mapping_id, @process)
+                                    pair.record_b.acronym, onts_by_acronym[pair.record_b.acronym],
+                                                           batch_triples_file)
         end
         @logger.info("Total batch process time #{Time.now - t0} sec.")
       end
