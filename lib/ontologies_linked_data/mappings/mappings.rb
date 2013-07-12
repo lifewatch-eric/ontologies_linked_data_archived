@@ -19,13 +19,14 @@ module Mappings
     return "mappings:terms:#{id.to_s}"
   end
 
-  def self.create_term_mapping(term_uris,acronym)
+  def self.create_term_mapping(term_uris,acronym,ontology=nil,batch_update_file=nil)
     id_term_mapping = LinkedData::Models::TermMapping.term_mapping_id_generator(term_uris,acronym)
     return id_term_mapping if exist_term_mapping?(term_uris,acronym)
     term = LinkedData::Models::TermMapping.new
-    term.ontology = LinkedData::Models::Ontology.find(acronym).include(:acronym).first
+    term.ontology = ontology ? ontology : 
+                      LinkedData::Models::Ontology.find(acronym).include(:acronym).first
     term.term = term_uris
-    term.save unless term.exist?
+    term.save(batch: batch_update_file)
     term_m_key = term_mapping_key(id_term_mapping)
     redis = LinkedData::Mappings::Batch.redis_cache
     redis.hset term_m_key, "ontology", acronym
