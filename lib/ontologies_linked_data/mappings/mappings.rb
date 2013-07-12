@@ -43,7 +43,7 @@ module Mappings
     id_mapping = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mapping_ids)
     return id_mapping if exist_mapping?(term_mapping_ids)
     mapping = LinkedData::Models::Mapping.new
-    term_mappings = term_mapping_ids.map { |x| LinkedData::Models::TermMapping.find(x).first }
+    term_mappings = term_mapping_ids.map { |x| LinkedData::Models::TermMapping.read_only(id: x) }
     mapping.terms = term_mappings
     mapping.save unless mapping.exist?
     redis = LinkedData::Mappings::Batch.redis_cache
