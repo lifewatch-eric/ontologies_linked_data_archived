@@ -202,7 +202,7 @@ module LinkedData
 
         dump_file_path = File.join([BatchProcess.mappings_ontology_folder(ont),
                        "#{proc_name}_dump_#{ont.acronym}_#{latest_submission.submissionId}.txt"])
-        binbing.pry #for testing in bmir-dev1
+        binding.pry #for testing in bmir-dev1
         if $MAPPING_RELOAD_LABELS ||
           !File.exist?(dump_file_path) || File.size(dump_file_path) == 0
           t0 = Time.now
