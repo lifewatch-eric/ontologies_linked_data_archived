@@ -121,8 +121,12 @@ module LinkedData
           batch_triples_file.close()
           @logger.info("Appending triples in batch ...")
           tt = Time.now
-          Goo.sparql_data_client.append_triples_from_file(
+          begin
+            Goo.sparql_data_client.append_triples_from_file(
                           RDF::URI.new("http://bogus"), batch_triples, "text/x-nquads")
+          rescue => e
+            @logger.info("Error appending triples from #{batch_triples} error: #{e}")
+          end
           @logger.info("Triples asserted in #{Time.now - tt} sec.")
         end
         @logger.info("Total batch process time #{Time.now - t0} sec.")
