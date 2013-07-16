@@ -32,6 +32,8 @@ module LinkedData
       attribute :viewOf, enforce: [:ontology]
       attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
 
+      attribute :term_mappings, :inverse => { on: :term_mapping, attribute: :ontology }
+
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name
       link_to LinkedData::Hypermedia::Link.new("submissions", lambda {|s| "ontologies/#{s.acronym}/submissions"}, LinkedData::Models::OntologySubmission.uri_type),

@@ -10,6 +10,7 @@ module LinkedData
       model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s.term,s.ontology.acronym) }
       attribute :term, enforce: [ :uri, :existence , :list]
       attribute :ontology, enforce: [:existence, :ontology ]
+      attribute :mappings, :inverse => { on: :mapping, attribute: :terms }
 
       def self.term_mapping_id_generator(term,acronym)
         term_vals=term.map { |t| t.to_s }
