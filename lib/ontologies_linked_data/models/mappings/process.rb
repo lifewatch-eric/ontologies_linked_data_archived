@@ -22,7 +22,7 @@ module LinkedData
           return RDF::IRI.new(
     "#{(self.namespace)}mappingprocess/#{CGI.escape(inst.name.to_s)}" +
     "-#{CGI.escape(inst.creator.username)}" +
-    "-#{inst.date.xmlschema}")
+    "-#{UUID.new.generate}")
         end
         return RDF::IRI.new(
           "#{(self.namespace)}mappingprocess/#{CGI.escape(inst.name.to_s)}-#{CGI.escape(inst.creator.username)}")
