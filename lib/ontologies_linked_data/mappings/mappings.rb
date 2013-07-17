@@ -88,5 +88,25 @@ module Mappings
     nil
   end
 
+  def self.disconnect_mapping_process(mapping_id,process)
+    redis = LinkedData::Mappings::Batch.redis_cache
+    unless redis.exists(mapping_key(mapping_id))
+      raise ArgumentError, "Mapping id #{mapping_id.to_ntriples} not found"
+    end
+    map_proc_key = mapping_procs_key(mapping_id)
+    procs = redis.lrange(map_proc_key,0,-1)
+    index_proc = procs.index(process.id.to_s)
+    if index_proc
+      redis.lrem(map_proc_key, 0, process.id.to_s)
+    end
+    mapping = LinkedData::Models::Mapping.find(mapping_id)
+                                            .include(:process)
+                                            .include(:terms)
+                                            .first
+    map_procs = mapping.process.dup
+    new_procs = map_procs.select { |x| x.id.to_s != process.id.to_s }
+    mapping.process = new_procs
+    mapping.save
+  end
 end
 end
