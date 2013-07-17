@@ -10,11 +10,11 @@ module LinkedData
 
       #only manual mappings
       attribute :source
-      attribute :relation
+      attribute :relation, enforce: [:uri]
       attribute :source_contact_info
       attribute :source_name
       attribute :comment
-      attribute :date, :date_time_xsd => true, :single_value => true
+      attribute :date, :date_time_xsd => true, default: lambda { |record| DateTime.now }
 
       def self.process_id_generator(inst)
         return RDF::IRI.new(
