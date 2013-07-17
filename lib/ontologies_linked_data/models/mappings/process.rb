@@ -11,7 +11,7 @@ module LinkedData
       #only manual mappings
       attribute :source
       attribute :relation
-      attribute :source_contanct_info
+      attribute :source_contact_info
       attribute :source_name
       attribute :date, :date_time_xsd => true, :single_value => true
 
