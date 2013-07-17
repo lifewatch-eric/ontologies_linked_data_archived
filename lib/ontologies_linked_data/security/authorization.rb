@@ -89,7 +89,7 @@ module LinkedData
           # This will kind-of break if multiple apikeys exist
           # Though it is also kind-of ok since we just want to know if a user with corresponding key exists
           user = users.first
-          env["REMOTE_USER"] = user
+          env.update("REMOTE_USER" => user)
         end
         return true
       end
