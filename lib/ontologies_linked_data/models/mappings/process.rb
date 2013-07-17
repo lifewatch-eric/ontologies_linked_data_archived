@@ -14,9 +14,16 @@ module LinkedData
       attribute :source_contact_info
       attribute :source_name
       attribute :comment
-      attribute :date, :date_time_xsd => true, default: lambda { |record| DateTime.now }
+      attribute :date, enforce: [:date_time]
 
       def self.process_id_generator(inst)
+        if inst.date
+          #rest mapping
+          return RDF::IRI.new(
+    "#{(self.namespace)}mappingprocess/#{CGI.escape(inst.name.to_s)}" +
+    "-#{CGI.escape(inst.creator.username)}" +
+    "-#{inst.date.xmlschema}")
+        end
         return RDF::IRI.new(
           "#{(self.namespace)}mappingprocess/#{CGI.escape(inst.name.to_s)}-#{CGI.escape(inst.creator.username)}")
       end
