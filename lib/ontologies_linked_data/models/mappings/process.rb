@@ -13,6 +13,7 @@ module LinkedData
       attribute :relation
       attribute :source_contact_info
       attribute :source_name
+      attribute :comment
       attribute :date, :date_time_xsd => true, :single_value => true
 
       def self.process_id_generator(inst)
