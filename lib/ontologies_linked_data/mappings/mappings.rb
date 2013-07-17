@@ -108,5 +108,20 @@ module Mappings
     mapping.process = new_procs
     mapping.save
   end
+
+  def self.delete_mapping(mapping)
+    redis = LinkedData::Mappings::Batch.redis_cache
+    unless redis.exists(mapping_key(mapping.id))
+      raise ArgumentError, "Mapping id #{mappin.id.to_ntriples} not found"
+    end
+    map_proc_key = mapping_procs_key(mapping.id)
+    procs = redis.lrange(map_proc_key,0,-1)
+    if procs.length > 0
+      raise ArgumentError, "A mapping with processes cannot be deleted"
+    end
+    redis.del(mapping_key(mapping.id))
+    mapping.delete
+  end
+
 end
 end
