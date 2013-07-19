@@ -5,7 +5,7 @@ module LinkedData::HTTPCache
   REDIS = Redis.new(host: LinkedData.settings.redis_host, port: LinkedData.settings.redis_port)
   def self.invalidate_all
     key_set = LinkedData::HTTPCache::CachableResource::KEY_SET
-    keys = REDIS.smembers(key_set) rescue binding.pry
+    keys = REDIS.smembers(key_set)
     if keys
       keys.each_slice(500_000) {|chunk| REDIS.del chunk}
       REDIS.del key_set
@@ -64,7 +64,7 @@ module LinkedData::HTTPCache
     ##
     # The cache key and the segment for the current object
     def cache_prefix_and_segment
-      self.class.key_prefix + current_segment rescue binding.pry
+      self.class.key_prefix + current_segment
     end
 
     ##
