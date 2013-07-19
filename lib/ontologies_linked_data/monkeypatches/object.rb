@@ -246,7 +246,7 @@ class Object
     # Use the same options if the object to serialize is the same as the one containing it
     options = sample_object.class == self.class ? options : {}
 
-    if self.class.hypermedia_settings[:embed].include?(attribute)
+    if self.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
         values = value.map {|e| e.to_flex_hash(options, &block)}
       else
@@ -259,19 +259,21 @@ class Object
   end
 
   def embed_goo_objects_just_values(hash, attribute, value, options, &block)
-    if !self.class.hypermedia_settings[:embed_values].empty? && self.class.hypermedia_settings[:embed_values].first.key?(attribute)
-      attributes_to_embed = self.class.hypermedia_settings[:embed_values].first[attribute]
-      embedded_values = []
-      if (value.is_a?(Array) || value.is_a?(Set))
-        value.each do |goo_object|
-          add_goo_values(goo_object, embedded_values, attributes_to_embed, options, &block)
+    if self.is_a?(LinkedData::Hypermedia::Resource) &&
+      if !self.class.hypermedia_settings[:embed_values].empty? && self.class.hypermedia_settings[:embed_values].first.key?(attribute)
+        attributes_to_embed = self.class.hypermedia_settings[:embed_values].first[attribute]
+        embedded_values = []
+        if (value.is_a?(Array) || value.is_a?(Set))
+          value.each do |goo_object|
+            add_goo_values(goo_object, embedded_values, attributes_to_embed, options, &block)
+          end
+        else
+          add_goo_values(value, embedded_values, attributes_to_embed, options, &block)
+          embedded_values = embedded_values.first
         end
-      else
-        add_goo_values(value, embedded_values, attributes_to_embed, options, &block)
-        embedded_values = embedded_values.first
+        hash[attribute] = embedded_values
+        return hash, true
       end
-      hash[attribute] = embedded_values
-      return hash, true
     end
     return hash, false
   end
