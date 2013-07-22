@@ -12,13 +12,22 @@ module LinkedData
       attribute :archived, enforce: [:boolean]
       attribute :createdInSubmission, enforce: [:ontology_submission]
       attribute :reply, enforce: [LinkedData::Models::Notes::Reply, :list]
-      attribute :relatedOntology, enforce: [:list, :ontology]
+      attribute :relatedOntology, enforce: [:list, :ontology, :existence]
       attribute :relatedClass, enforce: [:list, :class]
       attribute :proposal, enforce: [LinkedData::Models::Notes::Proposal]
 
       embed :reply, :proposal
       embed_values proposal: LinkedData::Models::Notes::Proposal.goo_attrs_to_load
       link_to LinkedData::Hypermedia::Link.new("replies", lambda {|n| "notes/#{n.id.to_s.split('/').last}/replies"}, LinkedData::Models::Notes::Reply.type_uri)
+
+      # HTTP Cache settings
+      cache_segment_instance lambda {|note| segment_instance(note)}
+      cache_segment_keys [:note]
+
+      def self.segment_instance(note)
+        note.relatedOntology.each {|o| o.bring(:acronym) if note.bring?(:acronym)}
+        [note.relatedOntology.map {|o| o.acronym}.join(":")]
+      end
 
       def delete
         bring(:reply, :proposal)

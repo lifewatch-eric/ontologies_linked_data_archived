@@ -15,6 +15,7 @@ module LinkedData::HTTPCache
   module CachableResource
     KEY_SET = "httpcache:keys"
     KEY_PREFIX = "httpcache:last_modified"
+    SEGMENT_KEY_PREFIX = "httpcache:last_modified:segment"
     COLLECTION_KEY_PREFIX = "httpcache:last_modified:collection"
 
     ##
@@ -27,21 +28,32 @@ module LinkedData::HTTPCache
     # Invalidate the cache entry for this object
     def cache_invalidate
       REDIS.hdel cache_prefix_and_segment, cache_key
+      cache_segment_invalidate
       self.class.cache_collection_invalidate
     end
 
     ##
     # Invalidate all entries in the segment to which this object belongs
     def cache_segment_invalidate
-      REDIS.del cache_prefix_and_segment
+      REDIS.del cache_prefix_and_segment unless cache_segment.empty?
+    end
+
+    ##
+    # The last modified time for this segment
+    def segment_last_modified
+      (REDIS.hmget self.class.segment_key_prefix, cache_segment).first
     end
 
     ##
     # Update the last modified date in the cache for this object
     def cache_write
-      REDIS.hmset cache_prefix_and_segment, cache_key, Time.now.httpdate
+      time = Time.now.httpdate
+      REDIS.hmset cache_prefix_and_segment, cache_key, time
+      REDIS.hmset self.class.segment_key_prefix, cache_segment, time
       REDIS.sadd self.class.key_set, cache_prefix_and_segment
+      REDIS.sadd self.class.key_set, self.class.segment_key_prefix
       self.class.cache_collection_write
+      time
     end
 
     ##
@@ -64,15 +76,18 @@ module LinkedData::HTTPCache
     ##
     # The cache key and the segment for the current object
     def cache_prefix_and_segment
-      self.class.key_prefix + current_segment
+      self.class.key_prefix + cache_segment
     end
 
     ##
     # The object's current segment
-    def current_segment
-      segment = self.class.cache_settings[:cache_segment]
-      return "" if segment.nil?
-      ":#{segment.call(self).join(':')}"
+    def cache_segment
+      segment = self.class.cache_settings[:cache_segment_keys] || []
+      instance_prefix = self.class.cache_settings[:cache_segment_instance]
+      segment_prefix = instance_prefix.call(self) if instance_prefix.is_a?(Proc)
+      segment = (segment_prefix || []) + segment
+      return "" if segment.nil? || segment.empty?
+      ":#{segment.join(':')}"
     end
 
     module ClassMethods
@@ -80,12 +95,15 @@ module LinkedData::HTTPCache
       # Wrappers for constants so they are available in instance
       def key_set() KEY_SET end
       def key_prefix() KEY_PREFIX end
+      def segment_key_prefix() SEGMENT_KEY_PREFIX end
 
       ##
       # Update the collection last modified date
       def cache_collection_write
-        REDIS.hmset cache_collection_prefix, cache_collection_key, Time.now.httpdate
+        time = Time.now.httpdate
+        REDIS.hmset cache_collection_prefix, cache_collection_key, time
         REDIS.sadd KEY_SET, cache_collection_prefix
+        time
       end
 
       ##
@@ -93,12 +111,7 @@ module LinkedData::HTTPCache
       def cache_collection_read
         (REDIS.hmget(cache_collection_prefix, cache_collection_key) || []).first
       end
-
-      ##
-      # Get the collection last modified date
-      def collection_last_modified
-        cache_collection_read
-      end
+      alias :collection_last_modified :cache_collection_read
 
       ##
       # Compare a last modified string to the last modified time for this collection
@@ -123,6 +136,36 @@ module LinkedData::HTTPCache
       def cache_collection_prefix
         COLLECTION_KEY_PREFIX
       end
+
+      ##
+      # Generate a segment for a class type with a given prefix
+      def cache_segment(segment_prefix)
+        segment = cache_settings[:cache_segment_keys] || []
+        segment = segment_prefix + segment
+        return "" if segment.nil? || segment.empty?
+        ":#{segment.join(':')}"
+      end
+
+      ##
+      # Add a new last modified for this segment
+      def cache_segment_write(segment)
+        REDIS.hmset SEGMENT_KEY_PREFIX, segment, Time.now.httpdate
+        REDIS.sadd KEY_SET, SEGMENT_KEY_PREFIX
+        cache_collection_write
+      end
+
+      ##
+      # The last modified time for this segment
+      def cache_segment_read(segment)
+        (REDIS.hmget SEGMENT_KEY_PREFIX, segment).first
+      end
+      alias :segment_last_modified :cache_segment_read
+
+      ##
+      # Timeout (default or set via cache_timeout)
+      def max_age
+        cache_settings[:cache_timeout] ||= 60
+      end
     end
 
     # Internal
@@ -132,19 +175,12 @@ module LinkedData::HTTPCache
     end
 
     def self.store_settings(cls, type, setting)
-      cls.hypermedia_settings ||= {}
-      cls.hypermedia_settings[type] = setting
+      cls.cache_settings ||= {}
+      cls.cache_settings[type] = (setting || []).first
     end
 
     module ClassMethods
-      # KEY_SET = LinkedData::HTTPCache::CachableResource::KEY_SET
-      # KEY_PREFIX = LinkedData::HTTPCache::CachableResource::KEY_PREFIX
-      # COLLECTION_KEY_PREFIX = LinkedData::HTTPCache::CachableResource::COLLECTION_KEY_PREFIX
-
       attr_accessor :cache_settings
-      def cache_settings
-        @cache_settings || {}
-      end
 
       # Methods with these names will be created
       # for each entry, allowing values to be
@@ -152,7 +188,8 @@ module LinkedData::HTTPCache
       SETTINGS = [
         :cache_key,
         :cache_timeout,
-        :cache_segment
+        :cache_segment_keys,
+        :cache_segment_instance
       ]
 
       ##
@@ -162,8 +199,16 @@ module LinkedData::HTTPCache
           CachableResource.store_settings(self, method_name, args)
         end
       end
+
+      ##
+      # Gets called by each class that inherits from this module
+      # or classes that include this module
+      def inherited(cls)
+        super(cls)
+        SETTINGS.each do |type|
+          CachableResource.store_settings(cls, type, nil)
+        end
+      end
     end
   end
 end
-
-

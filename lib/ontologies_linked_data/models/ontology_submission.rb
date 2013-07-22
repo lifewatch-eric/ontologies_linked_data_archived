@@ -58,6 +58,15 @@ module LinkedData
       serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
                         :publication, :documentation, :version, :description, :status, :submissionId
 
+      # HTTP Cache settings
+      cache_segment_instance lambda {|sub| segment_instance(sub)}
+      cache_segment_keys [:ontology_submission]
+
+      def self.segment_instance(sub)
+        sub.ontology.bring(:acronym) if sub.ontology.bring?(:acronym)
+        [sub.ontology.acronym]
+      end
+
       def self.submission_id_generator(ss)
         if !ss.ontology.loaded_attributes.include?(:acronym)
           ss.ontology.bring(:acronym)
@@ -139,7 +148,7 @@ module LinkedData
             if self.errors[:uploadFilePath].nil?
               self.errors[:uploadFilePath] = []
               self.errors[:uploadFilePath] << {
-                :message => 
+                :message =>
               "The selected file `#{self.masterFileName}` is not included in the zip file",
                 :options => files }
             end
@@ -149,8 +158,8 @@ module LinkedData
       end
 
       def data_folder
-        return File.join(LinkedData.settings.repository_folder, 
-                         self.ontology.acronym.to_s, 
+        return File.join(LinkedData.settings.repository_folder,
+                         self.ontology.acronym.to_s,
                          self.submissionId.to_s)
       end
 
@@ -202,14 +211,14 @@ module LinkedData
         LinkedData::Parser.logger = logger
 
         if self.hasOntologyLanguage.umls?
-          file_name = zip ? 
+          file_name = zip ?
             File.join(File.expand_path(self.data_folder.to_s), self.masterFileName)
                                                  : self.uploadFilePath.to_s
           triples_file_path = File.expand_path(file_name)
           logger.info("Using UMLS turtle file, skipping OWLAPI parse")
           logger.flush
-          delete_and_append(triples_file_path, 
-                            logger, 
+          delete_and_append(triples_file_path,
+                            logger,
                             LinkedData::MediaTypes
                                 .media_type_from_base(LinkedData::MediaTypes::TURTLE))
         else
