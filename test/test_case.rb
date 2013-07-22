@@ -90,7 +90,11 @@ module LinkedData
         ont.administeredBy = [user]
         ont.save
       end
-      return owl, ont, user, status
+      contact = LinkedData::Models::Contact.new
+      contact.email = "xxx@example.org"
+      contact.name  = "some name"
+      contact.save
+      return owl, ont, user, status, contact
     end
 
     ##
