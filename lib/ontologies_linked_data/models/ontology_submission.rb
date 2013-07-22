@@ -49,6 +49,9 @@ module LinkedData
       # Link to ontology
       attribute :ontology, enforce: [:existence, :ontology]
 
+      #Link to metrics
+      attribute :metrics, enforce: [:metrics]
+
       # Hypermedia settings
       embed :contact, :ontology
       embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
