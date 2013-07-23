@@ -16,6 +16,7 @@ require_relative "ontologies_linked_data/monkeypatches/logging"
 require_relative "ontologies_linked_data/sample_data/sample_data"
 require_relative "ontologies_linked_data/mappings/mappings"
 require_relative "ontologies_linked_data/http_cache/cachable_resource"
+require_relative "ontologies_linked_data/metrics/metrics"
 
 # Require base model
 require_relative "ontologies_linked_data/models/base"

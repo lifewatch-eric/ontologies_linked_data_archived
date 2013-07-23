@@ -34,7 +34,7 @@ module LinkedData
       return owl, ont, user, status, contact
     end
 
-    def submission_parse( acronym, name, ontologyFile, id,index_search=true)
+    def submission_parse( acronym, name, ontologyFile, id,index_search=true,run_metrics=false)
       return if ENV["SKIP_PARSING"]
 
       bro = LinkedData::Models::Ontology.find(acronym).first
@@ -59,18 +59,7 @@ module LinkedData
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
-      uploaded = LinkedData::Models::SubmissionStatus.find("UPLOADED").include(:submissions).first
-      uploded_ontologies = uploaded.submissions
-      uploaded_ont = nil
-      uploded_ontologies.each do |ont|
-        ont.bring(ontology: [:acronym])
-        if ont.ontology.acronym == acronym
-          uploaded_ont = ont
-        end
-      end
-      assert (not uploaded_ont.nil?)
-      uploaded_ont.bring_remaining
-      uploaded_ont.process_submission(Logger.new(STDOUT),index_search=index_search)
+      ont_submision.process_submission(Logger.new(STDOUT),index_search=index_search,run_metrics=run_metrics)
     end
 
     def init_test_ontology_msotest(acr)

@@ -465,5 +465,29 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     end
   end
 
+  def test_submission_metrics
+    submission_parse("CDAOTEST", "CDAOTEST testing metrics", 
+                     "./test/data/ontology_files/cdao_vunknown.owl", 22,
+                    index_search=false,
+                    run_metrics=true)
+
+    sub = LinkedData::Models::Ontology.find("CDAOTEST").first.latest_submission
+    sub.bring(:metrics)
+   
+    metrics = sub.metrics
+    metrics.bring_remaining
+    assert_instance_of LinkedData::Models::Metrics, metrics
+
+    assert metrics.classes == 143
+    assert metrics.properties == 78
+    assert metrics.individuals == 27
+    assert metrics.classes_one_child == 10
+    assert metrics.classes_with_no_definition == 137
+    assert metrics.classes_25_children == 0
+    assert metrics.max_children == 9
+    assert metrics.avg_children == 2
+    assert metrics.max_depth == 5
+  end
+
 end
 
