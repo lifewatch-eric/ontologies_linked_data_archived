@@ -53,11 +53,13 @@ module LinkedData
       end while(!page.nil?)
       cls_metrics[:avg_children] = cls_metrics[:avg_children].to_i
       cls_metrics[:max_children] = children_counts.max
-      sum = 0
-      children_counts.each do |x|
-        sum += x
+      if children_counts.length > 0
+        sum = 0
+        children_counts.each do |x|
+          sum += x
+        end
+        cls_metrics[:avg_children]  = (sum.to_f / children_counts.length).to_i
       end
-      cls_metrics[:avg_children]  = (sum.to_f / children_counts.length).to_i
       return cls_metrics
     end
 
