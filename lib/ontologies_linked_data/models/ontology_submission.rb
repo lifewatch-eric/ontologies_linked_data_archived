@@ -158,7 +158,7 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
-      def process_submission(logger,index_search=true)
+      def process_submission(logger,index_search=true,run_metrics=true)
 
         self.bring_remaining
         self.ontology.bring_remaining
@@ -238,6 +238,8 @@ module LinkedData
           index(logger, false)
         end
 
+        process_metrics(logger) if run_metrics
+
         rdf_status = SubmissionStatus.find("RDF").first
         self.submissionStatus = rdf_status
 
@@ -250,6 +252,16 @@ module LinkedData
         self.save
         logger.info("Submission status updated to RDF")
         logger.flush
+      end
+
+      def process_metrics(logger)
+        metrics = LinkedData::Metrics.metrics_for_submission(self,logger)
+        metrics.id = RDF::URI.new(self.id.to_s + "/metrics")
+        exist_metrics = LinkedData::Models::Metrics.find(metrics.id).first
+        exist_metrics.delete if exist_metrics
+        metrics.save
+        self.metrics = metrics
+        return self
       end
 
       def index(logger, optimize = true)
