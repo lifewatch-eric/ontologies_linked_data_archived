@@ -105,15 +105,15 @@ module LinkedData::HTTPCache
       # Update the collection last modified date
       def cache_collection_write
         time = Time.now.httpdate
-        redis.hmset cache_collection_prefix, cache_collection_key, time
-        redis.sadd KEY_SET, cache_collection_prefix
+        LinkedData::HTTPCache.redis.hmset cache_collection_prefix, cache_collection_key, time
+        LinkedData::HTTPCache.redis.sadd KEY_SET, cache_collection_prefix
         time
       end
 
       ##
       # Get the collection last modified date
       def cache_collection_read
-        (redis.hmget(cache_collection_prefix, cache_collection_key) || []).first
+        (LinkedData::HTTPCache.redis.hmget(cache_collection_prefix, cache_collection_key) || []).first
       end
       alias :collection_last_modified :cache_collection_read
 
@@ -126,7 +126,7 @@ module LinkedData::HTTPCache
       ##
       # Invalidate the cache entry for this collection
       def cache_collection_invalidate
-        redis.hdel cache_collection_prefix, cache_collection_key
+        LinkedData::HTTPCache.redis.hdel cache_collection_prefix, cache_collection_key
       end
 
       ##
@@ -153,15 +153,15 @@ module LinkedData::HTTPCache
       ##
       # Add a new last modified for this segment
       def cache_segment_write(segment)
-        redis.hmset SEGMENT_KEY_PREFIX, segment, Time.now.httpdate
-        redis.sadd KEY_SET, SEGMENT_KEY_PREFIX
+        LinkedData::HTTPCache.redis.hmset SEGMENT_KEY_PREFIX, segment, Time.now.httpdate
+        LinkedData::HTTPCache.redis.sadd KEY_SET, SEGMENT_KEY_PREFIX
         cache_collection_write
       end
 
       ##
       # The last modified time for this segment
       def cache_segment_read(segment)
-        (redis.hmget SEGMENT_KEY_PREFIX, segment).first
+        (LinkedData::HTTPCache.redis.hmget SEGMENT_KEY_PREFIX, segment).first
       end
       alias :segment_last_modified :cache_segment_read
 
