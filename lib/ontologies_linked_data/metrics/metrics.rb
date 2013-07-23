@@ -51,9 +51,8 @@ module LinkedData
         end
         page = page_classes.next? ? page + 1 : nil
       end while(!page.nil?)
-      cls_metrics[:avg_children] = cls_metrics[:avg_children].to_i
-      cls_metrics[:max_children] = children_counts.max
       if children_counts.length > 0
+        cls_metrics[:max_children] = children_counts.max
         sum = 0
         children_counts.each do |x|
           sum += x
