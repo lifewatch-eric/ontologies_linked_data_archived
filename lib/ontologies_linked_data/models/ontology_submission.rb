@@ -63,8 +63,9 @@ module LinkedData
       cache_segment_keys [:ontology_submission]
 
       def self.segment_instance(sub)
-        sub.ontology.bring(:acronym) if sub.ontology.bring?(:acronym)
-        [sub.ontology.acronym]
+        sub.bring(:ontology) unless sub.loaded_attributes.include?(:ontology)
+        sub.ontology.bring(:acronym) unless sub.ontology.loaded_attributes.include?(:acronym)
+        [sub.ontology.acronym] rescue []
       end
 
       def self.submission_id_generator(ss)

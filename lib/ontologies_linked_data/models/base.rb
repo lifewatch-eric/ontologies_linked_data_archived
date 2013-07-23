@@ -14,7 +14,7 @@ module LinkedData
 
       def delete(*args)
         super(*args)
-        self.cache_write
+        self.cache_invalidate
       end
     end
   end

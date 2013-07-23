@@ -25,8 +25,9 @@ module LinkedData
       cache_segment_keys [:note]
 
       def self.segment_instance(note)
-        note.relatedOntology.each {|o| o.bring(:acronym) if note.bring?(:acronym)}
-        [note.relatedOntology.map {|o| o.acronym}.join(":")]
+        note.bring(relatedOntology: [:acronym]) unless note.loaded_attributes.include?(:relatedOntology)
+        note.relatedOntology.each {|o| o.bring(:acronym) unless o.loaded_attributes.include?(:acronym)}
+        [note.relatedOntology.map {|o| o.acronym}.join(":")] rescue []
       end
 
       def delete
