@@ -487,6 +487,30 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert metrics.max_children == 9
     assert metrics.avg_children == 2
     assert metrics.max_depth == 5
+
+    submission_parse("BROTEST-METRICS", "BRO testing metrics", 
+                     "./test/data/ontology_files/BRO_v3.2.owl", 33,
+                    index_search=false,
+                    run_metrics=true)
+
+    sub = LinkedData::Models::Ontology.find("BROTEST-METRICS").first.latest_submission
+    sub.bring(:metrics)
+   
+    metrics = sub.metrics
+    metrics.bring_remaining
+    assert_instance_of LinkedData::Models::Metrics, metrics
+
+    assert metrics.classes == 486
+    assert metrics.properties == 63
+    assert metrics.individuals == 80
+    assert metrics.classes_one_child == 14
+    #cause it has not the subproperty added
+    assert metrics.classes_with_no_definition == 474
+    assert metrics.classes_25_children == 2
+    assert metrics.max_children == 65
+    assert metrics.avg_children == 5
+    assert metrics.max_depth == 8
+
   end
 
 end
