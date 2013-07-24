@@ -18,6 +18,7 @@ module LinkedData
       attribute :classes_25_children, enforce: [:integer,:existence]
       attribute :classes_with_no_definition, enforce: [:integer,:existence]
 
+      embed :submission
       def self.metrics_id_generator(m)
         raise ArgumentError, "Metrics id needs to be set"
         #return RDF::URI.new(m.submission.id.to_s + "/metrics")
