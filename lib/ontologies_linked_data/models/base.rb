@@ -6,6 +6,16 @@ module LinkedData
     class Base < Goo::Base::Resource
       include LinkedData::Hypermedia::Resource
       include LinkedData::HTTPCache::CachableResource
+
+      def save(*args)
+        super(*args)
+        self.cache_write
+      end
+
+      def delete(*args)
+        super(*args)
+        self.cache_invalidate
+      end
     end
   end
 end

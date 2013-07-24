@@ -46,8 +46,43 @@ class TestHTTPCache < LinkedData::TestCase
     assert last_modified_values.empty?
   end
 
-  def test_current_segment
-    @@cls.current_segment.eql?("BRO")
+  def test_cache_segment_invalidate_when_member_invalidates
+    classes = LinkedData::Models::Class.where.include(:prefLabel).in(@@ontology.latest_submission).page(1, 100).to_a
+    classes.each {|c| c.cache_write}
+    last_modified_values = classes.map {|c| c.last_modified}
+    assert last_modified_values.length == classes.length
+    classes.first.cache_invalidate
+    last_modified_values = (classes.map {|c| c.last_modified}).compact
+    assert last_modified_values.empty?
+  end
+
+  def test_ld_save_invalidates
+    results = create_ontologies_and_submissions(ont_count: 1, submission_count: 1, process_submission: false)
+    ontology = results[2].first
+    last_modified = ontology.cache_write
+    ontology.bring_remaining
+    ontology.name = "New name for save"
+    sleep(1)
+    ontology.save
+    assert Time.httpdate(ontology.last_modified) > Time.httpdate(last_modified)
+  end
+
+  def test_ld_delete_invalidates
+    results = create_ontologies_and_submissions(ont_count: 1, submission_count: 1, process_submission: false)
+    ontology = results[2].first
+    last_modified = ontology.cache_write
+    ontology.bring_remaining
+    sleep(1)
+    ontology.delete
+    assert Time.httpdate(ontology.last_modified) > Time.httpdate(last_modified)
+  end
+
+  def test_segment_last_modified
+    assert @@cls.segment_last_modified
+  end
+
+  def test_cache_segment
+    assert @@cls.cache_segment.eql?(":TEST-ONT-0:class")
   end
 
   def test_collection_last_modified_valid
