@@ -60,7 +60,7 @@ module LinkedData
             })
 
             if process_submission && (submissions_to_process.nil? || submissions_to_process.include?(os.submissionId))
-              file_path = options[:file_path] 
+              file_path = options[:file_path]
               file_path = "../../../../test/data/ontology_files/BRO_v3.#{os.submissionId}.owl" if file_path.nil?
               if File.exist?(file_path)
                 file_path = File.expand_path(file_path)
