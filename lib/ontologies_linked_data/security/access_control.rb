@@ -32,6 +32,10 @@ module LinkedData::Security
       allowed_user_ids.include?(user.id)
     end
 
+    def access_based_on?
+      not self.class.access_control_settings[:read_restriction_based_on].empty?
+    end
+
     private
 
     def read_restricted_based_on?(based_on)
@@ -50,7 +54,7 @@ module LinkedData::Security
     end
 
     def allowed_user_ids(settings)
-      target = based_on? ? based_on_target : self
+      target = access_based_on? ? based_on_target : self
       attributes = target.class.access_control_settings[settings].dup
       attributes = attributes + DEFAULT_OWNER_ATTRIBUTES
       user_ids = Set.new
@@ -61,10 +65,6 @@ module LinkedData::Security
         users.each {|u| user_ids << u.id}
       end
       user_ids
-    end
-
-    def based_on?
-      not self.class.access_control_settings[:read_restriction_based_on].empty?
     end
 
     def based_on_target
@@ -78,6 +78,13 @@ module LinkedData::Security
         target = based_on.send(based_on)
       end
       target
+    end
+
+    def self.filter_unreadable(enumerable, user)
+      unless enumerable.is_a?(Hash)
+        enumerable.delete_if {|e| e.read_restricted? && !e.readable?(user)}
+      end
+      enumerable
     end
 
     # Internal
