@@ -64,6 +64,7 @@ module LinkedData
       # HTTP Cache settings
       cache_segment_instance lambda {|cls| segment_instance(cls) }
       cache_segment_keys [:class]
+      cache_load submission: [ontology: :acronym]
 
       def self.segment_instance(cls)
         cls.submission.ontology.bring(:acronym) unless cls.submission.ontology.loaded_attributes.include?(:acronym)
