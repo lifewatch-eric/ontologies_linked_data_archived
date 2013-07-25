@@ -4,6 +4,7 @@ module LinkedData
       class Role < LinkedData::Models::Base
         DEFAULT = "LIBRARIAN"
         VALUES = ["LIBRARIAN", "ADMINISTRATOR", "DEVELOPER"]
+        ADMIN = "ADMINISTRATOR"
 
         model :role, name_with: :role
         attribute :role, enforce: [:unique, :existence]
