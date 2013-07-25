@@ -55,6 +55,11 @@ module LinkedData
         self
       end
 
+      def admin?
+        bring(role: [:role])
+        role.map {|r| r.role}.include?(LinkedData::Models::Users::Role::ADMIN)
+      end
+
       def password=(new_password)
         @password = Password.create(new_password)
         set_passwordHash(@password)
