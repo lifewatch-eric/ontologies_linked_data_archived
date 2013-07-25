@@ -74,10 +74,11 @@ class TestHTTPCache < LinkedData::TestCase
     ontology.bring_remaining
     sleep(1)
     ontology.delete
-    assert Time.httpdate(ontology.last_modified) > Time.httpdate(last_modified)
+    refute ontology.last_modified
   end
 
   def test_segment_last_modified
+    @@cls.cache_write
     assert @@cls.segment_last_modified
   end
 
