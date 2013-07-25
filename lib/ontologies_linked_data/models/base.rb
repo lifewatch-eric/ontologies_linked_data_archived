@@ -23,7 +23,7 @@ module LinkedData
       ##
       # This is a convenience method that will provide Goo with
       # a list of attributes and nested values to load
-      def self.goo_attrs_to_load(attributes = [])
+      def self.goo_attrs_to_load(attributes = [], level = 0)
         raise ArgumentError, "`attributes` should be an array" unless attributes.is_a?(Array)
 
         # Get attributes, either provided, all, or default
@@ -39,21 +39,22 @@ module LinkedData
           default_attrs = self.hypermedia_settings[:serialize_default].dup
         end
 
-        # Also include attributes that are embedded
         embed_attrs = {}
-        self.hypermedia_settings[:embed].each do |e|
-          next unless default_attrs.include?(e)
-          default_attrs.delete(e)
-          embed_class = self.range(e)
-          next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
-          embed_attrs[e] = embed_class.goo_attrs_to_load
-        end
-
-        # Merge embedded with embedded values
-        embed_values = self.hypermedia_settings[:embed_values].first
-        embed_attrs.merge!(embed_values.dup) if embed_values
-
         extra_attrs = []
+        if level == 0
+          # Also include attributes that are embedded
+          self.hypermedia_settings[:embed].each do |e|
+            next unless default_attrs.include?(e)
+            default_attrs.delete(e)
+            embed_class = self.range(e)
+            next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
+            embed_attrs[e] = embed_class.goo_attrs_to_load([], level += 1)
+          end
+
+          # Merge embedded with embedded values
+          embed_values = self.hypermedia_settings[:embed_values].first
+          embed_attrs.merge!(embed_values.dup) if embed_values
+        end
 
         # Include attributes needed for caching (if enabled)
         if LinkedData.settings.enable_http_cache
