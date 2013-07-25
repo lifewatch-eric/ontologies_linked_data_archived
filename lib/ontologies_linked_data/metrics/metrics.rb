@@ -36,7 +36,9 @@ module LinkedData
                     " classes retrieved in #{Time.now - t0} sec.")
         page_classes.each do |cls|
           cls_metrics[:classes] += 1
-          unless cls.definition.length > 0
+          #TODO: investigate
+          #for some weird reason NIFSTD brings false:FalseClass here
+          unless cls.definition.is_a?(Array) && cls.definition.length > 0
             cls_metrics[:classes_with_no_definition] += 1
           end
           if cls.children.length > 24
