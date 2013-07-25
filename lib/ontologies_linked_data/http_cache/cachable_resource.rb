@@ -70,8 +70,8 @@ module LinkedData::HTTPCache
     ##
     # The cache key for this object
     def cache_key
-      if self.class.cache_settings[:cache_key]
-        self.class.cache_settings[:cache_key].call(self)
+      if self.class.cache_settings[:cache_key].first
+        self.class.cache_settings[:cache_key].first.call(self)
       else
         Digest::MD5.hexdigest(self.id)
       end
@@ -87,7 +87,7 @@ module LinkedData::HTTPCache
     # The object's current segment
     def cache_segment
       segment = self.class.cache_settings[:cache_segment_keys] || []
-      instance_prefix = self.class.cache_settings[:cache_segment_instance]
+      instance_prefix = self.class.cache_settings[:cache_segment_instance].first
       segment_prefix = instance_prefix.call(self) if instance_prefix.is_a?(Proc)
       segment = (segment_prefix || []) + segment
       return "" if segment.nil? || segment.empty?
@@ -168,7 +168,7 @@ module LinkedData::HTTPCache
       ##
       # Timeout (default or set via cache_timeout)
       def max_age
-        cache_settings[:cache_timeout] ||= 60
+        cache_settings[:cache_timeout] || 60
       end
     end
 
@@ -180,7 +180,7 @@ module LinkedData::HTTPCache
 
     def self.store_settings(cls, type, setting)
       cls.cache_settings ||= {}
-      cls.cache_settings[type] = (setting || []).first
+      cls.cache_settings[type] = setting
     end
 
     module ClassMethods
@@ -193,7 +193,8 @@ module LinkedData::HTTPCache
         :cache_key,
         :cache_timeout,
         :cache_segment_keys,
-        :cache_segment_instance
+        :cache_segment_instance,
+        :cache_load
       ]
 
       ##
@@ -210,7 +211,7 @@ module LinkedData::HTTPCache
       def inherited(cls)
         super(cls)
         SETTINGS.each do |type|
-          CachableResource.store_settings(cls, type, nil)
+          CachableResource.store_settings(cls, type, [])
         end
       end
     end
