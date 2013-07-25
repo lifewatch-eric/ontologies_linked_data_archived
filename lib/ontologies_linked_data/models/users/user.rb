@@ -27,6 +27,9 @@ module LinkedData
       serialize_never :passwordHash, :show_apikey
       serialize_filter lambda {|inst| show_apikey?(inst)}
 
+      # Access control
+      write_access :dup
+
       def self.show_apikey?(inst)
         # This could get called when we have an instance (serialization)
         # or when we are asking which attributes to load (controller)

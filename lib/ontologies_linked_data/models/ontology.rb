@@ -1,6 +1,7 @@
 require_relative 'ontology_submission'
 require_relative 'review'
 require_relative 'group'
+require_relative 'metrics'
 require_relative 'category'
 require_relative 'project'
 require_relative 'notes/note'
@@ -49,8 +50,14 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("latest_submission", lambda {|s| "ontologies/#{s.acronym}/latest_submission"}, LinkedData::Models::OntologySubmission.uri_type),
               LinkedData::Hypermedia::Link.new("projects", lambda {|s| "ontologies/#{s.acronym}/projects"}, LinkedData::Models::Project.uri_type),
               LinkedData::Hypermedia::Link.new("views", lambda {|s| "ontologies/#{s.acronym}/views"}, self.type_uri),
-              LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.acronym}"}, self.uri_type)
-              # LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.acronym}/metrics"}, LinkedData::Models::Metrics.type_uri),
+              LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.acronym}"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.acronym}/metrics"}, LinkedData::Models::Metrics.type_uri)
+
+      # Access control
+      read_restriction lambda {|o| !o.viewingRestriction.eql?("public") }
+      read_access :administeredBy, :acl
+      write_access :administeredBy
+      access_control_load :administeredBy, :acl, :viewingRestriction
 
       def latest_submission(options = {})
         self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)

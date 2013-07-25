@@ -66,6 +66,9 @@ module LinkedData
       cache_segment_keys [:class]
       cache_load submission: [ontology: :acronym]
 
+      # Access control
+      read_restriction_based_on lambda {|cls| cls.submission.ontology}
+
       def self.segment_instance(cls)
         cls.submission.ontology.bring(:acronym) unless cls.submission.ontology.loaded_attributes.include?(:acronym)
         [cls.submission.ontology.acronym] rescue []
