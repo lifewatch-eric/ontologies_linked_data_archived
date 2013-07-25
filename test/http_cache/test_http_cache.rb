@@ -19,6 +19,10 @@ class TestHTTPCache < LinkedData::TestCase
     return ontology, cls
   end
 
+  def setup
+    LinkedData::HTTPCache.invalidate_all
+  end
+
   def teardown
     LinkedData::HTTPCache.invalidate_all
   end
