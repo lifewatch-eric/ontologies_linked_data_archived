@@ -40,6 +40,10 @@ module LinkedData::Security
       not self.class.access_control_settings[:read_restriction_based_on].empty?
     end
 
+    def access_control_load?
+      not self.class.access_control_settings[:access_control_load].empty?
+    end
+
     private
 
     def read_restricted_based_on?(based_on)
