@@ -329,8 +329,12 @@ module LinkedData
 
       # Override delete to add removal from the search index
       #TODO: revise this with a better process
-      def delete(in_update=false, remove_index=true)
-        super(in_update)
+      def delete(*args)
+        options = {}
+        args.each {|e| options.merge!(e) if e.is_a?(Hash)}
+        remove_index = options[:remove_index] || true
+
+        super(*args)
         self.ontology.unindex()
 
         if remove_index

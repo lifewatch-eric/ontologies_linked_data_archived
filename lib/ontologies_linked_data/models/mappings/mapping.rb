@@ -21,16 +21,16 @@ module LinkedData
         "#{(self.namespace)}termmapping/#{acronym}/#{hashed_value}")
       end
 
-      def delete
+      def delete(*args)
         redis = LinkedData::Mappings::Batch.redis_cache
         redis.del(LinkedData::Mappings.term_mapping_key(self.id))
-        super()
+        super(args)
       end
     end
 
     class Mapping < LinkedData::Models::Base
       model :mapping, :name_with => lambda { |s| mapping_id_generator(s) }
-      attribute :terms, enforce: [ :term_mapping, :existence, :list ] 
+      attribute :terms, enforce: [ :term_mapping, :existence, :list ]
 
       #mappings can exist without process
       attribute :process, enforce: [ :mapping_process, :list ]
@@ -51,11 +51,11 @@ module LinkedData
           "#{(self.namespace)}mapping/#{hashed_value}")
       end
 
-      def delete
+      def delete(*args)
         redis = LinkedData::Mappings::Batch.redis_cache
         redis.del(LinkedData::Mappings.mapping_key(self.id))
         redis.del(LinkedData::Mappings.mapping_procs_key(self.id))
-        super()
+        super(args)
       end
     end
   end

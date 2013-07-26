@@ -118,15 +118,18 @@ module LinkedData
 
       ##
       # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
-      def delete(in_update=false)
+      def delete(*args)
+        options = {}
+        args.each {|e| options.merge!(e) if e.is_a?(Hash)}
+        in_update = options[:in_update] || false
         self.bring(:submissions)
         self.bring(:acronym) unless self.loaded_attributes.include?:acronym
         unless self.submissions.nil?
           submissions.each do |s|
-            s.delete(in_update, false)
+            s.delete(in_update: in_update, remove_index: false)
           end
         end
-        super(in_update)
+        super(*args)
       end
 
       def unindex

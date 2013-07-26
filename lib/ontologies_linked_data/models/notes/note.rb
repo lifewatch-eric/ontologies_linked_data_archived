@@ -30,11 +30,11 @@ module LinkedData
         [note.relatedOntology.map {|o| o.acronym}.join(":")] rescue []
       end
 
-      def delete
+      def delete(*args)
         bring(:reply, :proposal)
         reply.each {|r| r.delete if r.exist?}
         proposal.delete if !proposal.nil? && proposal.exist?
-        super
+        super(*args)
       end
     end
   end
