@@ -9,12 +9,14 @@ module LinkedData
       include LinkedData::Security::AccessControl
 
       def save(*args)
+        write_permission_check(*args)
         super(*args)
         self.cache_write
         self
       end
 
       def delete(*args)
+        write_permission_check(*args)
         super(*args)
         self.cache_invalidate
         self
@@ -105,6 +107,31 @@ module LinkedData
         aggregate_attribute, aggregate_syntax = aggregates.first
         included_aggregates = aggregate_syntax if attributes.delete(aggregate_attribute)
         included_aggregates
+      end
+
+      private
+
+      def write_permission_check(*args)
+        # Don't prevent writes if creating a new object (anyone should be able to do this)
+        return unless self.persistent?
+
+        if LinkedData.settings.enable_security
+          user = nil
+          options_hash = {}
+          args.each {|e| options_hash.merge!(e) if e.is_a?(Hash)}
+          user = options_hash[:user]
+          ##
+          # WARNING
+          # This only throws an exception if a user is present. This should always be passed from the ontologies_api.
+          # In other cases, like a script or in tests, user isn't passed and we just allow writes.
+          ##
+          if user
+            # Force a load if we need attributes to check security
+            self.bring(*self.class.goo_attrs_to_load) if self.access_control_load? && self.persistent?
+            writable = self.writable?(user)
+            raise LinkedData::Security::WriteAccessDeniedError, "Write access denied" unless writable
+          end
+        end
       end
 
     end
