@@ -56,6 +56,7 @@ class TestNote < LinkedData::TestCase
     assert (not note.valid?)
 
     note.creator = @@user
+    note.relatedOntology = [@@ontology]
     assert note.valid?
   end
 
