@@ -82,16 +82,21 @@ module LinkedData
       def authorized?(apikey, env)
         return false if apikey.nil?
         if APIKEYS_FOR_AUTHORIZATION.key?(apikey)
-          env["REMOTE_USER"] = APIKEYS_FOR_AUTHORIZATION[apikey]
+          store_user(APIKEYS_FOR_AUTHORIZATION[apikey], env)
         else
           users = LinkedData::Models::User.where(apikey: apikey).include(LinkedData::Models::User.attributes(:all)).to_a
           return false if users.empty?
           # This will kind-of break if multiple apikeys exist
           # Though it is also kind-of ok since we just want to know if a user with corresponding key exists
           user = users.first
-          env.update("REMOTE_USER" => user)
+          store_user(user, env)
         end
         return true
+      end
+
+      def store_user(user, env)
+        Thread.current[:remote_user] = user
+        env.update("REMOTE_USER" => user)
       end
 
     end
