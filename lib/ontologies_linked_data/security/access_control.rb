@@ -22,6 +22,7 @@ module LinkedData::Security
     end
 
     def readable?(user)
+      return false if user.nil?
       return true if user.admin?
       return true unless read_restricted?
       allowed_user_ids = allowed_user_ids(:read_access)
@@ -29,6 +30,7 @@ module LinkedData::Security
     end
 
     def writable?(user)
+      return false if user.nil?
       return true if user.admin?
       allowed_user_ids = allowed_user_ids(:write_access)
       allowed_user_ids.include?(user.id)
