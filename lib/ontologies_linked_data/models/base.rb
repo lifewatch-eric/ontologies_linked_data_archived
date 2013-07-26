@@ -123,17 +123,25 @@ module LinkedData
 
           user ||= Thread.current[:remote_user]
 
+          reference_object = self
+
+          # If we have a modified object, we should do the security check
+          # on the original. This allows a user to change the ownsership of
+          # an object without having to add the owner and have the owner remove
+          # the original owner.
+          reference_object = self.class.find(self.id).first if self.modified?
+
           # Load attributes needed by security
-          if self.access_control_load?
+          if reference_object.access_control_load?
             # Only load ones that aren't loaded so we don't overwrite changes
             not_loaded = []
-            self.class.access_control_settings[:access_control_load].each do |attr|
-              not_loaded << attr unless self.loaded_attributes.include?(attr)
+            reference_object.class.access_control_settings[:access_control_load].each do |attr|
+              not_loaded << attr unless reference_object.loaded_attributes.include?(attr)
             end
-            self.bring(*not_loaded) unless not_loaded.empty?
+            reference_object.bring(*not_loaded) unless not_loaded.empty?
           end
 
-          writable = self.writable?(user)
+          writable = reference_object.writable?(user)
           raise LinkedData::Security::WriteAccessDeniedError, "Write access denied" unless writable
         end
       end

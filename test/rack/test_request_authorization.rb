@@ -21,8 +21,8 @@ class TestRackAuthorization < MiniTest::Unit::TestCase
   end
 
   def teardown
-    _delete_user
     LinkedData.settings.enable_security = @security
+    _delete_user
   end
 
   def _variables
