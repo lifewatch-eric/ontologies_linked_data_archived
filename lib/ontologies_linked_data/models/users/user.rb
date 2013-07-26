@@ -65,6 +65,10 @@ module LinkedData
         set_passwordHash(@password)
       end
 
+      def to_s
+        "user:#{self.username}"
+      end
+
       private
 
       def set_passwordHash(password)
