@@ -3,9 +3,6 @@ require_relative "../test_case"
 class TestAccessControl < LinkedData::TestCase
 
   def self.before_suite
-    @@old_security_setting = LinkedData.settings.enable_security
-    LinkedData.settings.enable_security = true
-
     self.new("before_suite").delete_ontologies_and_submissions
 
     @@usernames = ["user1", "user2", "user3", "admin"]
@@ -51,6 +48,9 @@ class TestAccessControl < LinkedData::TestCase
       relatedOntology: [@@ont]
     })
     @@note.save
+
+    @@old_security_setting = LinkedData.settings.enable_security
+    LinkedData.settings.enable_security = true
   end
 
   def self.after_suite
