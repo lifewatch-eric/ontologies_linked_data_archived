@@ -1,6 +1,8 @@
 require 'set'
 
 module LinkedData::Security
+  WriteAccessDeniedError = Class.new(StandardError)
+
   module AccessControl
     DEFAULT_OWNER_ATTRIBUTES = [:creator]
 
