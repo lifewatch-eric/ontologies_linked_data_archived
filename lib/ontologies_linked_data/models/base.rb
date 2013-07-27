@@ -50,7 +50,7 @@ module LinkedData
             default_attrs.delete(e)
             embed_class = self.range(e)
             next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
-            embed_attrs[e] = embed_class.goo_attrs_to_load([], level += 1)
+            embed_attrs[e] = embed_class.goo_attrs_to_load(attributes, level += 1)
           end
         end
 
