@@ -52,11 +52,11 @@ module LinkedData
             next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
             embed_attrs[e] = embed_class.goo_attrs_to_load([], level += 1)
           end
-
-          # Merge embedded with embedded values
-          embed_values = self.hypermedia_settings[:embed_values].first
-          embed_attrs.merge!(embed_values.dup) if embed_values
         end
+
+        # Merge embedded with embedded values
+        embed_values = self.hypermedia_settings[:embed_values].first
+        embed_attrs.merge!(embed_values.dup) if embed_values
 
         # Include attributes needed for caching (if enabled)
         if LinkedData.settings.enable_http_cache
