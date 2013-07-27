@@ -51,6 +51,7 @@ module LinkedData
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission
       aggregates childrenCount: [:count, :children]
+      links_load submission: [ontology: [:acronym]]
       link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.submission.ontology.acronym}"},  Goo.vocabulary["Ontology"]),
               LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/children"}, self.uri_type),
@@ -64,10 +65,7 @@ module LinkedData
       # HTTP Cache settings
       cache_segment_instance lambda {|cls| segment_instance(cls) }
       cache_segment_keys [:class]
-      cache_load submission: [ontology: :acronym]
-
-      # Access control
-      read_restriction_based_on lambda {|cls| cls.submission.ontology}
+      cache_load submission: [ontology: [:acronym]]
 
       def self.segment_instance(cls)
         cls.submission.ontology.bring(:acronym) unless cls.submission.ontology.loaded_attributes.include?(:acronym)
@@ -107,7 +105,7 @@ module LinkedData
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
               attr_val = attr_val.uniq
-              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) } #rescue binding.pry
+              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
             else
               props << attr_val.to_s.strip
             end
