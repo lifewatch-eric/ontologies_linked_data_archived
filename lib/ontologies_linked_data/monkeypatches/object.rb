@@ -117,7 +117,7 @@ class Object
       end
 
       if (value.is_a?(Array) || value.is_a?(Set)) && value.first.is_a?(String) && value.first.start_with?(LinkedData.settings.id_url_prefix)
-        value = value.map {|v| v.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix) rescue binding.pry}
+        value = value.map {|v| v.sub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix)}
       end
     end
     value
@@ -246,7 +246,10 @@ class Object
     # Use the same options if the object to serialize is the same as the one containing it
     options = sample_object.class == self.class ? options : {}
 
-    if self.is_a?(LinkedData::Hypermedia::Resource) && self.class.hypermedia_settings[:embed].include?(attribute)
+    # If we're using a struct here, we should get it's class
+    sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
+
+    if sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
       if (value.is_a?(Array) || value.is_a?(Set))
         values = value.map {|e| e.to_flex_hash(options, &block)}
       else
@@ -259,9 +262,12 @@ class Object
   end
 
   def embed_goo_objects_just_values(hash, attribute, value, options, &block)
-    if self.is_a?(LinkedData::Hypermedia::Resource) &&
-      if !self.class.hypermedia_settings[:embed_values].empty? && self.class.hypermedia_settings[:embed_values].first.key?(attribute)
-        attributes_to_embed = self.class.hypermedia_settings[:embed_values].first[attribute]
+    # If we're using a struct here, we should get it's class
+    sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
+
+    if sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) &&
+      if !sample_class.hypermedia_settings[:embed_values].empty? && sample_class.hypermedia_settings[:embed_values].first.key?(attribute)
+        attributes_to_embed = sample_class.hypermedia_settings[:embed_values].first[attribute]
         embedded_values = []
         if (value.is_a?(Array) || value.is_a?(Set))
           value.each do |goo_object|
