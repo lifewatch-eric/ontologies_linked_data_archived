@@ -24,6 +24,7 @@ class TestAccessControl < LinkedData::TestCase
     onts = LinkedData::SampleData::Ontology.sample_owl_ontologies
 
     @@restricted_ont = onts.shift
+    @@restricted_ont.bring(:submissions)
     @@restricted_ont.bring_remaining
     @@restricted_ont.viewingRestriction = "private"
     @@restricted_ont.acl = [@@user2, @@user3]
@@ -31,15 +32,14 @@ class TestAccessControl < LinkedData::TestCase
     @@restricted_ont.save
     @@restricted_user = @@restricted_ont.administeredBy.first
     @@restricted_user.bring_remaining
-    sub = @@restricted_ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
-    @@restricted_cls = LinkedData::Models::Class.where.in(sub).page(1, 1).first
+    @@restricted_sub = @@restricted_ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
 
     @@ont = onts.shift
+    @@ont.bring(:submissions)
     @@ont.bring_remaining
     @@user = @@ont.administeredBy.first
     @@user.bring_remaining
-    sub = @@ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
-    @@cls = LinkedData::Models::Class.where.in(sub).page(1, 1).first
+    @@sub = @@ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
 
     @@note = LinkedData::Models::Note.new({
       creator: @@user,
@@ -54,7 +54,7 @@ class TestAccessControl < LinkedData::TestCase
   end
 
   def self.after_suite
-    LinkedData.settings.enable_security = @@old_security_setting
+    LinkedData.settings.enable_security = @@old_security_setting if class_variable_defined?("@@old_security_setting")
     _delete_users
     self.new("after_suite").delete_ontologies_and_submissions
     @@note.delete if class_variable_defined?("@@note")
@@ -76,9 +76,9 @@ class TestAccessControl < LinkedData::TestCase
 
   def test_unrestricted_admin
     assert @@ont.writable?(@@admin)
-    assert @@cls.writable?(@@admin)
+    assert @@sub.writable?(@@admin)
     assert @@restricted_ont.writable?(@@admin)
-    assert @@restricted_cls.writable?(@@admin)
+    assert @@restricted_sub.writable?(@@admin)
     assert @@note.writable?(@@admin)
   end
 
@@ -90,20 +90,22 @@ class TestAccessControl < LinkedData::TestCase
   end
 
   def test_read_restricted_based_on
-    refute @@cls.read_restricted?
-    assert @@cls.readable?(@@user)
-    assert @@cls.readable?(@@user1)
-    assert @@cls.readable?(@@restricted_user)
-    assert @@restricted_ont.latest_submission.read_restricted?
-    assert @@restricted_ont.latest_submission.readable?(@@restricted_user)
-    assert @@restricted_ont.latest_submission.readable?(@@user2)
-    assert @@restricted_ont.latest_submission.readable?(@@user3)
-    refute @@restricted_ont.latest_submission.readable?(@@user)
-    assert @@restricted_cls.read_restricted?
-    assert @@restricted_cls.readable?(@@restricted_user)
-    assert @@restricted_cls.readable?(@@user2)
-    assert @@restricted_cls.readable?(@@user3)
-    refute @@restricted_cls.readable?(@@user)
+    @@sub.ontology.bring(*LinkedData::Models::Ontology.goo_attrs_to_load)
+    refute @@sub.read_restricted?
+    assert @@sub.readable?(@@user)
+    assert @@sub.readable?(@@user1)
+    assert @@sub.readable?(@@restricted_user)
+    @@restricted_sub.ontology.bring(*LinkedData::Models::Ontology.goo_attrs_to_load)
+    assert @@restricted_sub.read_restricted?
+    assert @@restricted_sub.readable?(@@restricted_user)
+    assert @@restricted_sub.readable?(@@user2)
+    assert @@restricted_sub.readable?(@@user3)
+    refute @@restricted_sub.readable?(@@user)
+    assert @@restricted_sub.read_restricted?
+    assert @@restricted_sub.readable?(@@restricted_user)
+    assert @@restricted_sub.readable?(@@user2)
+    assert @@restricted_sub.readable?(@@user3)
+    refute @@restricted_sub.readable?(@@user)
   end
 
   def test_write_restricted
