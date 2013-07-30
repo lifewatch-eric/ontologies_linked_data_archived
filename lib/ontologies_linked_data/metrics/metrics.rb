@@ -115,6 +115,9 @@ eof
         end
         vars_cmp.delete v1
       end
+      #for some reason 4store fails with many
+      #filters
+      filters = filters[0..30] 
       filters = filters.join " && "
       query = <<eof
   SELECT * WHERE {
