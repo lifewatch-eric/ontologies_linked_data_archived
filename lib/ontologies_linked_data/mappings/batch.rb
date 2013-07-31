@@ -98,7 +98,7 @@ module LinkedData
           ontologies_sorted = @ontologies.sort_by { |ont| ont.acronym }
           ont_first = ontologies_sorted.first
           batch_triples = File.join([BatchProcess.mappings_ontology_folder(ont_first),
-                                    "batch_triples.nq"])
+                                    "batch_triples-#{@process_name}.nq"])
           batch_triples_file = File.open(batch_triples, 'w')
           @logger.info("Using batch file #{batch_triples}")
         end
