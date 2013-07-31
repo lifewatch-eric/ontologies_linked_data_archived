@@ -8,7 +8,8 @@ module LinkedData
         unless @redis
           @redis = Redis.new(
               :host => LinkedData.settings.redis_host, 
-              :port => LinkedData.settings.redis_port)
+              :port => LinkedData.settings.redis_port,
+              :timeout => 1200)
         end
         return @redis
       end
