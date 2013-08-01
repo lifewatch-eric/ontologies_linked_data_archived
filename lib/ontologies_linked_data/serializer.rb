@@ -29,14 +29,14 @@ module LinkedData
         begin
           if print_stacktrace?
             message = e.message + "\n\n  " + e.backtrace.join("\n  ")
-            LOGGER.debug message
+            ::LOGGER.debug message
             response(:status => 500, :body => message)
           else
             response(:status => 500, :body => "Internal server error")
           end
         rescue Exception => e1
           message = e1.message + "\n\n  " + e1.backtrace.join("\n  ")
-          LOGGER.debug message
+          ::LOGGER.debug message
           response(:status => 500, :body => "Internal server error")
         end
       end
@@ -81,7 +81,7 @@ module LinkedData
         development?
       elsif ENV["rack.test"]
         true
-      elsif ENV['RACK_ENV'].downcase.eql?("development")
+      elsif ENV['RACK_ENV'] && ENV['RACK_ENV'].downcase.eql?("development")
         true
       else
         false
