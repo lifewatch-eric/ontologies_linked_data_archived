@@ -29,6 +29,7 @@ module LinkedData
     @settings.ui_host             ||= "bioportal.bioontology.org"
     @settings.replace_url_prefix  ||= false
     @settings.id_url_prefix       ||= "http://data.bioontology.org/"
+    @settings.queries_debug       ||= false
 
     # Check to make sure url prefix has trailing slash
     @settings.rest_url_prefix = @settings.rest_url_prefix + "/" unless @settings.rest_url_prefix[-1].eql?("/")
@@ -48,6 +49,7 @@ module LinkedData
 
     begin
       Goo.configure do |conf|
+        conf.queries_debug(@settings.queries_debug)
         conf.add_sparql_backend(:main, query: "http://#{host}:#{port}/sparql/",
                                 data: "http://#{host}:#{port}/data/",
                                 update: "http://#{host}:#{port}/update/",
