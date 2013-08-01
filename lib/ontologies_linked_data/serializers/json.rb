@@ -1,3 +1,5 @@
+require 'multi_json'
+
 module LinkedData
   module Serializers
     class JSON
