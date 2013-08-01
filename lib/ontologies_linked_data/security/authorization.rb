@@ -66,12 +66,22 @@ module LinkedData
       def find_apikey(env, params)
         apikey = nil
         header_auth = env["HTTP_AUTHORIZATION"] || env["Authorization"]
-        if params["apikey"]
+        if params["apikey"] && params["userapikey"]
+          apikey_authed = authorized?(params["apikey"], env)
+          return unless apikey_authed
+          apikey = params["userapikey"]
+        elsif params["apikey"]
           apikey = params["apikey"]
         elsif apikey.nil? && header_auth
           token = Rack::Utils.parse_query(header_auth.split(" ")[1])
           # Strip spaces from start and end of string
-          apikey = token["token"].sub(/^\"(.*)\"$/) { $1 }
+          apikey = token["token"].gsub(/\"/, "")
+          # If the user apikey is passed, use that instead
+          if token["userapikey"] && !token["userapikey"].empty?
+            apikey_authed = authorized?(apikey, env)
+            return unless apikey_authed
+            apikey = token["userapikey"].gsub(/\"/, "")
+          end
         elsif apikey.nil? && env["HTTP_COOKIE"] && env["HTTP_COOKIE"].include?("ncbo_apikey")
           cookie = Rack::Utils.parse_query(env["HTTP_COOKIE"])
           apikey = cookie["ncbo_apikey"] if cookie["ncbo_apikey"]
