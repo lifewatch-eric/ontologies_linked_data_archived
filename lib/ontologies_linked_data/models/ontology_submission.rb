@@ -39,7 +39,6 @@ module LinkedData
       # Internal values for parsing - not definitive
       attribute :uploadFilePath
       attribute :masterFileName
-      attribute :summaryOnly
       attribute :submissionStatus, enforce: [:submission_status, :existence]
       attribute :missingImports, enforce: [:list]
 
@@ -106,11 +105,12 @@ module LinkedData
       end
 
       def sanity_check
-        self.bring(:summaryOnly) if self.bring?(:summaryOnly)
+        self.bring(:ontology) if self.bring?(:ontology)
+        self.ontology.bring(:summaryOnly) if self.ontology.bring?(:summaryOnly)
         self.bring(:uploadFilePath) if self.bring?(:uploadFilePath)
         self.bring(:pullLocation) if self.bring?(:pullLocation)
         self.bring(:masterFileName) if self.bring?(:masterFileName)
-        if self.summaryOnly
+        if self.ontology.summaryOnly
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
