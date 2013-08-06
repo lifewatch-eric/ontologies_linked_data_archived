@@ -63,6 +63,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=terms&conceptid=#{CGI.escape(s.id.to_s)}"}, self.uri_type)
 
       # HTTP Cache settings
+      cache_timeout 86400
       cache_segment_instance lambda {|cls| segment_instance(cls) }
       cache_segment_keys [:class]
       cache_load submission: [ontology: [:acronym]]
