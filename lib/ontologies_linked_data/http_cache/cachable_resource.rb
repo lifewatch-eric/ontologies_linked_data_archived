@@ -168,7 +168,7 @@ module LinkedData::HTTPCache
       ##
       # Timeout (default or set via cache_timeout)
       def max_age
-        cache_settings[:cache_timeout] || 60
+        cache_settings[:cache_timeout].first || 60
       end
     end
 
