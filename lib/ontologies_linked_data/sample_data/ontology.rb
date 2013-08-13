@@ -34,7 +34,8 @@ module LinkedData
           o = LinkedData::Models::Ontology.new({
             acronym: acronym,
             name: name || "Test Ontology ##{count}",
-            administeredBy: [u]
+            administeredBy: [u],
+            summaryOnly: false
           })
 
           if o.exist?
@@ -54,7 +55,6 @@ module LinkedData
               submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").first,
               submissionId: o.next_submission_id,
               definitionProperty: (RDF::IRI.new "http://bioontology.org/ontologies/biositemap.owl#definition"),
-              summaryOnly: true,
               contact: [contact],
               released: DateTime.now - 3
             })
@@ -74,8 +74,6 @@ module LinkedData
               o.bring(:acronym) if o.bring?(:acronym)
               uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(o.acronym, os.submissionId, file_path)
               os.uploadFilePath = uploadFilePath
-            else
-              os.summaryOnly = true
             end
 
             os.save unless os.exist?
