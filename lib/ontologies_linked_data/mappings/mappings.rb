@@ -23,7 +23,7 @@ module Mappings
     id_term_mapping = LinkedData::Models::TermMapping.term_mapping_id_generator(term_uris,acronym)
     return id_term_mapping if exist_term_mapping?(term_uris,acronym)
     term = LinkedData::Models::TermMapping.new
-    term.ontology = ontology ? ontology : 
+    term.ontology = ontology ? ontology :
                       LinkedData::Models::Ontology.find(acronym).include(:acronym).first
     term.term = term_uris
     term.save(batch: batch_update_file)
@@ -51,7 +51,7 @@ module Mappings
     redis.rpush(mapping_key(id_mapping), term_mapping_ids)
     return id_mapping
   end
-  
+
   def self.exist_mapping?(term_mapping_ids)
     redis = LinkedData::Mappings::Batch.redis_cache
     id_mapping = LinkedData::Models::Mapping.mapping_id_generator_iris(*term_mapping_ids)
@@ -151,7 +151,7 @@ eos
       ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
   eos
       Goo.sparql_query_client(:main).query(sparql_query).each do |sol|
-          result[ont.to_s.split("/")[-1]] = sol[:count_var].object
+          result[ont.id.to_s.split("/")[-1]] = sol[:count_var].object
       end
     end
     return result
