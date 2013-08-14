@@ -123,5 +123,22 @@ module Mappings
     mapping.delete
   end
 
+  def self.mapping_counts_for_ontology(ont)
+    sparql_query = <<-eos
+    SELECT  ?ont ( COUNT(DISTINCT ?id) AS ?count_var ) WHERE {
+  ?id <http://data.bioontology.org/metadata/terms> [
+    <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
+  ?id <http://data.bioontology.org/metadata/terms> [
+    <http://data.bioontology.org/metadata/ontology>  ?ont ] . } GROUP BY ?ont
+eos
+    result = {}
+    Goo.sparql_query_client(:main).query(sparql_query).each do |sol|
+        next if sol[:ont].to_s == ont.id.to_s
+        ont_acr = sol[:ont].to_s.split("/")[-1]
+        result[ont_acr] = sol[:count_var].object
+    end
+    return result
+  end
+
 end
 end
