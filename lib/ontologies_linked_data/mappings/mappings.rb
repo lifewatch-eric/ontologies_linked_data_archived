@@ -140,5 +140,22 @@ eos
     return result
   end
 
+  def self.mapping_counts_per_ontology()
+    ontologies = LinkedData::Models::Ontology.where.all
+    result = {}
+    ontologies.each do |ont|
+      sparql_query = <<-eos
+  SELECT  (COUNT(?id) AS ?count_var )
+  FROM <http://data.bioontology.org/metadata/TermMapping>
+  WHERE {
+      ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
+  eos
+      Goo.sparql_query_client(:main).query(sparql_query).each do |sol|
+          result[ont.to_s.split("/")[-1]] = sol[:count_var].object
+      end
+    end
+    return result
+  end
+
 end
 end
