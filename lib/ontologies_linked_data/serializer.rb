@@ -81,7 +81,7 @@ module LinkedData
         development?
       elsif ENV["rack.test"]
         true
-      elsif ENV['RACK_ENV'] && ENV['RACK_ENV'].downcase.eql?("development")
+      elsif ENV['RACK_ENV'] && ["development", "test"].include?(ENV['RACK_ENV'].downcase)
         true
       else
         false
