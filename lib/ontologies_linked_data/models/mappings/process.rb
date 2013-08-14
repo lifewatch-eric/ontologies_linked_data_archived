@@ -16,6 +16,9 @@ module LinkedData
       attribute :comment
       attribute :date, enforce: [:date_time]
 
+      # Hypermedia settings
+      embedded true
+
       def self.process_id_generator(inst)
         if inst.date
           #rest mapping
