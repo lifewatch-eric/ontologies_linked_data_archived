@@ -35,7 +35,9 @@ module LinkedData
       #mappings can exist without process
       attribute :process, enforce: [ :mapping_process, :list ]
 
-      embed :process, :terms
+      # Hypermedia settings for serializer
+      serialize_never :terms
+      embed :process, :classes
 
       def self.mapping_id_generator(ins)
         return mapping_id_generator_iris(*ins.terms.map { |x| x.id })
