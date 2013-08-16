@@ -74,6 +74,9 @@ module LinkedData
               o.bring(:acronym) if o.bring?(:acronym)
               uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(o.acronym, os.submissionId, file_path)
               os.uploadFilePath = uploadFilePath
+            else
+              o.summaryOnly = true
+              o.save
             end
 
             os.save unless os.exist?
