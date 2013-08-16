@@ -7,6 +7,8 @@ module LinkedData
       attribute :description
       attribute :created, enforce: [:date_time], :default => lambda { |record| DateTime.now }
       attribute :ontologies, inverse: { on: :ontology, attribute: :group }
+
+      cache_timeout 86400
     end
   end
 end
