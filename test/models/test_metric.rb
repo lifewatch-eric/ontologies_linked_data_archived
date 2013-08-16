@@ -1,6 +1,6 @@
 require_relative "../test_case"
 
-class TestMetrics < LinkedData::TestCase
+class TestMetric < LinkedData::TestCase
 
   def self.after_suite
     os = LinkedData::Models::Ontology.find("METRICS-TEST").first
@@ -31,9 +31,9 @@ class TestMetrics < LinkedData::TestCase
     else
       os.ontology = o
     end
-    uploadFilePath = 
-     LinkedData::Models::OntologySubmission.copy_file_repository(acronym, 
-                                                                 id, 
+    uploadFilePath =
+     LinkedData::Models::OntologySubmission.copy_file_repository(acronym,
+                                                                 id,
                                                                  ontologyFile)
     os.uploadFilePath = uploadFilePath
     os.hasOntologyLanguage = owl
@@ -50,26 +50,26 @@ class TestMetrics < LinkedData::TestCase
                       .first
 
     metrics_id = RDF::URI.new(os.id.to_s + "/metrics")
-    metrics = LinkedData::Models::Metrics.find(metrics_id).first
+    metrics = LinkedData::Models::Metric.find(metrics_id).first
     if metrics
       metrics.delete
     end
 
-    metrics = LinkedData::Models::Metrics.new
+    metrics = LinkedData::Models::Metric.new
     metrics.id = metrics_id
     metrics.classes = 1
     metrics.individuals = 2
     metrics.properties = 3
-    metrics.max_depth = 1
-    metrics.max_children = 1
-    metrics.classes_one_child= "aaaa"
-    metrics.classes_with_no_definition = 1
+    metrics.maxDepth = 1
+    metrics.maxChildren = 1
+    metrics.classesWithOneChild= "aaaa"
+    metrics.classesWithNoDefinition = 1
     assert !metrics.valid?
-    assert metrics.errors[:avg_children]
-    assert metrics.errors[:classes_one_child]
-    metrics.classes_one_child= 1
-    metrics.classes_25_children = 1
-    metrics.avg_children = 1
+    assert metrics.errors[:averageChildCount]
+    assert metrics.errors[:classesWithOneChild]
+    metrics.classesWithOneChild= 1
+    metrics.classesWithMoreThan25Children = 1
+    metrics.averageChildCount = 1
     assert metrics.valid?
     metrics.save
 
@@ -79,15 +79,15 @@ class TestMetrics < LinkedData::TestCase
 
     LinkedData::Models::OntologySubmission
                       .where.models([os])
-                      .include(metrics: LinkedData::Models::Metrics.attributes)
+                      .include(metrics: LinkedData::Models::Metric.attributes)
                       .all
 
-    assert_instance_of LinkedData::Models::Metrics, os.metrics
+    assert_instance_of LinkedData::Models::Metric, os.metrics
     metric_from_db = os.metrics
     assert metric_from_db.classes == 1
     assert metric_from_db.individuals == 2
-    assert metric_from_db.properties == 3 
-    assert metric_from_db.max_depth == 1
+    assert metric_from_db.properties == 3
+    assert metric_from_db.maxDepth == 1
 
     metric_from_db.delete
     delete_submission

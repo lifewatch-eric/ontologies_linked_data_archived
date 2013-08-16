@@ -436,7 +436,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
         assert c.synonym[0] == "Centrally Registered IDentifier"
       end
     end
-    
+
     #for indexing in search
     paging = LinkedData::Models::Class.in(sub).page(1,100)
                                               .include(:unmapped)
@@ -466,50 +466,50 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_submission_metrics
-    submission_parse("CDAOTEST", "CDAOTEST testing metrics", 
+    submission_parse("CDAOTEST", "CDAOTEST testing metrics",
                      "./test/data/ontology_files/cdao_vunknown.owl", 22,
                     index_search=false,
                     run_metrics=true)
 
     sub = LinkedData::Models::Ontology.find("CDAOTEST").first.latest_submission
     sub.bring(:metrics)
-   
+
     metrics = sub.metrics
     metrics.bring_remaining
-    assert_instance_of LinkedData::Models::Metrics, metrics
+    assert_instance_of LinkedData::Models::Metric, metrics
 
     assert metrics.classes == 143
     assert metrics.properties == 78
     assert metrics.individuals == 27
-    assert metrics.classes_one_child == 10
-    assert metrics.classes_with_no_definition == 137
-    assert metrics.classes_25_children == 0
-    assert metrics.max_children == 9
-    assert metrics.avg_children == 2
-    assert metrics.max_depth == 5
+    assert metrics.classesWithOneChild == 10
+    assert metrics.classesWithNoDefinition == 137
+    assert metrics.classesWithMoreThan25Children == 0
+    assert metrics.maxChildren == 9
+    assert metrics.averageChildCount == 2
+    assert metrics.maxDepth == 5
 
-    submission_parse("BROTEST-METRICS", "BRO testing metrics", 
+    submission_parse("BROTEST-METRICS", "BRO testing metrics",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,
                     index_search=false,
                     run_metrics=true)
 
     sub = LinkedData::Models::Ontology.find("BROTEST-METRICS").first.latest_submission
     sub.bring(:metrics)
-   
+
     metrics = sub.metrics
     metrics.bring_remaining
-    assert_instance_of LinkedData::Models::Metrics, metrics
+    assert_instance_of LinkedData::Models::Metric, metrics
 
     assert metrics.classes == 486
     assert metrics.properties == 63
     assert metrics.individuals == 80
-    assert metrics.classes_one_child == 14
+    assert metrics.classesWithOneChild == 14
     #cause it has not the subproperty added
-    assert metrics.classes_with_no_definition == 474
-    assert metrics.classes_25_children == 2
-    assert metrics.max_children == 65
-    assert metrics.avg_children == 5
-    assert metrics.max_depth == 8
+    assert metrics.classesWithNoDefinition == 474
+    assert metrics.classesWithMoreThan25Children == 2
+    assert metrics.maxChildren == 65
+    assert metrics.averageChildCount == 5
+    assert metrics.maxDepth == 8
 
   end
 

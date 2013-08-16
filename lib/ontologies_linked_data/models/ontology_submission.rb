@@ -57,6 +57,10 @@ module LinkedData
       serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
                         :publication, :documentation, :version, :description, :status, :submissionId
 
+      # Links
+      links_load :submissionId, ontology: [:acronym]
+      link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
+
       # HTTP Cache settings
       cache_segment_instance lambda {|sub| segment_instance(sub)}
       cache_segment_keys [:ontology_submission]
@@ -272,7 +276,7 @@ module LinkedData
       def process_metrics(logger)
         metrics = LinkedData::Metrics.metrics_for_submission(self,logger)
         metrics.id = RDF::URI.new(self.id.to_s + "/metrics")
-        exist_metrics = LinkedData::Models::Metrics.find(metrics.id).first
+        exist_metrics = LinkedData::Models::Metric.find(metrics.id).first
         exist_metrics.delete if exist_metrics
         metrics.save
         self.metrics = metrics

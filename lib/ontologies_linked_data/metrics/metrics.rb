@@ -5,13 +5,13 @@ module LinkedData
 
       cls_metrics = class_metrics(submission,logger)
 
-      metrics = LinkedData::Models::Metrics.new
+      metrics = LinkedData::Models::Metric.new
       cls_metrics.each do |k,v|
         metrics.send("#{k}=",v)
       end
       metrics.individuals = number_individuals(submission)
       metrics.properties = number_properties(submission)
-      metrics.max_depth = max_depth(submission)
+      metrics.maxDepth = maxDepth(submission)
       return metrics
     end
 
@@ -22,11 +22,11 @@ module LinkedData
                                         .page(1,size_page)
       cls_metrics = {}
       cls_metrics[:classes] = 0
-      cls_metrics[:avg_children] = 0
-      cls_metrics[:max_children] = 0
-      cls_metrics[:classes_one_child] = 0
-      cls_metrics[:classes_25_children] = 0
-      cls_metrics[:classes_with_no_definition] = 0
+      cls_metrics[:averageChildCount] = 0
+      cls_metrics[:maxChildren] = 0
+      cls_metrics[:classesWithOneChild] = 0
+      cls_metrics[:classesWithMoreThan25Children] = 0
+      cls_metrics[:classesWithNoDefinition] = 0
       page = 1
       children_counts = []
       begin
@@ -39,13 +39,13 @@ module LinkedData
           #TODO: investigate
           #for some weird reason NIFSTD brings false:FalseClass here
           unless cls.definition.is_a?(Array) && cls.definition.length > 0
-            cls_metrics[:classes_with_no_definition] += 1
+            cls_metrics[:classesWithNoDefinition] += 1
           end
           if cls.children.length > 24
-            cls_metrics[:classes_25_children] += 1
+            cls_metrics[:classesWithMoreThan25Children] += 1
           end
           if cls.children.length == 1
-            cls_metrics[:classes_one_child] += 1
+            cls_metrics[:classesWithOneChild] += 1
           end
           if cls.children.length > 0
             children_counts << cls.children.length
@@ -54,12 +54,12 @@ module LinkedData
         page = page_classes.next? ? page + 1 : nil
       end while(!page.nil?)
       if children_counts.length > 0
-        cls_metrics[:max_children] = children_counts.max
+        cls_metrics[:maxChildren] = children_counts.max
         sum = 0
         children_counts.each do |x|
           sum += x
         end
-        cls_metrics[:avg_children]  = (sum.to_f / children_counts.length).to_i
+        cls_metrics[:averageChildCount]  = (sum.to_f / children_counts.length).to_i
       end
       return cls_metrics
     end
@@ -117,14 +117,14 @@ eof
       end
       #for some reason 4store fails with many
       #filters
-      filters = filters[0..30] 
+      filters = filters[0..30]
       filters = filters.join " && "
       query = <<eof
   SELECT * WHERE {
     GRAPH #{submission.id.to_ntriples} {
       #{joins}
       FILTER (#{filters})
-    } } 
+    } }
    LIMIT 1
 eof
      rs = Goo.sparql_query_client.query(query)
@@ -134,7 +134,7 @@ eof
      return level
     end
 
-    def self.max_depth(submission)
+    def self.maxDepth(submission)
       submission.bring(:hierarchyProperty)
       return recursive_depth(submission,0)
     end
