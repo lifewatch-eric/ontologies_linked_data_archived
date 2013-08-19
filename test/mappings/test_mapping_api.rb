@@ -26,8 +26,8 @@ class TestMappingAPI < LinkedData::TestOntologyCommon
  "http://purl.obolibrary.org/obo/SBO_0000520",
  "http://purl.obolibrary.org/obo/SBO_0000521",
  "http://purl.obolibrary.org/obo/SBO_0000522"]
-      
-      
+
+
     ONT3_TERMS = ["http://purl.obolibrary.org/obo/IAO_0000178",
  "http://purl.obolibrary.org/obo/IAO_0000179",
  "http://purl.obolibrary.org/obo/IAO_0000180",
@@ -69,7 +69,7 @@ class TestMappingAPI < LinkedData::TestOntologyCommon
     end
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
     assert (not ont_submision.valid?)
-    assert_equal 6, ont_submision.errors.length
+    assert_equal 5, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED",name)

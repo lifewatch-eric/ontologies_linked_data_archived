@@ -103,7 +103,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = dup
     assert (!ont_submision.valid?)
-    assert_equal 2, ont_submision.errors.length
+    assert_equal 1, ont_submision.errors.length
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
     assert_instance_of String, ont_submision.errors[:submissionStatus][:existence]
   end
@@ -137,7 +137,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     assert (not ont_submision.valid?)
-    assert_equal 6, ont_submision.errors.length
+    assert_equal 5, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
