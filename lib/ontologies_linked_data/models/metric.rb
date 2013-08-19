@@ -12,7 +12,7 @@ module LinkedData
       attribute :individuals, enforce: [:integer,:existence]
       attribute :properties, enforce: [:integer,:existence]
       attribute :maxDepth, enforce: [:integer,:existence]
-      attribute :maxChildren, enforce: [:integer,:existence]
+      attribute :maxChildCount, enforce: [:integer,:existence]
       attribute :averageChildCount, enforce: [:integer,:existence]
       attribute :classesWithOneChild, enforce: [:integer,:existence]
       attribute :classesWithMoreThan25Children, enforce: [:integer,:existence]

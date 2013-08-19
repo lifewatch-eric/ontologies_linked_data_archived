@@ -61,7 +61,7 @@ class TestMetric < LinkedData::TestCase
     metrics.individuals = 2
     metrics.properties = 3
     metrics.maxDepth = 1
-    metrics.maxChildren = 1
+    metrics.maxChildCount = 1
     metrics.classesWithOneChild= "aaaa"
     metrics.classesWithNoDefinition = 1
     assert !metrics.valid?
