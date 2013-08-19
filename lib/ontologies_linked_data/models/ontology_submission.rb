@@ -68,7 +68,8 @@ module LinkedData
 
       # Access control
       read_restriction_based_on lambda {|sub| sub.ontology}
-      access_control_load :ontology
+      access_control_load ontology: [:administeredBy, :acl, :viewingRestriction]
+
 
       def self.segment_instance(sub)
         sub.bring(:ontology) unless sub.loaded_attributes.include?(:ontology)
@@ -114,7 +115,9 @@ module LinkedData
         self.bring(:uploadFilePath) if self.bring?(:uploadFilePath)
         self.bring(:pullLocation) if self.bring?(:pullLocation)
         self.bring(:masterFileName) if self.bring?(:masterFileName)
-        if self.ontology.summaryOnly
+        self.bring(:submissionStatus) if self.bring?(:submissionStatus)
+        self.submissionStatus.bring(:code) if self.submissionStatus.bring?(:code)
+        if self.ontology.summaryOnly || self.submissionStatus.code.eql?("ARCHIVED")
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
