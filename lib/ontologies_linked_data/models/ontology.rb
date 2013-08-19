@@ -89,7 +89,7 @@ module LinkedData
 
       def next_submission_id
         self.bring(:submissions)
-        (highest_submission_id || 0) + 1
+        (highest_submission_id(status: :any) || 0) + 1
       end
 
       def highest_submission_id(options = {})
