@@ -105,6 +105,7 @@ module LinkedData
 
       def valid?
         valid_result = super
+        return false unless valid_result
         sc = self.sanity_check
         return valid_result && sc
       end
