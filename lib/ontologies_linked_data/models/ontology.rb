@@ -62,8 +62,7 @@ module LinkedData
 
       def latest_submission(options = {})
         self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
-        status = options[:status] || :parsed
-        submission_id = highest_submission_id(status)
+        submission_id = highest_submission_id(options)
         return nil if submission_id.nil?
         self.submissions.each do |s|
           return s if s.submissionId == submission_id
@@ -93,9 +92,12 @@ module LinkedData
         (highest_submission_id || 0) + 1
       end
 
-      def highest_submission_id(status = nil)
+      def highest_submission_id(options = {})
+        status = options[:status] || :parsed
+        reload = options[:reload] || false
+
         #just reload submissions - TODO: smarter
-        if self.bring?(:submissions) ||
+        if reload || self.bring?(:submissions) ||
             (self.submissions.first &&
              (self.submissions.first.bring?(:submissionId) ||
               self.submissions.first.bring?(:submissionStatus)))
