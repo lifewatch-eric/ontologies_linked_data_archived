@@ -340,7 +340,7 @@ module LinkedData
       def delete(*args)
         options = {}
         args.each {|e| options.merge!(e) if e.is_a?(Hash)}
-        remove_index = options[:remove_index] || true
+        remove_index = options[:remove_index] ? true : false
 
         super(*args)
         self.ontology.unindex()
