@@ -1,13 +1,21 @@
 require_relative "../test_case"
-require 'pry'
+require 'rack'
 
 class TestOntology < LinkedData::TestCase
 
   def self.before_suite
-    #stub_request(:get, "example.com/ontology_file").to_return(:body => "fake ontology content")
+    @@thread = Thread.new do
+      Rack::Server.start(
+        app: lambda do |e|
+          [200, {'Content-Type' => 'text/plain'}, ['test file']]
+        end,
+        Port: 3456
+      )
+    end
   end
 
   def self.after_suite
+    Thread.kill(@@thread)
   end
 
   def setup
@@ -46,7 +54,7 @@ class TestOntology < LinkedData::TestCase
     os = LinkedData::Models::OntologySubmission.new({
       ontology: o,
       hasOntologyLanguage: @of,
-      pullLocation: RDF::IRI.new("http://example.com/ontology_file"),
+      pullLocation: RDF::IRI.new("http://localhost:3456/"),
       submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").to_a[0],
       submissionId: o.next_submission_id,
       contact: [@contact],
@@ -56,20 +64,8 @@ class TestOntology < LinkedData::TestCase
   end
 
   def _delete_objects
-
     o = LinkedData::Models::Ontology.find(@acronym).first
     o.delete unless o.nil?
-
-
-    #u = LinkedData::Models::User.find("tim")
-    #u.delete unless u.nil?
-
-    #of = LinkedData::Models::OntologyFormat.find("OWL")
-    #of.delete unless of.nil?
-
-    #ss = LinkedData::Models::SubmissionStatus.find("UPLOADED")
-    #ss.delete unless ss.nil?
-
   end
 
   def test_valid_ontology

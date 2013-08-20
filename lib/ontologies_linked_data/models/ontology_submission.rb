@@ -106,6 +106,7 @@ module LinkedData
 
       def valid?
         valid_result = super
+        return false unless valid_result
         sc = self.sanity_check
         return valid_result && sc
       end
@@ -372,7 +373,7 @@ module LinkedData
       def delete(*args)
         options = {}
         args.each {|e| options.merge!(e) if e.is_a?(Hash)}
-        remove_index = options[:remove_index] || true
+        remove_index = options[:remove_index] ? true : false
 
         super(*args)
         self.ontology.unindex()

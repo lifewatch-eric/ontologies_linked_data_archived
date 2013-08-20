@@ -47,7 +47,7 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
       assert (not ont_submision.valid?)
-      assert_equal 6, ont_submision.errors.length
+      assert_equal 5, ont_submision.errors.length
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
       ont_submision.uploadFilePath = uploadFilePath
       owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
@@ -77,7 +77,7 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
       assert (not ont_submision.valid?)
-      assert_equal 6, ont_submision.errors.length
+      assert_equal 5, ont_submision.errors.length
       file_path = "./test/data/ontology_files/custom_properties.owl"
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
       ont_submision.uploadFilePath = uploadFilePath

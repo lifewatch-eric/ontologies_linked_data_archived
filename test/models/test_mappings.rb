@@ -3,7 +3,7 @@ require "logger"
 
 class TestMapping < LinkedData::TestOntologyCommon
 
-  def setup
+  def self.before_suite
     if LinkedData::Models::Mapping.all.length > 100
       puts "KB with too many mappings to run test. Is this pointing to a TEST KB?"
       raise Exception, "KB with too many mappings to run test. Is this pointing to a TEST KB?"
@@ -20,17 +20,18 @@ class TestMapping < LinkedData::TestOntologyCommon
     ontologies_parse()
   end
 
-  def ontologies_parse()
-    submission_parse("MappingOntTest1", 
+  def self.ontologies_parse()
+    helper = LinkedData::TestOntologyCommon.new(self)
+    helper.submission_parse("MappingOntTest1", 
                      "MappingOntTest1", 
                      "./test/data/ontology_files/BRO_v3.2.owl", 11,false)
-    submission_parse("MappingOntTest2", 
+    helper.submission_parse("MappingOntTest2", 
                      "MappingOntTest2", 
                      "./test/data/ontology_files/CNO_05.owl", 22, false)
-    submission_parse("MappingOntTest3", 
+    helper.submission_parse("MappingOntTest3", 
                      "MappingOntTest3", 
                      "./test/data/ontology_files/aero.owl", 33,false)
-    submission_parse("MappingOntTest4", 
+    helper.submission_parse("MappingOntTest4", 
                      "MappingOntTest4", 
                      "./test/data/ontology_files/fake_for_mappings.owl", 44,false)
   end
@@ -136,7 +137,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       #reusing TermMapping
       tm2 = LinkedData::Models::TermMapping.new(term: [ont2_terms_uris[i]], ontology: ont2)
       assert  tm2.exist?
-      tm2 = LinkedData::Models::TermMapping.find(LinkedData::Models::TermMapping.term_mapping_id_generator(tm2)).first
+      tm2 = LinkedData::Models::TermMapping.find(
+        LinkedData::Models::TermMapping.term_mapping_id_generator([ont2_terms_uris[i]],ont2.acronym)).first
       tm3 = LinkedData::Models::TermMapping.new(term: [RDF::IRI.new(ont3_terms_uris[i])], ontology: ont3)
       tm3.save
       map = LinkedData::Models::Mapping.new(terms: [tm2, tm3], process: [process])
