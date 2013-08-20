@@ -136,7 +136,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       #reusing TermMapping
       tm2 = LinkedData::Models::TermMapping.new(term: [ont2_terms_uris[i]], ontology: ont2)
       assert  tm2.exist?
-      tm2 = LinkedData::Models::TermMapping.find(LinkedData::Models::TermMapping.term_mapping_id_generator(tm2)).first
+      tm2 = LinkedData::Models::TermMapping.find(
+        LinkedData::Models::TermMapping.term_mapping_id_generator([ont2_terms_uris[i]],ont2.acronym)).first
       tm3 = LinkedData::Models::TermMapping.new(term: [RDF::IRI.new(ont3_terms_uris[i])], ontology: ont3)
       tm3.save
       map = LinkedData::Models::Mapping.new(terms: [tm2, tm3], process: [process])
