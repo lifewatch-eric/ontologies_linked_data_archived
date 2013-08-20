@@ -3,7 +3,7 @@ require "logger"
 
 class TestMapping < LinkedData::TestOntologyCommon
 
-  def setup
+  def self.before_suite
     if LinkedData::Models::Mapping.all.length > 100
       puts "KB with too many mappings to run test. Is this pointing to a TEST KB?"
       raise Exception, "KB with too many mappings to run test. Is this pointing to a TEST KB?"
@@ -20,17 +20,18 @@ class TestMapping < LinkedData::TestOntologyCommon
     ontologies_parse()
   end
 
-  def ontologies_parse()
-    submission_parse("MappingOntTest1", 
+  def self.ontologies_parse()
+    helper = LinkedData::TestOntologyCommon.new(self)
+    helper.submission_parse("MappingOntTest1", 
                      "MappingOntTest1", 
                      "./test/data/ontology_files/BRO_v3.2.owl", 11,false)
-    submission_parse("MappingOntTest2", 
+    helper.submission_parse("MappingOntTest2", 
                      "MappingOntTest2", 
                      "./test/data/ontology_files/CNO_05.owl", 22, false)
-    submission_parse("MappingOntTest3", 
+    helper.submission_parse("MappingOntTest3", 
                      "MappingOntTest3", 
                      "./test/data/ontology_files/aero.owl", 33,false)
-    submission_parse("MappingOntTest4", 
+    helper.submission_parse("MappingOntTest4", 
                      "MappingOntTest4", 
                      "./test/data/ontology_files/fake_for_mappings.owl", 44,false)
   end
