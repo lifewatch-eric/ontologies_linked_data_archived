@@ -102,10 +102,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = dup
+    ont_submision.submissionStatus = status
     assert (!ont_submision.valid?)
     assert_equal 1, ont_submision.errors.length
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
-    assert_instance_of String, ont_submision.errors[:submissionStatus][:existence]
   end
 
   def test_submission_parse
