@@ -40,6 +40,7 @@ module LinkedData
       attribute :uploadFilePath
       attribute :masterFileName
       attribute :submissionStatus, enforce: [:submission_status, :existence]
+      attribute :submissionStatusErrorMsg
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
@@ -180,13 +181,16 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
-      def process_submission(logger,index_search=true,run_metrics=true)
+      def process_submission(logger, index_search=true, run_metrics=true)
 
         self.bring_remaining
         self.ontology.bring_remaining
 
         if not self.valid?
           error = "Submission is not valid, it cannot be processed. Check errors"
+          rdf_error_status = SubmissionStatus.find("ERROR_RDF").first
+          self.submissionStatus = rdf_error_status
+          self.submissionStatusErrorMsg = error
           logger.info(error)
           logger.flush
           raise ArgumentError, error
@@ -194,6 +198,9 @@ module LinkedData
 
         if not self.uploadFilePath
           error = "Submission is missing an ontology file, cannot parse"
+          rdf_error_status = SubmissionStatus.find("ERROR_RDF").first
+          self.submissionStatus = rdf_error_status
+          self.submissionStatusErrorMsg = error
           logger.info(error)
           logger.flush
           raise ArgumentError, error
@@ -202,68 +209,94 @@ module LinkedData
         logger.info("Starting parse for #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
 
-        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
-        zip_dst = nil
-        if zip
-          zip_dst = self.zip_folder
-          if Dir.exist? zip_dst
-            FileUtils.rm_r [zip_dst]
-          end
-          FileUtils.mkdir_p zip_dst
-          extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
-
-          # Set master file name automatically if there is only one file
-          if extracted.length == 1 && self.masterFileName.nil?
-            self.masterFileName = extracted.first.name
-            self.save
-          end
-
-          logger.info("Files extracted from zip #{extracted}")
-          logger.flush
-        end
-        LinkedData::Parser.logger = logger
-
-        if self.hasOntologyLanguage.umls?
-          file_name = zip ?
-            File.join(File.expand_path(self.data_folder.to_s), self.masterFileName)
-                                                 : self.uploadFilePath.to_s
-          triples_file_path = File.expand_path(file_name)
-          logger.info("Using UMLS turtle file, skipping OWLAPI parse")
-          logger.flush
-          delete_and_append(triples_file_path,
-                            logger,
-                            LinkedData::MediaTypes
-                                .media_type_from_base(LinkedData::MediaTypes::TURTLE))
-        else
-          input_data = zip_dst || self.uploadFilePath
-          labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
-          owlapi = LinkedData::Parser::OWLAPICommand.new(
-                      File.expand_path(input_data.to_s),
-                      File.expand_path(self.data_folder.to_s),
-                      self.masterFileName)
-          triples_file_path, missing_imports = owlapi.parse
-          if missing_imports
-            missing_imports.each do |imp|
-              logger.info("OWL_IMPORT_MISSING: #{imp}")
+        begin
+          zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
+          zip_dst = nil
+          if zip
+            zip_dst = self.zip_folder
+            if Dir.exist? zip_dst
+              FileUtils.rm_r [zip_dst]
             end
-          end
-          logger.flush
-          delete_and_append(triples_file_path, logger)
+            FileUtils.mkdir_p zip_dst
+            extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
 
-          missing_labels_generation(logger, labels_file)
-          logger.flush
+            # Set master file name automatically if there is only one file
+            if extracted.length == 1 && self.masterFileName.nil?
+              self.masterFileName = extracted.first.name
+              self.save
+            end
+
+            logger.info("Files extracted from zip #{extracted}")
+            logger.flush
+          end
+          LinkedData::Parser.logger = logger
+
+          if self.hasOntologyLanguage.umls?
+            file_name = zip ?
+              File.join(File.expand_path(self.data_folder.to_s), self.masterFileName)
+                                                   : self.uploadFilePath.to_s
+            triples_file_path = File.expand_path(file_name)
+            logger.info("Using UMLS turtle file, skipping OWLAPI parse")
+            logger.flush
+            delete_and_append(triples_file_path,
+                              logger,
+                              LinkedData::MediaTypes
+                                  .media_type_from_base(LinkedData::MediaTypes::TURTLE))
+            rdf_status = SubmissionStatus.find("RDF").first
+            self.submissionStatus = rdf_status
+          else
+            input_data = zip_dst || self.uploadFilePath
+            labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
+            owlapi = LinkedData::Parser::OWLAPICommand.new(
+                        File.expand_path(input_data.to_s),
+                        File.expand_path(self.data_folder.to_s),
+                        self.masterFileName)
+            triples_file_path, missing_imports = owlapi.parse
+            if missing_imports
+              missing_imports.each do |imp|
+                logger.info("OWL_IMPORT_MISSING: #{imp}")
+              end
+            end
+            logger.flush
+            delete_and_append(triples_file_path, logger)
+
+            rdf_status = SubmissionStatus.find("RDF").first
+            self.submissionStatus = rdf_status
+
+            begin
+              missing_labels_generation(logger, labels_file)
+              labels_status = SubmissionStatus.find("LABELS").first
+              self.submissionStatus = labels_status
+            rescue Exception => e
+              labels_error_status = SubmissionStatus.find("ERROR_LABELS").first
+              self.submissionStatus = labels_error_status
+              self.submissionStatusErrorMsg = e.message
+            end
+            logger.flush
+          end
+        rescue Exception => e
+          rdf_error_status = SubmissionStatus.find("ERROR_RDF").first
+          self.submissionStatus = rdf_error_status
+          self.submissionStatusErrorMsg = e.message
         end
 
         #index this ontology
-        #this is disable for the moment
         if index_search
-          index(logger, false)
+          begin
+            index(logger, false)
+            indexed_status = SubmissionStatus.find("INDEXED").first
+            self.submissionStatus = indexed_status
+          rescue Exception => e
+            indexed_error_status = SubmissionStatus.find("ERROR_INDEX").first
+            self.submissionStatus = indexed_error_status
+            self.submissionStatusErrorMsg = e.message
+          end
         end
 
         process_metrics(logger) if run_metrics
 
-        rdf_status = SubmissionStatus.find("RDF").first
-        self.submissionStatus = rdf_status
+        ready_status = SubmissionStatus.find("READY").first
+        self.submissionStatus = ready_status
 
         if missing_imports && missing_imports.length > 0
           self.missingImports = missing_imports
