@@ -149,7 +149,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
-    ont_submision.process_submission Logger.new(STDOUT)
+    ont_submision.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
     assert ont_submision.submissionStatus.parsed?
 
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
@@ -300,7 +300,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission Logger.new(STDOUT)
+    sub.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
     assert sub.submissionStatus.parsed?
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -361,7 +361,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission Logger.new(STDOUT)
+    sub.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
     assert sub.submissionStatus.parsed?
 
     assert sub.missingImports.length == 1
@@ -409,7 +409,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),index_search=false)
+    sub.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
     assert sub.submissionStatus.parsed?
 
     page_classes = LinkedData::Models::Class.in(sub)

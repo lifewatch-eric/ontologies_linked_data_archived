@@ -160,7 +160,12 @@ class TestClassModel < LinkedData::TestOntologyCommon
     cls = LinkedData::Models::Class.find(class_id).in(os).include(:unmapped).first
 
     versionInfo = Goo.vocabulary(:owl)[:versionInfo]
-    assert (cls.unmapped[versionInfo][0].value == "some version info")
+    assert cls.unmapped.keys.include?versionInfo
+    cls.unmapped.each do |k,v|
+      if k == versionInfo
+        assert v[0].value == "some version info"
+      end
+    end
   end
 
   def test_children_count
