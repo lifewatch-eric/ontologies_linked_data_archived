@@ -119,25 +119,8 @@ module Mappings
     if procs.length > 0
       raise ArgumentError, "A mapping with processes cannot be deleted"
     end
-    mapping.bring(:terms) if mapping.bring?(:terms)
-    mapping.terms.each do |t|
-      t.bring(:mappings)
-      #only this mapping pointing to the termmapping
-      if t.mappings.length == 1
-        delete_term_mapping(t)
-      end
-    end
     redis.del(mapping_key(mapping.id))
     mapping.delete
-  end
-
-  def self.delete_term_mapping(tm)
-    redis = LinkedData::Mappings::Batch.redis_cache
-    unless redis.exists(term_mapping_key(tm.id))
-      raise ArgumentError, "TermMapping id #{tm.id.to_ntriples} not found"
-    end
-    redis.del(term_mapping_key(tm.id))
-    tm.delete
   end
 
   def self.mapping_counts_for_ontology(ont)
