@@ -55,7 +55,6 @@ class TestOntology < LinkedData::TestCase
       ontology: o,
       hasOntologyLanguage: @of,
       pullLocation: RDF::IRI.new("http://localhost:3456/"),
-      submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").to_a[0],
       submissionId: o.next_submission_id,
       contact: [@contact],
       released: DateTime.now - 5
