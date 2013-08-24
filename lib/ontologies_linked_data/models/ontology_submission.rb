@@ -39,9 +39,7 @@ module LinkedData
       # Internal values for parsing - not definitive
       attribute :uploadFilePath
       attribute :masterFileName
-
       attribute :submissionStatus, enforce: [:submission_status, :existence, :list], default: lambda { |record| [SubmissionStatus.find("UPLOADED").first] }
-
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology

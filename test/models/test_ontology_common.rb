@@ -55,7 +55,6 @@ module LinkedData
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = bro
-      ont_submision.submissionStatus = status
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
@@ -87,7 +86,6 @@ module LinkedData
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = ont
-      ont_submision.submissionStatus = status
       ont_submision.prefLabelProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
       ont_submision.synonymProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel")
       ont_submision.definitionProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myDefinition")

@@ -38,7 +38,6 @@ class TestMetric < LinkedData::TestCase
     os.uploadFilePath = uploadFilePath
     os.hasOntologyLanguage = owl
     os.ontology = bogus
-    os.submissionStatus = status
     os.save
   end
 

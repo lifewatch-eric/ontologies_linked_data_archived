@@ -45,7 +45,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     os.uploadFilePath = uploadFilePath
     os.hasOntologyLanguage = owl
     os.ontology = bogus
-    os.submissionStatus = status
     assert os.valid?
   end
 
@@ -68,7 +67,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.uploadFilePath = uploadFilePath
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = rad
-    ont_submision.submissionStatus = status
     assert (not ont_submision.valid?)
     assert_equal 1, ont_submision.errors.length
     assert_instance_of Hash, ont_submision.errors[:uploadFilePath][0]
@@ -102,7 +100,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = dup
-    ont_submision.submissionStatus = status
     assert (!ont_submision.valid?)
     assert_equal 1, ont_submision.errors.length
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
@@ -145,7 +142,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.prefLabelProperty = RDF::URI.new("http://bioontology.org/projects/ontologies/radlex/radlexOwl#Preferred_name")
     ont_submision.ontology = bro
-    ont_submision.submissionStatus = status
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
@@ -251,7 +247,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = emo
-    ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
 
@@ -293,7 +288,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.contact = [contact]
     ont_submision.ontology = sbo
-    ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)
@@ -355,7 +349,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = emo
     ont_submision.contact = [contact]
-    ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
 
@@ -402,7 +395,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.hasOntologyLanguage = owl
     ont_submision.contact = [contact]
     ont_submision.ontology = aero
-    ont_submision.submissionStatus = status
     assert (ont_submision.valid?)
     ont_submision.save
     assert_equal true, ont_submision.exist?(reload=true)

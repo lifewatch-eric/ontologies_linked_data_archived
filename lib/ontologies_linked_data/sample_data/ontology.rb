@@ -52,7 +52,6 @@ module LinkedData
             os = LinkedData::Models::OntologySubmission.new({
               ontology: o,
               hasOntologyLanguage: of,
-              submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").first,
               submissionId: o.next_submission_id,
               definitionProperty: (RDF::IRI.new "http://bioontology.org/ontologies/biositemap.owl#definition"),
               contact: [contact],
