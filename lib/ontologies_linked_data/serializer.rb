@@ -10,6 +10,9 @@ module LinkedData
       obj = options[:ld_object] || body
 
       params = env["rack.request.query_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
+      if params.length == 0 && env["rack.request.form_hash"] && env["rack.request.form_hash"].length > 0
+        params = env["rack.request.form_hash"]
+      end
 
       best = best_response_type(env, params)
 
