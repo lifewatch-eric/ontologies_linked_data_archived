@@ -126,8 +126,10 @@ module LinkedData
       end
 
       def properties
-        cls_all = self.class.find(self.id).in(self.submission).include(:unmapped).first
-        properties = cls_all.unmapped
+        if self.unmapped.nil?
+          raise Exception, "Properties can be call only with :unmmapped attributes preloaded"
+        end
+        properties = self.unmapped
         bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
         properties
