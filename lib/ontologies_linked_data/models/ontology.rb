@@ -93,7 +93,6 @@ module LinkedData
       end
 
       def highest_submission_id(options = {})
-        status = options[:status] || :parsed
         reload = options[:reload] || false
 
         #just reload submissions - TODO: smarter
@@ -112,7 +111,7 @@ module LinkedData
         # Try to get a new one based on the old
         submission_ids = []
         tmp_submissions.each do |s|
-          next if !s.submissionStatus.parsed? && status == :parsed
+          next if !s.ready?
           submission_ids << s.submissionId.to_i
         end
 

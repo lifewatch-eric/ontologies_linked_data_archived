@@ -19,7 +19,7 @@ class TestMetric < LinkedData::TestCase
     id = 10
 
     owl, bogus, user, status, contact =
-      submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED")
+      submission_dependent_objects("OWL", acronym, "test_linked_models")
     os = LinkedData::Models::OntologySubmission.new
     os.submissionId = id
     os.contact = [contact]

@@ -11,8 +11,8 @@ module LinkedData
       ]
       @ready_status = [
           SubmissionStatus.find("UPLOADED").first,
-          SubmissionStatus.find("RDF_LABELS").first,
           SubmissionStatus.find("RDF").first,
+          SubmissionStatus.find("RDF_LABELS").first,
           SubmissionStatus.find("INDEXED").first,
           SubmissionStatus.find("METRICS").first
       ]
@@ -23,6 +23,10 @@ module LinkedData
               :inverse => { :on => :ontology_submission,
               :attribute => :submissionStatus }
       enum VALUES
+
+      def get_ready_status
+        return @ready_status
+      end
 
       def is_error?
         return self.code.start_with?("ERROR_")

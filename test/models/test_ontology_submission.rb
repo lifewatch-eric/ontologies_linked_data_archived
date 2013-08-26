@@ -23,7 +23,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
     id = 10
 
-    owl, bogus, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, bogus, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
 
     os = LinkedData::Models::OntologySubmission.new
     assert (not os.valid?)
@@ -58,7 +58,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     teardown
 
-    owl, rad, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, rad, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
@@ -93,7 +93,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ontologyFile = "./test/data/ontology_files/ont_dup_names.zip"
     id = 10
 
-    owl, dup, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, dup, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
     ont_submision.contact = [contact]
@@ -137,7 +137,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_equal 5, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.prefLabelProperty = RDF::URI.new("http://bioontology.org/projects/ontologies/radlex/radlexOwl#Preferred_name")
@@ -145,8 +145,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
-    ont_submision.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
-    assert ont_submision.submissionStatus.parsed?
+    ont_submision.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
@@ -178,7 +178,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_equal 1, oss.length
     ont_sub = oss[0]
     ont_sub.bring_remaining
-    assert ont_sub.submissionStatus.parsed?
+    assert ont_sub.ready?
     LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonym).read_only.each do |c|
       assert (not c.prefLabel.nil?)
       assert_instance_of String, c.prefLabel
@@ -242,7 +242,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, emo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, emo, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
     ont_submision.contact = [contact]
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
@@ -283,7 +283,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, sbo, user, status, contact = submission_dependent_objects("OBO", acronym, "test_linked_models", "UPLOADED", name)
+    owl, sbo, user, contact = submission_dependent_objects("OBO", acronym, "test_linked_models", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.contact = [contact]
@@ -294,8 +294,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
-    assert sub.submissionStatus.parsed?
+    sub.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
@@ -344,7 +344,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, emo, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, emo, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
     ont_submision.ontology = emo
@@ -354,8 +354,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
-    assert sub.submissionStatus.parsed?
+    sub.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
@@ -386,7 +386,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, aero, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+    owl, aero, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.prefLabelProperty =  RDF::URI.new "http://www.w3.org/2000/01/rdf-schema#label"
     ont_submision.synonymProperty = RDF::URI.new "http://purl.obolibrary.org/obo/IAO_0000118"
@@ -401,8 +401,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),index_search=false,run_metrics=false)
-    assert sub.submissionStatus.parsed?
+    sub.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)

@@ -89,20 +89,6 @@ module LinkedData
         )
       end
 
-      def ready?(options={})
-        status = options[:status] || :ready
-        status = status.is_a?(Array) ? status : [status]
-
-        if status.include? :ready
-          return SubmissionStatus.status_ready?(self.submissionStatus)
-        else
-          status.each do |x|
-            return false if self.submissionStatus.select { |x1| x1.code == status.to_s.upcase }.length == 0
-          end
-          return true
-        end
-      end
-
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([LinkedData.settings.repository_folder, acronym.to_s, submissionId.to_s])
         name = filename || File.basename(File.new(src).path)
@@ -132,7 +118,7 @@ module LinkedData
         self.bring(:masterFileName) if self.bring?(:masterFileName)
         self.bring(:submissionStatus) if self.bring?(:submissionStatus)
         self.submissionStatus.bring(:code) if self.submissionStatus.bring?(:code)
-        if self.ontology.summaryOnly || self.submissionStatus.code.eql?("ARCHIVED")
+        if self.ontology.summaryOnly || self.archived?
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
@@ -347,6 +333,35 @@ module LinkedData
         self.submissionStatus = s
       end
 
+      def set_ready()
+        ready_status = LinkedData::Models::SubmissionStatus.get_ready_status
+
+        ready_status.each do |status|
+          add_submission_status(status)
+        end
+      end
+
+      # allows to optionally submit a list of statuses
+      # that would define the "ready" state of this
+      # submission in this context
+      def ready?(options={})
+        status = options[:status] || :ready
+        status = status.is_a?(Array) ? status : [status]
+
+        if status.include? :ready
+          return LinkedData::Models::SubmissionStatus.status_ready?(self.submissionStatus)
+        else
+          status.each do |x|
+            return false if self.submissionStatus.select { |x1| x1.code == status.to_s.upcase }.length == 0
+          end
+          return true
+        end
+      end
+
+      def archived?
+        return self.submissionStatus.include?(LinkedData::Models::SubmissionStatus.find("ARCHIVED").first)
+      end
+
       def process_submission(logger, index_search=true, run_metrics=true)
         self.bring_remaining
         self.ontology.bring_remaining
@@ -372,7 +387,7 @@ module LinkedData
         LinkedData::Parser.logger = logger
         file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
 
-        status = SubmissionStatus.find("RDF").first
+        status = LinkedData::Models::SubmissionStatus.find("RDF").first
 
         begin
           generate_rdf(logger, file_path)
@@ -381,7 +396,7 @@ module LinkedData
           add_submission_status(status.get_error_status)
         end
 
-        status = SubmissionStatus.find("RDF_LABELS").first
+        status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
 
         begin
           generate_missing_labels(logger, file_path)
@@ -391,7 +406,7 @@ module LinkedData
         end
 
         if index_search
-          status = SubmissionStatus.find("INDEXED").first
+          status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
 
           begin
             index(logger, false)
@@ -402,7 +417,7 @@ module LinkedData
         end
 
         if run_metrics
-          status = SubmissionStatus.find("METRICS").first
+          status = LinkedData::Models::SubmissionStatus.find("METRICS").first
 
           begin
             process_metrics(logger)
@@ -413,12 +428,12 @@ module LinkedData
         end
 
         self.save
-        logger.info("Submission status updated to RDF")
+        logger.info("Submission processing completed successfully")
         logger.flush
       end
 
       def process_metrics(logger)
-        metrics = LinkedData::Metrics.metrics_for_submission(self,logger)
+        metrics = LinkedData::Metrics.metrics_for_submission(self, logger)
         metrics.id = RDF::URI.new(self.id.to_s + "/metrics")
         exist_metrics = LinkedData::Models::Metric.find(metrics.id).first
         exist_metrics.delete if exist_metrics
