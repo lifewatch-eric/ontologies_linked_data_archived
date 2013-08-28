@@ -74,7 +74,9 @@ module LinkedData
           if value.kind_of?(Hash)
             element = convert_hash(value, key, links)
           elsif value.kind_of?(Enumerable)
-            element = convert_array(value, key, links)
+            # If the hash is a page object, use collection for the top-level array's element name
+            collection_name = hash[:page] && hash[:pageCount] ? "collection" : nil
+            element = convert_array(value, key, links, collection_name)
           else
             element = ::XML::Node.new(clean_name(key))
             element << value.to_s
@@ -87,9 +89,10 @@ module LinkedData
         hash_container
       end
 
-      def self.convert_array(array, type, links = {})
-        suffix = type.to_s.downcase.eql?("collection") ? "" : "Collection"
-        root = ::XML::Node.new(clean_name(type) + suffix)
+      def self.convert_array(array, type, links = {}, collection_name = nil)
+        collection_name ||= type.to_s
+        suffix = collection_name.downcase.eql?("collection") ? "" : "Collection"
+        root = ::XML::Node.new(clean_name(collection_name) + suffix)
         array.each do |item|
           element = ::XML::Node.new(clean_name(type))
           element.attributes["type"] = type.to_s unless element.name.eql?(type.to_s)
