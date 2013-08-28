@@ -97,6 +97,13 @@ module LinkedData
       assert_equal true, ont_submision.exist?(reload=true)
       ont_submision.process_submission Logger.new(STDOUT)
 
+      roots = ont_submision.roots
+      #class99 is equilent to intersection of ...
+      #it shouldnt be at the root
+      assert roots.length == 6
+      assert !roots.map { |x| x.id.to_s }
+              .include?("http://bioportal.bioontology.org/ontologies/msotes#class99")
+
       #test to see if custom properties were saved in the graph
       custom_props = [ "http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel",
         "http://bioportal.bioontology.org/ontologies/msotes#myDefinition",
