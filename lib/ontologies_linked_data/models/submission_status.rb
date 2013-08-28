@@ -10,10 +10,11 @@ module LinkedData
       enum VALUES
 
       def self.parsed_code
-        "READY"
+        "RDF"
       end
 
       def parsed?
+        #TODO eventually this has to check for READY.
         return (self.id.to_s.end_with?(self.class.parsed_code))
       end
     end
