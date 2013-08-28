@@ -191,9 +191,13 @@ class TestClassModel < LinkedData::TestOntologyCommon
       elsif c.id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class2"
         assert c.childrenCount == 2
       elsif c.id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class3"
-        assert c.childrenCount == 1
+        assert c.childrenCount == 2
       elsif c.id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class4"
         assert c.childrenCount == 2
+      elsif c.id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class97"
+        assert c.childrenCount == 1
+      elsif c.id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class98"
+        assert c.childrenCount == 1
       else
         assert c.childrenCount == 0
       end
