@@ -425,9 +425,8 @@ module LinkedData
       end
 
       def roots(extra_include=nil,aggregate_children=false)
-        f = Goo::Filter.new(:parents).unbound
-        classes = LinkedData::Models::Class.in(self)
-                                           .filter(f)
+        owlThing = Goo.vocabulary(:owl)["Thing"]
+        classes = LinkedData::Models::Class.where(parents: owlThing).in(self)
                                            .disable_rules
                                            .all
         roots = []
