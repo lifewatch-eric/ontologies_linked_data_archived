@@ -133,6 +133,33 @@
     
 
 
+    <!-- http://bioportal.bioontology.org/ontologies/msotes#class97 -->
+
+    <owl:Class rdf:about="&msotes;class97"/>
+    
+
+
+    <!-- http://bioportal.bioontology.org/ontologies/msotes#class98 -->
+
+    <owl:Class rdf:about="&msotes;class98"/>
+    
+
+
+    <!-- http://bioportal.bioontology.org/ontologies/msotes#class99 -->
+
+    <owl:Class rdf:about="&msotes;class99">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&msotes;class97"/>
+                    <rdf:Description rdf:about="&msotes;class98"/>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
     <!-- http://bioportal.bioontology.org/ontologies/msotes#class_5 -->
 
     <owl:Class rdf:about="&msotes;class_5">
