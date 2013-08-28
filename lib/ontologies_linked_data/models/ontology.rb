@@ -111,6 +111,17 @@ module LinkedData
         # Try to get a new one based on the old
         submission_ids = []
         tmp_submissions.each do |s|
+
+
+
+
+
+          #binding.pry
+
+
+
+
+
           next if !s.ready?
           submission_ids << s.submissionId.to_i
         end

@@ -31,7 +31,7 @@ module LinkedData
       return owl, ont, user, contact
     end
 
-    def submission_parse( acronym, name, ontologyFile, id,index_search=true,run_metrics=false)
+    def submission_parse( acronym, name, ontologyFile, id, index_search=true, run_metrics=false)
       return if ENV["SKIP_PARSING"]
 
       bro = LinkedData::Models::Ontology.find(acronym).first
@@ -44,7 +44,7 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
       assert (not ont_submision.valid?)
-      assert_equal 5, ont_submision.errors.length
+      assert_equal 4, ont_submision.errors.length
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
       ont_submision.uploadFilePath = uploadFilePath
       owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
@@ -73,7 +73,7 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
       assert (not ont_submision.valid?)
-      assert_equal 5, ont_submision.errors.length
+      assert_equal 4, ont_submision.errors.length
       file_path = "./test/data/ontology_files/custom_properties.owl"
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
       ont_submision.uploadFilePath = uploadFilePath

@@ -134,7 +134,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     assert (not ont_submision.valid?)
-    assert_equal 5, ont_submision.errors.length
+    assert_equal 4, ont_submision.errors.length
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
     owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)

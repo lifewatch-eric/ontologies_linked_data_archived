@@ -9,13 +9,7 @@ module LinkedData
         "METRICS",  "ERROR_METRICS",
         "ARCHIVED"
       ]
-      @ready_status = [
-          SubmissionStatus.find("UPLOADED").first,
-          SubmissionStatus.find("RDF").first,
-          SubmissionStatus.find("RDF_LABELS").first,
-          SubmissionStatus.find("INDEXED").first,
-          SubmissionStatus.find("METRICS").first
-      ]
+      @ready_status = nil
 
       model :submission_status, name_with: :code
       attribute :code, enforce: [:existence, :unique]
@@ -24,30 +18,54 @@ module LinkedData
               :attribute => :submissionStatus }
       enum VALUES
 
-      def get_ready_status
-        return @ready_status
-      end
-
-      def is_error?
+      def error?
+        self.bring(:code) if self.bring?(:code)
         return self.code.start_with?("ERROR_")
       end
 
       def get_error_status
-        if is_error?
+        if error?
           return self
         end
 
         return SubmissionStatus.find("ERROR_#{self.code}").first
       end
 
-      def self.status_ready?(statusArr)
+      def self.status_ready?(status)
         status = status.is_a?(Array) ? status : [status]
-
         # Using http://ruby-doc.org/core-2.0/Enumerable.html#method-i-all-3F
         all_typed_correctly = status.all? {|s| s.is_a?(LinkedData::Models::SubmissionStatus)}
-        raise ArgumentException, "One or more statuses were not SubmissionStatus objects" unless all_typed_correctly
+        raise ArgumentError, "One or more statuses were not SubmissionStatus objects" unless all_typed_correctly
 
-        return (@ready_status - status).size == 0
+        ready_status_codes = self.get_ready_status.map {|s| s.code}
+        status_codes = status.map { |s|
+          s.bring(:code) if s.bring?(:code)
+          s.code
+        }
+
+
+
+
+
+        binding.pry
+
+
+
+
+
+
+        return (ready_status_codes - status_codes).size == 0
+      end
+
+      def self.get_ready_status
+        @ready_status ||= [
+            SubmissionStatus.find("UPLOADED").include(:code).first,
+            SubmissionStatus.find("RDF").include(:code).first,
+            SubmissionStatus.find("RDF_LABELS").include(:code).first,
+            SubmissionStatus.find("INDEXED").include(:code).first,
+            SubmissionStatus.find("METRICS").include(:code).first
+        ]
+        return @ready_status
       end
     end
   end

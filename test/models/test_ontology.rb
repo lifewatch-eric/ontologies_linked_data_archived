@@ -124,7 +124,6 @@ class TestOntology < LinkedData::TestCase
     ont.bring(submissions: [:submissionId])
     sub = ont.submissions[1]
     sub.bring(*LinkedData::Models::OntologySubmission.attributes)
-    sub.submissionStatus = status
     sub.set_ready
     sub.save
     latest = ont.latest_submission
