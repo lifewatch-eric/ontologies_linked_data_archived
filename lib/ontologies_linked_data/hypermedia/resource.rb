@@ -32,9 +32,9 @@ module LinkedData
           :aggregates,
           :serialize_default,
           :serialize_never,
-          :serialize_owner,
           :serialize_methods,
-          :serialize_filter
+          :serialize_filter,
+          :prevent_serialize_when_nested
         ]
 
         ##
