@@ -134,13 +134,14 @@ class TestClassModel < LinkedData::TestOntologyCommon
     cls = LinkedData::Models::Class.find(class_id).in(os).first
 
     paths = cls.paths_to_root
-    assert paths.length == 2
-    path = paths[1]
+    assert paths.length == 7
+    paths = paths.select { |x| x.length == 3 }
+    path = paths[0]
     assert path.length == 3
     assert path[2].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
     assert path[1].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class2"
     assert path[0].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class1"
-    path = paths[0]
+    path = paths[1]
     assert path.length == 3
     assert path[2].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class_5"
     assert path[1].id.to_s == "http://bioportal.bioontology.org/ontologies/msotes#class4"
