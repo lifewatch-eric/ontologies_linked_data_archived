@@ -60,6 +60,13 @@ module LinkedData
             default_attrs.delete(e)
             embed_class = self.range(e)
             next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
+            #hack to avoid nested unmapped queries in class
+            if (self.model_name == :class)
+              if attributes && attributes.include?(:properties)
+                attributes = attributes.dup
+                attributes.delete :properties
+              end
+            end
             embed_attrs[e] = embed_class.goo_attrs_to_load(attributes, level += 1)
           end
         end
