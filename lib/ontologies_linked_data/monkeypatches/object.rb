@@ -15,9 +15,6 @@ class Object
     # Get sets for passed parameters from users
     all = options[:all] ||= false
     only = Set.new(options[:only]).map! {|e| e.to_sym }
-    if options && options[:recurse] && only && only.include?(:properties)
-      only.delete :properties
-    end
     methods = Set.new(options[:methods]).map! {|e| e.to_sym }
     except = Set.new(options[:except]).map! {|e| e.to_sym }
 
@@ -252,9 +249,13 @@ class Object
     # If we're using a struct here, we should get it's class
     sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
 
-    if sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
+    # Don't process if we're recursing and this attribute is forbidden in nested elements
+    return hash, false if sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute)
+
+    embedded = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
+    if embedded
+      options[:recurse] = true
       if (value.is_a?(Array) || value.is_a?(Set))
-        options[:recurse] = true
         values = value.map {|e| e.to_flex_hash(options, &block)}
       else
         values = value.to_flex_hash(options, &block)
