@@ -7,9 +7,21 @@ module LinkedData
         links = {}
         hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           if hashed_obj.is_a?(Goo::Base::Resource)
-            hash["id"] = hashed_obj.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)
-            links_xml = generate_links(hashed_obj)
-            links[hash["id"]] = links_xml unless links_xml.empty?
+            current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
+
+            # Add the id and type
+            if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
+              prefixed_id = LinkedData.settings.replace_url_prefix ? hashed_obj.id.to_s.gsub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
+              hash["id"] = prefixed_id
+              hash["type"] = current_cls.type_uri.to_s
+            end
+
+            # Generate links
+            show_links = options[:params].nil? || options[:params]["no_links"].nil? || !options[:params]["no_links"].eql?("true")
+            if show_links
+              links_xml = generate_links(hashed_obj)
+              links[hash["id"]] = links_xml unless links_xml.empty?
+            end
           end
         end
         cls = obj.kind_of?(Array) || obj.kind_of?(Set) ? obj.first.class : obj.class
@@ -42,13 +54,11 @@ module LinkedData
         return {} if !object.is_a?(LinkedData::Hypermedia::Resource) || object.class.hypermedia_settings[:link_to].empty?
         links = object.class.hypermedia_settings[:link_to]
         links_output = ::XML::Node.new("links")
-        self_link = ::XML::Node.new("self")
-        self_link['href'] = object.id.to_s.gsub("http://data.bioontology.org/metadata/", LinkedData.settings.rest_url_prefix)
-        self_link['rel'] = object.class.type_uri.to_s
-        links_output << self_link
         links.each do |link|
           link_xml = ::XML::Node.new(link.type)
-          link_xml['href'] = LinkedData::Hypermedia.expand_link(link, object)
+          expanded_link = LinkedData::Hypermedia.expand_link(link, object)
+          prefix = expanded_link.start_with?("http") ? "" : LinkedData.settings.rest_url_prefix
+          link_xml['href'] = prefix + expanded_link
           link_xml['rel'] = link.type_uri.to_s if link.type_uri
           links_output << link_xml
         end
@@ -56,15 +66,17 @@ module LinkedData
       end
 
       def self.convert_hash(hash, type, links = {})
-        hash_container = ::XML::Node.new(type)
+        hash_container = ::XML::Node.new(clean_name(type))
         element = nil
         hash.each do |key, value|
+          # If this is for a page element, use the actual type for the top-level collection
+          key = type if key.to_s.eql?("collection")
           if value.kind_of?(Hash)
             element = convert_hash(value, key, links)
           elsif value.kind_of?(Enumerable)
             element = convert_array(value, key, links)
           else
-            element = ::XML::Node.new(key)
+            element = ::XML::Node.new(clean_name(key))
             element << value.to_s
           end
           hash_container << element
@@ -76,9 +88,11 @@ module LinkedData
       end
 
       def self.convert_array(array, type, links = {})
-        root = ::XML::Node.new(type.to_s + "Collection")
+        suffix = type.to_s.downcase.eql?("collection") ? "" : "Collection"
+        root = ::XML::Node.new(clean_name(type) + suffix)
         array.each do |item|
-          element = ::XML::Node.new(type.to_s)
+          element = ::XML::Node.new(clean_name(type))
+          element.attributes["type"] = type.to_s unless element.name.eql?(type.to_s)
           if item.kind_of?(Hash)
             element = convert_hash(item, type, links)
           else
@@ -87,6 +101,12 @@ module LinkedData
           root << element
         end
         root
+      end
+
+      def self.clean_name(type)
+        element_name = type.to_s
+        element_name = element_name.split("/").last.split("#").last if element_name.start_with?("http")
+        element_name
       end
 
       def self.convert_class_name(cls)
