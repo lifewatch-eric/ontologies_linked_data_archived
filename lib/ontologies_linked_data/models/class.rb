@@ -165,6 +165,7 @@ module LinkedData
         path.last.instance_variable_set("@children",[])
         childrens_hash = {}
         path.each do |m|
+          next if m.id.to_s["#Thing"]
           m.children.each do |c|
             childrens_hash[c.id.to_s] = c
           end
@@ -179,7 +180,7 @@ module LinkedData
         root_node = path.first
         tree_node = path.first
         path.delete_at(0)
-        while tree_node.children.length > 0 and path.length > 0 do
+        while !tree_node.id.to_s["#Thing"] && tree_node.children.length > 0 and path.length > 0 do
           next_tree_node = nil
           tree_node.children.each_index do |i|
             if tree_node.children[i].id.to_s == path.first.id.to_s
@@ -201,6 +202,7 @@ module LinkedData
       private
 
       def append_if_not_there_already(path,r)
+        return nil if r.id.to_s["#Thing"]
         return nil if (path.select { |x| x.id.to_s == r.id.to_s }).length > 0
         path << r
       end
@@ -232,7 +234,7 @@ module LinkedData
           path = paths[rec_i]
           p = path.last
           p.bring(parents: [:prefLabel,:synonym, :definition] ) if p.bring?(:parents)
-          if (recurse_on_path[i] && p.parents && p.parents.length > 0)
+          if !p.id.to_s["#Thing"] && (recurse_on_path[i] && p.parents && p.parents.length > 0)
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end
