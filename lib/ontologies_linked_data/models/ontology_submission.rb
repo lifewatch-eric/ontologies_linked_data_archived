@@ -395,10 +395,10 @@ module LinkedData
       end
 
       def archived?
-        return self.submissionStatus && self.submissionStatus.include?(LinkedData::Models::SubmissionStatus.find("ARCHIVED").first)
+        return ready?(status: [:archived])
       end
 
-      def process_submission(logger, index_search=true, run_metrics=true)
+      def process_submission(logger, process_rdf=true, index_search=true, run_metrics=true)
         self.bring_remaining
         self.ontology.bring_remaining
 
@@ -416,47 +416,54 @@ module LinkedData
           raise ArgumentError, error
         end
 
-        logger.info("Starting parse for #{self.ontology.acronym}/submissions/#{self.submissionId}")
+        logger.info("Starting to process #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
         LinkedData::Parser.logger = logger
-        file_path = nil
-        status = LinkedData::Models::SubmissionStatus.find("RDF").first
 
-        #remove RDF status before starting
-        remove_submission_status(status)
+        if (process_rdf)
+          file_path = nil
+          status = LinkedData::Models::SubmissionStatus.find("RDF").first
 
-        begin
-          zip_dst = unzip_submission(logger)
-          file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
-          generate_rdf(logger, file_path)
-          add_submission_status(status)
-        rescue Exception => e
-          add_submission_status(status.get_error_status)
-          self.save
-          logger.info(e.message)
-          logger.flush
-          # if rdf generation fails, no point of continuing
-          raise e
+          #remove RDF status before starting
+          remove_submission_status(status)
+
+          begin
+            zip_dst = unzip_submission(logger)
+            file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
+            generate_rdf(logger, file_path)
+            add_submission_status(status)
+          rescue Exception => e
+            add_submission_status(status.get_error_status)
+            self.save
+            logger.info(e.message)
+            logger.flush
+            # if rdf generation fails, no point of continuing
+            raise e
+          end
+
+          status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
+
+          #remove RDF_LABELS status before starting
+          remove_submission_status(status)
+
+          begin
+            generate_missing_labels(logger, file_path)
+            add_submission_status(status)
+          rescue Exception => e
+            add_submission_status(status.get_error_status)
+            self.save
+            logger.info(e.message)
+            logger.flush
+            # if rdf label generation fails, no point of continuing
+            raise e
+          end
         end
 
-        status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
+        if (index_search)
+          if (!ready?(status: [:rdf, :rdf_labels]))
+            raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed"
+          end
 
-        #remove RDF_LABELS status before starting
-        remove_submission_status(status)
-
-        begin
-          generate_missing_labels(logger, file_path)
-          add_submission_status(status)
-        rescue Exception => e
-          add_submission_status(status.get_error_status)
-          self.save
-          logger.info(e.message)
-          logger.flush
-          # if rdf label generation fails, no point of continuing
-          raise e
-        end
-
-        if index_search
           status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
 
           #remove INDEXED status before starting
@@ -472,7 +479,11 @@ module LinkedData
           end
         end
 
-        if run_metrics
+        if (run_metrics)
+          if (!ready?(status: [:rdf, :rdf_labels]))
+            raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed"
+          end
+
           status = LinkedData::Models::SubmissionStatus.find("METRICS").first
 
           #remove METRICS status before starting

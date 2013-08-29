@@ -56,7 +56,7 @@ module LinkedData
       ont_submision.save
 
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT), index_search=index_search, run_metrics=run_metrics)
+      ont_submision.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=index_search, run_metrics=run_metrics)
     end
 
     def init_test_ontology_msotest(acr)
@@ -91,7 +91,7 @@ module LinkedData
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission Logger.new(STDOUT)
+      ont_submision.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=true, run_metrics=true)
 
       roots = ont_submision.roots
       #class99 is equilent to intersection of ...

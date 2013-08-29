@@ -7,7 +7,7 @@ module LinkedData
         "RDF_LABELS", "ERROR_RDF_LABELS",
         "INDEXED", "ERROR_INDEXED",
         "METRICS",  "ERROR_METRICS",
-        "ARCHIVED"
+        "ARCHIVED", "ERROR_ARCHIVED"
       ]
       @ready_status = nil
 

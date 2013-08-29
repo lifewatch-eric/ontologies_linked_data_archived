@@ -145,7 +145,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
-    ont_submision.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    ont_submision.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
     assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
@@ -298,7 +298,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    sub.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -358,7 +358,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    sub.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     assert sub.missingImports.length == 1
@@ -405,7 +405,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT), index_search=false, run_metrics=false)
+    sub.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
