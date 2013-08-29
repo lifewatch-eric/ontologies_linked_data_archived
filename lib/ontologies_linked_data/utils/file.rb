@@ -1,4 +1,4 @@
-require 'zip/zipfilesystem'
+require 'zip'
 
 module LinkedData
   module Utils
@@ -19,9 +19,9 @@ module LinkedData
           raise ArgumentError, "File path #{file_path} not found"
         end
         files = []
-        Zip::ZipFile.open(file_path) do |zipfile|
+        Zip::File.open(file_path) do |zipfile|
           zipfile.each do |file|
-            if not file.is_directory()
+            if not file.directory?
               if not file.name.split("/")[-1].start_with? "." #a hidden file in __MACOSX or .DS_Store
                 files << file.name
               end
@@ -41,7 +41,7 @@ module LinkedData
           raise ArgumentError, "Folder path #{dst_folder} not found"
         end
         extracted_files = []
-        Zip::ZipFile.open(file_path) do |zipfile|
+        Zip::File.open(file_path) do |zipfile|
           zipfile.each do |file|
             extracted_files << file.extract(File.join(dst_folder,file.name))
           end
