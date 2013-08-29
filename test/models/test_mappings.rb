@@ -244,7 +244,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom.start()
     new_term_mapping_count = LinkedData::Models::TermMapping.where.all.length
     #this process only adds two TermMappings
-    assert new_term_mapping_count == 12
+    assert new_term_mapping_count == 14
 
     #process has been reused
     assert process_count == LinkedData::Models::MappingProcess.where.all.length
@@ -254,7 +254,7 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
                                  .include(process: [:name])
                                  .all
-    assert mappings.length == 2
+    assert mappings.length == 3
     mappings.each do |map|
       cno_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
       fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
@@ -283,7 +283,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
     #same number - new mappingterms no created
-    assert new_term_mapping_count == 12
+    assert new_term_mapping_count == 14
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
                                  .and(terms: [ontology: ont2 ])
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
