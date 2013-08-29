@@ -136,7 +136,8 @@ eof
 
     def self.maxDepth(submission)
       submission.bring(:hierarchyProperty)
-      return recursive_depth(submission,0)
+      # -1 removes owl:Thing
+      return recursive_depth(submission,0) - 1
     end
   end
 end
