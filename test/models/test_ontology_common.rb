@@ -54,8 +54,9 @@ module LinkedData
       ont_submision.ontology = bro
       assert (ont_submision.valid?)
       ont_submision.save
+
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT),index_search=index_search,run_metrics=run_metrics)
+      ont_submision.process_submission(Logger.new(STDOUT), index_search=index_search, run_metrics=run_metrics)
     end
 
     def init_test_ontology_msotest(acr)

@@ -158,9 +158,10 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     class_id = RDF::URI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
     cls = LinkedData::Models::Class.find(class_id).in(os).include(:unmapped).first
-
     versionInfo = Goo.vocabulary(:owl)[:versionInfo]
-    assert cls.unmapped.keys.include?versionInfo
+    uris = cls.unmapped.keys.map {|k| k.to_s}
+    assert uris.include?(versionInfo.to_s)
+
     cls.unmapped.each do |k,v|
       if k == versionInfo
         assert v[0].value == "some version info"
@@ -202,7 +203,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
     end
-    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission
+    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
     assert os
     cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os).first
@@ -239,7 +240,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
     end
-    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission
+    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
     cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
                                       .include(:prefLabel,ancestors: [:prefLabel]).first
@@ -254,7 +255,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123)
     end
-    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission
+    os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
     cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os).first
 

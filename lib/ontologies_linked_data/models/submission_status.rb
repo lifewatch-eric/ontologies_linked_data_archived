@@ -24,11 +24,14 @@ module LinkedData
       end
 
       def get_error_status
-        if error?
-          return self
-        end
+        return self if error?
+        return SubmissionStatus.find("ERROR_#{self.code}").include(:code).first
+      end
 
-        return SubmissionStatus.find("ERROR_#{self.code}").first
+      def get_non_error_status
+        return self unless error?
+        code = self.code.sub("ERROR_", "")
+        return SubmissionStatus.find(code).include(:code).first
       end
 
       def self.status_ready?(status)
@@ -42,18 +45,6 @@ module LinkedData
           s.bring(:code) if s.bring?(:code)
           s.code
         }
-
-
-
-
-
-        binding.pry
-
-
-
-
-
-
         return (ready_status_codes - status_codes).size == 0
       end
 

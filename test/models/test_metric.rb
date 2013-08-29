@@ -18,7 +18,7 @@ class TestMetric < LinkedData::TestCase
     ontologyFile = "./test/data/ontology_files/BRO_v3.2.owl"
     id = 10
 
-    owl, bogus, user, status, contact =
+    owl, bogus, user, contact =
       submission_dependent_objects("OWL", acronym, "test_linked_models")
     os = LinkedData::Models::OntologySubmission.new
     os.submissionId = id

@@ -155,8 +155,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_semantic_types
-    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1)
-    ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission
+    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1, true, false)
+    ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission(status: [:rdf, :indexed])
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel).read_only.to_a
     assert_equal 133, classes.length
     classes.each do |cls|
@@ -462,8 +462,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
                      "./test/data/ontology_files/cdao_vunknown.owl", 22,
                     index_search=false,
                     run_metrics=true)
-
-    sub = LinkedData::Models::Ontology.find("CDAOTEST").first.latest_submission
+    sub = LinkedData::Models::Ontology.find("CDAOTEST").first.latest_submission(status: [:rdf, :metrics])
     sub.bring(:metrics)
 
     metrics = sub.metrics
@@ -484,8 +483,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,
                     index_search=false,
                     run_metrics=true)
-
-    sub = LinkedData::Models::Ontology.find("BROTEST-METRICS").first.latest_submission
+    sub = LinkedData::Models::Ontology.find("BROTEST-METRICS").first.latest_submission(status: [:rdf, :metrics])
     sub.bring(:metrics)
 
     metrics = sub.metrics
@@ -502,8 +500,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert metrics.maxChildCount == 65
     assert metrics.averageChildCount == 5
     assert metrics.maxDepth == 8
-
   end
 
 end
-

@@ -39,7 +39,7 @@ module LinkedData
       # Internal values for parsing - not definitive
       attribute :uploadFilePath
       attribute :masterFileName
-      attribute :submissionStatus, enforce: [:submission_status, :list], default: lambda { |record| [LinkedData::Models::SubmissionStatus.find("UPLOADED").first] }
+      attribute :submissionStatus, enforce: [:submission_status, :list]
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
@@ -53,7 +53,7 @@ module LinkedData
 
       # Hypermedia settings
       embed :contact, :ontology
-      embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
+      attribute :submissionStatus, enforce: [:submission_status, :list], default: lambda { |record| [LinkedData::Models::SubmissionStatus.find("UPLOADED").first] }
       serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
                         :publication, :documentation, :version, :description, :status, :submissionId
 
@@ -69,11 +69,6 @@ module LinkedData
       # Access control
       read_restriction_based_on lambda {|sub| sub.ontology}
       access_control_load ontology: [:administeredBy, :acl, :viewingRestriction]
-
-      def initialize(*args)
-        super(*args)
-        self.submissionStatus = [LinkedData::Models::SubmissionStatus.find("UPLOADED").first]
-      end
 
       def self.segment_instance(sub)
         sub.bring(:ontology) unless sub.loaded_attributes.include?(:ontology)
@@ -324,12 +319,20 @@ module LinkedData
       def add_submission_status(status)
         valid = status.is_a?(LinkedData::Models::SubmissionStatus)
         raise ArgumentError, "The status being added is not SubmissionStatus object" unless valid
+        self.submissionStatus ||= []
         s = self.submissionStatus.dup
 
-        # remove the corresponding error status (if exists)
-        if (!status.error?)
+        if (status.error?)
+          # remove the corresponding non_error status (if exists)
+          non_error_status = status.get_non_error_status()
+
+          s.reject! { |stat|
+            stat.bring(:code) if stat.bring?(:code)
+            stat.code == non_error_status.code
+          }
+        else
+          # remove the corresponding non_error status (if exists)
           error_status = status.get_error_status()
-          error_status.bring(:code) if error_status.bring?(:code)
 
           s.reject! { |stat|
             stat.bring(:code) if stat.bring?(:code)
@@ -346,17 +349,19 @@ module LinkedData
       end
 
       def remove_submission_status(status)
-        valid = status.is_a?(LinkedData::Models::SubmissionStatus)
-        raise ArgumentError, "The status being removed is not SubmissionStatus object" unless valid
-        s = self.submissionStatus.dup
-        status.bring(:code) if status.bring?(:code)
+        if (self.submissionStatus)
+          valid = status.is_a?(LinkedData::Models::SubmissionStatus)
+          raise ArgumentError, "The status being removed is not SubmissionStatus object" unless valid
+          s = self.submissionStatus.dup
+          status.bring(:code) if status.bring?(:code)
 
-        # remove that status as well as the error status for the same status
-        s.reject! { |stat|
-          stat.bring(:code) if stat.bring?(:code)
-          stat.code == status.code || stat.code == status.get_error_status().code
-        }
-        self.submissionStatus = s
+          # remove that status as well as the error status for the same status
+          s.reject! { |stat|
+            stat.bring(:code) if stat.bring?(:code)
+            stat.code == status.code || stat.code == status.get_error_status().code
+          }
+          self.submissionStatus = s
+        end
       end
 
       def set_ready()
@@ -373,19 +378,24 @@ module LinkedData
       def ready?(options={})
         status = options[:status] || :ready
         status = status.is_a?(Array) ? status : [status]
+        return true if status.include?(:any)
+        return false unless self.submissionStatus
 
         if status.include? :ready
           return LinkedData::Models::SubmissionStatus.status_ready?(self.submissionStatus)
         else
           status.each do |x|
-            return false if self.submissionStatus.select { |x1| x1.code == x.to_s.upcase }.length == 0
+            return false if self.submissionStatus.select { |x1|
+              x1.bring(:code) if x1.bring?(:code)
+              x1.code == x.to_s.upcase
+            }.length == 0
           end
           return true
         end
       end
 
       def archived?
-        return self.submissionStatus.include?(LinkedData::Models::SubmissionStatus.find("ARCHIVED").first)
+        return self.submissionStatus && self.submissionStatus.include?(LinkedData::Models::SubmissionStatus.find("ARCHIVED").first)
       end
 
       def process_submission(logger, index_search=true, run_metrics=true)
@@ -412,23 +422,8 @@ module LinkedData
         file_path = nil
         status = LinkedData::Models::SubmissionStatus.find("RDF").first
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        #remove RDF status before starting
+        remove_submission_status(status)
 
         begin
           zip_dst = unzip_submission(logger)
@@ -446,6 +441,9 @@ module LinkedData
 
         status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
 
+        #remove RDF_LABELS status before starting
+        remove_submission_status(status)
+
         begin
           generate_missing_labels(logger, file_path)
           add_submission_status(status)
@@ -461,6 +459,9 @@ module LinkedData
         if index_search
           status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
 
+          #remove INDEXED status before starting
+          remove_submission_status(status)
+
           begin
             index(logger, false)
             add_submission_status(status)
@@ -473,6 +474,9 @@ module LinkedData
 
         if run_metrics
           status = LinkedData::Models::SubmissionStatus.find("METRICS").first
+
+          #remove METRICS status before starting
+          remove_submission_status(status)
 
           begin
             process_metrics(logger)
