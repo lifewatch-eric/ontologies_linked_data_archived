@@ -250,7 +250,7 @@ class Object
     sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
 
     # Don't process if we're recursing and this attribute is forbidden in nested elements
-    return hash, false if sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute)
+    return hash, false if sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute)
 
     embedded = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
     if embedded
