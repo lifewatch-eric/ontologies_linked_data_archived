@@ -66,7 +66,7 @@ module LinkedData
   MiniTest::Unit.runner = LinkedData::Unit.new
 
   class TestCase < MiniTest::Unit::TestCase
-    def submission_dependent_objects(format,acronym,user_name,status_code)
+    def submission_dependent_objects(format, acronym, user_name)
       #ontology format
       owl = LinkedData::Models::OntologyFormat.where(:acronym => format).first
       assert_instance_of LinkedData::Models::OntologyFormat, owl
@@ -74,16 +74,17 @@ module LinkedData
       #ontology
       users = LinkedData::Models::User.where(:username => user_name).all
       user = users.first
+
       if user.nil?
         user = LinkedData::Models::User.new({:username => user_name})
         user.email = "a@example.org"
         user.passwordHash = "XXXXX"
         user.save
       end
-      status = LinkedData::Models::SubmissionStatus.where(:code => status_code).first
 
       ont = LinkedData::Models::Ontology.where(:acronym => acronym).all
       ont = ont.first
+
       if ont.nil?
         ont = LinkedData::Models::Ontology.new({:acronym => acronym})
         ont.name = "some name for #{acronym}"
@@ -94,7 +95,7 @@ module LinkedData
       contact.email = "xxx@example.org"
       contact.name  = "some name"
       contact.save
-      return owl, ont, user, status, contact
+      return owl, ont, user, contact
     end
 
     ##

@@ -38,16 +38,16 @@ class TestMapping < LinkedData::TestOntologyCommon
     helper = LinkedData::TestOntologyCommon.new(self)
     helper.submission_parse("MappingOntTest1", 
                      "MappingOntTest1", 
-                     "./test/data/ontology_files/BRO_v3.2.owl", 11,false)
+                     "./test/data/ontology_files/BRO_v3.2.owl", 11, false)
     helper.submission_parse("MappingOntTest2", 
                      "MappingOntTest2", 
                      "./test/data/ontology_files/CNO_05.owl", 22, false)
     helper.submission_parse("MappingOntTest3", 
                      "MappingOntTest3", 
-                     "./test/data/ontology_files/aero.owl", 33,false)
+                     "./test/data/ontology_files/aero.owl", 33, false)
     helper.submission_parse("MappingOntTest4", 
                      "MappingOntTest4", 
-                     "./test/data/ontology_files/fake_for_mappings.owl", 44,false)
+                     "./test/data/ontology_files/fake_for_mappings.owl", 44, false)
   end
 
   def get_process(name)
@@ -244,7 +244,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom.start()
     new_term_mapping_count = LinkedData::Models::TermMapping.where.all.length
     #this process only adds two TermMappings
-    assert new_term_mapping_count == 14
+    assert new_term_mapping_count == 12
 
     #process has been reused
     assert process_count == LinkedData::Models::MappingProcess.where.all.length
@@ -254,7 +254,7 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
                                  .include(process: [:name])
                                  .all
-    assert mappings.length == 3
+    assert mappings.length == 2
     mappings.each do |map|
       cno_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
       fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
@@ -283,7 +283,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
     #same number - new mappingterms no created
-    assert new_term_mapping_count == 14
+    assert new_term_mapping_count == 12
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
                                  .and(terms: [ontology: ont2 ])
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
@@ -433,6 +433,9 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
                                  .include(process: [:name])
                                  .all
+
+    binding.pry
+
     assert LinkedData::Models::TermMapping.where.all.length == 4
     assert mappings.length == 2
     mappings.each do |map|

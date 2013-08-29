@@ -101,7 +101,6 @@ module LinkedData
             ontology: o,
             hasOntologyLanguage: LinkedData::Models::OntologyFormat.find(ONT_FORMATS.shuffle.first.upcase).first,
             summaryOnly: true,
-            submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").first,
             submissionId: o.next_submission_id,
             contact: contact,
             released: DateTime.now - 3

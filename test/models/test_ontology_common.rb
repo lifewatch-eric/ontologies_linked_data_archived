@@ -2,7 +2,7 @@ require_relative "../test_case"
 
 module LinkedData
   class TestOntologyCommon < LinkedData::TestCase
-    def submission_dependent_objects(format,acronym,user_name,status_code, name_ont)
+    def submission_dependent_objects(format, acronym, user_name, name_ont)
       #ontology format
       owl = LinkedData::Models::OntologyFormat.where(:acronym => format).first
       assert_instance_of LinkedData::Models::OntologyFormat, owl
@@ -21,9 +21,6 @@ module LinkedData
         ont = LinkedData::Models::Ontology.new(:acronym => acronym, :name => name_ont, administeredBy: [user]).save
       end
 
-      #user test_linked_models
-      status = LinkedData::Models::SubmissionStatus.where(:code => status_code).first
-
       # contact
       contact_name = "Peter"
       contact_email = "peter@example.org"
@@ -31,10 +28,10 @@ module LinkedData
       contact = LinkedData::Models::Contact.new(name: contact_name, email: contact_email).save if contact.nil?
 
       #Submission Status
-      return owl, ont, user, status, contact
+      return owl, ont, user, contact
     end
 
-    def submission_parse( acronym, name, ontologyFile, id,index_search=true,run_metrics=false)
+    def submission_parse( acronym, name, ontologyFile, id, index_search=true, run_metrics=false)
       return if ENV["SKIP_PARSING"]
 
       bro = LinkedData::Models::Ontology.find(acronym).first
@@ -47,19 +44,19 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
       assert (not ont_submision.valid?)
-      assert_equal 5, ont_submision.errors.length
+      assert_equal 4, ont_submision.errors.length
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
       ont_submision.uploadFilePath = uploadFilePath
-      owl, bro, user, status, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", "UPLOADED", name)
+      owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
       ont_submision.contact = [contact]
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = bro
-      ont_submision.submissionStatus = status
       assert (ont_submision.valid?)
       ont_submision.save
+
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT),index_search=index_search,run_metrics=run_metrics)
+      ont_submision.process_submission(Logger.new(STDOUT), index_search=index_search, run_metrics=run_metrics)
     end
 
     def init_test_ontology_msotest(acr)
@@ -68,7 +65,7 @@ module LinkedData
       if not ont.nil?
         sub = ont.submissions || []
         if sub.length > 0
-          return if sub[0].submissionStatus.parsed?
+          return if sub[0].ready?
         end
         sub.each do |s|
           s.delete
@@ -77,17 +74,16 @@ module LinkedData
       end
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
       assert (not ont_submision.valid?)
-      assert_equal 5, ont_submision.errors.length
+      assert_equal 4, ont_submision.errors.length
       file_path = "./test/data/ontology_files/custom_properties.owl"
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
       ont_submision.uploadFilePath = uploadFilePath
-      owl, ont, user, status, contact = submission_dependent_objects("OWL", acr, "test_linked_models", "UPLOADED", "some ont created by mso for testing")
+      owl, ont, user, contact = submission_dependent_objects("OWL", acr, "test_linked_models", "some ont created by mso for testing")
       ont.administeredBy = [user]
       ont_submision.contact = [contact]
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = ont
-      ont_submision.submissionStatus = status
       ont_submision.prefLabelProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
       ont_submision.synonymProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel")
       ont_submision.definitionProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myDefinition")

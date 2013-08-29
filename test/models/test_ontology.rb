@@ -55,7 +55,6 @@ class TestOntology < LinkedData::TestCase
       ontology: o,
       hasOntologyLanguage: @of,
       pullLocation: RDF::IRI.new("http://localhost:3456/"),
-      submissionStatus: LinkedData::Models::SubmissionStatus.find("UPLOADED").to_a[0],
       submissionId: o.next_submission_id,
       contact: [@contact],
       released: DateTime.now - 5
@@ -123,10 +122,9 @@ class TestOntology < LinkedData::TestCase
     count, acronyms, ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 3)
     ont = ont.first
     ont.bring(submissions: [:submissionId])
-    status = LinkedData::Models::SubmissionStatus.find(LinkedData::Models::SubmissionStatus.parsed_code).first
     sub = ont.submissions[1]
     sub.bring(*LinkedData::Models::OntologySubmission.attributes)
-    sub.submissionStatus = status
+    sub.set_ready
     sub.save
     latest = ont.latest_submission
     assert_equal 2, latest.submissionId

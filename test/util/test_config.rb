@@ -13,7 +13,6 @@ class TestLinkedDataSerializer < MiniTest::Unit::TestCase
     LinkedData.instance_variable_set("@settings_run", false)
     LinkedData.config()
     assert LinkedData.settings.goo_host == "localhost"
-    assert LinkedData.settings.goo_port == 9000
     assert (not Goo.sparql_data_client.nil?)
     assert (not Goo.sparql_update_client.nil?)
     assert (not Goo.sparql_query_client.nil?)

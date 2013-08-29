@@ -169,7 +169,7 @@ module LinkedData
         dump_paths = []
         @ontologies.each do |ont|
           ont.bring(submissions: [:submissionId])
-          latest_submission = ont.latest_submission
+          latest_submission = ont.latest_submission(status: [:rdf, :rdf_labels])
           dump_paths << create_ontology_dump(ont,@process_name,
                                             @paging,@dumper,logger=@logger)
         end
@@ -204,8 +204,7 @@ module LinkedData
 
       def create_ontology_dump(ont,proc_name,paging,dumper,logger=nil)
         ont.bring(submissions: [:submissionId])
-        latest_submission = ont.latest_submission
-
+        latest_submission = ont.latest_submission(status: [:rdf, :rdf_labels])
         dump_file_path = File.join([BatchProcess.mappings_ontology_folder(ont),
                        "#{proc_name}_dump_#{ont.acronym}_#{latest_submission.submissionId}.txt"])
         if $MAPPING_RELOAD_LABELS || !File.exist?(dump_file_path)

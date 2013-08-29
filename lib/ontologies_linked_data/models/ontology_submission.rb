@@ -39,7 +39,7 @@ module LinkedData
       # Internal values for parsing - not definitive
       attribute :uploadFilePath
       attribute :masterFileName
-      attribute :submissionStatus, enforce: [:submission_status, :existence]
+      attribute :submissionStatus, enforce: [:submission_status, :list]
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
@@ -53,7 +53,7 @@ module LinkedData
 
       # Hypermedia settings
       embed :contact, :ontology
-      embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
+      attribute :submissionStatus, enforce: [:submission_status, :list], default: lambda { |record| [LinkedData::Models::SubmissionStatus.find("UPLOADED").first] }
       serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
                         :publication, :documentation, :version, :description, :status, :submissionId
 
@@ -69,7 +69,6 @@ module LinkedData
       # Access control
       read_restriction_based_on lambda {|sub| sub.ontology}
       access_control_load ontology: [:administeredBy, :acl, :viewingRestriction]
-
 
       def self.segment_instance(sub)
         sub.bring(:ontology) unless sub.loaded_attributes.include?(:ontology)
@@ -117,8 +116,14 @@ module LinkedData
         self.bring(:pullLocation) if self.bring?(:pullLocation)
         self.bring(:masterFileName) if self.bring?(:masterFileName)
         self.bring(:submissionStatus) if self.bring?(:submissionStatus)
-        self.submissionStatus.bring(:code) if self.submissionStatus.bring?(:code)
-        if self.ontology.summaryOnly || self.submissionStatus.code.eql?("ARCHIVED")
+
+        if (self.submissionStatus)
+          self.submissionStatus.each do |st|
+            st.bring(:code) if st.bring?(:code)
+          end
+        end
+
+        if self.ontology.summaryOnly || self.archived?
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
@@ -181,8 +186,219 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
-      def process_submission(logger,index_search=true,run_metrics=true)
+      def unzip_submission(logger)
+        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
+        zip_dst = nil
 
+        if zip
+          zip_dst = self.zip_folder
+
+          if Dir.exist? zip_dst
+            FileUtils.rm_r [zip_dst]
+          end
+          FileUtils.mkdir_p zip_dst
+          extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
+
+          # Set master file name automatically if there is only one file
+          if extracted.length == 1 && self.masterFileName.nil?
+            self.masterFileName = extracted.first.name
+            self.save
+          end
+
+          logger.info("Files extracted from zip #{extracted}")
+          logger.flush
+        end
+        return zip_dst
+      end
+
+      def generate_rdf(logger, file_path)
+        mime_type = nil
+
+        if self.hasOntologyLanguage.umls?
+          zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
+          file_name = zip ?
+              File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
+          triples_file_path = File.expand_path(file_name)
+          logger.info("Using UMLS turtle file, skipping OWLAPI parse")
+          logger.flush
+          mime_type = LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE)
+        else
+          labels_file = File.join(File.dirname(file_path), "labels.ttl")
+          owlapi = LinkedData::Parser::OWLAPICommand.new(
+              File.expand_path(file_path),
+              File.expand_path(self.data_folder.to_s),
+              self.masterFileName)
+          triples_file_path, missing_imports = owlapi.parse
+
+          if missing_imports && missing_imports.length > 0
+            self.missingImports = missing_imports
+            missing_imports.each do |imp|
+              logger.info("OWL_IMPORT_MISSING: #{imp}")
+            end
+          else
+            self.missingImports = nil
+          end
+          logger.flush
+        end
+        delete_and_append(triples_file_path, logger, mime_type)
+      end
+
+      def generate_missing_labels(logger, file_path)
+        return if self.hasOntologyLanguage.umls?
+
+        save_in_file = File.join(File.dirname(file_path), "labels.ttl")
+        property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
+        result = Goo.sparql_data_client.append_triples(
+            self.id,
+            property_triples,
+            mime_type="application/x-turtle")
+        count_classes = 0
+        page = 1
+        size = 2500
+        fsave = File.open(save_in_file,"w")
+        fsave.write(property_triples)
+        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).page(page, size)
+
+        begin #per page
+          label_triples = []
+          t0 = Time.now
+          page_classes = paging.page(page,size).read_only.all
+          t1 = Time.now
+          logger.info(
+              "#{page_classes.length} in page #{page} classes for #{self.id.to_ntriples} (#{t1 - t0} sec)." +
+                  " Total pages #{page_classes.total_pages}.")
+          logger.flush
+
+          page_classes.each do |c|
+            if c.prefLabel.nil?
+              rdfs_labels = c.label
+
+              if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
+                rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
+                rdfs_labels = c.label if rdfs_labels.nil? || rdfs_labels.length == 0
+              end
+              rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
+              label = nil
+
+              if rdfs_labels && rdfs_labels.length > 0
+                label = rdfs_labels[0]
+              else
+                label = LinkedData::Utils::Triples.last_iri_fragment c.id.to_s
+              end
+              label_triples << LinkedData::Utils::Triples.label_for_class_triple(
+                  c.id, Goo.vocabulary(:metadata_def)[:prefLabel],label)
+            end
+            count_classes += 1
+          end
+
+          if (label_triples.length > 0)
+            logger.info("Asserting #{label_triples.length} labels in #{self.id.to_ntriples}")
+            logger.flush
+            label_triples = label_triples.join "\n"
+            fsave.write(label_triples)
+            t0 = Time.now
+            result = Goo.sparql_data_client.append_triples(
+                self.id,
+                label_triples,
+                mime_type="application/x-turtle")
+            t1 = Time.now
+            logger.info("Labels asserted in #{t1 - t0} sec.")
+            logger.flush
+          else
+            logger.info("No labels generated in page #{page_classes.total_pages}.")
+            logger.flush
+          end
+          page = page_classes.next? ? page + 1 : nil
+        end while !page.nil?
+        logger.info("end generate_missing_labels traversed #{count_classes} classes")
+        logger.info("Saved generated labels in #{save_in_file}")
+        fsave.close()
+        logger.flush
+      end
+
+      def add_submission_status(status)
+        valid = status.is_a?(LinkedData::Models::SubmissionStatus)
+        raise ArgumentError, "The status being added is not SubmissionStatus object" unless valid
+        self.submissionStatus ||= []
+        s = self.submissionStatus.dup
+
+        if (status.error?)
+          # remove the corresponding non_error status (if exists)
+          non_error_status = status.get_non_error_status()
+
+          s.reject! { |stat|
+            stat.bring(:code) if stat.bring?(:code)
+            stat.code == non_error_status.code
+          }
+        else
+          # remove the corresponding non_error status (if exists)
+          error_status = status.get_error_status()
+
+          s.reject! { |stat|
+            stat.bring(:code) if stat.bring?(:code)
+            stat.code == error_status.code
+          }
+        end
+
+        has_status = s.any? { |s|
+          s.bring(:code) if s.bring?(:code)
+          s.code == status.code
+        }
+        s << status unless has_status
+        self.submissionStatus = s
+      end
+
+      def remove_submission_status(status)
+        if (self.submissionStatus)
+          valid = status.is_a?(LinkedData::Models::SubmissionStatus)
+          raise ArgumentError, "The status being removed is not SubmissionStatus object" unless valid
+          s = self.submissionStatus.dup
+          status.bring(:code) if status.bring?(:code)
+
+          # remove that status as well as the error status for the same status
+          s.reject! { |stat|
+            stat.bring(:code) if stat.bring?(:code)
+            stat.code == status.code || stat.code == status.get_error_status().code
+          }
+          self.submissionStatus = s
+        end
+      end
+
+      def set_ready()
+        ready_status = LinkedData::Models::SubmissionStatus.get_ready_status
+
+        ready_status.each do |status|
+          add_submission_status(status)
+        end
+      end
+
+      # allows to optionally submit a list of statuses
+      # that would define the "ready" state of this
+      # submission in this context
+      def ready?(options={})
+        status = options[:status] || :ready
+        status = status.is_a?(Array) ? status : [status]
+        return true if status.include?(:any)
+        return false unless self.submissionStatus
+
+        if status.include? :ready
+          return LinkedData::Models::SubmissionStatus.status_ready?(self.submissionStatus)
+        else
+          status.each do |x|
+            return false if self.submissionStatus.select { |x1|
+              x1.bring(:code) if x1.bring?(:code)
+              x1.code == x.to_s.upcase
+            }.length == 0
+          end
+          return true
+        end
+      end
+
+      def archived?
+        return self.submissionStatus && self.submissionStatus.include?(LinkedData::Models::SubmissionStatus.find("ARCHIVED").first)
+      end
+
+      def process_submission(logger, index_search=true, run_metrics=true)
         self.bring_remaining
         self.ontology.bring_remaining
 
@@ -202,83 +418,83 @@ module LinkedData
 
         logger.info("Starting parse for #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
-
-        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
-        zip_dst = nil
-        if zip
-          zip_dst = self.zip_folder
-          if Dir.exist? zip_dst
-            FileUtils.rm_r [zip_dst]
-          end
-          FileUtils.mkdir_p zip_dst
-          extracted = LinkedData::Utils::FileHelpers.unzip(self.uploadFilePath, zip_dst)
-
-          # Set master file name automatically if there is only one file
-          if extracted.length == 1 && self.masterFileName.nil?
-            self.masterFileName = extracted.first.name
-            self.save
-          end
-
-          logger.info("Files extracted from zip #{extracted}")
-          logger.flush
-        end
         LinkedData::Parser.logger = logger
+        file_path = nil
+        status = LinkedData::Models::SubmissionStatus.find("RDF").first
 
-        if self.hasOntologyLanguage.umls?
-          file_name = zip ?
-            File.join(File.expand_path(self.data_folder.to_s), self.masterFileName)
-                                                 : self.uploadFilePath.to_s
-          triples_file_path = File.expand_path(file_name)
-          logger.info("Using UMLS turtle file, skipping OWLAPI parse")
-          logger.flush
-          delete_and_append(triples_file_path,
-                            logger,
-                            LinkedData::MediaTypes
-                                .media_type_from_base(LinkedData::MediaTypes::TURTLE))
-        else
-          input_data = zip_dst || self.uploadFilePath
-          labels_file = File.join(File.dirname(input_data.to_s),"labels.ttl")
-          owlapi = LinkedData::Parser::OWLAPICommand.new(
-                      File.expand_path(input_data.to_s),
-                      File.expand_path(self.data_folder.to_s),
-                      self.masterFileName)
-          triples_file_path, missing_imports = owlapi.parse
-          if missing_imports
-            missing_imports.each do |imp|
-              logger.info("OWL_IMPORT_MISSING: #{imp}")
-            end
-          end
-          logger.flush
-          delete_and_append(triples_file_path, logger)
+        #remove RDF status before starting
+        remove_submission_status(status)
 
-          missing_labels_generation(logger, labels_file)
+        begin
+          zip_dst = unzip_submission(logger)
+          file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
+          generate_rdf(logger, file_path)
+          add_submission_status(status)
+        rescue Exception => e
+          add_submission_status(status.get_error_status)
+          self.save
+          logger.info(e.message)
           logger.flush
+          # if rdf generation fails, no point of continuing
+          raise e
         end
 
-        #index this ontology
-        #this is disable for the moment
+        status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
+
+        #remove RDF_LABELS status before starting
+        remove_submission_status(status)
+
+        begin
+          generate_missing_labels(logger, file_path)
+          add_submission_status(status)
+        rescue Exception => e
+          add_submission_status(status.get_error_status)
+          self.save
+          logger.info(e.message)
+          logger.flush
+          # if rdf label generation fails, no point of continuing
+          raise e
+        end
+
         if index_search
-          index(logger, false)
+          status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
+
+          #remove INDEXED status before starting
+          remove_submission_status(status)
+
+          begin
+            index(logger, false)
+            add_submission_status(status)
+          rescue Exception => e
+            add_submission_status(status.get_error_status)
+            logger.info(e.message)
+            logger.flush
+          end
         end
 
-        process_metrics(logger) if run_metrics
+        if run_metrics
+          status = LinkedData::Models::SubmissionStatus.find("METRICS").first
 
-        rdf_status = SubmissionStatus.find("RDF").first
-        self.submissionStatus = rdf_status
+          #remove METRICS status before starting
+          remove_submission_status(status)
 
-        if missing_imports && missing_imports.length > 0
-          self.missingImports = missing_imports
-        else
-          self.missingImports = nil
+          begin
+            process_metrics(logger)
+            add_submission_status(status)
+          rescue Exception => e
+            add_submission_status(status.get_error_status)
+            logger.info(e.message)
+            logger.flush
+          end
         end
 
         self.save
-        logger.info("Submission status updated to RDF")
+        logger.info("Submission processing completed successfully")
         logger.flush
       end
 
       def process_metrics(logger)
-        metrics = LinkedData::Metrics.metrics_for_submission(self,logger)
+        metrics = LinkedData::Metrics.metrics_for_submission(self, logger)
         metrics.id = RDF::URI.new(self.id.to_s + "/metrics")
         exist_metrics = LinkedData::Models::Metric.find(metrics.id).first
         exist_metrics.delete if exist_metrics
@@ -356,72 +572,6 @@ module LinkedData
             end
           end
         end
-      end
-
-      def missing_labels_generation(logger,save_in_file)
-        property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
-        result = Goo.sparql_data_client.append_triples(
-                      self.id,
-                      property_triples,
-                      mime_type="application/x-turtle")
-        count_classes = 0
-        page = 1
-        size = 2500
-        fsave = File.open(save_in_file,"w")
-        fsave.write(property_triples)
-        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label)
-                    .page(page,size)
-        begin #per page
-          label_triples = []
-          t0 = Time.now
-          page_classes = paging.page(page,size).read_only.all
-          t1 = Time.now
-          logger.info(
-            "#{page_classes.length} in page #{page} classes for #{self.id.to_ntriples} (#{t1 - t0} sec)." +
-            " Total pages #{page_classes.total_pages}.")
-          logger.flush
-          page_classes.each do |c|
-            if c.prefLabel.nil?
-              rdfs_labels = c.label
-              if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
-                rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
-                rdfs_labels = c.label if rdfs_labels.nil? || rdfs_labels.length == 0
-              end
-              rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
-              label = nil
-              if rdfs_labels && rdfs_labels.length > 0
-                label = rdfs_labels[0]
-              else
-                label = LinkedData::Utils::Triples.last_iri_fragment c.id.to_s
-              end
-              label_triples << LinkedData::Utils::Triples.label_for_class_triple(c.id,
-                                                     Goo.vocabulary(:metadata_def)[:prefLabel],label)
-            end
-            count_classes += 1
-          end
-          if (label_triples.length > 0)
-            logger.info("Asserting #{label_triples.length} labels in #{self.id.to_ntriples}")
-            logger.flush
-            label_triples = label_triples.join "\n"
-            fsave.write(label_triples)
-            t0 = Time.now
-            result = Goo.sparql_data_client.append_triples(
-                      self.id,
-                      label_triples,
-                      mime_type="application/x-turtle")
-            t1 = Time.now
-            logger.info("Labels asserted in #{t1 - t0} sec.")
-            logger.flush
-          else
-            logger.info("No labels generated in page #{page_classes.total_pages}.")
-            logger.flush
-          end
-          page = page_classes.next? ? page + 1 : nil
-        end while !page.nil?
-        logger.info("end missing_labels_generation traversed #{count_classes} classes")
-        logger.info("Saved generated labels in #{save_in_file}")
-        fsave.close()
-        logger.flush
       end
 
       def roots(extra_include=nil,aggregate_children=false)
