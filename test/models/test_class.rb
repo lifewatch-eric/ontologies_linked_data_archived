@@ -53,8 +53,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
  "http://bioportal.bioontology.org/ontologies/msotes#class4",
- "http://bioportal.bioontology.org/ontologies/msotes#class3",
- "http://www.w3.org/2002/07/owl#Thing" ]
+ "http://bioportal.bioontology.org/ontologies/msotes#class3"]
     assert ancestors.sort == data_ancestors.sort
 
   end
@@ -251,7 +250,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
     cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
                                       .include(:prefLabel,ancestors: [:prefLabel]).first
-    assert cls.ancestors.length == 8
+    assert cls.ancestors.length == 7
     cls.ancestors.each do |a|
       next if a.id["Thing"]
       assert_instance_of String, a.prefLabel

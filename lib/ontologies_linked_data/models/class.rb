@@ -202,6 +202,13 @@ module LinkedData
         return root_node
       end
 
+      def ancestors
+        if @ancestors
+          return @ancestors.select { |x| !x.id.to_s["owl#Thing"] }.freeze
+        end
+        raise Goo::Base::AttributeNotLoaded, "Persistent object with `ancestors` not loaded"
+      end
+
       private
 
       def append_if_not_there_already(path,r)
