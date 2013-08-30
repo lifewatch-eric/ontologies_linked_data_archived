@@ -19,6 +19,7 @@ module LinkedData
         @master_file = master_file
         @file_triples_path = nil
         @missing_imports = nil
+        @reasoning = true
       end
 
       def setup_environment
@@ -40,6 +41,10 @@ module LinkedData
         end
       end
 
+      def disable_reasoner
+        @reasoning = false
+      end
+
       def call_owlapi_java_command
         options = []
         if not @input_file.nil?
@@ -55,6 +60,8 @@ module LinkedData
         if not @output_repo.nil?
           options << "-o #{Shellwords.escape(@output_repo.to_s)}"
         end
+        options << "-r #{@reasoning ? "true" : "false"}"
+
         if options.length == 0
           raise ArgumentError, "Cannot call java OWLAPI command without options."
         end

@@ -211,7 +211,7 @@ module LinkedData
         return zip_dst
       end
 
-      def generate_rdf(logger, file_path)
+      def generate_rdf(logger, file_path,reasoning=true)
         mime_type = nil
 
         if self.hasOntologyLanguage.umls?
@@ -228,6 +228,9 @@ module LinkedData
               File.expand_path(file_path),
               File.expand_path(self.data_folder.to_s),
               self.masterFileName)
+          if !reasoning
+            owlapi.disable_reasoner
+          end
           triples_file_path, missing_imports = owlapi.parse
 
           if missing_imports && missing_imports.length > 0
@@ -398,7 +401,8 @@ module LinkedData
         return ready?(status: [:archived])
       end
 
-      def process_submission(logger, process_rdf=true, index_search=true, run_metrics=true)
+      def process_submission(logger, process_rdf=true, index_search=true, 
+                                     run_metrics=true,reasoning=true)
         self.bring_remaining
         self.ontology.bring_remaining
 
