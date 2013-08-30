@@ -434,7 +434,7 @@ module LinkedData
           begin
             zip_dst = unzip_submission(logger)
             file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
-            generate_rdf(logger, file_path)
+            generate_rdf(logger, file_path,reasoning=reasoning)
             add_submission_status(status)
           rescue Exception => e
             add_submission_status(status.get_error_status)
