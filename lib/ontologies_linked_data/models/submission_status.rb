@@ -19,8 +19,7 @@ module LinkedData
       enum VALUES
 
       def error?
-        self.bring(:code) if self.bring?(:code)
-        return self.code.start_with?("ERROR_")
+        return self.id.to_s.split("/")[-1].start_with?("ERROR_")
       end
 
       def get_error_status
@@ -40,23 +39,19 @@ module LinkedData
         all_typed_correctly = status.all? {|s| s.is_a?(LinkedData::Models::SubmissionStatus)}
         raise ArgumentError, "One or more statuses were not SubmissionStatus objects" unless all_typed_correctly
 
-        ready_status_codes = self.get_ready_status.map {|s| s.code}
-        status_codes = status.map { |s|
-          s.bring(:code) if s.bring?(:code)
-          s.code
-        }
+        ready_status_codes = self.get_ready_status
+        status_codes = status.map { |s| s.id.to_s.split("/")[-1] }
         return (ready_status_codes - status_codes).size == 0
       end
 
       def self.get_ready_status
-        @ready_status ||= [
-            SubmissionStatus.find("UPLOADED").include(:code).first,
-            SubmissionStatus.find("RDF").include(:code).first,
-            SubmissionStatus.find("RDF_LABELS").include(:code).first,
-            SubmissionStatus.find("INDEXED").include(:code).first,
-            SubmissionStatus.find("METRICS").include(:code).first
+        return [
+            "UPLOADED",
+            "RDF",
+            "RDF_LABELS",
+            "INDEXED",
+            "METRICS"
         ]
-        return @ready_status
       end
     end
   end

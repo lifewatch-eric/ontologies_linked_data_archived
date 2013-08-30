@@ -367,7 +367,8 @@ module LinkedData
       def set_ready()
         ready_status = LinkedData::Models::SubmissionStatus.get_ready_status
 
-        ready_status.each do |status|
+        ready_status.each do |code|
+          status = LinkedData::Models::SubmissionStatus.find(code).include(:code).first
           add_submission_status(status)
         end
       end
@@ -386,8 +387,7 @@ module LinkedData
         else
           status.each do |x|
             return false if self.submissionStatus.select { |x1|
-              x1.bring(:code) if x1.bring?(:code)
-              x1.code == x.to_s.upcase
+              x1.id.to_s.split("/")[-1] == x.to_s.upcase
             }.length == 0
           end
           return true
