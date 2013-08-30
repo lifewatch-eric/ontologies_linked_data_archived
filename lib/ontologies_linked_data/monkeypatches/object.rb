@@ -24,6 +24,11 @@ class Object
       methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
     end
 
+    # Check to see if we're nested, if so remove necessary properties
+    if options[:nested] && self.is_a?(LinkedData::Hypermedia::Resource) && !self.class.hypermedia_settings[:prevent_serialize_when_nested].empty?
+      only = only - self.class.hypermedia_settings[:prevent_serialize_when_nested]
+    end
+
     # Determine whether to use defaults from the DSL or all attributes
     hash = populate_attributes(hash, all, only)
 
@@ -250,11 +255,12 @@ class Object
     sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
 
     # Don't process if we're recursing and this attribute is forbidden in nested elements
-    return hash, false if sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute)
+    disallow_nested = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute) && options[:nested]
+    return hash, false if disallow_nested
 
     embedded = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
     if embedded
-      options[:recurse] = true
+      options[:nested] = true
       if (value.is_a?(Array) || value.is_a?(Set))
         values = value.map {|e| e.to_flex_hash(options, &block)}
       else
