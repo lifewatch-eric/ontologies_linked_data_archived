@@ -46,11 +46,11 @@ module LinkedData
 
       def self.get_ready_status
         return [
-            "UPLOADED",
+            #"UPLOADED",
             "RDF",
-            "RDF_LABELS",
-            "INDEXED",
-            "METRICS"
+            #"RDF_LABELS",
+            #"INDEXED",
+            #"METRICS"
         ]
       end
     end
