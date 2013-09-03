@@ -401,30 +401,30 @@ module LinkedData
         return ready?(status: [:archived])
       end
 
-      def process_submission(logger, process_rdf=true, index_search=true, 
-                                     run_metrics=true,reasoning=true)
+      def process_submission(logger, process_rdf=true, index_search=true,
+                                     run_metrics=true, reasoning=true)
         self.bring_remaining
         self.ontology.bring_remaining
-
-        if not self.valid?
-          error = "Submission is not valid, it cannot be processed. Check errors"
-          logger.info(error)
-          logger.flush
-          raise ArgumentError, error
-        end
-
-        if not self.uploadFilePath
-          error = "Submission is missing an ontology file, cannot parse"
-          logger.info(error)
-          logger.flush
-          raise ArgumentError, error
-        end
 
         logger.info("Starting to process #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
         LinkedData::Parser.logger = logger
 
         if (process_rdf)
+          if not self.valid?
+            error = "Submission is not valid, it cannot be processed. Check errors"
+            logger.info(error)
+            logger.flush
+            raise ArgumentError, error
+          end
+
+          if not self.uploadFilePath
+            error = "Submission is missing an ontology file, cannot parse"
+            logger.info(error)
+            logger.flush
+            raise ArgumentError, error
+          end
+
           file_path = nil
           status = LinkedData::Models::SubmissionStatus.find("RDF").first
 
