@@ -175,10 +175,12 @@ module LinkedData
           end
         end
 
-        self.class.in(self.submission)
-              .models(childrens_hash.values)
-              .include(:prefLabel, :children)
-              .aggregate(:count, :children).all
+        if childrens_hash.length > 0
+          self.class.in(self.submission)
+                .models(childrens_hash.values)
+                .include(:prefLabel, :children)
+                .aggregate(:count, :children).all
+        end
 
         #build the tree
         root_node = path.first
