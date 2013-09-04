@@ -29,6 +29,7 @@ module LinkedData
           :embedded,
           :link_to,
           :links_load,
+          :do_not_load,
           :aggregates,
           :serialize_default,
           :serialize_never,

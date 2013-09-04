@@ -114,6 +114,10 @@ module LinkedData
         # Merge all embedded with the default (provided, all, default)
         default_attrs << embed_attrs if embed_attrs.length > 0
         default_attrs.uniq!
+
+        # Filter out attributes that should not get loaded
+        default_attrs = default_attrs - self.hypermedia_settings[:do_not_load]
+
         return default_attrs
       end
 
