@@ -20,7 +20,7 @@ module LinkedData
         acronym = options[:acronym] || "TEST-ONT"
         name = options[:name]
         file_path = options[:file_path]
-        acr_suffix = options[:acronym_suffix] || "-#{count}"
+        acr_suffix = options[:acronym_suffix]
 
         u, of, contact = ontology_objects()
         contact.save if contact.modified?
@@ -28,7 +28,7 @@ module LinkedData
         ont_acronyms = []
         ontologies = []
         ont_count.to_i.times do |count|
-
+          acr_suffix ||= "-#{count}"
           acronym = "#{acronym}#{acr_suffix}"
           ont_acronyms << acronym
 
