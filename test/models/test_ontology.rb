@@ -1,4 +1,5 @@
 require_relative "../test_case"
+require_relative "../../lib/ontologies_linked_data/purl/purl_client"
 require 'rack'
 
 class TestOntology < LinkedData::TestCase
@@ -116,6 +117,15 @@ class TestOntology < LinkedData::TestCase
     ont = ont.first
     latest = ont.latest_submission(status: :any)
     assert_equal 3, latest.submissionId
+  end
+
+  def test_purl_creation
+    count, acronyms, ont = create_ontologies_and_submissions(ont_count: 3, submission_count: 1)
+    purl_client = LinkedData::Purl::Client.new
+
+    acronyms.each do |acronym|
+      assert purl_client.purl_exists(acronym)
+    end
   end
 
   def test_latest_parsed_submission

@@ -9,7 +9,6 @@ module LinkedData
         "METRICS",  "ERROR_METRICS",
         "ARCHIVED", "ERROR_ARCHIVED"
       ]
-      @ready_status = nil
 
       model :submission_status, name_with: :code
       attribute :code, enforce: [:existence, :unique]

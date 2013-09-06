@@ -5,6 +5,7 @@ require_relative 'metric'
 require_relative 'category'
 require_relative 'project'
 require_relative 'notes/note'
+require_relative '../purl/purl_client'
 
 module LinkedData
   module Models
@@ -61,7 +62,7 @@ module LinkedData
       access_control_load :administeredBy, :acl, :viewingRestriction
 
       def latest_submission(options = {})
-        self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
+        self.bring(:acronym) if self.bring?(:acronym)
         submission_id = highest_submission_id(options)
         return nil if submission_id.nil?
 
@@ -73,7 +74,7 @@ module LinkedData
 
       def submission(submission_id)
         submission_id = submission_id.to_i
-        self.bring(:acronym) unless self.loaded_attributes.include?(:acronym)
+        self.bring(:acronym) if self.bring?(:acronym)
         if self.loaded_attributes.include?(:submissions)
           self.submissions.each do |s|
             s.bring(:submissionId) if s.bring?(:submissionId)
@@ -125,7 +126,7 @@ module LinkedData
         args.each {|e| options.merge!(e) if e.is_a?(Hash)}
         in_update = options[:in_update] || false
         self.bring(:submissions)
-        self.bring(:acronym) unless self.loaded_attributes.include?:acronym
+        self.bring(:acronym) if self.bring?(:acronym)
         unless self.submissions.nil?
           submissions.each do |s|
             s.delete(in_update: in_update, remove_index: false)
@@ -134,8 +135,17 @@ module LinkedData
         super(*args)
       end
 
+      ##
+      # Override save to allow creation of a PURL server entry
+      def save(*args)
+        super(*args)
+        self.bring(:acronym) if self.bring?(:acronym)
+        purl_client = LinkedData::Purl::Client.new
+        purl_client.create_purl(acronym)
+      end
+
       def unindex
-        self.bring(:acronym) unless self.loaded_attributes.include?:acronym
+        self.bring(:acronym) if self.bring?(:acronym)
         query = "submissionAcronym:#{acronym}"
         #Ontology.unindexByQuery(query)
         #Ontology.indexCommit()
