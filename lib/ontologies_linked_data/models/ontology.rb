@@ -139,9 +139,13 @@ module LinkedData
       # Override save to allow creation of a PURL server entry
       def save(*args)
         super(*args)
-        self.bring(:acronym) if self.bring?(:acronym)
-        purl_client = LinkedData::Purl::Client.new
-        purl_client.create_purl(acronym)
+
+
+        #  msalvadores: I need to run a migration and I do not have the 
+        #  purl login configuration. This can be reverted later.
+        #  self.bring(:acronym) if self.bring?(:acronym)
+        #  purl_client = LinkedData::Purl::Client.new
+        #  purl_client.create_purl(acronym)
       end
 
       def unindex
