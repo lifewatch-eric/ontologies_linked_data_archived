@@ -149,6 +149,36 @@ module LinkedData
         return paths
       end
 
+      def self.partially_load_children(models,threshold,submission)
+        single_load = []
+        self.class.in(submission)
+              .models(models)
+              .aggregate(:count, :children).all
+
+        models.each do |cls|
+          if cls.aggregates.first.value > threshold
+            #too many load a page
+            self.class.in(submission)
+                .models(single_load)
+                .include(:children).all
+            page_children = LinkedData::Models::Class
+                                     .where(parents: cls)
+                                     .in(submission).page(1,threshold).all
+
+            cls.instance_variable_set("@children",page_children.to_a)
+            cls.loaded_attributes.add(:children)
+          else
+            single_load << cls
+          end
+        end
+
+        if single_load.length > 0
+          self.class.in(submission)
+                .models(single_load)
+                .include(:children).all
+        end
+      end
+
       def tree
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
         return self if self.parents.nil? or self.parents.length == 0
@@ -178,33 +208,7 @@ module LinkedData
               .models(items_hash.values)
               .include(:prefLabel).all
 
-        self.class.in(self.submission)
-              .models(items_hash.values)
-              .aggregate(:count, :children).all
-
-        single_load = []
-        items_hash.values.each do |cls|
-          if cls.aggregates.first.value > 100
-            #too many load a page
-            self.class.in(self.submission)
-                .models(single_load)
-                .include(:children).all
-            page_children = LinkedData::Models::Class
-                                     .where(parents: cls)
-                                     .in(self.submission).page(1,99).all
-
-            cls.instance_variable_set("@children",page_children.to_a)
-            cls.loaded_attributes.add(:children)
-          else
-            single_load << cls
-          end
-        end
-
-        if single_load.length > 0
-          self.class.in(self.submission)
-                .models(single_load)
-                .include(:children).all
-        end
+        partially_load_children(items_hash.values,99,self.submission)
 
         path.reverse!
         path.last.instance_variable_set("@children",[])
@@ -216,32 +220,7 @@ module LinkedData
           end
         end
 
-        single_load = []
-        if childrens_hash.length > 0
-          self.class.in(self.submission)
-              .models(childrens_hash.values)
-              .aggregate(:count, :children).all
-          childrens_hash.values.each do |cls|
-            if cls.aggregates.first.value > 100
-              #too many load a page
-              self.class.in(self.submission)
-                  .models(single_load)
-                  .include(:children).all
-              page_children = LinkedData::Models::Class
-                                       .where(parents: cls)
-                                       .in(self.submission).page(1,99).all
-              cls.instance_variable_set("@children",page_children.to_a)
-              cls.loaded_attributes.add(:children)
-            else
-              single_load << cls
-            end
-          end
-          if single_load.length > 0
-            self.class.in(self.submission)
-                  .models(single_load)
-                  .include(:children).all
-          end
-        end
+        partially_load_children(childrens_hash.values,99,self.submission)
 
         #build the tree
         root_node = path.first
