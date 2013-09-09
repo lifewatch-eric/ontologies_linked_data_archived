@@ -295,6 +295,7 @@ module LinkedData
           rec_i = recursions[i]
           path = paths[rec_i]
           p = path.last
+          next if p.id.to_s["umls/OrphanClass"]
           p.bring(parents: [:prefLabel,:synonym, :definition] ) if p.bring?(:parents)
           if !p.id.to_s["#Thing"] && (recurse_on_path[i] && p.parents && p.parents.length > 0)
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
