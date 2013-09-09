@@ -154,7 +154,21 @@ module LinkedData
         return self if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
-        path = paths.first
+        roots = self.submission.roots
+
+        #select one path that gets to root
+        path = nil
+        paths.each do |p|
+          if (p.map { |x| x.id.to_s } & roots.map { |x| x.id.to_s }).length > 0
+            path = p
+            break
+          end
+        end
+
+        if path.nil?
+          return []
+        end
+
         items_hash = {}
         path.each do |t|
           items_hash[t.id.to_s] = t
@@ -162,8 +176,35 @@ module LinkedData
 
         self.class.in(self.submission)
               .models(items_hash.values)
-              .include(:prefLabel, :children)
+              .include(:prefLabel).all
+
+        self.class.in(self.submission)
+              .models(items_hash.values)
               .aggregate(:count, :children).all
+
+        single_load = []
+        items_hash.values.each do |cls|
+          if cls.aggregates.first.value > 100
+            #too many load a page
+            self.class.in(self.submission)
+                .models(single_load)
+                .include(:children).all
+            page_children = LinkedData::Models::Class
+                                     .where(parents: cls)
+                                     .in(self.submission).page(1,99).all
+
+            cls.instance_variable_set("@children",page_children.to_a)
+            cls.loaded_attributes.add(:children)
+          else
+            single_load << cls
+          end
+        end
+
+        if single_load.length > 0
+          self.class.in(self.submission)
+                .models(single_load)
+                .include(:children).all
+        end
 
         path.reverse!
         path.last.instance_variable_set("@children",[])
@@ -175,18 +216,41 @@ module LinkedData
           end
         end
 
+        single_load = []
         if childrens_hash.length > 0
           self.class.in(self.submission)
-                .models(childrens_hash.values)
-                .include(:prefLabel, :children)
-                .aggregate(:count, :children).all
+              .models(childrens_hash.values)
+              .aggregate(:count, :children).all
+          childrens_hash.values.each do |cls|
+            if cls.aggregates.first.value > 100
+              #too many load a page
+              self.class.in(self.submission)
+                  .models(single_load)
+                  .include(:children).all
+              page_children = LinkedData::Models::Class
+                                       .where(parents: cls)
+                                       .in(self.submission).page(1,99).all
+              cls.instance_variable_set("@children",page_children.to_a)
+              cls.loaded_attributes.add(:children)
+            else
+              single_load << cls
+            end
+          end
+          if single_load.length > 0
+            self.class.in(self.submission)
+                  .models(single_load)
+                  .include(:children).all
+          end
         end
 
         #build the tree
         root_node = path.first
         tree_node = path.first
         path.delete_at(0)
-        while !tree_node.id.to_s["#Thing"] && tree_node.children.length > 0 and path.length > 0 do
+        while tree_node && 
+              !tree_node.id.to_s["#Thing"] && 
+              tree_node.children.length > 0 and path.length > 0 do
+
           next_tree_node = nil
           tree_node.children.each_index do |i|
             if tree_node.children[i].id.to_s == path.first.id.to_s
