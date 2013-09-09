@@ -598,10 +598,29 @@ module LinkedData
         where = LinkedData::Models::Class.in(self)
                      .models(classes)
                      .include(:prefLabel, :definition, :synonym, :deprecated)
-        where.include(extra_include) if extra_include
+        if extra_include
+          [:prefLabel, :definition, :synonym, :deprecated, :childrenCount].each do |x|
+            extra_include.delete x
+          end
+        end
+        load_children = false
+        if extra_include
+          load_children = extra_include.delete :children
+          if !load_children
+            load_children = extra_include.select { |x| x.instance_of?(Hash) && x.include?(:children) }
+            if load_children
+              extra_include = extra_include.select { |x| !(x.instance_of?(Hash) && x.include?(:children)) }
+            end
+          end
+          if extra_include.length > 0
+            where.include(extra_include)
+          end
+        end
         where.aggregate(:count,:children) if aggregate_children
         where.all
-
+        if load_children
+          LinkedData::Models::Class.partially_load_children(roots,99,self)
+        end
         classes.each do |c|
           roots << c if (c.deprecated.nil?) || (c.deprecated == false)
         end
