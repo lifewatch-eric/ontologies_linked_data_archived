@@ -150,19 +150,23 @@ module LinkedData
       end
 
       def self.partially_load_children(models,threshold,submission)
+
+        ld = [:prefLabel, :definition, :synonym]
+
         single_load = []
-        self.class.in(submission)
+        self.in(submission)
               .models(models)
               .aggregate(:count, :children).all
 
         models.each do |cls|
           if cls.aggregates.first.value > threshold
             #too many load a page
-            self.class.in(submission)
+            self.in(submission)
                 .models(single_load)
                 .include(:children).all
             page_children = LinkedData::Models::Class
                                      .where(parents: cls)
+                                     .include(ld)
                                      .in(submission).page(1,threshold).all
 
             cls.instance_variable_set("@children",page_children.to_a)
@@ -173,7 +177,7 @@ module LinkedData
         end
 
         if single_load.length > 0
-          self.class.in(submission)
+          self.in(submission)
                 .models(single_load)
                 .include(:children).all
         end
@@ -204,11 +208,12 @@ module LinkedData
           items_hash[t.id.to_s] = t
         end
 
-        self.class.in(self.submission)
+        self.class.in(submission)
               .models(items_hash.values)
-              .include(:prefLabel).all
+              .include(:prefLabel,:synonym).all
 
-        partially_load_children(items_hash.values,99,self.submission)
+        LinkedData::Models::Class
+          .partially_load_children(items_hash.values,99,self.submission)
 
         path.reverse!
         path.last.instance_variable_set("@children",[])
@@ -220,7 +225,8 @@ module LinkedData
           end
         end
 
-        partially_load_children(childrens_hash.values,99,self.submission)
+        LinkedData::Models::Class.
+          partially_load_children(childrens_hash.values,99,self.submission)
 
         #build the tree
         root_node = path.first
