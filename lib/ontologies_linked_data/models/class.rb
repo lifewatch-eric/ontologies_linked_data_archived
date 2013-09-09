@@ -166,7 +166,7 @@ module LinkedData
         end
 
         if path.nil?
-          return []
+          return self
         end
 
         items_hash = {}
