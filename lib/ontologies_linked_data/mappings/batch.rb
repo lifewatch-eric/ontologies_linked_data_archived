@@ -124,8 +124,12 @@ module LinkedData
           @logger.info("Appending triples in batch ...")
           tt = Time.now
           begin
+            #graphs are needed to invalidate the cache
+            mapping_graphs = [LinkedData::Models::TermMapping.type_uri,
+                             LinkedData::Models::Mapping.type_uri,
+                             LinkedData::Models::MappingProcess.type_uri]
             Goo.sparql_data_client.append_triples_from_file(
-                          RDF::URI.new("http://bogus"), batch_triples, "text/x-nquads")
+                          mapping_graphs, batch_triples, "text/x-nquads")
           rescue => e
             @logger.info("Error appending triples from #{batch_triples} error: #{e}")
           end
