@@ -128,8 +128,10 @@ module LinkedData
             mapping_graphs = [LinkedData::Models::TermMapping.type_uri,
                              LinkedData::Models::Mapping.type_uri,
                              LinkedData::Models::MappingProcess.type_uri]
-            Goo.sparql_data_client.append_triples_from_file(
-                          mapping_graphs, batch_triples, "text/x-nquads")
+            if File.size(batch_triples) > 0
+              Goo.sparql_data_client.append_triples_from_file(
+                            mapping_graphs, batch_triples, "text/x-nquads")
+            end
           rescue => e
             @logger.info("Error appending triples from #{batch_triples} error: #{e}")
           end
