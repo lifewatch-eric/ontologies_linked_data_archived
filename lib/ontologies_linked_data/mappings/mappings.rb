@@ -141,15 +141,19 @@ module Mappings
   end
 
   def self.mapping_counts_for_ontology(ont)
+    graphs = [LinkedData::Models::TermMapping.type_uri]
     sparql_query = <<-eos
-    SELECT  ?ont ( COUNT(DISTINCT ?id) AS ?count_var ) WHERE {
+    SELECT  ?ont ( COUNT(DISTINCT ?id) AS ?count_var )
+  FROM <http://data.bioontology.org/metadata/TermMapping>
+  WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology>  ?ont ] . } GROUP BY ?ont
 eos
     result = {}
-    Goo.sparql_query_client(:main).query(sparql_query).each do |sol|
+    epr = Goo.sparql_query_client(:main)
+    epr.query(sparql_query, graphs: graphs).each do |sol|
         next if sol[:ont].to_s == ont.id.to_s
         ont_acr = sol[:ont].to_s.split("/")[-1]
         result[ont_acr] = sol[:count_var].object
@@ -158,6 +162,7 @@ eos
   end
 
   def self.mapping_counts_per_ontology()
+    graphs = [LinkedData::Models::TermMapping.type_uri]
     ontologies = LinkedData::Models::Ontology.where.all
     result = {}
     ontologies.each do |ont|
@@ -167,7 +172,8 @@ eos
   WHERE {
       ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
   eos
-      Goo.sparql_query_client(:main).query(sparql_query).each do |sol|
+      epr = Goo.sparql_query_client(:main)
+      epr.query(sparql_query, graphs: graphs).each do |sol|
           result[ont.id.to_s.split("/")[-1]] = sol[:count_var].object
       end
     end
