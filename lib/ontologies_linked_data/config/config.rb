@@ -31,6 +31,15 @@ module LinkedData
     @settings.id_url_prefix       ||= "http://data.bioontology.org/"
     @settings.queries_debug       ||= false
 
+    # PURL server config parameters
+    @settings.enable_purl            = false
+    @settings.purl_host              = "purl.bioontology.org"
+    @settings.purl_port              = 80
+    @settings.purl_username          = ""
+    @settings.purl_password          = ""
+    @settings.purl_maintainers       = ""
+    @settings.purl_target_url_prefix = "http://bioportal.bioontology.org"
+
     # Check to make sure url prefix has trailing slash
     @settings.rest_url_prefix = @settings.rest_url_prefix + "/" unless @settings.rest_url_prefix[-1].eql?("/")
 
