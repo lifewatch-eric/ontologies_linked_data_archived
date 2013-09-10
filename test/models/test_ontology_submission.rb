@@ -106,13 +106,22 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_submission_parse
-    submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10)
+    submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10,
+                     process_rdf: true, index_search: true,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
 
     #This one has some nasty looking IRIS with slashes in the anchor
-    submission_parse("MCCLTEST", "MCCLS TEST", "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 10)
+    submission_parse("MCCLTEST", "MCCLS TEST", "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 10,
+                     process_rdf: true, index_search: true,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
 
     #This one has resources wih accents.
-    submission_parse("OntoMATEST", "OntoMA TEST", "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 10)
+    submission_parse("OntoMATEST", "OntoMA TEST", "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 10,
+                     process_rdf: true, index_search: true,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
   end
 
   def test_submission_parse_zip
@@ -145,7 +154,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
-    ont_submision.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
+    ont_submision.process_submission(Logger.new(STDOUT),
+                                     process_rdf: true, index_search: false,
+                                     run_metrics: false, process_annotator: false,
+                                     reasoning: true)
     assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
@@ -155,7 +167,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_semantic_types
-    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1, true, false)
+    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
+                     process_rdf: true, index_search: true,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
     ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission(status: [:rdf, :indexed])
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel).read_only.to_a
     assert_equal 133, classes.length
@@ -298,7 +313,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
+    sub.process_submission(Logger.new(STDOUT),
+                           process_rdf: true, index_search: false,
+                           run_metrics: false, process_annotator: false,
+                           reasoning: true)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -358,7 +376,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
+    sub.process_submission(Logger.new(STDOUT),
+                           process_rdf: true, index_search: false,
+                           run_metrics: false, process_annotator: false,
+                           reasoning: true)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     assert sub.missingImports.length == 1
@@ -405,7 +426,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=false, run_metrics=false)
+    sub.process_submission(Logger.new(STDOUT),
+                           process_rdf: true, index_search: false,
+                           run_metrics: false, process_annotator: false,
+                           reasoning: true)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -464,8 +488,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   def test_submission_metrics
     submission_parse("CDAOTEST", "CDAOTEST testing metrics",
                      "./test/data/ontology_files/cdao_vunknown.owl", 22,
-                    index_search=false,
-                    run_metrics=true)
+                     process_rdf: true, index_search: false,
+                     run_metrics: true, process_annotator: false,
+                     reasoning: true)
     sub = LinkedData::Models::Ontology.find("CDAOTEST").first.latest_submission(status: [:rdf, :metrics])
     sub.bring(:metrics)
 
@@ -485,8 +510,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
     submission_parse("BROTEST-METRICS", "BRO testing metrics",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,
-                    index_search=false,
-                    run_metrics=true)
+                     process_rdf: true, index_search: false,
+                     run_metrics: true, process_annotator: false,
+                     reasoning: true)
     sub = LinkedData::Models::Ontology.find("BROTEST-METRICS").first.latest_submission(status: [:rdf, :metrics])
     sub.bring(:metrics)
 

@@ -7,6 +7,7 @@ module LinkedData
         "RDF_LABELS", "ERROR_RDF_LABELS",
         "INDEXED", "ERROR_INDEXED",
         "METRICS",  "ERROR_METRICS",
+        "ANNOTATOR", "ERROR_ANNOTATOR",
         "ARCHIVED", "ERROR_ARCHIVED"
       ]
 
@@ -49,7 +50,8 @@ module LinkedData
             "RDF",
             #"RDF_LABELS",
             #"INDEXED",
-            #"METRICS"
+            #"METRICS",
+            #"ANNOTATOR"
         ]
       end
     end

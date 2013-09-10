@@ -401,11 +401,23 @@ module LinkedData
         return ready?(status: [:archived])
       end
 
-      def process_submission(logger, process_rdf=true, index_search=true,
-                                     run_metrics=true, reasoning=true)
+      ########################################
+      # Possible options with their defaults:
+      #   process_rdf       = true
+      #   index_search      = true
+      #   run_metrics       = true
+      #   process_annotator = true
+      #   reasoning         = true
+      #######################################
+      def process_submission(logger, options={})
+        process_rdf = options[:process_rdf] || true
+        index_search = options[:index_search] || true
+        run_metrics = options[:run_metrics] || true
+        process_annotator = options[:process_annotator] || true
+        reasoning = options[:reasoning] || true
+
         self.bring_remaining
         self.ontology.bring_remaining
-
         logger.info("Starting to process #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
         LinkedData::Parser.logger = logger
@@ -434,7 +446,7 @@ module LinkedData
           begin
             zip_dst = unzip_submission(logger)
             file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
-            generate_rdf(logger, file_path,reasoning=reasoning)
+            generate_rdf(logger, file_path, reasoning=reasoning)
             add_submission_status(status)
           rescue Exception => e
             add_submission_status(status.get_error_status)

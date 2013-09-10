@@ -38,16 +38,28 @@ class TestMapping < LinkedData::TestOntologyCommon
     helper = LinkedData::TestOntologyCommon.new(self)
     helper.submission_parse("MappingOntTest1", 
                      "MappingOntTest1", 
-                     "./test/data/ontology_files/BRO_v3.2.owl", 11, false)
-    helper.submission_parse("MappingOntTest2", 
+                     "./test/data/ontology_files/BRO_v3.2.owl", 11,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
+    helper.submission_parse("MappingOntTest2",
                      "MappingOntTest2", 
-                     "./test/data/ontology_files/CNO_05.owl", 22, false)
-    helper.submission_parse("MappingOntTest3", 
+                     "./test/data/ontology_files/CNO_05.owl", 22,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
+    helper.submission_parse("MappingOntTest3",
                      "MappingOntTest3", 
-                     "./test/data/ontology_files/aero.owl", 33, false)
+                     "./test/data/ontology_files/aero.owl", 33,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
     helper.submission_parse("MappingOntTest4", 
                      "MappingOntTest4", 
-                     "./test/data/ontology_files/fake_for_mappings.owl", 44, false)
+                     "./test/data/ontology_files/fake_for_mappings.owl", 44,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, process_annotator: false,
+                     reasoning: true)
   end
 
   def get_process(name)

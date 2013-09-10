@@ -94,7 +94,10 @@ module LinkedData
             o.submissions.each do |ss|
               ss.bring(:submissionId) if ss.bring?(:submissionId)
               next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
-              ss.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=true, run_metrics=true)
+              ss.process_submission(Logger.new(STDOUT),
+                                    process_rdf: true, index_search: true,
+                                    run_metrics: true, process_annotator: true,
+                                    reasoning: true)
             end
           end
         end

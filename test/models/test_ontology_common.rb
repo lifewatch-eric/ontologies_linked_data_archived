@@ -31,8 +31,16 @@ module LinkedData
       return owl, ont, user, contact
     end
 
-    def submission_parse( acronym, name, ontologyFile, id, index_search=true, run_metrics=false)
+    ##############################################
+    # Possible parse_options with their defaults:
+    #   index_search      = true
+    #   run_metrics       = true
+    #   process_annotator = true
+    #   reasoning         = true
+    ##############################################
+    def submission_parse( acronym, name, ontologyFile, id, parse_options={})
       return if ENV["SKIP_PARSING"]
+      parse_options[:process_rdf] = true
 
       bro = LinkedData::Models::Ontology.find(acronym).first
       if not bro.nil?
@@ -56,7 +64,7 @@ module LinkedData
       ont_submision.save
 
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=index_search, run_metrics=run_metrics)
+      ont_submision.process_submission(Logger.new(STDOUT), parse_options)
     end
 
     def init_test_ontology_msotest(acr)
@@ -91,8 +99,10 @@ module LinkedData
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT), process_rdf=true, index_search=true, run_metrics=true)
-
+      ont_submision.process_submission(Logger.new(STDOUT),
+                                       process_rdf: true, index_search: true,
+                                       run_metrics: true, process_annotator: true,
+                                       reasoning: true)
       roots = ont_submision.roots
       #class99 is equilent to intersection of ...
       #it shouldnt be at the root
