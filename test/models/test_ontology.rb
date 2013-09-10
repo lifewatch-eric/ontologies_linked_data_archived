@@ -120,6 +120,7 @@ class TestOntology < LinkedData::TestCase
   end
 
   def test_purl_creation
+    return unless LinkedData.settings.enable_purl
     count, acronyms, ont = create_ontologies_and_submissions(ont_count: 3, submission_count: 1)
     purl_client = LinkedData::Purl::Client.new
 
