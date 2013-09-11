@@ -32,13 +32,13 @@ module LinkedData
     @settings.queries_debug       ||= false
 
     # PURL server config parameters
-    @settings.enable_purl            = false
-    @settings.purl_host              = "purl.bioontology.org"
-    @settings.purl_port              = 80
-    @settings.purl_username          = ""
-    @settings.purl_password          = ""
-    @settings.purl_maintainers       = ""
-    @settings.purl_target_url_prefix = "http://bioportal.bioontology.org"
+    @settings.enable_purl            ||= false
+    @settings.purl_host              ||= "purl.bioontology.org"
+    @settings.purl_port              ||= 80
+    @settings.purl_username          ||= ""
+    @settings.purl_password          ||= ""
+    @settings.purl_maintainers       ||= ""
+    @settings.purl_target_url_prefix ||= "http://bioportal.bioontology.org"
 
     # Check to make sure url prefix has trailing slash
     @settings.rest_url_prefix = @settings.rest_url_prefix + "/" unless @settings.rest_url_prefix[-1].eql?("/")
@@ -88,7 +88,7 @@ module LinkedData
       conf.add_namespace(:oboinowl_gen, RDF::Vocabulary.new("http://www.geneontology.org/formats/oboInOWL#"))
       conf.add_namespace(:obo_purl, RDF::Vocabulary.new("http://purl.obolibrary.org/obo/"))
       conf.add_namespace(:umls, RDF::Vocabulary.new("http://bioportal.bioontology.org/ontologies/umls/"))
-      conf.id_prefix= "http://data.bioontology.org/"
+      conf.id_prefix = "http://data.bioontology.org/"
       conf.pluralize_models(true)
     end
   end
