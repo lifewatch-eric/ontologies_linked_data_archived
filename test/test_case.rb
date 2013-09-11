@@ -16,7 +16,7 @@ require 'minitest/unit'
 MiniTest::Unit.autorun
 
 # Check to make sure you want to run if not pointed at localhost
-safe_host = Regexp.new(/localhost|ncbo-dev*/)
+safe_host = Regexp.new(/localhost|ncbo-dev*|ncbo-stg-app-22*/)
 unless LinkedData.settings.goo_host.match(safe_host) && LinkedData.settings.search_server_url.match(safe_host) && LinkedData.settings.redis_host.match(safe_host)
   print "\n\n================================== WARNING ==================================\n"
   print "** TESTS CAN BE DESTRUCTIVE -- YOU ARE POINTING TO A POTENTIAL PRODUCTION/STAGE SERVER **\n"
