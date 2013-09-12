@@ -13,7 +13,7 @@ module LinkedData
           if valid_legacy_password?(pass, hash)
             self.password = pass
             if self.valid?
-              self.save
+              self.save(user: self)
             else
               raise Exception("Failed to update password hash to bcrypt from old SHA256")
             end

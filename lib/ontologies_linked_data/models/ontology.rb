@@ -145,6 +145,7 @@ module LinkedData
           purl_client = LinkedData::Purl::Client.new
           purl_client.create_purl(acronym)
         end
+        return self
       end
 
       def unindex
