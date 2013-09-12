@@ -4,6 +4,7 @@ require 'uri'
 require 'open-uri'
 require 'cgi'
 require 'benchmark'
+require 'ncbo_annotator'
 
 module LinkedData
   module Models
@@ -439,7 +440,6 @@ module LinkedData
 
           file_path = nil
           status = LinkedData::Models::SubmissionStatus.find("RDF").first
-
           #remove RDF status before starting
           remove_submission_status(status)
 
@@ -458,7 +458,6 @@ module LinkedData
           end
 
           status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
-
           #remove RDF_LABELS status before starting
           remove_submission_status(status)
 
@@ -475,13 +474,11 @@ module LinkedData
           end
         end
 
+        parsed = ready?(status: [:rdf, :rdf_labels])
+
         if (index_search)
-          if (!ready?(status: [:rdf, :rdf_labels]))
-            raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed"
-          end
-
+          raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
           status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
-
           #remove INDEXED status before starting
           remove_submission_status(status)
 
@@ -496,17 +493,31 @@ module LinkedData
         end
 
         if (run_metrics)
-          if (!ready?(status: [:rdf, :rdf_labels]))
-            raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed"
-          end
-
+          raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
           status = LinkedData::Models::SubmissionStatus.find("METRICS").first
-
           #remove METRICS status before starting
           remove_submission_status(status)
 
           begin
             process_metrics(logger)
+            add_submission_status(status)
+          rescue Exception => e
+            add_submission_status(status.get_error_status)
+            logger.info(e.message)
+            logger.flush
+          end
+        end
+
+        if (process_annotator)
+          raise Exception, "Annotator entries cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
+          status = LinkedData::Models::SubmissionStatus.find("ANNOTATOR").first
+          #remove ANNOTATOR status before starting
+          remove_submission_status(status)
+
+          begin
+            annotator = Annotator::Models::NcboAnnotator.new
+            annotator.create_cache_for_submission(logger, self)
+            annotator.generate_dictionary_file()
             add_submission_status(status)
           rescue Exception => e
             add_submission_status(status.get_error_status)

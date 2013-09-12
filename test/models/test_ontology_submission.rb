@@ -124,6 +124,18 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
                      reasoning: true)
   end
 
+  def test_submission_parse_annotator
+    submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, process_annotator: true,
+                     reasoning: true)
+
+
+
+
+
+  end
+
   def test_submission_parse_zip
     return if ENV["SKIP_PARSING"]
 
