@@ -144,8 +144,8 @@ module Mappings
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
     SELECT  ?ont ( COUNT(DISTINCT ?id) AS ?count_var )
-  FROM <http://data.bioontology.org/metadata/Mapping>
-  FROM <http://data.bioontology.org/metadata/TermMapping>
+  FROM <#{LinkedData::Models::Mapping.type_uri}>
+  FROM <#{LinkedData::Models::TermMapping.type_uri}>
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
@@ -169,7 +169,7 @@ eos
     ontologies.each do |ont|
       sparql_query = <<-eos
   SELECT  (COUNT(?id) AS ?count_var )
-  FROM <http://data.bioontology.org/metadata/TermMapping>
+  FROM <#{LinkedData::Models::TermMapping.type_uri}>
   WHERE {
       ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
   eos
