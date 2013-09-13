@@ -36,6 +36,7 @@ module LinkedData
       attribute :process, enforce: [ :mapping_process, :list ]
 
       # Hypermedia settings for serializer
+      serialize_default :process, :classes
       serialize_never :terms
       serialize_methods :classes
       embed :process, :classes
