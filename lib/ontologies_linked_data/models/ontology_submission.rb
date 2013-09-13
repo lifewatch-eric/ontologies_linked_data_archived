@@ -410,13 +410,14 @@ module LinkedData
       #   reasoning         = true
       #######################################
       def process_submission(logger, options={})
-        process_rdf = options[:process_rdf] || true
-        index_search = options[:index_search] || true
-        run_metrics = options[:run_metrics] || true
-        reasoning = options[:reasoning] || true
+        process_rdf = options[:process_rdf] == false ? false : true
+        index_search = options[:index_search] == false ? false : true
+        run_metrics = options[:run_metrics] == false ? false : true
+        reasoning = options[:reasoning] == false ? false : true
 
         self.bring_remaining
         self.ontology.bring_remaining
+
         logger.info("Starting to process #{self.ontology.acronym}/submissions/#{self.submissionId}")
         logger.flush
         LinkedData::Parser.logger = logger
