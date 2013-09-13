@@ -213,33 +213,47 @@ module LinkedData
         latest_submission = ont.latest_submission(status: [:rdf, :rdf_labels])
         dump_file_path = File.join([BatchProcess.mappings_ontology_folder(ont),
                        "#{proc_name}_dump_#{ont.acronym}_#{latest_submission.submissionId}.txt"])
-        if $MAPPING_RELOAD_LABELS || !File.exist?(dump_file_path)
-          t0 = Time.now
-          if logger
-            logger.info("dumping labels in #{proc_name} for #{ont.acronym} ...")
+        dump_file_lock = "#{dump_file_path}.lck"
+        lock=false
+        file_lock = File.open(dump_file_lock, File::RDWR|File::CREAT, 0644)
+        begin
+          while !lock
+            lock = file_lock.flock(File::LOCK_NB|File::LOCK_EX)
+            if !lock
+              puts "locked on dumping #{ont.acronym} #{@proc_name}"
+              sleep(5)
+            end
           end
-          page_i = 1
-          page = nil
-          entry_count = 0
-          paging.in(latest_submission)
-          paging.page(page_i,2500)
-          CSV::open(dump_file_path,'wb') do |csv|
-            begin
-              page = paging.all
-              page.each do |c|
-                dumper.call(c,ont).each do |entry|
-                  csv << entry
-                  entry_count += 1
-                end
+          if $MAPPING_RELOAD_LABELS || !File.exist?(dump_file_path)
+              t0 = Time.now
+              if logger
+                logger.info("dumping labels in #{proc_name} for #{ont.acronym} ...")
               end
-              page_i += 1
-              paging.page(page_i)
-            end while(page.next?)
+              page_i = 1
+              page = nil
+              entry_count = 0
+              paging.in(latest_submission)
+              paging.page(page_i,2500)
+              CSV::open(dump_file_path,'wb') do |csv|
+                begin
+                  page = paging.all
+                  page.each do |c|
+                    dumper.call(c,ont).each do |entry|
+                      csv << entry
+                      entry_count += 1
+                    end
+                  end
+                  page_i += 1
+                  paging.page(page_i)
+                end while(page.next?)
+              end
+              if logger
+                logger.info("dumped #{entry_count} entries "+
+                             " in #{Time.now - t0} sec.")
+              end
           end
-          if logger
-            logger.info("dumped #{entry_count} entries "+
-                         " in #{Time.now - t0} sec.")
-          end
+        ensure
+          file_lock.close()
         end
         return dump_file_path
       end
