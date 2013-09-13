@@ -12,9 +12,6 @@ class Object
     recursed_object = enumerable_handling(options, &block)
     return recursed_object unless recursed_object.nil?
 
-    # Default methods
-    options[:methods] ||= self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
-
     # Get sets for passed parameters from users
     all = options[:all] ||= false
     only = Set.new(options[:only]).map! {|e| e.to_sym }
