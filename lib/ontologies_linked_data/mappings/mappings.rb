@@ -144,8 +144,8 @@ module Mappings
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
     SELECT  ?ont ( COUNT(DISTINCT ?id) AS ?count_var )
-  FROM <http://data.bioontology.org/metadata/Mapping>
-  FROM <http://data.bioontology.org/metadata/TermMapping>
+  FROM <#{LinkedData::Models::Mapping.type_uri}>
+  FROM <#{LinkedData::Models::TermMapping.type_uri}>
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
@@ -169,7 +169,7 @@ eos
     ontologies.each do |ont|
       sparql_query = <<-eos
   SELECT  (COUNT(?id) AS ?count_var )
-  FROM <http://data.bioontology.org/metadata/TermMapping>
+  FROM <#{LinkedData::Models::TermMapping.type_uri}>
   WHERE {
       ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
   eos
@@ -179,6 +179,42 @@ eos
       end
     end
     return result
+  end
+
+  def self.recent_user_mappings(n)
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    qdate = <<-eos
+SELECT ?s
+FROM <#{LinkedData::Models::MappingProcess.type_uri}>
+WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } ORDER BY DESC(?o) LIMIT #{n}
+eos
+    epr = Goo.sparql_query_client(:main)
+    procs = []
+    epr.query(qdate, graphs: graphs).each do |sol|
+      procs << sol[:s]
+    end
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    procs = procs.map { |x| "?o = #{x.to_ntriples}" }.join " || "
+    qmappings = <<-eos
+SELECT ?s
+FROM <#{LinkedData::Models::Mapping.type_uri}>
+WHERE { ?s <http://data.bioontology.org/metadata/process> ?o .
+FILTER (#{procs})
+}
+eos
+    epr = Goo.sparql_query_client(:main)
+    mapping_ids = []
+    epr.query(qmappings, graphs: graphs).each do |sol|
+      mapping_ids << sol[:s]
+    end
+    mappings = mapping_ids.map { |x| LinkedData::Models::Mapping.find(x).first }
+
+    mappings = LinkedData::Models::Mapping.where.models(mappings)
+                                 .include(terms: [ :term, ontology: [ :acronym ] ])
+                                 .include(process: [:name, :owner, :date ])
+                                 .all
+    return mappings
+
   end
 
 end
