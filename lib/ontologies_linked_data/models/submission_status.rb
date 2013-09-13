@@ -40,8 +40,12 @@ module LinkedData
         raise ArgumentError, "One or more statuses were not SubmissionStatus objects" unless all_typed_correctly
 
         ready_status_codes = self.get_ready_status
-        status_codes = status.map { |s| s.id.to_s.split("/")[-1] }
+        status_codes = self.get_status_codes(status)
         return (ready_status_codes - status_codes).size == 0
+      end
+
+      def self.get_status_codes(status)
+        return status.map { |s| s.id.to_s.split("/")[-1] }
       end
 
       def self.get_ready_status

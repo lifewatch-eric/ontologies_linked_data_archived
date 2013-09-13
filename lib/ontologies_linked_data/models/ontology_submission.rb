@@ -4,7 +4,6 @@ require 'uri'
 require 'open-uri'
 require 'cgi'
 require 'benchmark'
-require 'ncbo_annotator'
 
 module LinkedData
   module Models
