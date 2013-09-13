@@ -186,7 +186,7 @@ module LinkedData
         ontologies_sorted = @ontologies.sort_by { |ont| ont.acronym }
         ont_first = ontologies_sorted.first
         sorted_file = File.join([BatchProcess.mappings_ontology_folder(ont_first),
-                       "aggregated_cui_labels_with_#{ontologies_sorted.last.acronym}.txt"])
+                       "aggregated_#{@process_name}_labels_with_#{ontologies_sorted.last.acronym}.txt"])
         sort_command = "cat " + (dump_files.join " ") + "| sort -t, -k#{field}"
         if $TMP_SORT_FOLDER
           if not Dir.exist?($TMP_SORT_FOLDER)
