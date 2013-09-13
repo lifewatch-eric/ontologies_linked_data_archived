@@ -59,7 +59,7 @@ module LinkedData
               released: DateTime.now - 3
             })
 
-            if process_submission && (submissions_to_process.nil? || submissions_to_process.include?(os.submissionId))
+            if (submissions_to_process.nil? || submissions_to_process.include?(os.submissionId))
               file_path = options[:file_path]
               file_path = "../../../../test/data/ontology_files/BRO_v3.#{os.submissionId}.owl" if file_path.nil?
               if File.exist?(file_path)
@@ -96,8 +96,7 @@ module LinkedData
               next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
               ss.process_submission(Logger.new(STDOUT),
                                     process_rdf: true, index_search: true,
-                                    run_metrics: true, process_annotator: true,
-                                    reasoning: true)
+                                    run_metrics: true, reasoning: true)
             end
           end
         end

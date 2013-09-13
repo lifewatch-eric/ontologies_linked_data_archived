@@ -209,8 +209,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123,
                        process_rdf: true, index_search: true,
-                       run_metrics: false, process_annotator: false,
-                       reasoning: true)
+                       run_metrics: false, reasoning: true)
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
@@ -249,8 +248,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123,
                        process_rdf: true, index_search: true,
-                       run_metrics: false, process_annotator: false,
-                       reasoning: true)
+                       run_metrics: false, reasoning: true)
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
@@ -268,8 +266,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     if !LinkedData::Models::Ontology.find("BROTEST123").first
       submission_parse("BROTEST123", "SOME BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 123,
                        process_rdf: true, index_search: true,
-                       run_metrics: false, process_annotator: false,
-                       reasoning: true)
+                       run_metrics: false, reasoning: true)
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"

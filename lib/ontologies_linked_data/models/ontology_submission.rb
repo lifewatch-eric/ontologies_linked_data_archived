@@ -407,14 +407,12 @@ module LinkedData
       #   process_rdf       = true
       #   index_search      = true
       #   run_metrics       = true
-      #   process_annotator = true
       #   reasoning         = true
       #######################################
       def process_submission(logger, options={})
         process_rdf = options[:process_rdf] || true
         index_search = options[:index_search] || true
         run_metrics = options[:run_metrics] || true
-        process_annotator = options[:process_annotator] || true
         reasoning = options[:reasoning] || true
 
         self.bring_remaining
@@ -500,24 +498,6 @@ module LinkedData
 
           begin
             process_metrics(logger)
-            add_submission_status(status)
-          rescue Exception => e
-            add_submission_status(status.get_error_status)
-            logger.info(e.message)
-            logger.flush
-          end
-        end
-
-        if (process_annotator)
-          raise Exception, "Annotator entries cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
-          status = LinkedData::Models::SubmissionStatus.find("ANNOTATOR").first
-          #remove ANNOTATOR status before starting
-          remove_submission_status(status)
-
-          begin
-            annotator = Annotator::Models::NcboAnnotator.new
-            annotator.create_cache_for_submission(logger, self)
-            annotator.generate_dictionary_file()
             add_submission_status(status)
           rescue Exception => e
             add_submission_status(status.get_error_status)

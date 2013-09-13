@@ -35,7 +35,6 @@ module LinkedData
     # Possible parse_options with their defaults:
     #   index_search      = true
     #   run_metrics       = true
-    #   process_annotator = true
     #   reasoning         = true
     ##############################################
     def submission_parse( acronym, name, ontologyFile, id, parse_options={})
@@ -101,8 +100,7 @@ module LinkedData
       assert_equal true, ont_submision.exist?(reload=true)
       ont_submision.process_submission(Logger.new(STDOUT),
                                        process_rdf: true, index_search: true,
-                                       run_metrics: true, process_annotator: true,
-                                       reasoning: true)
+                                       run_metrics: true, reasoning: true)
       roots = ont_submision.roots
       #class99 is equilent to intersection of ...
       #it shouldnt be at the root
