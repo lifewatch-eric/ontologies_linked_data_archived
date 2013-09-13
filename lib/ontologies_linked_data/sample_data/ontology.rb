@@ -41,6 +41,8 @@ module LinkedData
 
           if o.exist?
             o = LinkedData::Models::Ontology.find(acronym).include(LinkedData::Models::Ontology.attributes(:all)).first
+            o.bring(:submissions)
+            o.submissions.each {|s| s.delete}
           else
             o.save
           end
