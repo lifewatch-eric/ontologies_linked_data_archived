@@ -37,6 +37,7 @@ module LinkedData
 
       # Hypermedia settings for serializer
       serialize_never :terms
+      serialize_methods :classes
       embed :process, :classes
 
       def self.mapping_id_generator(ins)
@@ -51,6 +52,23 @@ module LinkedData
         hashed_value = Digest::SHA1.hexdigest(val_to_hash)
         return RDF::IRI.new(
           "#{(self.namespace)}mapping/#{hashed_value}")
+      end
+
+      def classes
+        submissions = {}
+        classes = []
+        terms.each do |term_mapping|
+          term_mapping.term.each do |term|
+            unless submissions[term_mapping.ontology]
+              ont = term_mapping.ontology
+              submission = LinkedData::Models::OntologySubmission.read_only(id: ont.id.to_s + "/latest_submission", ontology: ont)
+              submissions[term_mapping.ontology] = submission
+            end
+            cls = LinkedData::Models::Class.read_only(id: term, submission: submissions[term_mapping.ontology])
+            classes << cls
+          end
+        end
+        classes
       end
 
       def delete(*args)
