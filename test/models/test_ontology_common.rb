@@ -54,7 +54,11 @@ module LinkedData
       assert_equal 4, ont_submision.errors.length
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
       ont_submision.uploadFilePath = uploadFilePath
-      owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
+      ontology_type = "OWL"
+      if (ontologyFile && ontologyFile.end_with?("obo"))
+        ontology_type = "OBO"
+      end
+      owl, bro, user, contact = submission_dependent_objects(ontology_type, acronym, "test_linked_models", name)
       ont_submision.contact = [contact]
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
