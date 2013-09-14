@@ -105,6 +105,41 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
   end
 
+  def test_obo_part_of
+    submission_parse("TAO-TEST", "TAO TEST Bla", "./test/data/ontology_files/tao.obo", 55,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: true)
+    qthing = <<-eos
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT * WHERE { 
+  <http://purl.obolibrary.org/obo/TAO_0001044> rdfs:subClassOf ?x . }
+eos
+    count = 0
+    Goo.sparql_query_client.query(qthing).each_solution do |sol|
+      assert sol[:x].to_s["TAO_0000732"]
+      assert !sol[:x].to_s["Thing"]
+      count += 1
+    end
+    assert count == 1
+
+    qcount = <<-eos
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT * WHERE { 
+<http://purl.obolibrary.org/obo/TAO_0001044> 
+  <http://data.bioontology.org/metadata/part_of> ?x . }
+eos
+    count = 0
+    Goo.sparql_query_client.query(qcount).each_solution do |sol|
+      count += 1
+      assert sol[:x].to_s["TAO_0000732"]
+    end
+    assert count == 1
+
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
+    n_roots = sub.roots.length
+    assert n_roots < 10
+  end
+
   def test_submission_parse
     submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10,
                      process_rdf: true, index_search: true,
@@ -492,7 +527,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert metrics.classes == 143
     assert metrics.properties == 78
     assert metrics.individuals == 27
-    assert metrics.classesWithOneChild == 10
+    assert metrics.classesWithOneChild == 11
     assert metrics.classesWithNoDefinition == 137
     assert metrics.classesWithMoreThan25Children == 0
     assert metrics.maxChildCount == 10
