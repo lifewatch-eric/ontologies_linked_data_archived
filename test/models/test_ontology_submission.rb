@@ -140,18 +140,33 @@ eos
     assert n_roots < 10
   end
 
-  def test_submission_parse
-    submission_parse("BROTEST", "BROTEST Bla", "./test/data/ontology_files/BRO_v3.2.owl", 10,
-                     process_rdf: true, index_search: true,
+  def test_submission_parse_subfolders_zip
+    submission_parse("CTXTEST", "CTX Bla", 
+                     "test/data/ontology_files/XCTontologyvtemp2_vvtemp2.zip",
+                     34,
+                     masterFileName: "XCTontologyvtemp2/XCTontologyvtemp2.owl",
+                     process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
 
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "CTXTEST"]).first
+
+    #test roots to ack parsing went well
+    n_roots = sub.roots.length
+    assert n_roots == 15
+
+  end
+
+  def test_submission_parse
     #This one has some nasty looking IRIS with slashes in the anchor
-    submission_parse("MCCLTEST", "MCCLS TEST", "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 10,
+    submission_parse("MCCLTEST", "MCCLS TEST", 
+                     "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
 
     #This one has resources wih accents.
-    submission_parse("OntoMATEST", "OntoMA TEST", "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 10,
+    submission_parse("OntoMATEST", 
+                     "OntoMA TEST", 
+                     "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 15,
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
   end

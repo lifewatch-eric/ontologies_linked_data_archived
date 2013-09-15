@@ -63,6 +63,10 @@ module LinkedData
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = bro
+      masterFileName = parse_options.delete :masterFileName
+      if masterFileName
+        ont_submision.masterFileName = masterFileName
+      end
       assert (ont_submision.valid?)
       ont_submision.save
 

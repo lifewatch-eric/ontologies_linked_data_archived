@@ -43,6 +43,13 @@ module LinkedData
         extracted_files = []
         Zip::File.open(file_path) do |zipfile|
           zipfile.each do |file|
+            if file.name.split("/").length > 1
+              sub_folder = File.join(dst_folder,
+                                    file.name.split("/")[0..-2].join("/"))
+              unless Dir.exist?(sub_folder)
+                FileUtils.mkdir_p sub_folder 
+              end
+            end
             extracted_files << file.extract(File.join(dst_folder,file.name))
           end
         end
