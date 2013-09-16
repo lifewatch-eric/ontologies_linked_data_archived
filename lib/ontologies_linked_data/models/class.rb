@@ -63,7 +63,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("tree", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/tree"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("notes", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/notes"}, LinkedData::Models::Note.type_uri),
               LinkedData::Hypermedia::Link.new("mappings", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/mappings"}, Goo.vocabulary["Mapping"]),
-              LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=terms&conceptid=#{CGI.escape(s.id.to_s)}"}, self.uri_type)
+              LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.submission.ontology.acronym}?p=classes&conceptid=#{CGI.escape(s.id.to_s)}"}, self.uri_type)
 
       # HTTP Cache settings
       cache_timeout 86400
@@ -232,8 +232,8 @@ module LinkedData
         root_node = path.first
         tree_node = path.first
         path.delete_at(0)
-        while tree_node && 
-              !tree_node.id.to_s["#Thing"] && 
+        while tree_node &&
+              !tree_node.id.to_s["#Thing"] &&
               tree_node.children.length > 0 and path.length > 0 do
 
           next_tree_node = nil
