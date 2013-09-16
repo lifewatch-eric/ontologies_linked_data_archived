@@ -211,7 +211,7 @@ eos
 
     mappings = LinkedData::Models::Mapping.where.models(mappings)
                                  .include(terms: [ :term, ontology: [ :acronym ] ])
-                                 .include(process: [:name, :owner, :date ])
+                                 .include(process: [:name, :creator, :date ])
                                  .all
     return mappings
 
