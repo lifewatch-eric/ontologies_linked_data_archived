@@ -39,7 +39,7 @@ module LinkedData
       # Internal values for parsing - not definitive
       attribute :uploadFilePath
       attribute :masterFileName
-      attribute :submissionStatus, enforce: [:submission_status, :list]
+      attribute :submissionStatus, enforce: [:submission_status, :list], default: lambda { |record| [LinkedData::Models::SubmissionStatus.find("UPLOADED").first] }
       attribute :missingImports, enforce: [:list]
 
       # URI for pulling ontology
@@ -53,7 +53,7 @@ module LinkedData
 
       # Hypermedia settings
       embed :contact, :ontology
-      attribute :submissionStatus, enforce: [:submission_status, :list], default: lambda { |record| [LinkedData::Models::SubmissionStatus.find("UPLOADED").first] }
+      embed_values :submissionStatus => [:code], :hasOntologyLanguage => [:acronym]
       serialize_default :contact, :ontology, :hasOntologyLanguage, :released, :creationDate, :homepage,
                         :publication, :documentation, :version, :description, :status, :submissionId
 
