@@ -406,8 +406,8 @@ module LinkedData
       #   process_rdf       = true
       #   index_search      = true
       #   run_metrics       = true
-      #   archive           = false
       #   reasoning         = true
+      #   archive           = false
       #######################################
       def process_submission(logger, options={})
         process_rdf = options[:process_rdf] == false ? false : true
@@ -426,6 +426,7 @@ module LinkedData
 
         #TODO: for now, archiving simply means add "ARCHIVED" status. We need to expand the logic to include other appropriate actions (ie deleting backend, files, etc.)
         if (archive)
+          self.submissionStatus = nil
           status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
           add_submission_status(status)
         else
