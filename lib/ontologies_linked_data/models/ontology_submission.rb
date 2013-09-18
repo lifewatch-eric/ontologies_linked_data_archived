@@ -328,25 +328,14 @@ module LinkedData
         if (status.error?)
           # remove the corresponding non_error status (if exists)
           non_error_status = status.get_non_error_status()
-
-          s.reject! { |stat|
-            stat.bring(:code) if stat.bring?(:code)
-            stat.code == non_error_status.code
-          }
+          s.reject! { |stat| stat.get_code_from_id() == non_error_status.get_code_from_id() }
         else
           # remove the corresponding non_error status (if exists)
           error_status = status.get_error_status()
-
-          s.reject! { |stat|
-            stat.bring(:code) if stat.bring?(:code)
-            stat.code == error_status.code
-          }
+          s.reject! { |stat| stat.get_code_from_id() == error_status.get_code_from_id() }
         end
 
-        has_status = s.any? { |s|
-          s.bring(:code) if s.bring?(:code)
-          s.code == status.code
-        }
+        has_status = s.any? { |s| s.get_code_from_id() == status.get_code_from_id() }
         s << status unless has_status
         self.submissionStatus = s
       end
@@ -356,12 +345,12 @@ module LinkedData
           valid = status.is_a?(LinkedData::Models::SubmissionStatus)
           raise ArgumentError, "The status being removed is not SubmissionStatus object" unless valid
           s = self.submissionStatus.dup
-          status.bring(:code) if status.bring?(:code)
 
           # remove that status as well as the error status for the same status
           s.reject! { |stat|
-            stat.bring(:code) if stat.bring?(:code)
-            stat.code == status.code || stat.code == status.get_error_status().code
+            stat_code = stat.get_code_from_id()
+            stat_code == status.get_code_from_id() ||
+                stat_code == status.get_error_status().get_code_from_id()
           }
           self.submissionStatus = s
         end
@@ -390,7 +379,7 @@ module LinkedData
         else
           status.each do |x|
             return false if self.submissionStatus.select { |x1|
-              x1.id.to_s.split("/")[-1] == x.to_s.upcase
+              x1.get_code_from_id() == x.to_s.upcase
             }.length == 0
           end
           return true

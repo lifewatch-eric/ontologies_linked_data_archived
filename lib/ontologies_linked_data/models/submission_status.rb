@@ -19,18 +19,25 @@ module LinkedData
       enum VALUES
 
       def error?
-        return self.id.to_s.split("/")[-1].start_with?("ERROR_")
+        code = get_code_from_id()
+        return code.start_with?("ERROR_")
       end
 
       def get_error_status
         return self if error?
-        return SubmissionStatus.find("ERROR_#{self.code}").include(:code).first
+        code = get_code_from_id()
+        return SubmissionStatus.find("ERROR_#{code}").include(:code).first
       end
 
       def get_non_error_status
         return self unless error?
-        code = self.code.sub("ERROR_", "")
+        code = get_code_from_id()
+        code.sub!("ERROR_", "")
         return SubmissionStatus.find(code).include(:code).first
+      end
+
+      def get_code_from_id
+        return self.id.to_s.split("/")[-1]
       end
 
       def self.status_ready?(status)
@@ -45,7 +52,7 @@ module LinkedData
       end
 
       def self.get_status_codes(status)
-        return status.map { |s| s.id.to_s.split("/")[-1] }
+        return status.map { |s| s.get_code_from_id() }
       end
 
       def self.get_ready_status

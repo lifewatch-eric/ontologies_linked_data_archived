@@ -217,7 +217,6 @@ eos
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission(status: [:rdf])
-    binding.pry
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel).read_only.to_a
     assert_equal 133, classes.length
     classes.each do |cls|
