@@ -650,6 +650,17 @@ module LinkedData
         check
       end
 
+      def download_ontology_file
+        file = open(self.pullLocation.to_s, :read_timeout => nil)
+        if file.meta && file.meta["content-disposition"]
+          cd = file.meta["content-disposition"].match(/filename=\"(.*)\"/)
+          filename = cd.nil? ? nil : cd[1]
+        end
+        filename = LinkedData::Utils::Triples.last_iri_fragment(self.pullLocation.to_s) if filename.nil?
+
+        return file, filename
+      end
+
       private
 
       def delete_and_append(triples_file_path, logger, mime_type = nil)
@@ -657,16 +668,6 @@ module LinkedData
         Goo.sparql_data_client.put_triples(self.id, triples_file_path, mime_type)
         logger.info("Triples #{triples_file_path} appended in #{self.id.to_ntriples}")
         logger.flush
-      end
-
-      def download_ontology_file
-        file = open(self.pullLocation.value, :read_timeout => nil)
-        if file.meta && file.meta["content-disposition"]
-          cd = file.meta["content-disposition"].match(/filename=\"(.*)\"/)
-          filename = cd.nil? ? nil : cd[1]
-        end
-        filename = LinkedData::Utils::Namespaces.last_iri_fragment(self.pullLocation.value) if filename.nil?
-        return file, filename
       end
 
       def check_http_file(url)
