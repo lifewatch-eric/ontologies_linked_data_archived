@@ -143,21 +143,24 @@ module Mappings
   def self.mapping_counts_for_ontology(ont)
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
-    SELECT  ?ont ( COUNT(DISTINCT ?id) AS ?count_var )
+    SELECT (strbefore(substr(str(?tid), 50),'/') as ?acr)
   FROM <#{LinkedData::Models::Mapping.type_uri}>
   FROM <#{LinkedData::Models::TermMapping.type_uri}>
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
-  ?id <http://data.bioontology.org/metadata/terms> [
-    <http://data.bioontology.org/metadata/ontology>  ?ont ] . } GROUP BY ?ont
+  ?id <http://data.bioontology.org/metadata/terms> ?tid . }
 eos
     result = {}
     epr = Goo.sparql_query_client(:main)
+    this_acr = ont.id.split("/")[-1]
     epr.query(sparql_query, graphs: graphs).each do |sol|
-        next if sol[:ont].to_s == ont.id.to_s
-        ont_acr = sol[:ont].to_s.split("/")[-1]
-        result[ont_acr] = sol[:count_var].object
+        other_ont = sol[:acr]
+        next if other_ont == this_acr
+        if result[other_ont].nil?
+          result[other_ont] = 0
+        end
+        result[other_ont] += 1
     end
     return result
   end
