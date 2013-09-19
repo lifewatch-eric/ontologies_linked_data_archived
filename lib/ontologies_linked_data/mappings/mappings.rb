@@ -154,15 +154,9 @@ eos
     result = {}
     epr = Goo.sparql_query_client(:main)
     this_acr = ont.id.split("/")[-1]
-    epr.query(sparql_query, graphs: graphs).each do |sol|
-        other_ont = sol[:acr]
-        next if other_ont == this_acr
-        if result[other_ont].nil?
-          result[other_ont] = 0
-        end
-        result[other_ont] += 1
-    end
-    return result
+    sols = epr.query(sparql_query, graphs: graphs)
+    sols.delete(this_acr)
+    return sols
   end
 
   def self.mapping_counts_per_ontology()
@@ -177,7 +171,7 @@ eos
       ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
   eos
       epr = Goo.sparql_query_client(:main)
-      epr.query(sparql_query, graphs: graphs).each do |sol|
+      solutions = epr.query(sparql_query, graphs: graphs).each do |sol|
           result[ont.id.to_s.split("/")[-1]] = sol[:count_var].object
       end
     end
