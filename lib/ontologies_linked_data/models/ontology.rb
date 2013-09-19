@@ -69,7 +69,7 @@ module LinkedData
         self.submissions.each do |s|
           return s if s.submissionId == submission_id
         end
-        raise ArgumentError, "Inconsistent submissionID #{submission_id} for #{self.id.to_ntriples}"
+        return nil
       end
 
       def submission(submission_id)
