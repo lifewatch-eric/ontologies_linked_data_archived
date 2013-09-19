@@ -40,6 +40,17 @@ module LinkedData
     @settings.purl_maintainers       ||= ""
     @settings.purl_target_url_prefix ||= "http://bioportal.bioontology.org"
 
+    # Email settings
+    @settings.email_sender           ||= "admin@example.org" # Default sender for emails
+    @settings.email_override         ||= "test.email@example.org" # By default, all email gets sent here. Disable with email_override_disable.
+    @settings.email_disable_override ||= false
+    @settings.smtp_host              ||= "localhost"
+    @settings.smtp_port              ||= 25
+    @settings.smtp_user              ||= "user"
+    @settings.smtp_password          ||= "password"
+    @settings.smtp_auth_type         ||= :plain # :plain, :login, :cram_md5
+    @settings.smtp_domain            ||= "localhost.localhost"
+
     # Check to make sure url prefix has trailing slash
     @settings.rest_url_prefix = @settings.rest_url_prefix + "/" unless @settings.rest_url_prefix[-1].eql?("/")
 

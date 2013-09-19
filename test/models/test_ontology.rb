@@ -5,6 +5,7 @@ require 'rack'
 class TestOntology < LinkedData::TestCase
 
   def self.before_suite
+    file = File.new("")
     @@thread = Thread.new do
       Rack::Server.start(
         app: lambda do |e|
