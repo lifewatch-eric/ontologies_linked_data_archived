@@ -207,14 +207,12 @@ eos
     epr.query(qmappings, graphs: graphs).each do |sol|
       mapping_ids << sol[:s]
     end
-    mappings = mapping_ids.map { |x| LinkedData::Models::Mapping.find(x).first }
-
-    mappings = LinkedData::Models::Mapping.where.models(mappings)
-                                 .include(terms: [ :term, ontology: [ :acronym ] ])
-                                 .include(process: [:name, :creator, :date ])
-                                 .all
-    return mappings
-
+    mappings = mapping_ids.map { |x| LinkedData::Models::Mapping.find(x)
+                                     .include(terms: [ :term, ontology: [ :acronym ] ])
+                                     .include(process: [:name, :creator, :date ])
+                                     .first 
+                               }
+    return mappings.sort_by { |x| x.process.first.date }.reverse[0..n-1]
   end
 
 end
