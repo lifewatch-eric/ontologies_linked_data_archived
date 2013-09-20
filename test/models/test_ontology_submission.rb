@@ -1,8 +1,21 @@
 require_relative "./test_ontology_common"
 require "logger"
+require "rack"
 
 class TestOntologySubmission < LinkedData::TestOntologyCommon
-  def setup
+  def self.before_suite
+    @@thread = Thread.new do
+      Rack::Server.start(
+        app: lambda do |e|
+          [200, {'Content-Type' => 'text/plain'}, ['test file']]
+        end,
+        Port: 3456
+      )
+    end
+  end
+
+  def self.after_suite
+    Thread.kill(@@thread)
   end
 
   def teardown
@@ -111,7 +124,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
                      run_metrics: false, reasoning: true)
     qthing = <<-eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT * WHERE { 
+SELECT DISTINCT * WHERE {
   <http://purl.obolibrary.org/obo/TAO_0001044> rdfs:subClassOf ?x . }
 eos
     count = 0
@@ -124,8 +137,8 @@ eos
 
     qcount = <<-eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT * WHERE { 
-<http://purl.obolibrary.org/obo/TAO_0001044> 
+SELECT DISTINCT * WHERE {
+<http://purl.obolibrary.org/obo/TAO_0001044>
   <http://data.bioontology.org/metadata/part_of> ?x . }
 eos
     count = 0
@@ -141,7 +154,7 @@ eos
   end
 
   def test_submission_parse_subfolders_zip
-    submission_parse("CTXTEST", "CTX Bla", 
+    submission_parse("CTXTEST", "CTX Bla",
                      "test/data/ontology_files/XCTontologyvtemp2_vvtemp2.zip",
                      34,
                      masterFileName: "XCTontologyvtemp2/XCTontologyvtemp2.owl",
@@ -158,14 +171,14 @@ eos
 
   def test_submission_parse
     #This one has some nasty looking IRIS with slashes in the anchor
-    submission_parse("MCCLTEST", "MCCLS TEST", 
+    submission_parse("MCCLTEST", "MCCLS TEST",
                      "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
 
     #This one has resources wih accents.
-    submission_parse("OntoMATEST", 
-                     "OntoMA TEST", 
+    submission_parse("OntoMATEST",
+                     "OntoMA TEST",
                      "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 15,
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
@@ -209,6 +222,21 @@ eos
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
       assert_instance_of String, cls.prefLabel
+    end
+  end
+
+  def test_download_ontology_file
+    begin
+      ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)[2].first
+      sub = ont.bring(:submissions).submissions.first
+      sub.pullLocation = RDF::IRI.new("http://localhost:3456/")
+      file, filename = sub.download_ontology_file
+      assert filename.nil?
+      assert file.is_a?(Tempfile)
+      file.open
+      assert file.read.eql?("test file")
+    ensure
+      delete_ontologies_and_submissions
     end
   end
 
