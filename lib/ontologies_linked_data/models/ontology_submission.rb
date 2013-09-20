@@ -644,20 +644,14 @@ module LinkedData
           else
             check = check_http_file(url)
           end
-        rescue Exception => e
+        rescue Exception
           check = false
         end
         check
       end
 
       def download_ontology_file
-        file = open(self.pullLocation.to_s, :read_timeout => nil)
-        if file.meta && file.meta["content-disposition"]
-          cd = file.meta["content-disposition"].match(/filename=\"(.*)\"/)
-          filename = cd.nil? ? nil : cd[1]
-        end
-        filename = LinkedData::Utils::Triples.last_iri_fragment(self.pullLocation.to_s) if filename.nil?
-
+        file, filename = LinkedData::Utils::FileHelpers.download_file(self.pullLocation.to_s)
         return file, filename
       end
 
