@@ -156,6 +156,7 @@ module LinkedData
         single_load = []
         self.in(submission)
               .models(models)
+              .include(ld)
               .aggregate(:count, :children).all
 
         models.each do |cls|
