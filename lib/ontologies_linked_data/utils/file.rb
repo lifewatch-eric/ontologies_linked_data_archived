@@ -102,9 +102,8 @@ module LinkedData
               rescue
                 filename = LinkedData::Utils::Triples.last_iri_fragment(uri.request_uri) if filename.nil?
               end
-              res.read_body do |segment|
-                file.write(segment)
-              end
+
+              file.write(res.body)
 
               if res.header['Content-Encoding'].eql?('gzip')
                 uncompressed_file = Tempfile.new("uncompressed-ont-rest-file")
