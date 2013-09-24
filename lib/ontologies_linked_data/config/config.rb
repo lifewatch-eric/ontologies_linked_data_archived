@@ -35,6 +35,9 @@ module LinkedData
     @settings.replace_url_prefix     ||= false
     @settings.id_url_prefix          ||= "http://data.bioontology.org/"
     @settings.queries_debug          ||= false
+    @settings.enable_monitoring ||= false
+    @settings.cube_host ||= "localhost"
+    @settings.cube_port ||= 1180
 
     # Caching http
     @settings.enable_http_cache      ||= false
@@ -101,6 +104,15 @@ module LinkedData
         conf.add_search_backend(:main, service: @settings.search_server_url)
         conf.add_redis_backend(host: @settings.goo_redis_host,
                                port: @settings.goo_redis_port)
+
+        if @settings.enable_monitoring
+          puts "(LD) >> Enable SPARQL monitoring with cube #{@settings.cube_host}:"+
+                    "#{@settings.cube_port}"
+          conf.enable_cube do |opts|
+            opts[:host] = @settings.cube_host
+            opts[:port] = @settings.cube_port
+          end
+        end
       end
     rescue Exception => e
       abort("EXITING: Cannot connect to triplestore and/or search server:\n  #{e}\n#{e.backtrace.join("\n")}")
