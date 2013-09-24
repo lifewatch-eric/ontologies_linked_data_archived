@@ -103,7 +103,7 @@ module LinkedData
             (self.submissions.first &&
              (self.submissions.first.bring?(:submissionId) ||
               self.submissions.first.bring?(:submissionStatus)))
-          LinkedData::Models::OntologySubmission.where.models(self.submissions)
+          LinkedData::Models::Ontology.where.models([self])
                       .include(submissions: [:submissionId, :submissionStatus])
                       .to_a
         end
