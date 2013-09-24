@@ -65,7 +65,7 @@ module LinkedData
     @settings.smtp_port              ||= 25
     @settings.smtp_user              ||= "user"
     @settings.smtp_password          ||= "password"
-    @settings.smtp_auth_type         ||= :plain # :plain, :login, :cram_md5
+    @settings.smtp_auth_type         ||= :none # :none, :plain, :login, :cram_md5
     @settings.smtp_domain            ||= "localhost.localhost"
 
     unless @settings.redis_host.nil?
