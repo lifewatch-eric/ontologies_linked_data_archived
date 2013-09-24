@@ -75,11 +75,12 @@ module Mappings
     unless mapping
       raise ArgumentError, "Mapping id #{mapping_id.to_ntriples} not found"
     end
-    return if mapping.process.select { |p| p.id.tos == process.id.to_s }.length > 0
+    return mapping if mapping.process.select { |p| p.id.to_s == process.id.to_s }.length == 0
     map_procs = mapping.process.dup
     new_procs = map_procs.select { |x| x.id.to_s != process.id.to_s }
     mapping.process = new_procs
     mapping.save
+    return mapping
   end
 
   def self.delete_mapping(mapping)
