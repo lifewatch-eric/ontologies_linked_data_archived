@@ -22,7 +22,9 @@ module LinkedData
       attribute :reviews,
                   inverse: { on: :review, attribute: :ontologyReviewed }
       attribute :provisionalClasses,
-                inverse: { on: :provisional_class, attribute: :ontology }
+                  inverse: { on: :provisional_class, attribute: :ontology }
+      attribute :subscriptions,
+                  inverse: { on: :subscription, attribute: :ontology}
       attribute :administeredBy, enforce: [:existence, :user, :list]
       attribute :group, enforce: [:list, :group]
 
