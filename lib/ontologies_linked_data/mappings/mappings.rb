@@ -70,7 +70,7 @@ module Mappings
   def self.disconnect_mapping_process(mapping_id,process)
     mapping = LinkedData::Models::Mapping.find(mapping_id)
                   .include(:process)
-                  .incude(:terms)
+                  .include(:terms)
                   .first
     unless mapping
       raise ArgumentError, "Mapping id #{mapping_id.to_ntriples} not found"
