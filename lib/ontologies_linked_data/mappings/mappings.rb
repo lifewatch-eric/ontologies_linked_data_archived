@@ -68,7 +68,7 @@ module Mappings
   end
 
   def self.disconnect_mapping_process(mapping_id,process)
-    mapping = LinkedData::Models::Mapping.find(id_mapping)
+    mapping = LinkedData::Models::Mapping.find(mapping_id)
                   .include(:process)
                   .incude(:terms)
                   .first
