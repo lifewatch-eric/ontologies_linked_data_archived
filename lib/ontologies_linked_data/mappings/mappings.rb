@@ -130,7 +130,8 @@ eos
       ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
   eos
       epr = Goo.sparql_query_client(:main)
-      solutions = epr.query(sparql_query, graphs: graphs).each do |sol|
+      solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE})
+        .each do |sol|
           result[ont.id.to_s.split("/")[-1]] = sol[:count_var].object
       end
     end
@@ -146,7 +147,7 @@ WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } ORDER BY DESC(?o) LI
 eos
     epr = Goo.sparql_query_client(:main)
     procs = []
-    epr.query(qdate, graphs: graphs).each do |sol|
+    epr.query(qdate, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
       procs << sol[:s]
     end
     graphs = [LinkedData::Models::MappingProcess.type_uri]
@@ -160,7 +161,7 @@ FILTER (#{procs})
 eos
     epr = Goo.sparql_query_client(:main)
     mapping_ids = []
-    epr.query(qmappings, graphs: graphs).each do |sol|
+    epr.query(qmappings, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
       mapping_ids << sol[:s]
     end
     mappings = mapping_ids.map { |x| LinkedData::Models::Mapping.find(x)
