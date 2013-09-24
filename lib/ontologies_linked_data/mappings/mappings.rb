@@ -44,7 +44,7 @@ module Mappings
       unless mapping
         raise ArgumentError, "Mapping id #{mapping_id.to_ntriples} not found"
       end
-      return if mapping.process.select { |p| p.id.tos == process.id.to_s }.length > 0
+      return mapping if mapping.process.select { |p| p.id.to_s == process.id.to_s }.length > 0
     end
     if batch_update_file.nil?
       mapping = LinkedData::Models::Mapping.find(mapping_id)
