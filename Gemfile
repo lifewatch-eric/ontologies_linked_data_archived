@@ -12,6 +12,7 @@ gem 'oj'
 gem 'libxml-ruby'
 gem 'rsolr'
 gem 'minitest', '< 5.0'
+gem 'cube-ruby', require: "cube"
 
 # Testing
 gem 'simplecov', :require => false, :group => :test
