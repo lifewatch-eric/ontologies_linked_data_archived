@@ -32,12 +32,22 @@ module LinkedData::Utils
       note.bring_remaining
       note.creator.bring(:username) if note.creator.bring?(:username)
       note.relatedOntology.each {|o| o.bring(:name) if o.bring?(:name); o.bring(:subscriptions) if o.bring?(:subscriptions)}
-      subject = "[BioPortal Notes] #{note.subject}"
+      ontologies = note.relatedOntology.map {|o| o.name}.join(", ")
+      subject = "[BioPortal Notes] [#{ontologies}] #{note.subject}"
       body = NEW_NOTE.gsub("%username%", note.creator.username)
-                     .gsub("%ontologies%", note.relatedOntology.map {|o| o.name}.join(", "))
+                     .gsub("%ontologies%", ontologies)
                      .gsub("%note_url%", LinkedData::Hypermedia.generate_links(note)["ui"])
                      .gsub("%note_subject%", note.subject || "")
                      .gsub("%note_body%", note.body || "")
+
+      options = {
+        ontologies: note.relatedOntology,
+        notification_type: "NOTES",
+        subject: subject,
+        body: body
+      }
+      send_ontology_notifications(options)
+    end
 
 
       emails = []
