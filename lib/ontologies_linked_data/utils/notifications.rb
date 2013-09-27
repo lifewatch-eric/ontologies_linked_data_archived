@@ -49,6 +49,28 @@ module LinkedData::Utils
       send_ontology_notifications(options)
     end
 
+    def self.submission_processed(submission)
+      submission.bring_remaining
+      ontology = submission.ontology
+      ontology.bring(:name, :acronym)
+      result = submission.ready? ? "Success" : "Failure"
+      status = LinkedData::Models::SubmissionStatus.readable_statuses(submission.submissionStatus)
+
+      subject = "[BioPortal] #{ontology.name} Parsing #{result}"
+      body = SUBMISSION_PROCESSED.gsub("%ontology_name%", ontology.name)
+                                 .gsub("%ontology_acronym%", ontology.acronym)
+                                 .gsub("%statuses%", status.join("<br/>"))
+                                 .gsub("%admin_email%", LinkedData.settings.email_sender)
+                                 .gsub("%ontology_location%", LinkedData::Hypermedia.generate_links(ontology)["ui"])
+
+      options = {
+        ontologies: ontology,
+        notification_type: "PROCESSING",
+        subject: subject,
+        body: body
+      }
+      send_ontology_notifications(options)
+    end
 
     private
 
