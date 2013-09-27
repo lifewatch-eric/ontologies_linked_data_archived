@@ -9,7 +9,7 @@ gem 'rubyzip'
 gem 'bcrypt-ruby'
 gem 'multi_json'
 gem 'oj'
-gem 'libxml-ruby', '>= 2.7.0'
+gem 'libxml-ruby'
 gem 'rsolr'
 gem 'minitest', '< 5.0'
 gem 'cube-ruby', require: "cube"
