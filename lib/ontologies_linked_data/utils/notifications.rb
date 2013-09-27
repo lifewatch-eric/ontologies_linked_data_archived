@@ -91,12 +91,25 @@ NEW_NOTE = <<EOS
 A new note was added to %ontologies% by <b>%username%</b>.<br/><br/>
 
 ----------------------------------------------------------------------------------<br/>
-<b>Subject:</b> %note_subject%<br/>
+<b>Subject:</b> %note_subject%<br/><br/>
 
-%note_body%
+%note_body%<br/>
 ----------------------------------------------------------------------------------<br/><br/>
 
 You can respond by visiting: <a href="%note_url%">NCBO BioPortal</a>.<br/><br/>
+EOS
+
+SUBMISSION_PROCESSED = <<EOS
+%ontology_name% (%ontology_acronym%) was processed for use in BioPortal. Here are the results:
+<br><br>
+%statuses%
+<br><br>
+Please contact %admin_email% if you have questions.
+<br><br>
+The ontology can be <a href="%ontology_location%">browsed in BioPortal</a>.
+<br><br>
+Thank you,<br>
+The BioPortal Team
 EOS
 
   end
