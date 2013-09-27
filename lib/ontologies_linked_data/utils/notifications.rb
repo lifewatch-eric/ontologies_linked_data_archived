@@ -50,12 +50,25 @@ module LinkedData::Utils
     end
 
 
-      emails = []
-      note.relatedOntology.each do |ont|
+    private
+
+    ##
+    # This method takes a list of ontologies and a notification type,
+    # then looks up all the users who subscribe to that ontology/type pair
+    # and sends them an email with the given subject and body.
+    def self.send_ontology_notifications(options = {})
+      ontologies        = options[:ontologies]
+      ontologies        = ontologies.is_a?(Array) ? ontologies : [ontologies]
+      notification_type = options[:notification_type]
+      subject           = options[:subject]
+      body              = options[:body]
+      emails            = []
+      ontologies.each {|o| o.bring(:subscriptions) if o.bring?(:subscriptions)}
+      ontologies.each do |ont|
         ont.subscriptions.each do |subscription|
           subscription.bring(:notification_type) if subscription.bring?(:notification_type)
           subscription.notification_type.bring(:type) if subscription.notification_type.bring?(:notification_type)
-          next unless subscription.notification_type.type.eql?("NOTES")
+          next unless subscription.notification_type.type.eql?(notification_type.to_s.upcase)
           subscription.bring(:user) if subscription.bring?(:user)
           subscription.user.each do |user|
             user.bring(:email) if user.bring?(:email)
@@ -63,11 +76,8 @@ module LinkedData::Utils
           end
         end
       end
-
       emails
     end
-
-    private
 
     def self.mail_options
       options = {
