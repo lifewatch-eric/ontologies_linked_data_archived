@@ -8,7 +8,11 @@ module LinkedData::Utils
       sender    = options[:sender] || LinkedData.settings.email_sender
       recipient = options[:recipient]
 
-      if LinkedData.settings.email_disable_override
+      # By default we override all recipients to avoid
+      # sending emails from testing environments.
+      # Set `email_disable_override` in production
+      # to send to the actual user.
+      unless LinkedData.settings.email_disable_override
         headers['Overridden-Sender'] = recipient
         recipient = LinkedData.settings.email_override
       end
