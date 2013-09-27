@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
+source :rubygems
 
 gem 'rake'
 gem 'rack'
@@ -9,7 +9,7 @@ gem 'rubyzip'
 gem 'bcrypt-ruby'
 gem 'multi_json'
 gem 'oj'
-gem 'libxml-ruby'
+gem 'libxml-ruby', '>= 2.7.0'
 gem 'rsolr'
 gem 'minitest', '< 5.0'
 gem 'cube-ruby', require: "cube"
