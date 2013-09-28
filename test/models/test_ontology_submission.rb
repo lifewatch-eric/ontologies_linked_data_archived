@@ -139,7 +139,7 @@ eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT * WHERE {
 <http://purl.obolibrary.org/obo/TAO_0001044>
-  <http://data.bioontology.org/metadata/part_of> ?x . }
+  <http://data.bioontology.org/metadata/obo/part_of> ?x . }
 eos
     count = 0
     Goo.sparql_query_client.query(qcount).each_solution do |sol|
