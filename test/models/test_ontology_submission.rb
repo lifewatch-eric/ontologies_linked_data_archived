@@ -452,8 +452,6 @@ eos
                            process_rdf: true, index_search: false,
                            run_metrics: false, reasoning: true)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
-    binding.pry
     assert sub.missingImports.length == 2
     assert sub.missingImports[0] ==
       "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl"
