@@ -452,10 +452,8 @@ eos
                            process_rdf: true, index_search: false,
                            run_metrics: false, reasoning: true)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-    assert sub.missingImports.length == 2
-    assert sub.missingImports[0] ==
-      "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl"
-    assert sub.missingImports[1] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
+    assert sub.missingImports.length == 1
+    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
     emo.bring(:submissions)
     sub = emo.submissions || []
