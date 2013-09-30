@@ -1,18 +1,28 @@
 module LinkedData
   module Metrics
     def self.metrics_for_submission(submission,logger)
-      submission.bring(:submissionStatus) if submission.bring?(:submissionStatus)
+      begin
+        submission.bring(:submissionStatus) if submission.bring?(:submissionStatus)
 
-      cls_metrics = class_metrics(submission,logger)
+        cls_metrics = class_metrics(submission,logger)
+        logger.info("class_metrics finished")
 
-      metrics = LinkedData::Models::Metric.new
-      cls_metrics.each do |k,v|
-        metrics.send("#{k}=",v)
+        metrics = LinkedData::Models::Metric.new
+        cls_metrics.each do |k,v|
+          metrics.send("#{k}=",v)
+        end
+        metrics.individuals = number_individuals(submission)
+        logger.info("individuals finished")
+        metrics.properties = number_properties(submission)
+        logger.info("properties finished")
+        metrics.maxDepth = maxDepth(submission)
+        logger.info("maxDepth finished")
+        return metrics
+      rescue Exception => e
+        logger.error(e.message)
+        logger.error(e)
       end
-      metrics.individuals = number_individuals(submission)
-      metrics.properties = number_properties(submission)
-      metrics.maxDepth = maxDepth(submission)
-      return metrics
+      return nil
     end
 
     def self.class_metrics(submission,logger)
