@@ -1,6 +1,7 @@
 module LinkedData
   module Metrics
     def self.metrics_for_submission(submission,logger)
+      logger.info("etrics_for_submission start")
       begin
         submission.bring(:submissionStatus) if submission.bring?(:submissionStatus)
 
