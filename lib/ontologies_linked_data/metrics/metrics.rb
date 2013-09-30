@@ -89,6 +89,10 @@ module LinkedData
     end
 
     def self.recursive_depth(cls,classes,depth)
+      #Structural reasoning should fix cycles
+      #but just in case a cap on recursivity
+      #we known max depth is SNOMED with 36
+      return 40 if depth > 40
       children = classes[cls]
       branch_depts = [depth+1]
       children.each do |ch|
