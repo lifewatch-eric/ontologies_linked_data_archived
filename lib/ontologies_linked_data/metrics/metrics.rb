@@ -1,12 +1,14 @@
 module LinkedData
   module Metrics
     def self.metrics_for_submission(submission,logger)
-      logger.info("etrics_for_submission start")
+      logger.info("metrics_for_submission start")
+      logger.flush
       begin
         submission.bring(:submissionStatus) if submission.bring?(:submissionStatus)
 
         cls_metrics = class_metrics(submission,logger)
         logger.info("class_metrics finished")
+        logger.flush
 
         metrics = LinkedData::Models::Metric.new
         cls_metrics.each do |k,v|
@@ -14,14 +16,17 @@ module LinkedData
         end
         metrics.individuals = number_individuals(submission)
         logger.info("individuals finished")
+        logger.flush
         metrics.properties = number_properties(submission)
         logger.info("properties finished")
         metrics.maxDepth = maxDepth(submission)
         logger.info("maxDepth finished")
+        logger.flush
         return metrics
       rescue Exception => e
         logger.error(e.message)
         logger.error(e)
+        logger.flush
       end
       return nil
     end
@@ -45,6 +50,7 @@ module LinkedData
         page_classes = paging.page(page).all
         logger.info("Metrics Classes Page #{page} of #{page_classes.total_pages}"+
                     " classes retrieved in #{Time.now - t0} sec.")
+        logger.flush
         page_classes.each do |cls|
           cls_metrics[:classes] += 1
           #TODO: investigate
