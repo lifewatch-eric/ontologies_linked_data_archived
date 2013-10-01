@@ -25,12 +25,10 @@ class Object
     end
 
     # Check to see if we're nested, if so remove necessary properties
-    if options[:nested] && self.is_a?(LinkedData::Hypermedia::Resource) && !self.class.hypermedia_settings[:prevent_serialize_when_nested].empty?
-      only = only - self.class.hypermedia_settings[:prevent_serialize_when_nested]
-    end
+    only = only - do_not_serialize_nested(options)
 
     # Determine whether to use defaults from the DSL or all attributes
-    hash = populate_attributes(hash, all, only)
+    hash = populate_attributes(hash, all, only, options)
 
     # Remove banned attributes (from DSL or defined here)
     hash = remove_bad_attributes(hash)
@@ -41,6 +39,7 @@ class Object
     end
 
     # Add methods
+    methods = methods - do_not_serialize_nested(options)
     methods.each do |method|
       hash[method] = self.send(method.to_s) if self.respond_to?(method) rescue next
     end
@@ -101,6 +100,19 @@ class Object
   end
 
   private
+
+  ##
+  # Get a list of attributes that aren't allowed to be serialized
+  # when the object is nested. If the object is not nested or there
+  # is no restriction, return an empty array.
+  def do_not_serialize_nested(options, cls = nil)
+    cls ||= self
+    if options[:nested] && cls.is_a?(LinkedData::Hypermedia::Resource)
+      do_not_serialize = cls.class.hypermedia_settings[:prevent_serialize_when_nested]
+    end
+    do_not_serialize || []
+  end
+
 
   ##
   # Convert types from goo and elsewhere using custom methods
@@ -199,12 +211,17 @@ class Object
     }
   end
 
-  def populate_attributes(hash, all = false, only = [])
+  def populate_attributes(hash, all = false, only = [], options = {})
     current_cls = self.respond_to?(:klass) ? self.klass : self.class
 
     # Look for default attributes or use all
     if !current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) || current_cls.hypermedia_settings[:serialize_default].empty? || all
       attributes = self.is_a?(Struct) ? self.members : self.instance_variables.map {|e| e.to_s.delete("@").to_sym }
+
+      if options[:nested] && !current_cls.hypermedia_settings[:prevent_serialize_when_nested].empty?
+        attributes = attributes - current_cls.hypermedia_settings[:prevent_serialize_when_nested]
+      end
+
       attributes.each do |attribute|
         next unless self.respond_to?(attribute)
         hash[attribute] = self.send(attribute)
@@ -260,6 +277,10 @@ class Object
 
     embedded = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
     if embedded
+      # Options gets shared between attributes on the top level
+      # so we should dup it so if one attr is embedded it doesn't
+      # think that all of them are (by setting nested in the next line)
+      options = options.dup
       options[:nested] = true
       if (value.is_a?(Array) || value.is_a?(Set))
         values = value.map {|e| e.to_flex_hash(options, &block)}
