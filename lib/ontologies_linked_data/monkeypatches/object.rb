@@ -6,7 +6,7 @@ class Object
   CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI])
 
   def to_flex_hash(options = {}, &block)
-    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass)
+    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass) || is_a?(NilClass)
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
