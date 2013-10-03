@@ -17,7 +17,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
         Port: @@server[:port]
       )
     end
-    assert @@thread.alive?
+    if !@@thread.alive?
+      raise Exception, "@@thread test server not alive"
+    end
   end
 
   def self.after_suite
