@@ -4,14 +4,20 @@ require "rack"
 
 class TestOntologySubmission < LinkedData::TestOntologyCommon
   def self.before_suite
+    @@server = {
+        host: 'localhost',
+        port: 3456,
+        url: 'http://localhost:3456/'
+    }
     @@thread = Thread.new do
       Rack::Server.start(
         app: lambda do |e|
           [200, {'Content-Type' => 'text/plain'}, ['test file']]
         end,
-        Port: 3456
+        Port: @@server[:port]
       )
     end
+    assert @@thread.alive?
   end
 
   def self.after_suite
@@ -227,9 +233,12 @@ eos
 
   def test_download_ontology_file
     begin
-      ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)[2].first
+      ont_count, ont_names, ont_models = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)
+      ont = ont_models.first
+      assert ont.instance_of? LinkedData::Models::Ontology
       sub = ont.bring(:submissions).submissions.first
-      sub.pullLocation = RDF::IRI.new("http://localhost:3456/")
+      assert sub.instance_of? LinkedData::Models::OntologySubmission
+      sub.pullLocation = RDF::IRI.new(@@server[:url])
       file, filename = sub.download_ontology_file
       assert filename.nil?
       assert file.is_a?(Tempfile)
