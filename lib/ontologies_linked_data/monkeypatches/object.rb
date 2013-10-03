@@ -81,6 +81,9 @@ class Object
       hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
       next if modified
 
+      # Convert RDF literals to their equivalent Ruby typed value
+      v = v.value if v.is_a?(RDF::Literal)
+
       new_value = convert_nonstandard_types(v, options, &block)
 
       hash[k] = new_value
