@@ -224,7 +224,7 @@ eos
         )
       end
       Thread.pass
-      sleep 2  # Allow the server to startup
+      sleep 3  # Allow the server to startup
       assert(server_thread.alive?, msg="Rack::Server thread should be alive, it's not!")
       ont_count, ont_names, ont_models = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)
       ont = ont_models.first
@@ -241,7 +241,7 @@ eos
     ensure
       delete_ontologies_and_submissions
       Thread.kill(server_thread)  # this will shutdown Rack::Server also
-      sleep 5
+      sleep 3
       assert_equal(server_thread.alive?, false, msg="Rack::Server thread should be dead, it's not!")
     end
   end
