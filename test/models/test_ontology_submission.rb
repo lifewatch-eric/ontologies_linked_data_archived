@@ -163,7 +163,7 @@ eos
                      run_metrics: false, reasoning: true)
 
     #This one has resources wih accents.
-    submission_parse("OntoMATEST",
+    submission_parse("ONTOMATEST",
                      "OntoMA TEST",
                      "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 15,
                      process_rdf: true, index_search: true,
@@ -247,10 +247,11 @@ eos
   end
 
   def test_semantic_types
-    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
+    acronym = 'STY-TST'
+    submission_parse(acronym, "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
-    ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission(status: [:rdf])
+    ont_sub = LinkedData::Models::Ontology.find(acronym).first.latest_submission(status: [:rdf])
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel).read_only.to_a
     assert_equal 133, classes.length
     classes.each do |cls|

@@ -158,7 +158,7 @@ module LinkedData
         # This one has resources wih accents.
         count, acronyms, onto_matest = create_ontologies_and_submissions({
           process_submission: true,
-          acronym: "OntoMATEST",
+          acronym: "ONTOMATEST",
           name: "OntoMA TEST",
           file_path: "../../../../test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL",
           ont_count: 1,
