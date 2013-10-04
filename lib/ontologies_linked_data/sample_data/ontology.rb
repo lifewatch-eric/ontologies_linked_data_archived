@@ -29,18 +29,18 @@ module LinkedData
         ontologies = []
         ont_count.to_i.times do |count|
           acr_suffix ||= "-#{count}"
-          acronym = "#{acronym}#{acr_suffix}"
-          ont_acronyms << acronym
+          acronym_count = "#{acronym}#{acr_suffix}"
+          ont_acronyms << acronym_count
 
           o = LinkedData::Models::Ontology.new({
-            acronym: acronym,
+            acronym: acronym_count,
             name: name || "Test Ontology ##{count}",
             administeredBy: [u],
             summaryOnly: false
           })
 
           if o.exist?
-            o = LinkedData::Models::Ontology.find(acronym).include(LinkedData::Models::Ontology.attributes(:all)).first
+            o = LinkedData::Models::Ontology.find(acronym_count).include(LinkedData::Models::Ontology.attributes(:all)).first
             o.bring(:submissions)
             o.submissions.each {|s| s.delete}
           else
