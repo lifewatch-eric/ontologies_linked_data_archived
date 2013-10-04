@@ -3,26 +3,6 @@ require "logger"
 require "rack"
 
 class TestOntologySubmission < LinkedData::TestOntologyCommon
-  def self.before_suite
-    @@server = {
-        host: 'localhost',
-        port: 3456,
-        url: 'http://localhost:3456/'
-    }
-    @@thread = Thread.new do
-      Rack::Server.start(
-        app: lambda do |e|
-          [200, {'Content-Type' => 'text/plain'}, ['test file']]
-        end,
-        Port: @@server[:port]
-      )
-    end
-    assert @@thread.alive?
-  end
-
-  def self.after_suite
-    Thread.kill(@@thread)
-  end
 
   def teardown
     l = LinkedData::Models::Ontology.all
@@ -233,19 +213,36 @@ eos
 
   def test_download_ontology_file
     begin
+      server_port = 3457
+      server_url = 'http://localhost:' + server_port.to_s
+      server_thread = Thread.new do
+        Rack::Server.start(
+            app: lambda do |e|
+              [200, {'Content-Type' => 'text/plain'}, ['test file']]
+            end,
+            Port: server_port
+        )
+      end
+      Thread.pass
+      sleep 2  # Allow the server to startup
+      assert(server_thread.alive?, msg="Rack::Server thread should be alive, it's not!")
       ont_count, ont_names, ont_models = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)
       ont = ont_models.first
-      assert ont.instance_of? LinkedData::Models::Ontology
+      assert(ont.instance_of?(LinkedData::Models::Ontology), "ont is not an ontology: #{ont}")
       sub = ont.bring(:submissions).submissions.first
-      assert sub.instance_of? LinkedData::Models::OntologySubmission
-      sub.pullLocation = RDF::IRI.new(@@server[:url])
+      assert(sub.instance_of?(LinkedData::Models::OntologySubmission), "sub is not an ontology submission: #{sub}")
+      sub.pullLocation = RDF::IRI.new(server_url)
       file, filename = sub.download_ontology_file
-      assert filename.nil?
-      assert file.is_a?(Tempfile)
+      sleep 2
+      assert filename.nil?, "Test filename is not nil: #{filename}"
+      assert file.is_a?(Tempfile), "Test file is not a Tempfile"
       file.open
-      assert file.read.eql?("test file")
+      assert file.read.eql?("test file"), "Test file content error: #{file.read}"
     ensure
       delete_ontologies_and_submissions
+      Thread.kill(server_thread)  # this will shutdown Rack::Server also
+      sleep 5
+      assert_equal(server_thread.alive?, false, msg="Rack::Server thread should be dead, it's not!")
     end
   end
 

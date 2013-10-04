@@ -75,6 +75,10 @@ module LinkedData
   MiniTest::Unit.runner = LinkedData::Unit.new
 
   class TestCase < MiniTest::Unit::TestCase
+
+    # Ensure all threads exit on any exception
+    Thread.abort_on_exception = true
+
     def submission_dependent_objects(format, acronym, user_name)
       #ontology format
       owl = LinkedData::Models::OntologyFormat.where(:acronym => format).first
