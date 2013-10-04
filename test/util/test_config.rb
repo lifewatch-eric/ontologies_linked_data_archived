@@ -1,7 +1,8 @@
 require "test/unit"
 require_relative "../../lib/ontologies_linked_data"
 
-class TestLinkedDataSerializer < MiniTest::Unit::TestCase
+class TestLinkedDataConfig < MiniTest::Unit::TestCase
+
   def teardown
     Goo.class_variable_set("@@sparql_backends", {})
     LinkedData.instance_variable_set("@settings_run", false)
@@ -12,10 +13,10 @@ class TestLinkedDataSerializer < MiniTest::Unit::TestCase
     Goo.class_variable_set("@@sparql_backends", {})
     LinkedData.instance_variable_set("@settings_run", false)
     LinkedData.config()
-    assert LinkedData.settings.goo_host == "localhost"
-    assert (not Goo.sparql_data_client.nil?)
-    assert (not Goo.sparql_update_client.nil?)
-    assert (not Goo.sparql_query_client.nil?)
+    assert_equal(LinkedData.settings.goo_host, 'localhost', msg="goo_host != localhost")
+    assert_equal(Goo.sparql_data_client.nil?, false, msg='sparql_data_client is nil')
+    assert_equal(Goo.sparql_update_client.nil?, false, msg='sparql_update_client is nil')
+    assert_equal(Goo.sparql_query_client.nil?, false, msg='sparql_query_client is nil')
   end
 
   def test_custom_config
@@ -34,10 +35,11 @@ class TestLinkedDataSerializer < MiniTest::Unit::TestCase
       config.goo_host = test_host
     end
 
-    assert LinkedData.settings.goo_host == test_host
-    assert LinkedData.settings.goo_port == test_port
-    assert (not Goo.sparql_data_client.nil?)
-    assert (not Goo.sparql_update_client.nil?)
-    assert (not Goo.sparql_query_client.nil?)
+    assert_equal(LinkedData.settings.goo_host, test_host, msg="goo_host != test_host")
+    assert_equal(LinkedData.settings.goo_port, test_port, msg="goo_port != test_port")
+    assert_equal(Goo.sparql_data_client.nil?, false, msg='sparql_data_client is nil')
+    assert_equal(Goo.sparql_update_client.nil?, false, msg='sparql_update_client is nil')
+    assert_equal(Goo.sparql_query_client.nil?, false, msg='sparql_query_client is nil')
   end
+
 end
