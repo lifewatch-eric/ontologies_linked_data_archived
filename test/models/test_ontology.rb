@@ -68,6 +68,17 @@ class TestOntology < LinkedData::TestCase
     o.delete unless o.nil?
   end
 
+  def test_invalid_acronym
+    o = LinkedData::Models::Ontology.new
+    o.acronym = "-1234"
+    o.valid?
+    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    o = LinkedData::Models::Ontology.new
+    o.acronym = "AAA"
+    o.valid?
+    assert !o.errors[:acronym]
+  end
+
   def test_valid_ontology
     o = LinkedData::Models::Ontology.new
     assert (not o.valid?)
