@@ -28,8 +28,8 @@ module LinkedData
         ont_acronyms = []
         ontologies = []
         ont_count.to_i.times do |count|
-          acr_suffix ||= "-#{count}"
-          acronym_count = "#{acronym}#{acr_suffix}"
+          acronym_suffix = acr_suffix || "-#{count}"
+          acronym_count = "#{acronym}#{acronym_suffix}"
           ont_acronyms << acronym_count
 
           o = LinkedData::Models::Ontology.new({
