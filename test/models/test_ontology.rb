@@ -70,11 +70,26 @@ class TestOntology < LinkedData::TestCase
 
   def test_invalid_acronym
     o = LinkedData::Models::Ontology.new
-    o.acronym = "-1234"
+    o.acronym = "-1234"  # must start with A-Z
     o.valid?
     assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
     o = LinkedData::Models::Ontology.new
-    o.acronym = "AAA"
+    o.acronym = "abc1234"  # must start with A-Z, no lower case allowed
+    o.valid?
+    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    o = LinkedData::Models::Ontology.new
+    o.acronym = "1234ABC"  # must start with A-Z
+    o.valid?
+    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    o = LinkedData::Models::Ontology.new
+    o.acronym = "ABCDEFGHIJKLMNOPQ"  # no more than 16 chars
+    o.valid?
+    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    o = LinkedData::Models::Ontology.new
+    o.acronym = "A"  # must begin with at least 1 char in A-Z
+    o.valid?
+    assert !o.errors[:acronym]
+    o.acronym = "ABCDEFGHIJKLMNOP"  # up to 16 chars OK
     o.valid?
     assert !o.errors[:acronym]
   end

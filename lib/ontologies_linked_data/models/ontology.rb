@@ -64,7 +64,7 @@ module LinkedData
 
       def self.validate_acronym(inst,attr)
         value = inst.send(attr)
-        acronym_regex = /\A[a-z]{1}[-_0-9a-z]{0,15}\Z/i
+        acronym_regex = /\A[A-Z]{1}[-_0-9A-Z]{0,15}\Z/
         if (acronym_regex.match value).nil?
           return [:acronym_value_validator,"The acronym value #{value} is invalid"]
         end
