@@ -137,6 +137,13 @@ eos
     sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
     n_roots = sub.roots.length
     assert n_roots < 10
+
+    LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation).each do |cls|
+      assert_instance_of String,cls.prefLabel
+      assert_instance_of String,cls.notation
+      assert cls.notation[-6..-1] == cls.id.to_s[-6..-1]
+    end
+
   end
 
   def test_submission_parse_subfolders_zip
