@@ -551,13 +551,13 @@ eos
       page.each do |c|
         LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
         assert_instance_of(String, c.prefLabel)
-        defs += c.synonym.length
-        syns += c.definition.length
+        syns += c.synonym.length
+        defs += c.definition.length
       end
       paging.page(page.next_page) if page.next?
     end while(page.next?)
-    assert defs == 26
-    assert syns == 285
+    assert syns == 26
+    assert defs == 285
     aero = LinkedData::Models::Ontology.find(acronym).first
     aero.bring(:submissions)
     if not aero.nil?
