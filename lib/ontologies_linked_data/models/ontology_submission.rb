@@ -655,6 +655,10 @@ module LinkedData
         return file, filename
       end
 
+      def delete_classes_graph
+        Goo.sparql_data_client.delete_graph(self.id)
+      end
+
       private
 
       def delete_and_append(triples_file_path, logger, mime_type = nil)
