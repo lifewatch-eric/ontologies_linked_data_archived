@@ -42,9 +42,9 @@ class TestLinkedDataConfig < MiniTest::Unit::TestCase
     assert_equal(false, Goo.sparql_query_client.nil?, msg='sparql_query_client is nil')
   end
 
-  def test_config_file
-    puts
-    load(File.expand_path("../../../config/config.rb", __FILE__))
-  end
+  #def test_config_file
+  #  puts
+  #  load(File.expand_path("../../../config/config.rb", __FILE__))
+  #end
 
 end
