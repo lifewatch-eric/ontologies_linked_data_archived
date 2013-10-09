@@ -109,6 +109,8 @@ class Object
   # when the object is nested. If the object is not nested or there
   # is no restriction, return an empty array.
   def do_not_serialize_nested(options, cls = nil)
+    return [] if options && options[:params] && options[:params]["serialize_nested"]
+
     cls ||= self
     if options[:nested] && cls.is_a?(LinkedData::Hypermedia::Resource)
       do_not_serialize = cls.class.hypermedia_settings[:prevent_serialize_when_nested]
@@ -221,9 +223,7 @@ class Object
     if !current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) || current_cls.hypermedia_settings[:serialize_default].empty? || all
       attributes = self.is_a?(Struct) ? self.members : self.instance_variables.map {|e| e.to_s.delete("@").to_sym }
 
-      if options[:nested] && !current_cls.hypermedia_settings[:prevent_serialize_when_nested].empty?
-        attributes = attributes - current_cls.hypermedia_settings[:prevent_serialize_when_nested]
-      end
+      attributes = attributes - do_not_serialize_nested(options)
 
       attributes.each do |attribute|
         next unless self.respond_to?(attribute)
@@ -275,7 +275,7 @@ class Object
     sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
 
     # Don't process if we're recursing and this attribute is forbidden in nested elements
-    disallow_nested = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute) && options[:nested]
+    disallow_nested = !do_not_serialize_nested(options).empty?
     return hash, false if disallow_nested
 
     embedded = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)

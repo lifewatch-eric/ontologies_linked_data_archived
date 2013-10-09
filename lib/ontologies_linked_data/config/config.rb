@@ -24,7 +24,7 @@ module LinkedData
     @settings.rest_url_prefix        ||= "http://data.bioontology.org/"
     @settings.enable_security        ||= false
 
-    ### these params should be not ussed any more 
+    ### these params should be not ussed any more
     # removed so that dependencies shout
     #
     # @settings.redis_host             ||= "localhost"
@@ -35,18 +35,18 @@ module LinkedData
     @settings.replace_url_prefix     ||= false
     @settings.id_url_prefix          ||= "http://data.bioontology.org/"
     @settings.queries_debug          ||= false
-    @settings.enable_monitoring ||= false
-    @settings.cube_host ||= "localhost"
-    @settings.cube_port ||= 1180
+    @settings.enable_monitoring      ||= false
+    @settings.cube_host              ||= "localhost"
+    @settings.cube_port              ||= 1180
 
     # Caching http
     @settings.enable_http_cache      ||= false
-    @settings.http_redis_host  ||= "localhost"
-    @settings.http_redis_port  ||= 6379
+    @settings.http_redis_host        ||= "localhost"
+    @settings.http_redis_port        ||= 6379
 
     #Caching goo
-    @settings.goo_redis_host  ||= "localhost"
-    @settings.goo_redis_port  ||= 6379
+    @settings.goo_redis_host         ||= "localhost"
+    @settings.goo_redis_port         ||= 6379
 
     # PURL server config parameters
     @settings.enable_purl            ||= false
