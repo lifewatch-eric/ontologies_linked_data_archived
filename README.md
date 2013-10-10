@@ -1,8 +1,9 @@
 ontologies_linked_data
 ======================
 
-[![Build
-Status](https://bmir-jenkins.stanford.edu/buildStatus/icon?job=NCBO_OntLD_MasterTest)](https://bmir-jenkins.stanford.edu/job/NCBO_OntLD_MasterTest/)
+Unit test status:
+ - master branch:   [![Build Status](https://bmir-jenkins.stanford.edu/buildStatus/icon?job=NCBO_OntLD_MasterTest)](https://bmir-jenkins.stanford.edu/job/NCBO_OntLD_MasterTest/)
+ - staging branch:  [![Build Status](https://bmir-jenkins.stanford.edu/buildStatus/icon?job=NCBO_OntLD_StagingTest)](https://bmir-jenkins.stanford.edu/job/NCBO_OntLD_StagingTest/)
 
 Models and serializers for ontologies and related artifacts backed by 4store
 
