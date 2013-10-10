@@ -322,6 +322,13 @@ module LinkedData
       def add_submission_status(status)
         valid = status.is_a?(LinkedData::Models::SubmissionStatus)
         raise ArgumentError, "The status being added is not SubmissionStatus object" unless valid
+
+        #archive removes the other status
+        if status.archived?
+          self.submissionStatus = [status]
+          return self.submissionStatus
+        end
+
         self.submissionStatus ||= []
         s = self.submissionStatus.dup
 
@@ -338,6 +345,7 @@ module LinkedData
         has_status = s.any? { |s| s.get_code_from_id() == status.get_code_from_id() }
         s << status unless has_status
         self.submissionStatus = s
+
       end
 
       def remove_submission_status(status)
