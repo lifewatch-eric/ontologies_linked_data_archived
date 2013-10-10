@@ -5,12 +5,11 @@ module LinkedData
     class XML
       def self.serialize(obj, options)
         links = {}
-        hash = obj.to_flex_hash(options) do |hash, hashed_obj|
-          if hashed_obj.is_a?(Goo::Base::Resource)
+        formatted_hash = obj.to_flex_hash(options) do |hash, hashed_obj|
+          if hashed_obj.is_a?(Goo::Base::Resource) || hashed_obj.is_a?(Struct)
             current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
-
             # Add the id and type
-            if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
+            if current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) && !current_cls.embedded?
               prefixed_id = LinkedData.settings.replace_url_prefix ? hashed_obj.id.to_s.gsub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
               hash["id"] = prefixed_id
               hash["type"] = current_cls.type_uri.to_s
@@ -26,7 +25,7 @@ module LinkedData
         end
         cls = obj.kind_of?(Array) || obj.kind_of?(Set) ? obj.first.class : obj.class
         cls = options[:class_name] if options[:class_name]
-        to_xml(hash, convert_class_name(cls), links).to_s
+        to_xml(formatted_hash, convert_class_name(cls), links).to_s
       end
 
       def self.to_xml(object, type, links = nil)
@@ -51,8 +50,10 @@ module LinkedData
       private
 
       def self.generate_links(object)
-        return {} if !object.is_a?(LinkedData::Hypermedia::Resource) || object.class.hypermedia_settings[:link_to].empty?
-        links = object.class.hypermedia_settings[:link_to]
+        current_cls = object.respond_to?(:klass) ? object.klass : object.class
+        return {} if !current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) || current_cls.hypermedia_settings[:link_to].empty?
+
+        links = current_cls.hypermedia_settings[:link_to]
         links_output = ::XML::Node.new("links")
         links.each do |link|
           link_xml = ::XML::Node.new(link.type)

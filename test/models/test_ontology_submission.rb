@@ -3,20 +3,6 @@ require "logger"
 require "rack"
 
 class TestOntologySubmission < LinkedData::TestOntologyCommon
-  def self.before_suite
-    @@thread = Thread.new do
-      Rack::Server.start(
-        app: lambda do |e|
-          [200, {'Content-Type' => 'text/plain'}, ['test file']]
-        end,
-        Port: 3456
-      )
-    end
-  end
-
-  def self.after_suite
-    Thread.kill(@@thread)
-  end
 
   def teardown
     l = LinkedData::Models::Ontology.all
@@ -139,7 +125,7 @@ eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT * WHERE {
 <http://purl.obolibrary.org/obo/TAO_0001044>
-  <http://data.bioontology.org/metadata/part_of> ?x . }
+  <http://data.bioontology.org/metadata/obo/part_of> ?x . }
 eos
     count = 0
     Goo.sparql_query_client.query(qcount).each_solution do |sol|
@@ -151,6 +137,13 @@ eos
     sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
     n_roots = sub.roots.length
     assert n_roots < 10
+
+    LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation).each do |cls|
+      assert_instance_of String,cls.prefLabel
+      assert_instance_of String,cls.notation
+      assert cls.notation[-6..-1] == cls.id.to_s[-6..-1]
+    end
+
   end
 
   def test_submission_parse_subfolders_zip
@@ -177,7 +170,7 @@ eos
                      run_metrics: false, reasoning: true)
 
     #This one has resources wih accents.
-    submission_parse("OntoMATEST",
+    submission_parse("ONTOMATEST",
                      "OntoMA TEST",
                      "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 15,
                      process_rdf: true, index_search: true,
@@ -227,24 +220,45 @@ eos
 
   def test_download_ontology_file
     begin
-      ont = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)[2].first
+      server_port = 3457
+      server_url = 'http://localhost:' + server_port.to_s
+      server_thread = Thread.new do
+        Rack::Server.start(
+            app: lambda do |e|
+              [200, {'Content-Type' => 'text/plain'}, ['test file']]
+            end,
+            Port: server_port
+        )
+      end
+      Thread.pass
+      sleep 3  # Allow the server to startup
+      assert(server_thread.alive?, msg="Rack::Server thread should be alive, it's not!")
+      ont_count, ont_names, ont_models = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)
+      ont = ont_models.first
+      assert(ont.instance_of?(LinkedData::Models::Ontology), "ont is not an ontology: #{ont}")
       sub = ont.bring(:submissions).submissions.first
-      sub.pullLocation = RDF::IRI.new("http://localhost:3456/")
+      assert(sub.instance_of?(LinkedData::Models::OntologySubmission), "sub is not an ontology submission: #{sub}")
+      sub.pullLocation = RDF::IRI.new(server_url)
       file, filename = sub.download_ontology_file
-      assert filename.nil?
-      assert file.is_a?(Tempfile)
+      sleep 2
+      assert filename.nil?, "Test filename is not nil: #{filename}"
+      assert file.is_a?(Tempfile), "Test file is not a Tempfile"
       file.open
-      assert file.read.eql?("test file")
+      assert file.read.eql?("test file"), "Test file content error: #{file.read}"
     ensure
       delete_ontologies_and_submissions
+      Thread.kill(server_thread)  # this will shutdown Rack::Server also
+      sleep 3
+      assert_equal(server_thread.alive?, false, msg="Rack::Server thread should be dead, it's not!")
     end
   end
 
   def test_semantic_types
-    submission_parse("STY-Test", "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
+    acronym = 'STY-TST'
+    submission_parse(acronym, "STY Bla", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
-    ont_sub = LinkedData::Models::Ontology.find("STY-Test").first.latest_submission(status: [:rdf])
+    ont_sub = LinkedData::Models::Ontology.find(acronym).first.latest_submission(status: [:rdf])
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel).read_only.to_a
     assert_equal 133, classes.length
     classes.each do |cls|
@@ -452,12 +466,8 @@ eos
                            process_rdf: true, index_search: false,
                            run_metrics: false, reasoning: true)
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
-    binding.pry
-    assert sub.missingImports.length == 2
-    assert sub.missingImports[0] ==
-      "http://ontology.neuinfo.org/NIF/Backend/OBO_annotation_properties.owl"
-    assert sub.missingImports[1] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
+    assert sub.missingImports.length == 1
+    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
     emo.bring(:submissions)
     sub = emo.submissions || []
@@ -541,13 +551,13 @@ eos
       page.each do |c|
         LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
         assert_instance_of(String, c.prefLabel)
-        defs += c.synonym.length
-        syns += c.definition.length
+        syns += c.synonym.length
+        defs += c.definition.length
       end
       paging.page(page.next_page) if page.next?
     end while(page.next?)
-    assert defs == 26
-    assert syns == 285
+    assert syns == 26
+    assert defs == 285
     aero = LinkedData::Models::Ontology.find(acronym).first
     aero.bring(:submissions)
     if not aero.nil?
@@ -573,7 +583,7 @@ eos
     assert metrics.classes == 143
     assert metrics.properties == 78
     assert metrics.individuals == 27
-    assert metrics.classesWithOneChild == 15
+    assert metrics.classesWithOneChild == 11
     assert metrics.classesWithNoDefinition == 137
     assert metrics.classesWithMoreThan25Children == 0
     assert metrics.maxChildCount == 10

@@ -4,8 +4,6 @@
 .DS_Store
 
 # Local configs
-Gemfile.local
-Gemfile.lock
 config/config.rb
 
 # Code coverage reports

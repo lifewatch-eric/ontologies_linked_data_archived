@@ -11,7 +11,8 @@ module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
       model :ontology, :name_with => :acronym
-      attribute :acronym, namespace: :omv, enforce: [:unique, :existence]
+      attribute :acronym, namespace: :omv, 
+        enforce: [:unique, :existence, lambda { |inst,attr| validate_acronym(inst,attr) } ]
       attribute :name, :namespace => :omv, enforce: [:unique, :existence]
       attribute :submissions,
                   inverse: { on: :ontology_submission, attribute: :ontology }
@@ -62,6 +63,15 @@ module LinkedData
       read_access :administeredBy, :acl
       write_access :administeredBy
       access_control_load :administeredBy, :acl, :viewingRestriction
+
+      def self.validate_acronym(inst,attr)
+        value = inst.send(attr)
+        acronym_regex = /\A[A-Z]{1}[-_0-9A-Z]{0,15}\Z/
+        if (acronym_regex.match value).nil?
+          return [:acronym_value_validator,"The acronym value #{value} is invalid"]
+        end
+        return [:acronym_value_validator, nil]
+      end
 
       def latest_submission(options = {})
         self.bring(:acronym) if self.bring?(:acronym)

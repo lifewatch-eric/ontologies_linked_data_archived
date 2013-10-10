@@ -3,6 +3,13 @@ require "logger"
 
 class TestMapping < LinkedData::TestOntologyCommon
 
+
+  ONT_ACR1 = 'MAPPING_TEST1'
+  ONT_ACR2 = 'MAPPING_TEST2'
+  ONT_ACR3 = 'MAPPING_TEST3'
+  ONT_ACR4 = 'MAPPING_TEST4'
+
+
   def self.before_suite
     if LinkedData::Models::Mapping.all.length > 100
       puts "KB with too many mappings to run test. Is this pointing to a TEST KB?"
@@ -23,23 +30,23 @@ class TestMapping < LinkedData::TestOntologyCommon
 
   def self.ontologies_parse()
     helper = LinkedData::TestOntologyCommon.new(self)
-    helper.submission_parse("MappingOntTest1", 
-                     "MappingOntTest1", 
+    helper.submission_parse(ONT_ACR1,
+                     "MappingOntTest1",
                      "./test/data/ontology_files/BRO_v3.2.owl", 11,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
-    helper.submission_parse("MappingOntTest2",
-                     "MappingOntTest2", 
+    helper.submission_parse(ONT_ACR2,
+                     "MappingOntTest2",
                      "./test/data/ontology_files/CNO_05.owl", 22,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
-    helper.submission_parse("MappingOntTest3",
-                     "MappingOntTest3", 
+    helper.submission_parse(ONT_ACR3,
+                     "MappingOntTest3",
                      "./test/data/ontology_files/aero.owl", 33,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
-    helper.submission_parse("MappingOntTest4", 
-                     "MappingOntTest4", 
+    helper.submission_parse(ONT_ACR4,
+                     "MappingOntTest4",
                      "./test/data/ontology_files/fake_for_mappings.owl", 44,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
@@ -51,7 +58,7 @@ class TestMapping < LinkedData::TestOntologyCommon
 
     #process
     ps = LinkedData::Models::MappingProcess.where({:name => name })
-    ps.each do |p| 
+    ps.each do |p|
       p.delete
     end
     p = LinkedData::Models::MappingProcess.new(:creator => user, :name => name)
@@ -64,13 +71,13 @@ class TestMapping < LinkedData::TestOntologyCommon
 
   def test_multiple_mapping()
 
-    process = get_process("LOOMTEST") 
+    process = get_process("LOOMTEST")
 
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0]
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
     sub1 = ont1.latest_submission
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0]
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0]
     sub2 = ont2.latest_submission
-    ont3 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest3" }).to_a[0]
+    ont3 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR3 }).to_a[0]
     sub3 = ont3.latest_submission
     LinkedData::Models::Mapping.all.each do |occ|
       occ.delete
@@ -102,8 +109,8 @@ class TestMapping < LinkedData::TestOntologyCommon
  "http://purl.obolibrary.org/obo/SBO_0000520",
  "http://purl.obolibrary.org/obo/SBO_0000521",
  "http://purl.obolibrary.org/obo/SBO_0000522"]
-      
-      
+
+
     ont3_terms_uris = ["http://purl.obolibrary.org/obo/IAO_0000178",
  "http://purl.obolibrary.org/obo/IAO_0000179",
  "http://purl.obolibrary.org/obo/IAO_0000180",
@@ -130,10 +137,10 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert LinkedData::Models::Mapping.all.length == ont1_terms_uris.length
 
     mappings = LinkedData::Models::Mapping.where.include(terms:[ ontology: :acronym]).to_a
-    mappings.each do |map|                                           
+    mappings.each do |map|
       ont1_index = 0
       ont2_index = 1
-      if map.terms[0].ontology.acronym != "MappingOntTest1"
+      if map.terms[0].ontology.acronym != ONT_ACR1
         ont1_index = 1
         ont2_index = 0
       end
@@ -181,8 +188,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       map.delete
     end
 
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
 
     $MAPPING_RELOAD_LABELS = true
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
@@ -194,11 +201,11 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(process: [:name])
                                  .all
     mappings.each do |map|
-      bro_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
-      fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
-      
+      bro_term = map.terms.select { |x| x.ontology.acronym == ONT_ACR1 }.first
+      fake_term = map.terms.select { |x| x.ontology.acronym == ONT_ACR4 }.first
+
       #it would get map on syn <-> syn
-      assert(fake_term.term.first.to_s != 
+      assert(fake_term.term.first.to_s !=
               "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/nomapped")
 
 
@@ -224,16 +231,16 @@ class TestMapping < LinkedData::TestOntologyCommon
           "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Funding_Resource"
       else
         assert 1!=0, "Outside of controlled set of mappings"
-      end 
+      end
     end
     term_mapping_count = LinkedData::Models::TermMapping.where.all.length
     assert term_mapping_count == 10
 
     #testing for same process
     $MAPPING_RELOAD_LABELS = true
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #CNO
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
-    
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0] #CNO
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
+
     process_count = LinkedData::Models::MappingProcess.where.all.length
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
     loom.start()
@@ -251,9 +258,9 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .all
     assert mappings.length == 3
     mappings.each do |map|
-      cno_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
-      fake_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
-      if fake_term.term.first.to_s == 
+      cno_term = map.terms.select { |x| x.ontology.acronym == ONT_ACR2 }.first
+      fake_term = map.terms.select { |x| x.ontology.acronym == ONT_ACR4 }.first
+      if fake_term.term.first.to_s ==
           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/defined_type_of_model"
         assert cno_term.term.first.to_s ==
             "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000001"
@@ -271,8 +278,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     end
 
     #no new term mappings for fake ont need to be created
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #CNO
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0] #CNO
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
 
     #one new mapping is created but TermMappings are the same
     loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
@@ -286,8 +293,8 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .all
     assert mappings.length == 3
     mappings.each do |map|
-      cno_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
-      bro_term = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
+      cno_term = map.terms.select { |x| x.ontology.acronym == ONT_ACR2 }.first
+      bro_term = map.terms.select { |x| x.ontology.acronym == ONT_ACR1 }.first
       if bro_term.term.first.to_s["Network_Model"] || bro_term.term.first.to_s["Network_model"]
         assert cno_term.term.first.to_s["cno_0000010"]
       elsif bro_term.term.first.to_s["Federal_Funding_Resource"]
@@ -309,8 +316,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       map.delete
     end
 
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #cno
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0] #cno
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
 
     $MAPPING_RELOAD_LABELS = true
     cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
@@ -329,27 +336,27 @@ class TestMapping < LinkedData::TestOntologyCommon
       [ "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000194",
        "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#fakething",
         "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000160"]
-    fake_terms = 
+    fake_terms =
       ["http://www.semanticweb.org/manuelso/ontologies/mappings/fake/onlycui",
          "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf",
           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"]
     mappings.each do |map|
-       cno = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
-       fake = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
-       if cno.term.first.to_s == 
+       cno = map.terms.select { |x| x.ontology.acronym == ONT_ACR2 }.first
+       fake = map.terms.select { |x| x.ontology.acronym == ONT_ACR4 }.first
+       if cno.term.first.to_s ==
          "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000160"
          assert fake.term.first.to_s ==
            "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
        else
-         assert(cno_terms.index(cno.term.first.to_s) == 
+         assert(cno_terms.index(cno.term.first.to_s) ==
                    fake_terms.index(fake.term.first.to_s))
        end
        assert cno_terms.index(cno.term.first.to_s)
        assert fake_terms.index(fake.term.first.to_s)
     end
     assert LinkedData::Models::MappingProcess.all.length == 1
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake ont
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
     $MAPPING_RELOAD_LABELS = false
     cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
     cui.start()
@@ -364,9 +371,9 @@ class TestMapping < LinkedData::TestOntologyCommon
                                   .all
     assert mappings.length == 1
     map = mappings.first
-    bro = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
-    fake = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
-    assert bro.term.first.to_s == 
+    bro = map.terms.select { |x| x.ontology.acronym == ONT_ACR1 }.first
+    fake = map.terms.select { |x| x.ontology.acronym == ONT_ACR4 }.first
+    assert bro.term.first.to_s ==
               "http://bioontology.org/ontologies/Activity.owl#IRB"
     assert fake.term.first.to_s ==
               "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/federalf"
@@ -383,8 +390,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       map.delete
     end
 
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest2" }).to_a[0] #cno
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0] #cno
 
     $MAPPING_RELOAD_LABELS = true
     cui = LinkedData::Mappings::SameURI.new(ont1, ont2,Logger.new(STDOUT))
@@ -398,8 +405,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert LinkedData::Models::TermMapping.where.all.length == 10
     assert mappings.length == 5
     mappings.each do |map|
-      cno = map.terms.select { |x| x.ontology.acronym == "MappingOntTest2" }.first
-      bro = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
+      cno = map.terms.select { |x| x.ontology.acronym == ONT_ACR2 }.first
+      bro = map.terms.select { |x| x.ontology.acronym == ONT_ACR1 }.first
       assert cno.term.first.to_s == bro.term.first.to_s
     end
     assert LinkedData::Models::MappingProcess.all.length == 1
@@ -416,8 +423,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       map.delete
     end
 
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest4" }).to_a[0] #fake
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => "MappingOntTest1" }).to_a[0] #bro
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
 
     $MAPPING_RELOAD_LABELS = true
     xref = LinkedData::Mappings::XREF.new(ont1, ont2,Logger.new(STDOUT))
@@ -432,13 +439,13 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert LinkedData::Models::TermMapping.where.all.length == 4
     assert mappings.length == 2
     mappings.each do |map|
-      fake = map.terms.select { |x| x.ontology.acronym == "MappingOntTest4" }.first
-      bro = map.terms.select { |x| x.ontology.acronym == "MappingOntTest1" }.first
+      fake = map.terms.select { |x| x.ontology.acronym == ONT_ACR4 }.first
+      bro = map.terms.select { |x| x.ontology.acronym == ONT_ACR1 }.first
       if bro.term.first.to_s["Biositemaps_Information_Model"]
         assert fake.term.first.to_s ==
           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/process"
       elsif bro.term.first.to_s["Information_Resource"]
-        assert fake.term.first.to_s == 
+        assert fake.term.first.to_s ==
           "http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource"
       else
         assert 1==0, "XREF mapping error. Uncontrolled mapping"

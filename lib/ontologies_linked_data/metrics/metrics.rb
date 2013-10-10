@@ -1,18 +1,32 @@
 module LinkedData
   module Metrics
     def self.metrics_for_submission(submission,logger)
-      submission.bring(:submissionStatus) if submission.bring?(:submissionStatus)
+      logger.info("metrics_for_submission start")
+      logger.flush
+      begin
+        submission.bring(:submissionStatus) if submission.bring?(:submissionStatus)
 
-      cls_metrics = class_metrics(submission,logger)
+        cls_metrics = class_metrics(submission,logger)
+        logger.info("class_metrics finished")
+        logger.flush
 
-      metrics = LinkedData::Models::Metric.new
-      cls_metrics.each do |k,v|
-        metrics.send("#{k}=",v)
+        metrics = LinkedData::Models::Metric.new
+        cls_metrics.each do |k,v|
+          metrics.send("#{k}=",v)
+        end
+        metrics.individuals = number_individuals(submission)
+        logger.info("individuals finished")
+        logger.flush
+        metrics.properties = number_properties(submission)
+        logger.info("properties finished")
+        logger.flush
+        return metrics
+      rescue Exception => e
+        logger.error(e.message)
+        logger.error(e)
+        logger.flush
       end
-      metrics.individuals = number_individuals(submission)
-      metrics.properties = number_properties(submission)
-      metrics.maxDepth = maxDepth(submission)
-      return metrics
+      return nil
     end
 
     def self.class_metrics(submission,logger)
@@ -27,6 +41,7 @@ module LinkedData
       cls_metrics[:classesWithOneChild] = 0
       cls_metrics[:classesWithMoreThan25Children] = 0
       cls_metrics[:classesWithNoDefinition] = 0
+      cls_metrics[:maxDepth] = 0
       page = 1
       children_counts = []
       begin
@@ -34,6 +49,8 @@ module LinkedData
         page_classes = paging.page(page).all
         logger.info("Metrics Classes Page #{page} of #{page_classes.total_pages}"+
                     " classes retrieved in #{Time.now - t0} sec.")
+        logger.flush
+        classes_children = {}
         page_classes.each do |cls|
           cls_metrics[:classes] += 1
           #TODO: investigate
@@ -49,10 +66,17 @@ module LinkedData
           end
           if cls.children.length > 0
             children_counts << cls.children.length
+            classes_children[cls.id.to_s] = cls.children.map { |x| x.id.to_s}
           end
         end
         page = page_classes.next? ? page + 1 : nil
       end while(!page.nil?)
+      roots_depth = [0]
+      classes_children.each do |cls,children|
+        next if children.nil?
+        roots_depth << recursive_depth(cls,classes_children,1)
+      end
+      cls_metrics[:maxDepth]=roots_depth.max
       if children_counts.length > 0
         cls_metrics[:maxChildCount] = children_counts.max
         sum = 0
@@ -62,6 +86,21 @@ module LinkedData
         cls_metrics[:averageChildCount]  = (sum.to_f / children_counts.length).to_i
       end
       return cls_metrics
+    end
+
+    def self.recursive_depth(cls,classes,depth)
+      #Structural reasoning should fix cycles
+      #but just in case a cap on recursivity
+      #we known max depth is SNOMED with 36
+      return 40 if depth > 40
+      children = classes[cls]
+      branch_depts = [depth+1]
+      children.each do |ch|
+        if classes[ch]
+          branch_depts << recursive_depth(ch,classes,depth+1)
+        end
+      end
+      return branch_depts.max
     end
 
     def self.number_individuals(submission)
@@ -89,55 +128,5 @@ eof
       return 0
     end
 
-    def self.recursive_depth(submission,level)
-      return level if level > 50 #just in case
-      level = level + 1
-      prop = submission.hierarchyProperty
-      prop = prop ? prop : Goo.namespaces[:rdfs]["subClassOf"]
-      joins = []
-      #filter avoids cycles
-      vars = Set.new
-      level.times do |i|
-        joins << "?s#{i} #{prop.to_ntriples} ?s#{i+1} ."
-        vars << "?s#{i}"
-        vars << "?s#{i+1}"
-      end
-      joins = joins.join "\n"
-      filters = []
-      already = Set.new
-      vars_cmp = vars.dup
-      vars.each do |v1|
-        vars.each do |v2|
-          next if v1 == v2
-          next if already.include?([v1,v2].sort)
-          filters << "#{v1} != #{v2}"
-          already << [v1,v2].sort
-        end
-        vars_cmp.delete v1
-      end
-      #for some reason 4store fails with many
-      #filters
-      filters = filters[0..30]
-      filters = filters.join " && "
-      query = <<eof
-  SELECT * WHERE {
-    GRAPH #{submission.id.to_ntriples} {
-      #{joins}
-      FILTER (#{filters})
-    } }
-   LIMIT 1
-eof
-     rs = Goo.sparql_query_client.query(query)
-     rs.each do |sol|
-       return recursive_depth(submission,level)
-     end
-     return level
-    end
-
-    def self.maxDepth(submission)
-      submission.bring(:hierarchyProperty)
-      # -1 removes owl:Thing
-      return recursive_depth(submission,0) - 1
-    end
   end
 end

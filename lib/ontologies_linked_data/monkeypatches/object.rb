@@ -6,7 +6,7 @@ class Object
   CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI])
 
   def to_flex_hash(options = {}, &block)
-    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass)
+    return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass) || is_a?(NilClass)
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
@@ -25,12 +25,10 @@ class Object
     end
 
     # Check to see if we're nested, if so remove necessary properties
-    if options[:nested] && self.is_a?(LinkedData::Hypermedia::Resource) && !self.class.hypermedia_settings[:prevent_serialize_when_nested].empty?
-      only = only - self.class.hypermedia_settings[:prevent_serialize_when_nested]
-    end
+    only = only - do_not_serialize_nested(options)
 
     # Determine whether to use defaults from the DSL or all attributes
-    hash = populate_attributes(hash, all, only)
+    hash = populate_attributes(hash, all, only, options)
 
     # Remove banned attributes (from DSL or defined here)
     hash = remove_bad_attributes(hash)
@@ -41,6 +39,7 @@ class Object
     end
 
     # Add methods
+    methods = methods - do_not_serialize_nested(options)
     methods.each do |method|
       hash[method] = self.send(method.to_s) if self.respond_to?(method) rescue next
     end
@@ -82,6 +81,9 @@ class Object
       hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
       next if modified
 
+      # Convert RDF literals to their equivalent Ruby typed value
+      v = v.value if v.is_a?(RDF::Literal)
+
       new_value = convert_nonstandard_types(v, options, &block)
 
       hash[k] = new_value
@@ -101,6 +103,21 @@ class Object
   end
 
   private
+
+  ##
+  # Get a list of attributes that aren't allowed to be serialized
+  # when the object is nested. If the object is not nested or there
+  # is no restriction, return an empty array.
+  def do_not_serialize_nested(options, cls = nil)
+    return [] if options && options[:params] && options[:params]["serialize_nested"]
+
+    cls ||= self
+    if options[:nested] && cls.is_a?(LinkedData::Hypermedia::Resource)
+      do_not_serialize = cls.class.hypermedia_settings[:prevent_serialize_when_nested]
+    end
+    do_not_serialize || []
+  end
+
 
   ##
   # Convert types from goo and elsewhere using custom methods
@@ -199,12 +216,15 @@ class Object
     }
   end
 
-  def populate_attributes(hash, all = false, only = [])
+  def populate_attributes(hash, all = false, only = [], options = {})
     current_cls = self.respond_to?(:klass) ? self.klass : self.class
 
     # Look for default attributes or use all
     if !current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) || current_cls.hypermedia_settings[:serialize_default].empty? || all
       attributes = self.is_a?(Struct) ? self.members : self.instance_variables.map {|e| e.to_s.delete("@").to_sym }
+
+      attributes = attributes - do_not_serialize_nested(options)
+
       attributes.each do |attribute|
         next unless self.respond_to?(attribute)
         hash[attribute] = self.send(attribute)
@@ -255,11 +275,15 @@ class Object
     sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class
 
     # Don't process if we're recursing and this attribute is forbidden in nested elements
-    disallow_nested = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:prevent_serialize_when_nested].include?(attribute) && options[:nested]
+    disallow_nested = !do_not_serialize_nested(options).empty?
     return hash, false if disallow_nested
 
     embedded = sample_class.ancestors.include?(LinkedData::Hypermedia::Resource) && sample_class.hypermedia_settings[:embed].include?(attribute)
     if embedded
+      # Options gets shared between attributes on the top level
+      # so we should dup it so if one attr is embedded it doesn't
+      # think that all of them are (by setting nested in the next line)
+      options = options.dup
       options[:nested] = true
       if (value.is_a?(Array) || value.is_a?(Set))
         values = value.map {|e| e.to_flex_hash(options, &block)}

@@ -53,7 +53,7 @@ module LinkedData
       aggregates childrenCount: [:count, :children]
       links_load submission: [ontology: [:acronym]]
       do_not_load :descendants, :ancestors
-      prevent_serialize_when_nested :properties
+      prevent_serialize_when_nested :properties, :parents, :children, :ancestors, :descendants
       link_to LinkedData::Hypermedia::Link.new("self", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ontology", lambda {|s| "ontologies/#{s.submission.ontology.acronym}"}, Goo.vocabulary["Ontology"]),
               LinkedData::Hypermedia::Link.new("children", lambda {|s| "ontologies/#{s.submission.ontology.acronym}/classes/#{CGI.escape(s.id.to_s)}/children"}, self.uri_type),

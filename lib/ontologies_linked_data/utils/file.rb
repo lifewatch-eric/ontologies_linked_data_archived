@@ -78,7 +78,7 @@ module LinkedData
           file = Tempfile.new('ont-rest-file')
           file_size = 0
           filename = nil
-          http_session = Net::HTTP.new(uri.host, uri.port) rescue binding.pry
+          http_session = Net::HTTP.new(uri.host, uri.port)
           http_session.verify_mode = OpenSSL::SSL::VERIFY_NONE
           http_session.use_ssl = (uri.scheme == 'https')
           http_session.start do |http|

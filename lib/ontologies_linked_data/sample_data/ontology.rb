@@ -28,19 +28,19 @@ module LinkedData
         ont_acronyms = []
         ontologies = []
         ont_count.to_i.times do |count|
-          acr_suffix ||= "-#{count}"
-          acronym = "#{acronym}#{acr_suffix}"
-          ont_acronyms << acronym
+          acronym_suffix = acr_suffix || "-#{count}"
+          acronym_count = "#{acronym}#{acronym_suffix}"
+          ont_acronyms << acronym_count
 
           o = LinkedData::Models::Ontology.new({
-            acronym: acronym,
+            acronym: acronym_count,
             name: name || "Test Ontology ##{count}",
             administeredBy: [u],
             summaryOnly: false
           })
 
           if o.exist?
-            o = LinkedData::Models::Ontology.find(acronym).include(LinkedData::Models::Ontology.attributes(:all)).first
+            o = LinkedData::Models::Ontology.find(acronym_count).include(LinkedData::Models::Ontology.attributes(:all)).first
             o.bring(:submissions)
             o.submissions.each {|s| s.delete}
           else
@@ -158,7 +158,7 @@ module LinkedData
         # This one has resources wih accents.
         count, acronyms, onto_matest = create_ontologies_and_submissions({
           process_submission: true,
-          acronym: "OntoMATEST",
+          acronym: "ONTOMATEST",
           name: "OntoMA TEST",
           file_path: "../../../../test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL",
           ont_count: 1,

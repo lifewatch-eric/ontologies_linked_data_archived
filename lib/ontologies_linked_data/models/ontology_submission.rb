@@ -445,10 +445,10 @@ module LinkedData
               generate_rdf(logger, file_path, reasoning=reasoning)
               add_submission_status(status)
             rescue Exception => e
-              add_submission_status(status.get_error_status)
-              self.save
               logger.info(e.message)
               logger.flush
+              add_submission_status(status.get_error_status)
+              self.save
               # if rdf generation fails, no point of continuing
               raise e
             end
@@ -461,10 +461,10 @@ module LinkedData
               generate_missing_labels(logger, file_path)
               add_submission_status(status)
             rescue Exception => e
-              add_submission_status(status.get_error_status)
-              self.save
               logger.info(e.message)
               logger.flush
+              add_submission_status(status.get_error_status)
+              self.save
               # if rdf label generation fails, no point of continuing
               raise e
             end
@@ -653,6 +653,10 @@ module LinkedData
       def download_ontology_file
         file, filename = LinkedData::Utils::FileHelpers.download_file(self.pullLocation.to_s)
         return file, filename
+      end
+
+      def delete_classes_graph
+        Goo.sparql_data_client.delete_graph(self.id)
       end
 
       private
