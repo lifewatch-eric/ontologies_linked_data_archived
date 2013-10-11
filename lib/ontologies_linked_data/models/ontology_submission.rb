@@ -506,6 +506,7 @@ module LinkedData
               process_metrics(logger)
               add_submission_status(status)
             rescue Exception => e
+              self.metrics = nil
               add_submission_status(status.get_error_status)
               logger.info(e.message)
               logger.flush
