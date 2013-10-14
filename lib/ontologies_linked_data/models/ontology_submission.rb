@@ -319,6 +319,49 @@ module LinkedData
         logger.flush
       end
 
+      def generate_obsolete_classes(logger, file_path)
+        self.bring(:obsoleteProperty) if self.bring?(:obsoleteProperty)
+        self.bring(:obsoleteParent) if self.bring?(:obsoleteParent)
+        classes_deprecated = []
+        if self.obsoleteProperty &&
+          self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
+
+          predicate_obsolete = RDF::URI.new(self.obsoleteProperty.to_s)
+          query_obsolete_predicate = <<eos
+SELECT ?class_id
+FROM #{self.id.to_ntriples}
+WHERE {
+  ?class_id #{predicate_obsolete.to_ntriples} ?deprecated .
+eos
+          Goo.sparql_data_client.query(query_obsolete_predicate).each_solution do |sol|
+            unless sol[:deprecated].to_s == "false"
+              classes_deprecated << sol[:class_id].to_s
+            end
+          end
+          logger.info("Found #{classes_deprecated.length} for property #{self.obsoleteProperty.to_s}")
+        end
+        if self.obsoleteParent
+          class_obsolete_parent = LinkedData::Models::Class
+                                  .find(self.obsoleteParent)
+                                  .in(self).first
+          if class_obsolete_parent
+            descendents_obsolete = LinkedData::Models::Class
+                                      .where(ancestors: class_obsolete_parent)
+                                      .all
+            logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
+            descendents_obsolete.each do |obs|
+              classes_deprecated << obs.id
+            end
+          else
+            logger.error("Submission #{self.id.to_s} obsoleteParent #{self.obsoleteParent.to_s} not found")
+          end
+        end
+        if classes_deprecated.length > 0
+          classes_deprecated.uniq!
+          logger.info("Asserting owl:deprecated statement for #{classes_deprecated} classes")
+        end
+      end
+
       def add_submission_status(status)
         valid = status.is_a?(LinkedData::Models::SubmissionStatus)
         raise ArgumentError, "The status being added is not SubmissionStatus object" unless valid
