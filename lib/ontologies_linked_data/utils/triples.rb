@@ -54,6 +54,12 @@ module LinkedData
         label = label.gsub('"','\"')
         return triple(class_id,property,RDF::Literal.new(label, :datatype => RDF::XSD.string))
       end
+
+      def self.obselete_class_triple(class_id)
+        return triple(RDF::URI.new(class_id.to_s),
+                      RDF::URI.new("http://www.w3.org/2002/07/owl#deprecated"),
+                      RDF::Literal.new("true", :datatype => RDF::XSD.boolean))
+      end
     end
   end
 end
