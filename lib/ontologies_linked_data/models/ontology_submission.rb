@@ -550,6 +550,24 @@ eos
                 logger.flush
               end
             end
+<<<<<<< HEAD
+=======
+
+            status = LinkedData::Models::SubmissionStatus.find("OBSOLETE").first
+            remove_submission_status(status)
+            begin
+              generate_obsolete_classes(logger, file_path)
+              add_submission_status(status)
+            rescue Exception => e
+              logger.info(e.message)
+              logger.flush
+              add_submission_status(status.get_error_status)
+              self.save
+              # if obsolete fails the parsing fails
+              raise e
+            end
+          end
+>>>>>>> obselete control error and wrapper in process_submission
 
             if (run_metrics)
               raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
