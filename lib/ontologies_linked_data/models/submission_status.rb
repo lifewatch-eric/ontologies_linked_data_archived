@@ -52,6 +52,10 @@ module LinkedData
         return SubmissionStatus.find(code).include(:code).first
       end
 
+      def archived?
+        return self.id.to_s["ARCHIVED"] && !self.id.to_s["ERROR_ARCHIVED"]
+      end
+
       def get_code_from_id
         return self.id.to_s.split("/")[-1]
       end
