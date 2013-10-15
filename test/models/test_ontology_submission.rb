@@ -220,7 +220,7 @@ eos
 
   def test_download_ontology_file
     begin
-      server_port = 3457
+      server_port = Random.rand(49152..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
       server_url = 'http://localhost:' + server_port.to_s
       server_thread = Thread.new do
         Rack::Server.start(
