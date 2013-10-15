@@ -521,7 +521,11 @@ module LinkedData
           logger.flush
         ensure
           # make sure results get emailed
-          LinkedData::Utils::Notifications.submission_processed(self) rescue nil
+          begin
+            LinkedData::Utils::Notifications.submission_processed(self)
+          rescue Exception => e
+            logger.info("Email sending failed: #{e.message}\n#{e.backtrace.join(\n\t)}"); logger.flush
+          end
           return self
         end
       end
