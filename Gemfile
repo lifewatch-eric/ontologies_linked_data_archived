@@ -17,6 +17,7 @@ gem 'pony'
 # Testing
 gem 'simplecov', :group => :test
 gem 'pry', :group => :test
+gem 'email_spec', :group => :test
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
 ncbo_branch = ENV["NCBO_BRANCH"] || `git rev-parse --abbrev-ref HEAD`.strip || "staging"
