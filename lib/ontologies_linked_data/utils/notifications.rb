@@ -91,7 +91,7 @@ module LinkedData::Utils
         ont.subscriptions.each do |subscription|
           subscription.bring(:notification_type) if subscription.bring?(:notification_type)
           subscription.notification_type.bring(:type) if subscription.notification_type.bring?(:notification_type)
-          next unless subscription.notification_type.type.eql?(notification_type.to_s.upcase)
+          next unless subscription.notification_type.type.eql?(notification_type.to_s.upcase) || subscription.notification_type.type.eql?("ALL")
           subscription.bring(:user) if subscription.bring?(:user)
           subscription.user.each do |user|
             user.bring(:email) if user.bring?(:email)
