@@ -357,8 +357,18 @@ eos
           end
         end
         if classes_deprecated.length > 0
-          classes_deprecated.uniq!
+          clases_deprecated.uniq!
           logger.info("Asserting owl:deprecated statement for #{classes_deprecated} classes")
+          save_in_file = File.join(File.dirname(file_path), "obsolete.ttl")
+          fsave = File.open(save_in_file,"w")
+          classes_deprecated.each do |class_id|
+            fsave.write(obselete_class_triple(class_id) + '\n')
+          end
+          fsave.close()
+          result = Goo.sparql_data_client.append_triples_from_file(
+                          self.id,
+                          save_in_file,
+                          mime_type="application/x-turtle")
         end
       end
 
