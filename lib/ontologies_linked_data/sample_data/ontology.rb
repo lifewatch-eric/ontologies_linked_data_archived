@@ -34,7 +34,7 @@ module LinkedData
 
           o = LinkedData::Models::Ontology.new({
             acronym: acronym_count,
-            name: name || "Test Ontology ##{count}",
+            name: name || "#{acronym_count} Ontology",
             administeredBy: [u],
             summaryOnly: false
           })
