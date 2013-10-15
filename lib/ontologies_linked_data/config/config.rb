@@ -58,6 +58,7 @@ module LinkedData
     @settings.purl_target_url_prefix ||= "http://bioportal.bioontology.org"
 
     # Email settings
+    @settings.enable_notifications   ||= false
     @settings.email_sender           ||= "admin@example.org" # Default sender for emails
     @settings.email_override         ||= "test.email@example.org" # By default, all email gets sent here. Disable with email_override_disable.
     @settings.email_disable_override ||= false

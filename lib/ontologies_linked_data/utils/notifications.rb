@@ -7,6 +7,7 @@ module LinkedData::Utils
       headers = { 'Content-Type' => 'text/html' }
       sender    = options[:sender] || LinkedData.settings.email_sender
       recipient = options[:recipient]
+      return unless LinkedData.settings.enable_notifications
 
       # By default we override all recipients to avoid
       # sending emails from testing environments.
