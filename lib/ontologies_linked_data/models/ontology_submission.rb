@@ -399,115 +399,122 @@ module LinkedData
       #   archive           = false
       #######################################
       def process_submission(logger, options={})
-        process_rdf = options[:process_rdf] == false ? false : true
-        index_search = options[:index_search] == false ? false : true
-        run_metrics = options[:run_metrics] == false ? false : true
-        reasoning = options[:reasoning] == false ? false : true
-        archive = options[:archive] == true ? true : false
+        # Wrap the whole process so we can email results
+        begin
+          process_rdf = options[:process_rdf] == false ? false : true
+          index_search = options[:index_search] == false ? false : true
+          run_metrics = options[:run_metrics] == false ? false : true
+          reasoning = options[:reasoning] == false ? false : true
+          archive = options[:archive] == true ? true : false
 
-        self.bring_remaining
-        self.ontology.bring_remaining
+          self.bring_remaining
+          self.ontology.bring_remaining
 
-        logger.info("Starting to process #{self.ontology.acronym}/submissions/#{self.submissionId}")
-        logger.flush
-        LinkedData::Parser.logger = logger
-        status = nil
+          logger.info("Starting to process #{self.ontology.acronym}/submissions/#{self.submissionId}")
+          logger.flush
+          LinkedData::Parser.logger = logger
+          status = nil
 
-        #TODO: for now, archiving simply means add "ARCHIVED" status. We need to expand the logic to include other appropriate actions (ie deleting backend, files, etc.)
-        if (archive)
-          self.submissionStatus = nil
-          status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
-          add_submission_status(status)
-        else
-          if (process_rdf)
-            if not self.valid?
-              error = "Submission is not valid, it cannot be processed. Check errors"
-              logger.info(error)
-              logger.flush
-              raise ArgumentError, error
+          #TODO: for now, archiving simply means add "ARCHIVED" status. We need to expand the logic to include other appropriate actions (ie deleting backend, files, etc.)
+          if (archive)
+            self.submissionStatus = nil
+            status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
+            add_submission_status(status)
+          else
+            if (process_rdf)
+              if not self.valid?
+                error = "Submission is not valid, it cannot be processed. Check errors"
+                logger.info(error)
+                logger.flush
+                raise ArgumentError, error
+              end
+
+              if not self.uploadFilePath
+                error = "Submission is missing an ontology file, cannot parse"
+                logger.info(error)
+                logger.flush
+                raise ArgumentError, error
+              end
+
+              file_path = nil
+              status = LinkedData::Models::SubmissionStatus.find("RDF").first
+              #remove RDF status before starting
+              remove_submission_status(status)
+
+              begin
+                zip_dst = unzip_submission(logger)
+                file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
+                generate_rdf(logger, file_path, reasoning=reasoning)
+                add_submission_status(status)
+              rescue Exception => e
+                logger.info(e.message)
+                logger.flush
+                add_submission_status(status.get_error_status)
+                self.save
+                # if rdf generation fails, no point of continuing
+                raise e
+              end
+
+              status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
+              #remove RDF_LABELS status before starting
+              remove_submission_status(status)
+
+              begin
+                generate_missing_labels(logger, file_path)
+                add_submission_status(status)
+              rescue Exception => e
+                logger.info(e.message)
+                logger.flush
+                add_submission_status(status.get_error_status)
+                self.save
+                # if rdf label generation fails, no point of continuing
+                raise e
+              end
             end
 
-            if not self.uploadFilePath
-              error = "Submission is missing an ontology file, cannot parse"
-              logger.info(error)
-              logger.flush
-              raise ArgumentError, error
+            parsed = ready?(status: [:rdf, :rdf_labels])
+
+            if (index_search)
+              raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
+              status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
+              #remove INDEXED status before starting
+              remove_submission_status(status)
+
+              begin
+                index(logger, false)
+                add_submission_status(status)
+              rescue Exception => e
+                add_submission_status(status.get_error_status)
+                logger.info(e.message)
+                logger.flush
+              end
             end
 
-            file_path = nil
-            status = LinkedData::Models::SubmissionStatus.find("RDF").first
-            #remove RDF status before starting
-            remove_submission_status(status)
+            if (run_metrics)
+              raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
+              status = LinkedData::Models::SubmissionStatus.find("METRICS").first
+              #remove METRICS status before starting
+              remove_submission_status(status)
 
-            begin
-              zip_dst = unzip_submission(logger)
-              file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
-              generate_rdf(logger, file_path, reasoning=reasoning)
-              add_submission_status(status)
-            rescue Exception => e
-              logger.info(e.message)
-              logger.flush
-              add_submission_status(status.get_error_status)
-              self.save
-              # if rdf generation fails, no point of continuing
-              raise e
-            end
-
-            status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
-            #remove RDF_LABELS status before starting
-            remove_submission_status(status)
-
-            begin
-              generate_missing_labels(logger, file_path)
-              add_submission_status(status)
-            rescue Exception => e
-              logger.info(e.message)
-              logger.flush
-              add_submission_status(status.get_error_status)
-              self.save
-              # if rdf label generation fails, no point of continuing
-              raise e
+              begin
+                process_metrics(logger)
+                add_submission_status(status)
+              rescue Exception => e
+                add_submission_status(status.get_error_status)
+                logger.info(e.message)
+                logger.flush
+              end
             end
           end
 
-          parsed = ready?(status: [:rdf, :rdf_labels])
-
-          if (index_search)
-            raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
-            status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
-            #remove INDEXED status before starting
-            remove_submission_status(status)
-
-            begin
-              index(logger, false)
-              add_submission_status(status)
-            rescue Exception => e
-              add_submission_status(status.get_error_status)
-              logger.info(e.message)
-              logger.flush
-            end
-          end
-
-          if (run_metrics)
-            raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
-            status = LinkedData::Models::SubmissionStatus.find("METRICS").first
-            #remove METRICS status before starting
-            remove_submission_status(status)
-
-            begin
-              process_metrics(logger)
-              add_submission_status(status)
-            rescue Exception => e
-              add_submission_status(status.get_error_status)
-              logger.info(e.message)
-              logger.flush
-            end
-          end
+          self.save
+          logger.info("Submission processing completed successfully")
+          logger.flush
+        ensure
+          # make sure results get emailed
+          LinkedData::Utils::Notifications.submission_processed(self) rescue nil
+          return self
         end
-
-        self.save
-        logger.info("Submission processing completed successfully")
-        logger.flush
       end
 
       def process_metrics(logger)
