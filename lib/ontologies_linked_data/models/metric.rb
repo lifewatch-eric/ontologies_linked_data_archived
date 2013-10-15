@@ -18,7 +18,7 @@ module LinkedData
       attribute :classesWithMoreThan25Children, enforce: [:integer,:existence]
       attribute :classesWithNoDefinition, enforce: [:integer,:existence]
 
-      cache_timeout 86400
+      cache_timeout 14400 # 4 hours
 
       # Hypermedia links
       links_load submission: [:submissionId, ontology: [:acronym]]
