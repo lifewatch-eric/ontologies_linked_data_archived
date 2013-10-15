@@ -5,6 +5,7 @@ module LinkedData
         "UPLOADED", "ERROR_UPLOADED",
         "RDF", "ERROR_RDF",
         "RDF_LABELS", "ERROR_RDF_LABELS",
+        "OBSOLETE", "ERROR_OBSOLETE",
         "INDEXED", "ERROR_INDEXED",
         "METRICS",  "ERROR_METRICS",
         "ANNOTATOR", "ERROR_ANNOTATOR",
