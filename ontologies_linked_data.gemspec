@@ -26,6 +26,9 @@ Gem::Specification.new do |gem|
   gem.add_dependency("libxml-ruby")
   gem.add_dependency("activesupport")
   gem.add_dependency("rsolr")
+  gem.add_dependency("pony")
+
+  gem.add_development_dependency("email_spec")
 
   # gem.executables = %w()
 end
