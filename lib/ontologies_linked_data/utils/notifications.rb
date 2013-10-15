@@ -4,22 +4,24 @@ module LinkedData::Utils
   class Notifications
 
     def self.notify(options = {})
-      headers = { 'Content-Type' => 'text/html' }
-      sender    = options[:sender] || LinkedData.settings.email_sender
-      recipient = options[:recipient]
       return unless LinkedData.settings.enable_notifications
+
+      headers    = { 'Content-Type' => 'text/html' }
+      sender     = options[:sender] || LinkedData.settings.email_sender
+      recipients = options[:recipients]
+      raise ArgumentError, "Recipient needs to be provided in options[:recipients]" if !recipients || recipients.empty?
 
       # By default we override all recipients to avoid
       # sending emails from testing environments.
       # Set `email_disable_override` in production
       # to send to the actual user.
       unless LinkedData.settings.email_disable_override
-        headers['Overridden-Sender'] = recipient
-        recipient = LinkedData.settings.email_override
+        headers['Overridden-Sender'] = recipients
+        recipients = LinkedData.settings.email_override
       end
 
       Pony.mail({
-        to: recipient,
+        to: recipients,
         from: sender,
         subject: options[:subject],
         body: options[:body],
@@ -95,7 +97,7 @@ module LinkedData::Utils
           subscription.bring(:user) if subscription.bring?(:user)
           subscription.user.each do |user|
             user.bring(:email) if user.bring?(:email)
-            emails << notify(recipient: user.email, subject: subject, body: body)
+            emails << notify(recipients: user.email, subject: subject, body: body)
           end
         end
       end
