@@ -328,17 +328,16 @@ module LinkedData
 
           predicate_obsolete = RDF::URI.new(self.obsoleteProperty.to_s)
           query_obsolete_predicate = <<eos
-SELECT ?class_id
+SELECT ?class_id ?deprecated
 FROM #{self.id.to_ntriples}
-WHERE {
-  ?class_id #{predicate_obsolete.to_ntriples} ?deprecated .
+WHERE { ?class_id #{predicate_obsolete.to_ntriples} ?deprecated . }
 eos
-          Goo.sparql_data_client.query(query_obsolete_predicate).each_solution do |sol|
+          Goo.sparql_query_client.query(query_obsolete_predicate).each_solution do |sol|
             unless sol[:deprecated].to_s == "false"
               classes_deprecated << sol[:class_id].to_s
             end
           end
-          logger.info("Found #{classes_deprecated.length} for property #{self.obsoleteProperty.to_s}")
+          logger.info("Obsolete found #{classes_deprecated.length} for property #{self.obsoleteProperty.to_s}")
         end
         if self.obsoleteParent
           class_obsolete_parent = LinkedData::Models::Class
@@ -347,6 +346,7 @@ eos
           if class_obsolete_parent
             descendents_obsolete = LinkedData::Models::Class
                                       .where(ancestors: class_obsolete_parent)
+                                      .in(self)
                                       .all
             logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
             descendents_obsolete.each do |obs|
@@ -357,12 +357,12 @@ eos
           end
         end
         if classes_deprecated.length > 0
-          clases_deprecated.uniq!
+          classes_deprecated.uniq!
           logger.info("Asserting owl:deprecated statement for #{classes_deprecated} classes")
           save_in_file = File.join(File.dirname(file_path), "obsolete.ttl")
           fsave = File.open(save_in_file,"w")
           classes_deprecated.each do |class_id|
-            fsave.write(obselete_class_triple(class_id) + '\n')
+            fsave.write(LinkedData::Utils::Triples.obselete_class_triple(class_id) + "\n")
           end
           fsave.close()
           result = Goo.sparql_data_client.append_triples_from_file(
