@@ -1,10 +1,10 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 8dccb9b8bbd6e163a2b37b6781e5a6c3a18b472c
+  revision: 1dedcaa88747358c7f25cdc8f2afa737aa7a4e94
   branch: staging
   specs:
     goo (0.0.2)
-      rdf
+      rdf (= 1.0.8)
       redis
       rest-client
       rsolr
@@ -52,7 +52,7 @@ GEM
     method_source (0.8.2)
     mime-types (1.25)
     minitest (4.7.5)
-    multi_json (1.8.1)
+    multi_json (1.8.2)
     net-http-persistent (2.9)
     oj (2.1.6)
     polyglot (0.3.3)
