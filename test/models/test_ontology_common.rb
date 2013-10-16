@@ -90,7 +90,12 @@ module LinkedData
       ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
       assert (not ont_submision.valid?)
       assert_equal 4, ont_submision.errors.length
-      file_path = "./test/data/ontology_files/custom_properties.owl"
+      if acr["OBS"]
+        file_path = "./test/data/ontology_files/custom_obsolete.owl"
+      else
+        file_path = "./test/data/ontology_files/custom_properties.owl"
+      end
+
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
       ont_submision.uploadFilePath = uploadFilePath
       owl, ont, user, contact = submission_dependent_objects("OWL", acr, "test_linked_models", "some ont created by mso for testing")
@@ -99,6 +104,15 @@ module LinkedData
       ont_submision.released = DateTime.now - 4
       ont_submision.hasOntologyLanguage = owl
       ont_submision.ontology = ont
+      if acr["OBS"]
+        if acr["BRANCH"]
+          ont_submision.obsoleteParent = 
+            RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#class1")
+        else
+          ont_submision.obsoleteProperty = 
+            RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mydeprecated")
+        end
+      end
       ont_submision.prefLabelProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
       ont_submision.synonymProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel")
       ont_submision.definitionProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myDefinition")
@@ -112,7 +126,13 @@ module LinkedData
       roots = ont_submision.roots
       #class99 is equilent to intersection of ...
       #it shouldnt be at the root
-      assert roots.length == 6
+      if acr["OBSPROPS"]
+        assert roots.length == 4
+      elsif acr["OBSBRANCH"]
+        assert roots.length == 5
+      else
+        assert roots.length == 6
+      end
       assert !roots.map { |x| x.id.to_s }
               .include?("http://bioportal.bioontology.org/ontologies/msotes#class99")
 
