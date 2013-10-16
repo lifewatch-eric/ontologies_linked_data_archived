@@ -267,6 +267,29 @@ eos
     end
   end
 
+  def test_custom_obsolete_property
+    return if ENV["SKIP_PARSING"]
+
+    acr = "OBSPROPS"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss[0]
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
+        assert c.deprecated
+      else
+        assert c.deprecated.nil?
+      end
+    end
+  end
   def test_custom_property_generation
     return if ENV["SKIP_PARSING"]
 
