@@ -652,7 +652,7 @@ eos
 
     assert metrics.classes == 486
     assert metrics.properties == 63
-    assert metrics.individuals == 80
+    assert metrics.individuals == 82
     assert metrics.classesWithOneChild == 14
     #cause it has not the subproperty added
     assert metrics.classesWithNoDefinition == 474
