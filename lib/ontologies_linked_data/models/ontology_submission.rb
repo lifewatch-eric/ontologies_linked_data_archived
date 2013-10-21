@@ -319,6 +319,59 @@ module LinkedData
         logger.flush
       end
 
+      def generate_obsolete_classes(logger, file_path)
+        self.bring(:obsoleteProperty) if self.bring?(:obsoleteProperty)
+        self.bring(:obsoleteParent) if self.bring?(:obsoleteParent)
+        classes_deprecated = []
+        if self.obsoleteProperty &&
+          self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
+
+          predicate_obsolete = RDF::URI.new(self.obsoleteProperty.to_s)
+          query_obsolete_predicate = <<eos
+SELECT ?class_id ?deprecated
+FROM #{self.id.to_ntriples}
+WHERE { ?class_id #{predicate_obsolete.to_ntriples} ?deprecated . }
+eos
+          Goo.sparql_query_client.query(query_obsolete_predicate).each_solution do |sol|
+            unless sol[:deprecated].to_s == "false"
+              classes_deprecated << sol[:class_id].to_s
+            end
+          end
+          logger.info("Obsolete found #{classes_deprecated.length} for property #{self.obsoleteProperty.to_s}")
+        end
+        if self.obsoleteParent
+          class_obsolete_parent = LinkedData::Models::Class
+                                  .find(self.obsoleteParent)
+                                  .in(self).first
+          if class_obsolete_parent
+            descendents_obsolete = LinkedData::Models::Class
+                                      .where(ancestors: class_obsolete_parent)
+                                      .in(self)
+                                      .all
+            logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
+            descendents_obsolete.each do |obs|
+              classes_deprecated << obs.id
+            end
+          else
+            logger.error("Submission #{self.id.to_s} obsoleteParent #{self.obsoleteParent.to_s} not found")
+          end
+        end
+        if classes_deprecated.length > 0
+          classes_deprecated.uniq!
+          logger.info("Asserting owl:deprecated statement for #{classes_deprecated} classes")
+          save_in_file = File.join(File.dirname(file_path), "obsolete.ttl")
+          fsave = File.open(save_in_file,"w")
+          classes_deprecated.each do |class_id|
+            fsave.write(LinkedData::Utils::Triples.obselete_class_triple(class_id) + "\n")
+          end
+          fsave.close()
+          result = Goo.sparql_data_client.append_triples_from_file(
+                          self.id,
+                          save_in_file,
+                          mime_type="application/x-turtle")
+        end
+      end
+
       def add_submission_status(status)
         valid = status.is_a?(LinkedData::Models::SubmissionStatus)
         raise ArgumentError, "The status being added is not SubmissionStatus object" unless valid
@@ -476,6 +529,20 @@ module LinkedData
                 add_submission_status(status.get_error_status)
                 self.save
                 # if rdf label generation fails, no point of continuing
+                raise e
+              end
+
+              status = LinkedData::Models::SubmissionStatus.find("OBSOLETE").first
+              remove_submission_status(status)
+              begin
+                generate_obsolete_classes(logger, file_path)
+                add_submission_status(status)
+              rescue Exception => e
+                logger.info(e.message)
+                logger.flush
+                add_submission_status(status.get_error_status)
+                self.save
+                # if obsolete fails the parsing fails
                 raise e
               end
             end

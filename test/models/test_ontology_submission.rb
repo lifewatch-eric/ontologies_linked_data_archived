@@ -267,6 +267,55 @@ eos
     end
   end
 
+  def test_custom_obsolete_property
+    return if ENV["SKIP_PARSING"]
+
+    acr = "OBSPROPS"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss[0]
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
+        assert c.deprecated
+      else
+        assert c.deprecated.nil?
+      end
+    end
+  end
+
+  def test_custom_obsolete_branch
+    return if ENV["SKIP_PARSING"]
+
+    acr = "OBSBRANCH"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss[0]
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["#class2"] || c.id.to_s["#class6"] ||
+         c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
+        assert c.deprecated
+      else
+        assert c.deprecated.nil?
+      end
+    end
+  end
+
   def test_custom_property_generation
     return if ENV["SKIP_PARSING"]
 
@@ -603,7 +652,7 @@ eos
 
     assert metrics.classes == 486
     assert metrics.properties == 63
-    assert metrics.individuals == 80
+    assert metrics.individuals == 82
     assert metrics.classesWithOneChild == 14
     #cause it has not the subproperty added
     assert metrics.classesWithNoDefinition == 474
