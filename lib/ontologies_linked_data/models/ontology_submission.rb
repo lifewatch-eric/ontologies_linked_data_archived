@@ -547,8 +547,10 @@ module LinkedData
         count_classes = 0
         time = Benchmark.realtime do
           self.bring(:ontology) if self.bring?(:ontology)
-          self.ontology.unindex()
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
+          t0 = Time.now
+          self.ontology.unindex()
+          logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped)
                                   .page(page,size)
