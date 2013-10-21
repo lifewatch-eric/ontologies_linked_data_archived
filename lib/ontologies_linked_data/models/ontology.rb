@@ -11,7 +11,7 @@ module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
       model :ontology, :name_with => :acronym
-      attribute :acronym, namespace: :omv, 
+      attribute :acronym, namespace: :omv,
         enforce: [:unique, :existence, lambda { |inst,attr| validate_acronym(inst,attr) } ]
       attribute :name, :namespace => :omv, enforce: [:unique, :existence]
       attribute :submissions,
@@ -163,8 +163,8 @@ module LinkedData
       def unindex
         self.bring(:acronym) if self.bring?(:acronym)
         query = "submissionAcronym:#{acronym}"
-        #Ontology.unindexByQuery(query)
-        #Ontology.indexCommit()
+        Ontology.unindexByQuery(query)
+        Ontology.indexCommit()
       end
     end
   end
