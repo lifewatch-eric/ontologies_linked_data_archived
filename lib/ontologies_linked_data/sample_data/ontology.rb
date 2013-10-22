@@ -96,9 +96,9 @@ module LinkedData
             o.submissions.each do |ss|
               ss.bring(:submissionId) if ss.bring?(:submissionId)
               next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
-              tmp_log = Tempfile.new("tmp_log")
+              tmp_log = Logger.new(::TestLogFile.new)
               begin
-                ss.process_submission(Logger.new(tmp_log),
+                ss.process_submission(tmp_log,
                                     process_rdf: true, index_search: true,
                                     run_metrics: true, reasoning: true)
               rescue Exception => e
