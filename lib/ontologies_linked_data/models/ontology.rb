@@ -65,6 +65,7 @@ module LinkedData
       access_control_load :administeredBy, :acl, :viewingRestriction
 
       def self.validate_acronym(inst,attr)
+        inst.bring(attr) if inst.bring?(attr)
         value = inst.send(attr)
         acronym_regex = /\A[A-Z]{1}[-_0-9A-Z]{0,15}\Z/
         if (acronym_regex.match value).nil?
