@@ -71,7 +71,14 @@ module LinkedData
       ont_submision.save
 
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT), parse_options)
+      begin
+        tmp_log = Logger.new(TestLogFile.new)
+        ont_submision.process_submission(tmp_log, parse_options)
+      rescue Exception => e
+        puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+        raise e
+      end
+
     end
 
     def init_test_ontology_msotest(acr)
@@ -106,10 +113,10 @@ module LinkedData
       ont_submision.ontology = ont
       if acr["OBS"]
         if acr["BRANCH"]
-          ont_submision.obsoleteParent = 
+          ont_submision.obsoleteParent =
             RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#class1")
         else
-          ont_submision.obsoleteProperty = 
+          ont_submision.obsoleteProperty =
             RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mydeprecated")
         end
       end
@@ -120,9 +127,15 @@ module LinkedData
       assert (ont_submision.valid?)
       ont_submision.save
       assert_equal true, ont_submision.exist?(reload=true)
-      ont_submision.process_submission(Logger.new(STDOUT),
-                                       process_rdf: true, index_search: true,
-                                       run_metrics: true, reasoning: true)
+      parse_options = {process_rdf: true, index_search: true, run_metrics: true, reasoning: true}
+      begin
+        tmp_log = Logger.new(TestLogFile.new)
+        ont_submision.process_submission(tmp_log, parse_options)
+      rescue Exception => e
+        puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+        raise e
+      end
+
       roots = ont_submision.roots
       #class99 is equilent to intersection of ...
       #it shouldnt be at the root

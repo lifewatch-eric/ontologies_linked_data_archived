@@ -96,9 +96,15 @@ module LinkedData
             o.submissions.each do |ss|
               ss.bring(:submissionId) if ss.bring?(:submissionId)
               next if (!submissions_to_process.nil? && !submissions_to_process.include?(ss.submissionId))
-              ss.process_submission(Logger.new(STDOUT),
+              tmp_log = Tempfile.new("tmp_log")
+              begin
+                ss.process_submission(Logger.new(tmp_log),
                                     process_rdf: true, index_search: true,
                                     run_metrics: true, reasoning: true)
+              rescue Exception => e
+                puts "See tmp log for errors: #{tmp_log.path}"
+                raise e
+              end
             end
           end
         end

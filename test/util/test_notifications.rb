@@ -86,7 +86,7 @@ class TestNotifications < LinkedData::TestCase
       subscription = _subscription(ont)
       @@user.subscription = @@user.subscription.dup << subscription
       @@user.save
-      ont.latest_submission(status: :any).process_submission(Logger.new($stdout))
+      ont.latest_submission(status: :any).process_submission(Logger.new(TestLogFile.new))
       assert last_email_sent.subject.include?("Parsing Success")
       assert_equal [@@user.email], last_email_sent.to
     ensure

@@ -207,9 +207,15 @@ eos
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
-    ont_submision.process_submission(Logger.new(STDOUT),
-                                     process_rdf: true, index_search: false,
-                                     run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      ont_submision.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
@@ -449,9 +455,14 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),
-                           process_rdf: true, index_search: false,
-                           run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      sub.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -511,9 +522,14 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),
-                           process_rdf: true, index_search: false,
-                           run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      sub.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
@@ -559,9 +575,14 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),
-                           process_rdf: true, index_search: false,
-                           run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      sub.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
