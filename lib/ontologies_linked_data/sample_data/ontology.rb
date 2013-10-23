@@ -1,3 +1,5 @@
+require_relative '../../../test/test_log_file.rb'
+
 module LinkedData
   module SampleData
     class Ontology

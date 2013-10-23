@@ -9,6 +9,7 @@ if ENV["COVERAGE"].eql?("true")
   end
 end
 
+require_relative "test_log_file"
 require_relative "../lib/ontologies_linked_data"
 require_relative "../config/config.rb"
 
@@ -41,12 +42,6 @@ unless LinkedData.settings.goo_host.match(safe_hosts) &&
   end
   print "Running tests..."
   $stdout.flush
-end
-
-class TestLogFile < File
-  def initialize
-    super(File.expand_path("../test_run.log", __FILE__), "w")
-  end
 end
 
 module LinkedData
