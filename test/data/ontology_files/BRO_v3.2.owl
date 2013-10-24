@@ -3130,7 +3130,7 @@ we think this should be deleted</desc:definition>
         <desc:definition rdf:datatype="&xsd;string">A resource that provides items such as reagents, instruments, tissue samples or organisms.</desc:definition>
         <rdfs:comment rdf:datatype="&xsd;string">As per alignment with NIF resource type hierarchy.</rdfs:comment>
         <core:prefLabel rdf:datatype="&xsd;string">Material Resource</core:prefLabel>
-        <core:notation>BRO:0000001</core:notation>
+        <core:notation rdf:datatype="&xsd;string">BRO:0000001</core:notation>
     </owl:Class>
     
 
@@ -4045,7 +4045,7 @@ radionuclide (tracer), which is introduced into the body on a biologically activ
 - epidemiology
 - development</core:editorialNote>
         <core:prefLabel rdf:datatype="&xsd;string">People Resource</core:prefLabel>
-        <core:notation>BRO:0000002</core:notation>
+        <core:notation rdf:datatype="&xsd;string">BRO:0000002</core:notation>
     </owl:Class>
     
 
