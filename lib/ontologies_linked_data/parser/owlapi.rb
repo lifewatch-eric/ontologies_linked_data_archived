@@ -24,7 +24,7 @@ module LinkedData
 
       def setup_environment
         if @output_repo.nil? or Utils::FileHelpers.exists_and_file(@output_repo)
-          raise RepositoryFoldersError, "Outout repository folder are files in the system `#{@output_repo}`"
+          raise RepositoryFoldersError, "Output repository folder are files in the system `#{@output_repo}`"
         end
         if @input_file.nil? or (not File.exist?(@input_file))
           raise InputFileNotFoundError, "#{@input_file} not found."
