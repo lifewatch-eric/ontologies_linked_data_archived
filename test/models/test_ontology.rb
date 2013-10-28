@@ -5,12 +5,13 @@ require 'rack'
 class TestOntology < LinkedData::TestCase
 
   def self.before_suite
+    @@port = Random.rand(49152..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
     @@thread = Thread.new do
       Rack::Server.start(
         app: lambda do |e|
           [200, {'Content-Type' => 'text/plain'}, ['test file']]
         end,
-        Port: 3456
+        Port: @@port
       )
     end
   end
@@ -55,7 +56,7 @@ class TestOntology < LinkedData::TestCase
     os = LinkedData::Models::OntologySubmission.new({
       ontology: o,
       hasOntologyLanguage: @of,
-      pullLocation: RDF::IRI.new("http://localhost:3456/"),
+      pullLocation: RDF::IRI.new("http://localhost:#{@@port}/"),
       submissionId: o.next_submission_id,
       contact: [@contact],
       released: DateTime.now - 5

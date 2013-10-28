@@ -24,3 +24,4 @@ migration/test*
 
 # Rbenv artifacts
 .ruby-version
+test/test_run.log

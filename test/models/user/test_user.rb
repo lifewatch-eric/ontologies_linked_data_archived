@@ -1,4 +1,4 @@
-require_relative "../test_case"
+require_relative "../../test_case"
 
 class TestUser < LinkedData::TestCase
 

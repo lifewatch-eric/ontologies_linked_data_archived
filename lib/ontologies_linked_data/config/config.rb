@@ -58,6 +58,7 @@ module LinkedData
     @settings.purl_target_url_prefix ||= "http://bioportal.bioontology.org"
 
     # Email settings
+    @settings.enable_notifications   ||= false
     @settings.email_sender           ||= "admin@example.org" # Default sender for emails
     @settings.email_override         ||= "test.email@example.org" # By default, all email gets sent here. Disable with email_override_disable.
     @settings.email_disable_override ||= false
@@ -65,7 +66,7 @@ module LinkedData
     @settings.smtp_port              ||= 25
     @settings.smtp_user              ||= "user"
     @settings.smtp_password          ||= "password"
-    @settings.smtp_auth_type         ||= :plain # :plain, :login, :cram_md5
+    @settings.smtp_auth_type         ||= :none # :none, :plain, :login, :cram_md5
     @settings.smtp_domain            ||= "localhost.localhost"
 
     unless @settings.redis_host.nil?

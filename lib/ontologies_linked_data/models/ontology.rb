@@ -11,7 +11,7 @@ module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
       model :ontology, :name_with => :acronym
-      attribute :acronym, namespace: :omv, 
+      attribute :acronym, namespace: :omv,
         enforce: [:unique, :existence, lambda { |inst,attr| validate_acronym(inst,attr) } ]
       attribute :name, :namespace => :omv, enforce: [:unique, :existence]
       attribute :submissions,
@@ -23,7 +23,9 @@ module LinkedData
       attribute :reviews,
                   inverse: { on: :review, attribute: :ontologyReviewed }
       attribute :provisionalClasses,
-                inverse: { on: :provisional_class, attribute: :ontology }
+                  inverse: { on: :provisional_class, attribute: :ontology }
+      attribute :subscriptions,
+                  inverse: { on: :subscription, attribute: :ontology}
       attribute :administeredBy, enforce: [:existence, :user, :list]
       attribute :group, enforce: [:list, :group]
 
@@ -63,6 +65,7 @@ module LinkedData
       access_control_load :administeredBy, :acl, :viewingRestriction
 
       def self.validate_acronym(inst,attr)
+        inst.bring(attr) if inst.bring?(attr)
         value = inst.send(attr)
         acronym_regex = /\A[A-Z]{1}[-_0-9A-Z]{0,15}\Z/
         if (acronym_regex.match value).nil?
@@ -163,8 +166,8 @@ module LinkedData
       def unindex
         self.bring(:acronym) if self.bring?(:acronym)
         query = "submissionAcronym:#{acronym}"
-        #Ontology.unindexByQuery(query)
-        #Ontology.indexCommit()
+        Ontology.unindexByQuery(query)
+        Ontology.indexCommit()
       end
     end
   end

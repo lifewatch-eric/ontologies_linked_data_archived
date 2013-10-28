@@ -12,10 +12,12 @@ gem 'libxml-ruby', '~> 2.0'
 gem 'rsolr', '~> 1.0'
 gem 'minitest', '~> 4.0'
 gem 'cube-ruby', require: "cube"
+gem 'pony'
 
 # Testing
 gem 'simplecov', :group => :test
 gem 'pry', :group => :test
+gem 'email_spec', :group => :test
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
 ncbo_branch = ENV["NCBO_BRANCH"] || `git rev-parse --abbrev-ref HEAD`.strip || "staging"
