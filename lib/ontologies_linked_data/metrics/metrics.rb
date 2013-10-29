@@ -30,6 +30,7 @@ module LinkedData
     end
 
     def self.class_metrics(submission,logger)
+      t00 = Time.now
       size_page = 2500
       paging = LinkedData::Models::Class.in(submission)
                                         .include(:children,:definition)
@@ -85,6 +86,7 @@ module LinkedData
         end
         cls_metrics[:averageChildCount]  = (sum.to_f / children_counts.length).to_i
       end
+      logger.info("Class metrics finished in #{Time.now - t00} sec.")
       return cls_metrics
     end
 
