@@ -177,6 +177,32 @@ eos
                      run_metrics: false, reasoning: true)
   end
 
+  def test_submission_diff
+    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    # Create a 1st version for BRO
+    submission_parse("BRO34", "BRO3.4",
+                     "./test/data/ontology_files/BRO_v3.4.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    onts = LinkedData::Models::Ontology.find('BRO34')
+    bro34 = onts.first
+    bro34.bring(:submissions)
+    sub34 = bro34.submissions.first
+    # Create a later version for BRO
+    submission_parse("BRO35", "BRO3.5",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    onts = LinkedData::Models::Ontology.find('BRO35')
+    bro35 = onts.first
+    bro35.bring(:submissions)
+    sub35 = bro35.submissions.first
+    # Calculate the ontology diff: bro35 - bro34
+    tmp_log = Logger.new(TestLogFile.new)
+    sub35.diff(tmp_log, sub34)
+    assert(sub35.diffFilePath != nil, 'Failed to create submission diff file.')
+  end
+
   def test_submission_parse_zip
     return if ENV["SKIP_PARSING"]
 

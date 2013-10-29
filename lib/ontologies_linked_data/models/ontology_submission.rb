@@ -38,6 +38,7 @@ module LinkedData
 
       # Internal values for parsing - not definitive
       attribute :uploadFilePath
+      attribute :diffFilePath
       attribute :masterFileName
       attribute :submissionStatus, enforce: [:submission_status, :list], default: lambda { |record| [LinkedData::Models::SubmissionStatus.find("UPLOADED").first] }
       attribute :missingImports, enforce: [:list]
@@ -209,6 +210,32 @@ module LinkedData
           logger.flush
         end
         return zip_dst
+      end
+
+      # accepts another submission in 'that'
+      def diff(logger, that)
+        begin
+          self.bring_remaining
+          self.bring(:diffFilePath)
+          self.bring(:uploadFilePath)
+          that.bring(:uploadFilePath)
+          LinkedData::Diff.logger = logger
+          bubastis = LinkedData::Diff::BubastisDiffCommand.new(
+              File.expand_path(self.uploadFilePath),
+              File.expand_path(that.uploadFilePath)
+          )
+          self.diffFilePath = bubastis.diff
+          self.save
+          #
+          # TODO: Add submission status value for 'CREATED_DIFF' or something?
+          #
+          logger.info("Processed diff")
+          logger.flush
+        rescue Exception => e
+          logger.info("Cannot process diff: " + e.message)
+          logger.flush
+          raise e
+        end
       end
 
       def generate_rdf(logger, file_path,reasoning=true)
