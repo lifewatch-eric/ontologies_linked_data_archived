@@ -73,9 +73,15 @@ module LinkedData
         page = page_classes.next? ? page + 1 : nil
       end while(!page.nil?)
       roots_depth = [0]
-      classes_children.each do |cls,children|
-        next if children.nil?
-        roots_depth << recursive_depth(cls,classes_children,1)
+      visited = Set.new
+      roots = submission.roots
+      if roots.length > 0
+        roots = roots.map { |x| x.id.to_s }
+        roots.each do |root|
+          next if classes_children[root].nil?
+          roots_depth << recursive_depth(root,classes_children,1,visited)
+          visited << root
+        end
       end
       cls_metrics[:maxDepth]=roots_depth.max
       if children_counts.length > 0
@@ -90,16 +96,13 @@ module LinkedData
       return cls_metrics
     end
 
-    def self.recursive_depth(cls,classes,depth)
-      #Structural reasoning should fix cycles
-      #but just in case a cap on recursivity
-      #we known max depth is SNOMED with 36
-      return 40 if depth > 40
+    def self.recursive_depth(cls,classes,depth,visited)
       children = classes[cls]
       branch_depts = [depth+1]
       children.each do |ch|
-        if classes[ch]
-          branch_depts << recursive_depth(ch,classes,depth+1)
+        if classes[ch] && !visited.include?(ch)
+          branch_depts << recursive_depth(ch,classes,depth+1,visited)
+          visited << ch
         end
       end
       return branch_depts.max
