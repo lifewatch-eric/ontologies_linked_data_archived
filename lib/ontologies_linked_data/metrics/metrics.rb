@@ -101,8 +101,8 @@ module LinkedData
       branch_depts = [depth+1]
       children.each do |ch|
         if classes[ch] && !visited.include?(ch)
-          branch_depts << recursive_depth(ch,classes,depth+1,visited)
           visited << ch
+          branch_depts << recursive_depth(ch,classes,depth+1,visited)
         end
       end
       return branch_depts.max
