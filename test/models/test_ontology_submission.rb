@@ -108,6 +108,14 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     submission_parse("TAO-TEST", "TAO TEST Bla", "./test/data/ontology_files/tao.obo", 55,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
+
+    #test for version info
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"],
+                                                       submissionId: 55)
+                                                     .include(:version)
+                                                     .first
+    assert sub.version == "2012-08-10"
+
     qthing = <<-eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT * WHERE {
@@ -169,12 +177,25 @@ eos
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
 
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
+                                                       submissionId: 11)
+                                                     .include(:version)
+                                                     .first
+    assert sub.version == "3.0"
+
     #This one has resources wih accents.
     submission_parse("ONTOMATEST",
                      "OntoMA TEST",
                      "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 15,
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
+
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "ONTOMATEST"],
+                                                       submissionId: 15)
+                                                     .include(:version)
+                                                     .first
+    assert sub.version["Version 1.1"]
+    assert sub.version["Date: 11-2011"]
   end
 
   def test_submission_diff
