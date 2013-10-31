@@ -16,9 +16,9 @@ module LinkedData
 
         def self.serialize_filter(inst)
           attributes = inst.class.hypermedia_settings[:serialize_default].dup
-          has_children = inst.loaded_attributes.include?(:children)
-          children_have_attributes = !(inst.children.first || Reply.new).loaded_attributes.empty?
-          attributes.delete(:children) unless children && children_have_attributes
+          children_loaded = inst.loaded_attributes.include?(:children)
+          children_have_attributes = children_loaded && !(inst.children.first || Reply.new).loaded_attributes.empty?
+          attributes.delete(:children) unless children_loaded && children_have_attributes
           attributes
         end
 
