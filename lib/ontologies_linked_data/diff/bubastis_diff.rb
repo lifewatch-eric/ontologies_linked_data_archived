@@ -66,9 +66,9 @@ module LinkedData
           options << "-2 #{Shellwords.escape(uri)}"
         end
         if not @output_repo.nil?
-          # TODO: Create more informative file name than 'diff.xml'?  (May require more work to maintain integrity.)
-          # Create output file 'diff.xml' in the repo for @input_fileA.
-          @file_diff_path = File.join(@output_repo, 'diff.xml')
+          # TODO: Ask James Malone to provide a command line option for xml output.
+          # Create output file in the repo for @input_fileA.
+          @file_diff_path = File.join(@output_repo, 'bubastis_diff.txt')
           options << "-t #{Shellwords.escape(@file_diff_path)}"
         end
         if options.length == 0

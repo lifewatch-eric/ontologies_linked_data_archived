@@ -271,6 +271,26 @@ module LinkedData
           logger.flush
         end
         delete_and_append(triples_file_path, logger, mime_type)
+        version_info = extract_version()
+        if version_info
+          self.version = version_info
+        end
+      end
+
+      def extract_version
+
+        query_version_info = <<eos
+SELECT ?versionInfo
+FROM #{self.id.to_ntriples}
+WHERE {
+<http://bioportal.bioontology.org/ontologies/versionSubject>
+ <http://www.w3.org/2002/07/owl#versionInfo> ?versionInfo .
+}
+eos
+        Goo.sparql_query_client.query(query_version_info).each_solution do |sol|
+          return sol[:versionInfo].to_s
+        end
+        return nil
       end
 
       def generate_missing_labels(logger, file_path)
@@ -494,6 +514,7 @@ eos
           run_metrics = options[:run_metrics] == false ? false : true
           reasoning = options[:reasoning] == false ? false : true
           archive = options[:archive] == true ? true : false
+          diff = options[:diff] == true ? true : false
 
           self.bring_remaining
           self.ontology.bring_remaining
@@ -608,6 +629,31 @@ eos
                 logger.flush
               end
             end
+
+            if diff
+              # Get previous submission from ontology.submissions
+              self.ontology.bring(:submissions)
+              submissions = self.ontology.submissions
+              submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
+              # Sort submissions in descending order of submissionId, extract last two submissions
+              recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
+              if recent_submissions.length > 1
+                # validate that the most recent submission is the current submission
+                if self.submissionId == recent_submissions.first.submissionId
+                  prev = recent_submissions.last
+                  # Ensure that prev is older than the current submission
+                  if self.submissionId > prev.submissionId
+                    # generate a diff
+                    begin
+                      self.diff(logger, prev)
+                    rescue
+                      # pass, self.diff logs all errors
+                    end
+                  end
+                end
+              end
+            end
+
           end
 
           self.save

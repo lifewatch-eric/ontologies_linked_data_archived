@@ -108,6 +108,14 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     submission_parse("TAO-TEST", "TAO TEST Bla", "./test/data/ontology_files/tao.obo", 55,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
+
+    #test for version info
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"],
+                                                       submissionId: 55)
+                                                     .include(:version)
+                                                     .first
+    assert sub.version == "2012-08-10"
+
     qthing = <<-eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT * WHERE {
@@ -169,15 +177,59 @@ eos
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
 
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
+                                                       submissionId: 11)
+                                                     .include(:version)
+                                                     .first
+    assert sub.version == "3.0"
+
     #This one has resources wih accents.
     submission_parse("ONTOMATEST",
                      "OntoMA TEST",
                      "./test/data/ontology_files/OntoMA.1.1_vVersion_1.1_Date__11-2011.OWL", 15,
                      process_rdf: true, index_search: true,
                      run_metrics: false, reasoning: true)
+
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "ONTOMATEST"],
+                                                       submissionId: 15)
+                                                     .include(:version)
+                                                     .first
+    assert sub.version["Version 1.1"]
+    assert sub.version["Date: 11-2011"]
   end
 
-  def test_submission_diff
+  def test_process_submission_diff
+    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    acronym = 'BRO'
+    # Create a 1st version for BRO
+    submission_parse(acronym, "BRO",
+                     "./test/data/ontology_files/BRO_v3.4.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false,
+                     diff: true, delete: false)
+    # Create a later version for BRO
+    submission_parse(acronym, "BRO",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 2,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false,
+                     diff: true, delete: false)
+    onts = LinkedData::Models::Ontology.find(acronym)
+    bro = onts.first
+    bro.bring(:submissions)
+    submissions = bro.submissions
+    submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
+    # Sort submissions in descending order of submissionId, extract last two submissions
+    recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
+    sub1 = recent_submissions.last  # descending order, so last is first submission
+    sub2 = recent_submissions.first # descending order, so first is last submission
+    assert(sub1.submissionId < sub2.submissionId, 'submissionId is in the wrong order')
+    assert(sub1.diffFilePath == nil, 'Should not create diff for first submission.')
+    assert(sub2.diffFilePath != nil, 'Failed to create diff for the second submission.')
+    # Cleanup
+    bro.submissions.each {|s| s.delete}
+  end
+
+  def test_submission_diff_across_ontologies
     #submission_parse( acronym, name, ontologyFile, id, parse_options={})
     # Create a 1st version for BRO
     submission_parse("BRO34", "BRO3.4",
