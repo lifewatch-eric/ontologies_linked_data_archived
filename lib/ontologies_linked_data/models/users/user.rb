@@ -1,7 +1,8 @@
 require 'bcrypt'
 require 'securerandom'
-require_relative 'authentication'
-require_relative 'role'
+require 'ontologies_linked_data/models/users/authentication'
+require 'ontologies_linked_data/models/users/role'
+require 'ontologies_linked_data/models/users/subscription'
 
 module LinkedData
   module Models
@@ -20,6 +21,7 @@ module LinkedData
       attribute :created, enforce: [:date_time], :default => lambda { |record| DateTime.now }
       attribute :passwordHash, enforce: [:existence]
       attribute :apikey, :default => lambda {|x| SecureRandom.uuid}
+      attribute :subscription, enforce: [:list, :subscription]
 
       # Hypermedia settings
       embed_values :role => [:role]

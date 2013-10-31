@@ -1,6 +1,6 @@
 require 'cgi'
-require_relative 'proposal'
-require_relative 'reply'
+require 'ontologies_linked_data/models/notes/proposal'
+require 'ontologies_linked_data/models/notes/reply'
 
 module LinkedData
   module Models
@@ -30,6 +30,12 @@ module LinkedData
         note.bring(relatedOntology: [:acronym]) unless note.loaded_attributes.include?(:relatedOntology)
         note.relatedOntology.each {|o| o.bring(:acronym) unless o.loaded_attributes.include?(:acronym)}
         [note.relatedOntology.map {|o| o.acronym}.join(":")] rescue []
+      end
+
+      def save(*args)
+        super(*args)
+        LinkedData::Utils::Notifications.new_note(self) rescue nil
+        return self
       end
 
       def delete(*args)

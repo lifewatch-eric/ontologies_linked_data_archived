@@ -9,6 +9,7 @@ if ENV["COVERAGE"].eql?("true")
   end
 end
 
+require_relative "test_log_file"
 require_relative "../lib/ontologies_linked_data"
 require_relative "../config/config.rb"
 

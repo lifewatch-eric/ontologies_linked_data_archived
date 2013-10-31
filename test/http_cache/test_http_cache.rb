@@ -3,13 +3,19 @@ require_relative "../test_case"
 class TestHTTPCache < LinkedData::TestCase
 
   def self.before_suite
+    @@cache_setting = LinkedData.settings.enable_http_cache
+    LinkedData.settings.enable_http_cache = true
     self.new("before_suite").delete_ontologies_and_submissions
     @@ontology, @@cls = self.new("before_suite")._ontology_and_class
   end
 
   def self.after_suite
-    self.new("after_suite").delete_ontologies_and_submissions
-    LinkedData::HTTPCache.invalidate_all
+    begin
+      self.new("after_suite").delete_ontologies_and_submissions
+      LinkedData::HTTPCache.invalidate_all
+    ensure
+      LinkedData.settings.enable_http_cache = @@cache_setting
+    end
   end
 
   def _ontology_and_class

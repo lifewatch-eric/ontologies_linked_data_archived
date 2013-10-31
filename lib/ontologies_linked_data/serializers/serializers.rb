@@ -1,8 +1,8 @@
-require_relative '../media_types'
-require_relative 'xml'
-require_relative 'json'
-require_relative 'jsonp'
-require_relative 'html'
+require 'ontologies_linked_data/media_types'
+require 'ontologies_linked_data/serializers/xml'
+require 'ontologies_linked_data/serializers/json'
+require 'ontologies_linked_data/serializers/jsonp'
+require 'ontologies_linked_data/serializers/html'
 
 module LinkedData
   module Serializers

@@ -5,10 +5,27 @@ module LinkedData
         "UPLOADED", "ERROR_UPLOADED",
         "RDF", "ERROR_RDF",
         "RDF_LABELS", "ERROR_RDF_LABELS",
+        "OBSOLETE", "ERROR_OBSOLETE",
         "INDEXED", "ERROR_INDEXED",
         "METRICS",  "ERROR_METRICS",
         "ANNOTATOR", "ERROR_ANNOTATOR",
         "ARCHIVED", "ERROR_ARCHIVED"
+      ]
+
+      USER_READABLE = {
+        "RDF"             => "Parsed successfully",
+        "RDF_ERROR"       => "Error parsing",
+        "INDEXED"         => "Indexed for search",
+        "ERROR_INDEXED"   => "Error indexing for search",
+        "METRICS"         => "Class metrics calculated",
+        "ERROR_METRICS"   => "Error calculating class metrics",
+        "ANNOTATOR"       => "Processed for use in Annotator",
+        "ERROR_ANNOTATOR" => "Error processing for use in Annotator"
+      }
+
+      USER_IGNORE = [
+        "UPLOADED", "ERROR_UPLOADED",
+        "RDF_LABELS", "ERROR_RDF_LABELS",
       ]
 
       model :submission_status, name_with: :code
@@ -42,6 +59,13 @@ module LinkedData
 
       def get_code_from_id
         return self.id.to_s.split("/")[-1]
+      end
+
+      def self.readable_statuses(statuses)
+        statuses = statuses.map {|s| s.code}
+        statuses = statuses - USER_IGNORE
+        statuses.sort! {|a,b| VALUES.index(a) <=> VALUES.index(b)}
+        statuses.map {|s| USER_READABLE[s] || s.capitalize}
       end
 
       def self.status_ready?(status)

@@ -15,8 +15,10 @@ module LinkedData
         embed :children
 
         def self.serialize_filter(inst)
-          attributes = self.hypermedia_settings[:serialize_default].dup
-          attributes.delete(:children) unless inst.loaded_attributes.include?(:children) && !(inst.children.first || self.new).loaded_attributes.empty?
+          attributes = inst.class.hypermedia_settings[:serialize_default].dup
+          has_children = inst.loaded_attributes.include?(:children)
+          children_have_attributes = !(inst.children.first || Reply.new).loaded_attributes.empty?
+          attributes.delete(:children) unless children && children_have_attributes
           attributes
         end
 

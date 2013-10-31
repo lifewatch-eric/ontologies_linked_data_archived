@@ -177,6 +177,32 @@ eos
                      run_metrics: false, reasoning: true)
   end
 
+  def test_submission_diff
+    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    # Create a 1st version for BRO
+    submission_parse("BRO34", "BRO3.4",
+                     "./test/data/ontology_files/BRO_v3.4.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    onts = LinkedData::Models::Ontology.find('BRO34')
+    bro34 = onts.first
+    bro34.bring(:submissions)
+    sub34 = bro34.submissions.first
+    # Create a later version for BRO
+    submission_parse("BRO35", "BRO3.5",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    onts = LinkedData::Models::Ontology.find('BRO35')
+    bro35 = onts.first
+    bro35.bring(:submissions)
+    sub35 = bro35.submissions.first
+    # Calculate the ontology diff: bro35 - bro34
+    tmp_log = Logger.new(TestLogFile.new)
+    sub35.diff(tmp_log, sub34)
+    assert(sub35.diffFilePath != nil, 'Failed to create submission diff file.')
+  end
+
   def test_submission_parse_zip
     return if ENV["SKIP_PARSING"]
 
@@ -207,9 +233,15 @@ eos
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
-    ont_submision.process_submission(Logger.new(STDOUT),
-                                     process_rdf: true, index_search: false,
-                                     run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      ont_submision.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
@@ -220,7 +252,7 @@ eos
 
   def test_download_ontology_file
     begin
-      server_port = 3457
+      server_port = Random.rand(49152..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
       server_url = 'http://localhost:' + server_port.to_s
       server_thread = Thread.new do
         Rack::Server.start(
@@ -264,6 +296,55 @@ eos
     classes.each do |cls|
       assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
       assert_instance_of String, cls.prefLabel
+    end
+  end
+
+  def test_custom_obsolete_property
+    return if ENV["SKIP_PARSING"]
+
+    acr = "OBSPROPS"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss[0]
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
+        assert c.deprecated
+      else
+        assert c.deprecated.nil?
+      end
+    end
+  end
+
+  def test_custom_obsolete_branch
+    return if ENV["SKIP_PARSING"]
+
+    acr = "OBSBRANCH"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss[0]
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["#class2"] || c.id.to_s["#class6"] ||
+         c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
+        assert c.deprecated
+      else
+        assert c.deprecated.nil?
+      end
     end
   end
 
@@ -400,9 +481,14 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),
-                           process_rdf: true, index_search: false,
-                           run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      sub.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -462,9 +548,14 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),
-                           process_rdf: true, index_search: false,
-                           run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      sub.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
@@ -510,9 +601,14 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    sub.process_submission(Logger.new(STDOUT),
-                           process_rdf: true, index_search: false,
-                           run_metrics: false, reasoning: true)
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      sub.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
     page_classes = LinkedData::Models::Class.in(sub)
@@ -603,7 +699,7 @@ eos
 
     assert metrics.classes == 486
     assert metrics.properties == 63
-    assert metrics.individuals == 80
+    assert metrics.individuals == 82
     assert metrics.classesWithOneChild == 14
     #cause it has not the subproperty added
     assert metrics.classesWithNoDefinition == 474

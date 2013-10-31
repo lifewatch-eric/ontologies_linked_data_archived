@@ -192,7 +192,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
 
     $MAPPING_RELOAD_LABELS = true
-    loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      loom = LinkedData::Mappings::Loom.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     loom.start()
 
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
@@ -242,7 +249,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
 
     process_count = LinkedData::Models::MappingProcess.where.all.length
-    loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      loom = LinkedData::Mappings::Loom.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     loom.start()
     new_term_mapping_count = LinkedData::Models::TermMapping.where.all.length
     #this process only adds two TermMappings
@@ -282,7 +296,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
 
     #one new mapping is created but TermMappings are the same
-    loom = LinkedData::Mappings::Loom.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      loom = LinkedData::Mappings::Loom.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     loom.start()
     #same number - new mappingterms no created
     assert new_term_mapping_count == 14
@@ -320,7 +341,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
 
     $MAPPING_RELOAD_LABELS = true
-    cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      cui = LinkedData::Mappings::CUI.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     cui.start()
 
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
@@ -358,7 +386,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
     $MAPPING_RELOAD_LABELS = false
-    cui = LinkedData::Mappings::CUI.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      cui = LinkedData::Mappings::CUI.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     cui.start()
     assert LinkedData::Models::MappingProcess.all.length == 1
     assert LinkedData::Models::Mapping.all.length == 4
@@ -394,7 +429,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0] #cno
 
     $MAPPING_RELOAD_LABELS = true
-    cui = LinkedData::Mappings::SameURI.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      cui = LinkedData::Mappings::SameURI.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     cui.start()
 
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
@@ -427,7 +469,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
 
     $MAPPING_RELOAD_LABELS = true
-    xref = LinkedData::Mappings::XREF.new(ont1, ont2,Logger.new(STDOUT))
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      xref = LinkedData::Mappings::XREF.new(ont1, ont2,tmp_log)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
     xref.start()
 
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
