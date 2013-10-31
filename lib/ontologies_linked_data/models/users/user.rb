@@ -1,8 +1,8 @@
 require 'bcrypt'
 require 'securerandom'
-require_relative 'authentication'
-require_relative 'role'
-require_relative 'subscription'
+require 'ontologies_linked_data/models/users/authentication'
+require 'ontologies_linked_data/models/users/role'
+require 'ontologies_linked_data/models/users/subscription'
 
 module LinkedData
   module Models

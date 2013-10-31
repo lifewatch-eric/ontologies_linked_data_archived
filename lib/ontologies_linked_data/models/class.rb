@@ -1,6 +1,6 @@
 require "set"
 require "cgi"
-require_relative "notes/note"
+require "ontologies_linked_data/models/notes/note"
 
 module LinkedData
   module Models

@@ -1,4 +1,4 @@
-require_relative 'proposal_type'
+require 'ontologies_linked_data/models/notes/proposal_type'
 
 module LinkedData
   module Models
