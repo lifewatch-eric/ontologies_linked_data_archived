@@ -1,6 +1,6 @@
 require 'cgi'
-require_relative 'proposal'
-require_relative 'reply'
+require 'ontologies_linked_data/models/notes/proposal'
+require 'ontologies_linked_data/models/notes/reply'
 
 module LinkedData
   module Models
