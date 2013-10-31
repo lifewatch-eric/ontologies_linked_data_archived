@@ -271,6 +271,26 @@ module LinkedData
           logger.flush
         end
         delete_and_append(triples_file_path, logger, mime_type)
+        version_info = extract_version()
+        if version_info
+          self.version = version_info
+        end
+      end
+
+      def extract_version
+        
+        query_version_info = <<eos
+SELECT ?versionInfo 
+FROM #{self.id.to_ntriples}
+WHERE {
+<http://bioportal.bioontology.org/ontologies/versionSubject>
+ <http://www.w3.org/2002/07/owl#versionInfo> ?versionInfo .
+}
+eos
+        Goo.sparql_query_client.query(query_version_info).each_solution do |sol|
+          return sol[:versionInfo].to_s
+        end
+        return nil
       end
 
       def generate_missing_labels(logger, file_path)
