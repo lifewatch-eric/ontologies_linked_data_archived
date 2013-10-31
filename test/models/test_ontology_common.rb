@@ -36,49 +36,52 @@ module LinkedData
     #   index_search      = true
     #   run_metrics       = true
     #   reasoning         = true
+    #   diff              = false
+    #   delete            = true  # delete any existing submissions
     ##############################################
     def submission_parse( acronym, name, ontologyFile, id, parse_options={})
       return if ENV["SKIP_PARSING"]
       parse_options[:process_rdf] = true
-
-      bro = LinkedData::Models::Ontology.find(acronym).first
-      if not bro.nil?
-        bro.bring(:submissions)
-        sub = bro.submissions || []
-        sub.each do |s|
-          s.delete
+      parse_options[:delete].nil? && parse_options[:delete] = true
+      if parse_options[:delete]
+        ont = LinkedData::Models::Ontology.find(acronym).first
+        if not ont.nil?
+          ont.bring(:submissions)
+          sub = ont.submissions || []
+          sub.each do |s|
+            s.delete
+          end
         end
       end
-      ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
-      assert (not ont_submision.valid?)
-      assert_equal 4, ont_submision.errors.length
+      ont_submission =  LinkedData::Models::OntologySubmission.new({ :submissionId => id})
+      assert (not ont_submission.valid?)
+      assert_equal 4, ont_submission.errors.length
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id, ontologyFile)
-      ont_submision.uploadFilePath = uploadFilePath
+      ont_submission.uploadFilePath = uploadFilePath
       ontology_type = "OWL"
       if (ontologyFile && ontologyFile.end_with?("obo"))
         ontology_type = "OBO"
       end
-      owl, bro, user, contact = submission_dependent_objects(ontology_type, acronym, "test_linked_models", name)
-      ont_submision.contact = [contact]
-      ont_submision.released = DateTime.now - 4
-      ont_submision.hasOntologyLanguage = owl
-      ont_submision.ontology = bro
+      owl, ont, user, contact = submission_dependent_objects(ontology_type, acronym, "test_linked_models", name)
+      ont_submission.contact = [contact]
+      ont_submission.released = DateTime.now - 4
+      ont_submission.hasOntologyLanguage = owl
+      ont_submission.ontology = ont
       masterFileName = parse_options.delete :masterFileName
       if masterFileName
-        ont_submision.masterFileName = masterFileName
+        ont_submission.masterFileName = masterFileName
       end
-      assert (ont_submision.valid?)
-      ont_submision.save
+      assert (ont_submission.valid?)
+      ont_submission.save
 
-      assert_equal true, ont_submision.exist?(reload=true)
+      assert_equal true, ont_submission.exist?(reload=true)
       begin
         tmp_log = Logger.new(TestLogFile.new)
-        ont_submision.process_submission(tmp_log, parse_options)
+        ont_submission.process_submission(tmp_log, parse_options)
       rescue Exception => e
         puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
         raise e
       end
-
     end
 
     def init_test_ontology_msotest(acr)
@@ -94,9 +97,9 @@ module LinkedData
         end
         ont.delete
       end
-      ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
-      assert (not ont_submision.valid?)
-      assert_equal 4, ont_submision.errors.length
+      ont_submission =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
+      assert (not ont_submission.valid?)
+      assert_equal 4, ont_submission.errors.length
       if acr["OBS"]
         file_path = "./test/data/ontology_files/custom_obsolete.owl"
       else
@@ -104,39 +107,39 @@ module LinkedData
       end
 
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
-      ont_submision.uploadFilePath = uploadFilePath
+      ont_submission.uploadFilePath = uploadFilePath
       owl, ont, user, contact = submission_dependent_objects("OWL", acr, "test_linked_models", "some ont created by mso for testing")
       ont.administeredBy = [user]
-      ont_submision.contact = [contact]
-      ont_submision.released = DateTime.now - 4
-      ont_submision.hasOntologyLanguage = owl
-      ont_submision.ontology = ont
+      ont_submission.contact = [contact]
+      ont_submission.released = DateTime.now - 4
+      ont_submission.hasOntologyLanguage = owl
+      ont_submission.ontology = ont
       if acr["OBS"]
         if acr["BRANCH"]
-          ont_submision.obsoleteParent =
+          ont_submission.obsoleteParent =
             RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#class1")
         else
-          ont_submision.obsoleteProperty =
+          ont_submission.obsoleteProperty =
             RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mydeprecated")
         end
       end
-      ont_submision.prefLabelProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
-      ont_submision.synonymProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel")
-      ont_submision.definitionProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myDefinition")
-      ont_submision.authorProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myAuthor")
-      assert (ont_submision.valid?)
-      ont_submision.save
-      assert_equal true, ont_submision.exist?(reload=true)
+      ont_submission.prefLabelProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myPrefLabel")
+      ont_submission.synonymProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#mySynonymLabel")
+      ont_submission.definitionProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myDefinition")
+      ont_submission.authorProperty = RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#myAuthor")
+      assert (ont_submission.valid?)
+      ont_submission.save
+      assert_equal true, ont_submission.exist?(reload=true)
       parse_options = {process_rdf: true, index_search: true, run_metrics: true, reasoning: true}
       begin
         tmp_log = Logger.new(TestLogFile.new)
-        ont_submision.process_submission(tmp_log, parse_options)
+        ont_submission.process_submission(tmp_log, parse_options)
       rescue Exception => e
         puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
         raise e
       end
 
-      roots = ont_submision.roots
+      roots = ont_submission.roots
       #class99 is equilent to intersection of ...
       #it shouldnt be at the root
       if acr["OBSPROPS"]
@@ -157,7 +160,7 @@ module LinkedData
       custom_props.each do |p|
         query = <<eos
 SELECT * WHERE {
-    GRAPH #{ont_submision.id.to_ntriples} {
+    GRAPH #{ont_submission.id.to_ntriples} {
         <#{p}> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> ?super .
     } }
 eos

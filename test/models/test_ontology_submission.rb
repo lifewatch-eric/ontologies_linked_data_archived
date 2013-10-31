@@ -198,7 +198,38 @@ eos
     assert sub.version["Date: 11-2011"]
   end
 
-  def test_submission_diff
+  def test_process_submission_diff
+    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    acronym = 'BRO'
+    # Create a 1st version for BRO
+    submission_parse(acronym, "BRO",
+                     "./test/data/ontology_files/BRO_v3.4.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false,
+                     diff: true, delete: false)
+    # Create a later version for BRO
+    submission_parse(acronym, "BRO",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 2,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false,
+                     diff: true, delete: false)
+    onts = LinkedData::Models::Ontology.find(acronym)
+    bro = onts.first
+    bro.bring(:submissions)
+    submissions = bro.submissions
+    submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
+    # Sort submissions in descending order of submissionId, extract last two submissions
+    recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
+    sub1 = recent_submissions.last  # descending order, so last is first submission
+    sub2 = recent_submissions.first # descending order, so first is last submission
+    assert(sub1.submissionId < sub2.submissionId, 'submissionId is in the wrong order')
+    assert(sub1.diffFilePath == nil, 'Should not create diff for first submission.')
+    assert(sub2.diffFilePath != nil, 'Failed to create diff for the second submission.')
+    # Cleanup
+    bro.submissions.each {|s| s.delete}
+  end
+
+  def test_submission_diff_across_ontologies
     #submission_parse( acronym, name, ontologyFile, id, parse_options={})
     # Create a 1st version for BRO
     submission_parse("BRO34", "BRO3.4",
