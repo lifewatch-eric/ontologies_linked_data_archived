@@ -108,6 +108,7 @@ module LinkedData
                                                       batch_triples_file)
         end
         if batch_triples_file
+          batch_triples_file.flush()
           batch_triples_file.close()
           @logger.info("Appending triples in batch ...")
           tt = Time.now

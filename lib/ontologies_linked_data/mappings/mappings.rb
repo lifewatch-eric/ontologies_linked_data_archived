@@ -60,7 +60,13 @@ module Mappings
       triple =
       [mapping_id.to_ntriples,
        LinkedData::Models::Mapping.attribute_uri(:process).to_ntriples,
-       process.id.to_ntriples ].join(" ") + " .\n"
+       process.id.to_ntriples,
+       LinkedData::Models::Mapping.type_uri.to_ntriples + " .\n" ].join(" ")
+      batch_update_file.write(triple)
+      [mapping_id.to_ntriples,
+       "<http://data.bioontology.org/metadata/bogusPredicate>",
+       process.id.to_ntriples,
+       LinkedData::Models::Mapping.type_uri.to_ntriples + " .\n" ].join(" ")
       batch_update_file.write(triple)
       batch_update_file.flush()
     end
