@@ -624,6 +624,19 @@ eos
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
 
+    #test for ontology headers added to the graph
+    sparql_query = <<eos
+SELECT * WHERE {
+GRAPH <http://data.bioontology.org/ontologies/AERO-TST/submissions/10>
+{ <http://purl.obolibrary.org/obo/aero.owl> ?p ?o .}}
+eos
+    count_headers = 0
+    Goo.sparql_query_client.query(sparql_query).each_solution do |sol|
+      count_headers += 1
+      assert sol[:p].to_s["contributor"] || sol[:p].to_s["comment"] || sol[:p].to_s["definition"]
+    end
+    assert count_headers == 4
+
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
                                              .read_only
