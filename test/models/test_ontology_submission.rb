@@ -463,45 +463,6 @@ eos
     ontology.delete
   end
 
-  def test_submission_parse_emo
-    return if ENV["SKIP_PARSING"]
-    acronym = "EMO-TST"
-    name = "EMO Bla"
-    ontologyFile = "./test/data/ontology_files/emo_1.1.owl"
-    id = 10
-
-    emo = LinkedData::Models::Ontology.find(acronym)
-    if not emo.nil?
-      sub = emo.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
-
-    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
-    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
-    ont_submision.uploadFilePath = uploadFilePath
-    owl, emo, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
-    ont_submision.contact = [contact]
-    ont_submision.released = DateTime.now - 4
-    ont_submision.hasOntologyLanguage = owl
-    ont_submision.ontology = emo
-    assert (ont_submision.valid?)
-    ont_submision.save
-
-    sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
-    sub = sub[0]
-
-    sub = LinkedData::Models::Ontology.find(acronym).first
-    sub.bring(:submissions)
-    if not sub.nil?
-      sub = sub.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
-  end
-
   #escaping sequences
   def test_submission_parse_sbo
     return if ENV["SKIP_PARSING"]
@@ -578,9 +539,9 @@ eos
     ontologyFile = "./test/data/ontology_files/CNO_05.owl"
     id = 10
 
-    emo = LinkedData::Models::Ontology.find(acronym)
-    if not emo.nil?
-      sub = emo.submissions || []
+    cno = LinkedData::Models::Ontology.find(acronym)
+    if not cno.nil?
+      sub = cno.submissions || []
       sub.each do |s|
         s.load
         s.delete
@@ -590,10 +551,10 @@ eos
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
     ont_submision.uploadFilePath = uploadFilePath
-    owl, emo, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
+    owl, cno, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
     ont_submision.released = DateTime.now - 4
     ont_submision.hasOntologyLanguage = owl
-    ont_submision.ontology = emo
+    ont_submision.ontology = cno
     ont_submision.contact = [contact]
     assert (ont_submision.valid?)
     ont_submision.save
@@ -612,8 +573,8 @@ eos
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
-    emo.bring(:submissions)
-    sub = emo.submissions || []
+    cno.bring(:submissions)
+    sub = cno.submissions || []
     sub.each do |s|
       s.delete
     end
