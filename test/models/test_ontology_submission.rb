@@ -123,9 +123,19 @@ SELECT DISTINCT * WHERE {
 eos
     count = 0
     Goo.sparql_query_client.query(qthing).each_solution do |sol|
-      assert sol[:x].to_s["TAO_0000732"]
-      assert !sol[:x].to_s["Thing"]
       count += 1
+    end
+    assert count == 0
+
+    qthing = <<-eos
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT * WHERE {
+  <http://purl.obolibrary.org/obo/TAO_0001044> <http://data.bioontology.org/metadata/treeView> ?x . }
+eos
+    count = 0
+    Goo.sparql_query_client.query(qthing).each_solution do |sol|
+      count += 1
+      assert sol[:x].to_s["TAO_0000732"]
     end
     assert count == 1
 
