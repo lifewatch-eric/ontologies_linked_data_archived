@@ -21,19 +21,26 @@ module LinkedData
 
       attribute :notation, namespace: :skos
 
-      attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
+      attribute :parents, namespace: :rdfs, 
+                  property: lambda {|x| tree_view_property(x) },
+                  enforce: [:list, :class]
 
       #transitive parent
-      attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
+      attribute :ancestors, namespace: :rdfs, 
+                  property: :subClassOf,
+                  enforce: [:list, :class],
                   transitive: true
 
-      attribute :children, namespace: :rdfs, property: :subClassOf,
+      attribute :children, namespace: :rdfs,
+                  property: lambda {|x| tree_view_property(x) },
                   inverse: { on: :class , :attribute => :parents }
 
       #transitive children
-      attribute :descendants, namespace: :rdfs, property: :subClassOf,
-                    inverse: { on: :class , attribute: :parents },
-                    transitive: true
+      attribute :descendants, namespace: :rdfs,
+                  enforce: [:list, :class],
+                  property: :subClassOf,
+                  inverse: { on: :class , attribute: :parents },
+                  transitive: true
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
@@ -70,6 +77,10 @@ module LinkedData
       cache_segment_instance lambda {|cls| segment_instance(cls) }
       cache_segment_keys [:class]
       cache_load submission: [ontology: [:acronym]]
+
+      def self.tree_view_property(*args)
+        return RDF::RDFS[:subClassOf]
+      end
 
       def self.segment_instance(cls)
         cls.submission.ontology.bring(:acronym) unless cls.submission.ontology.loaded_attributes.include?(:acronym)
