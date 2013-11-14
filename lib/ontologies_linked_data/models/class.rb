@@ -22,7 +22,7 @@ module LinkedData
       attribute :notation, namespace: :skos
 
       attribute :parents, namespace: :rdfs, 
-                  property: lambda {|x| tree_view_property(x) },
+                  property: lambda {|x| self.tree_view_property(x) },
                   enforce: [:list, :class]
 
       #transitive parent
@@ -32,7 +32,7 @@ module LinkedData
                   transitive: true
 
       attribute :children, namespace: :rdfs,
-                  property: lambda {|x| tree_view_property(x) },
+                  property: lambda {|x| self.tree_view_property(x) },
                   inverse: { on: :class , :attribute => :parents }
 
       #transitive children
