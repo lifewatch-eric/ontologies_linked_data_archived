@@ -21,6 +21,23 @@ module LinkedData
       def skos?
         return id.to_s.end_with? "SKOS"
       end
+
+      def tree_property
+        if obo?
+          return Goo.vocabulary(:metadata)[:treeView]
+        end
+        if skos?
+          return RDF::SKOS[:narrower]
+        end
+        return RDF::RDFS[:subClassOf]
+      end
+
+      def class_type
+        if skos?
+          return RDF::SKOS[:Concept]
+        end
+        return RDF::OWL[:Class]
+      end
     end
   end
 end
