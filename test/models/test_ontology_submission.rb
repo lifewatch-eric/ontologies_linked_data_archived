@@ -365,12 +365,12 @@ eos
     ont_sub = oss[0]
     ont_sub.bring_remaining
     assert ont_sub.ready?
-    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :obsolete).each do |c|
       assert (not c.prefLabel.nil?)
       if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
-        assert c.deprecated
+        assert c.obsolete
       else
-        assert c.deprecated.nil?
+        assert c.obsolete.nil?
       end
     end
   end
@@ -389,13 +389,13 @@ eos
     ont_sub = oss[0]
     ont_sub.bring_remaining
     assert ont_sub.ready?
-    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :deprecated).each do |c|
+    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :obsolete).each do |c|
       assert (not c.prefLabel.nil?)
       if c.id.to_s["#class2"] || c.id.to_s["#class6"] ||
          c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
-        assert c.deprecated
+        assert c.obsolete
       else
-        assert c.deprecated.nil?
+        assert c.obsolete.nil?
       end
     end
   end

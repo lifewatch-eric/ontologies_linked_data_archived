@@ -17,7 +17,7 @@ module LinkedData
       attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
       attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
-      attribute :deprecated, namespace: :owl
+      attribute :obsolete, namespace: :owl, property: :deprecated, alias: true
 
       attribute :notation, namespace: :skos
 
