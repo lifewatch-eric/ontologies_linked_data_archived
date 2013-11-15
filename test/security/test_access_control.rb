@@ -32,7 +32,7 @@ class TestAccessControl < LinkedData::TestCase
     @@restricted_ont.save
     @@restricted_user = @@restricted_ont.administeredBy.first
     @@restricted_user.bring_remaining
-    @@restricted_sub = @@restricted_ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
+    @@restricted_sub = @@restricted_ont.latest_submission(status: :any).bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
 
     @@ont = onts.shift
     @@ont.bring(:submissions)
