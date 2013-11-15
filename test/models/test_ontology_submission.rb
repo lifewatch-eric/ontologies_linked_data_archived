@@ -129,7 +129,7 @@ eos
 
     qthing = <<-eos
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT DISTINCT * WHERE {
+  SELECT DISTINCT * WHERE {
   <http://purl.obolibrary.org/obo/TAO_0001044> <http://data.bioontology.org/metadata/treeView> ?x . }
 eos
     count = 0
@@ -162,6 +162,24 @@ eos
       assert cls.notation[-6..-1] == cls.id.to_s[-6..-1]
     end
 
+
+    # This is testing that treeView is used to traverse the hierarchy
+    sub.bring(:hasOntologyLanguage)
+    assert sub.hasOntologyLanguage.tree_property == Goo.vocabulary(:metadata)[:treeView]
+
+    bm = LinkedData::Models::Class
+               .find(RDF::URI.new("http://purl.obolibrary.org/obo/GO_0070977"))
+               .in(sub)
+               .include(:prefLabel,:children,:parents)
+               .first
+    assert bm.children.first.id == RDF::URI.new("http://purl.obolibrary.org/obo/GO_0043931")
+    assert bm.parents.first.id == RDF::URI.new("http://purl.obolibrary.org/obo/GO_0060348")
+    roots = sub.roots
+    assert roots.length == 4
+    assert roots.map { |x| x.id.to_s }.sort == ["http://purl.obolibrary.org/obo/PATO_0000001",
+      "http://purl.obolibrary.org/obo/PATO_0001300",
+      "http://purl.obolibrary.org/obo/CARO_0000000",
+      "http://purl.obolibrary.org/obo/GO_0008150"].sort 
   end
 
   def test_submission_parse_subfolders_zip
