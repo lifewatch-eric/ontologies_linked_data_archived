@@ -1,5 +1,5 @@
-require_relative "media_types"
-require_relative "serializers/serializers"
+require "ontologies_linked_data/media_types"
+require "ontologies_linked_data/serializers/serializers"
 
 module LinkedData
   class Serializer
