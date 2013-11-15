@@ -5,7 +5,7 @@ require 'rack'
 class TestOntology < LinkedData::TestCase
 
   def self.before_suite
-    @@port = Random.rand(49152..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
+    @@port = Random.rand(55000..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
     @@thread = Thread.new do
       Rack::Server.start(
         app: lambda do |e|
