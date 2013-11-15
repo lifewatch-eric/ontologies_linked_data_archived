@@ -79,6 +79,13 @@ module LinkedData
       cache_load submission: [ontology: [:acronym]]
 
       def self.tree_view_property(*args)
+        submission = args.first
+        unless submission.loaded_attributes.include?(:hasOntologyLanguage)
+          submission.bring(:hasOntologyLanguage)
+        end
+        if submission.hasOntologyLanguage
+          return submission.hasOntologyLanguage.tree_property
+        end
         return RDF::RDFS[:subClassOf]
       end
 
