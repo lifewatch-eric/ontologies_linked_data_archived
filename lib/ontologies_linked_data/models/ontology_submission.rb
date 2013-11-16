@@ -761,9 +761,9 @@ eos
         roots = []
         where = LinkedData::Models::Class.in(self)
                      .models(classes)
-                     .include(:prefLabel, :definition, :synonym, :deprecated)
+                     .include(:prefLabel, :definition, :synonym, :obsolete)
         if extra_include
-          [:prefLabel, :definition, :synonym, :deprecated, :childrenCount].each do |x|
+          [:prefLabel, :definition, :synonym, :obsolete, :childrenCount].each do |x|
             extra_include.delete x
           end
         end
@@ -786,7 +786,7 @@ eos
           LinkedData::Models::Class.partially_load_children(roots,99,self)
         end
         classes.each do |c|
-          roots << c if (c.deprecated.nil?) || (c.deprecated == false)
+          roots << c if (c.obsolete.nil?) || (c.obsolete == false)
         end
         return roots
       end
