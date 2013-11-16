@@ -9,7 +9,20 @@ module LinkedData
 
     class Class < LinkedData::Models::Base
       model :class, name_with: :id, collection: :submission,
-            namespace: :owl, :schemaless => :true
+            namespace: :owl, :schemaless => :true,
+            rdf_type: lambda { |*x| self.class_rdf_type(x) }
+            
+      def self.class_rdf_type(*args)
+        submission = args.flatten.first
+        return RDF::OWL[:Class] if submission.nil?
+        unless submission.loaded_attributes.include?(:hasOntologyLanguage)
+          submission.bring(:hasOntologyLanguage)
+        end
+        if submission.hasOntologyLanguage
+          return submission.hasOntologyLanguage.class_type
+        end
+        return RDF::OWL[:Class]
+      end
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
