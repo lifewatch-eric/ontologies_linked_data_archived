@@ -26,7 +26,6 @@
      xmlns:skos="http://www.w3.org/2004/02/skos/core#"
      xmlns:CL="http://purl.org/obo/owl/CL#">
     <owl:Ontology rdf:about="&efo;skos/gwas">
-        <owl:imports rdf:resource="http://www.ebi.ac.uk/efo/"/>
         <owl:imports rdf:resource="http://www.w3.org/2004/02/skos/core"/>
     </owl:Ontology>
     
