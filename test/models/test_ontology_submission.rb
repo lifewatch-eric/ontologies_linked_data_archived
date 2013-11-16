@@ -104,6 +104,21 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert_instance_of String, ont_submision.errors[:uploadFilePath][0]
   end
 
+  def test_skos_ontology
+    submission_parse("SKOS-TEST", 
+                     "SKOS TEST Bla", 
+                     "./test/data/ontology_files/efo_gwas.skos.owl", 987,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: true)
+
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "SKOS-TEST"],
+                                                       submissionId: 987)
+                                                     .include(:version)
+                                                     .first
+    sub.roots
+    binding.pry
+  end
+
   def test_obo_part_of
     submission_parse("TAO-TEST", "TAO TEST Bla", "./test/data/ontology_files/tao.obo", 55,
                      process_rdf: true, index_search: false,
