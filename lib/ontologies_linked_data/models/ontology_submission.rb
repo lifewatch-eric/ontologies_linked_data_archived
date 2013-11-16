@@ -770,8 +770,12 @@ eos
                                              .disable_rules
                                              .all
         else
-          root_skos = 
-            "SELECT * WHERE { GRAPH #{self.id.to_ntriples} { [] skos:hasTopConcept ?root }"
+          root_skos = <<eos
+SELECT DISTINCT ?root WHERE {
+GRAPH #{self.id.to_ntriples} { 
+  ?x #{RDF::SKOS[:hasTopConcept].to_ntriples} ?root .
+}}
+eos
           #needs to get cached
           class_ids = []
           Goo.sparql_query_client.query(root_skos, { :graphs => [self.id] }).each_solution do |s|
