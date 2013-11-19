@@ -4,7 +4,6 @@ module LinkedData
   module Serializers
     class XML
       def self.serialize(obj, options)
-        links = {}
         formatted_hash = obj.to_flex_hash(options) do |hash, hashed_obj|
           if hashed_obj.is_a?(Goo::Base::Resource) || hashed_obj.is_a?(Struct)
             current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
@@ -19,7 +18,7 @@ module LinkedData
             show_links = options[:params].nil? || options[:params]["no_links"].nil? || !options[:params]["no_links"].eql?("true")
             if show_links
               links_xml = generate_links(hashed_obj)
-              links[hash["id"]] = links_xml unless links_xml.empty?
+              hash["links"] = links_xml unless links_xml.empty?
             end
           end
         end
@@ -27,10 +26,10 @@ module LinkedData
         cls = enumerable ? obj.first.class : obj.class
         cls = obj.first.klass if enumerable && obj.first.is_a?(Struct)
         cls = options[:class_name] if options[:class_name]
-        to_xml(formatted_hash, convert_class_name(cls), links).to_s
+        to_xml(formatted_hash, convert_class_name(cls)).to_s
       end
 
-      def self.to_xml(object, type, links = nil)
+      def self.to_xml(object, type, links = {})
         doc = ::XML::Document.new
         if object.nil? || object.respond_to?("empty?") && object.empty?
           doc.root = ::XML::Node.new("empty")
