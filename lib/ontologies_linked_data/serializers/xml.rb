@@ -23,7 +23,9 @@ module LinkedData
             end
           end
         end
-        cls = obj.kind_of?(Array) || obj.kind_of?(Set) ? obj.first.class : obj.class
+        enumerable = obj.kind_of?(Array) || obj.kind_of?(Set)
+        cls = enumerable ? obj.first.class : obj.class
+        cls = obj.first.klass if enumerable && obj.first.is_a?(Struct)
         cls = options[:class_name] if options[:class_name]
         to_xml(formatted_hash, convert_class_name(cls), links).to_s
       end
