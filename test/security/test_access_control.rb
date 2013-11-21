@@ -57,7 +57,7 @@ class TestAccessControl < LinkedData::TestCase
     LinkedData.settings.enable_security = @@old_security_setting if class_variable_defined?("@@old_security_setting")
     _delete_users
     self.new("after_suite").delete_ontologies_and_submissions
-    @@note.delete if class_variable_defined?("@@note")
+    @@note.delete if class_variable_defined?("@@note") && @@note.exist?
   end
 
   def self._delete_users
