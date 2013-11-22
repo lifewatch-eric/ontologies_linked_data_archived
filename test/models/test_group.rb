@@ -22,7 +22,7 @@ class TestGroup < LinkedData::TestCase
     assert g.valid?
   end
 
-  def test_no_duplicate_project_ids
+  def test_no_duplicate_group_ids
     g1 = LinkedData::Models::Group.new({
         :created => DateTime.parse("2012-10-04T07:00:00.000Z"),
         :name => "Test Group",
