@@ -297,8 +297,18 @@ module LinkedData
           path = paths[rec_i]
           p = path.last
           next if p.id.to_s["umls/OrphanClass"]
-          p.bring(parents: [:prefLabel,:synonym, :definition] ) if p.bring?(:parents)
-          if !p.id.to_s["#Thing"] && (recurse_on_path[i] && p.parents && p.parents.length > 0)
+          if p.bring?(:parents)
+            p.bring(parents: [:prefLabel,:synonym, :definition] )
+          end
+
+          if !p.loaded_attributes.include?(:parents)
+            # fail safely
+            LOGGER.error("Class #{p.id.to_s} from #{p.submission.id}  cannot load parents")
+            return
+          end
+
+          if !p.id.to_s["#Thing"] &&\
+              (recurse_on_path[i] && p.parents && p.parents.length > 0)
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end
