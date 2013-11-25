@@ -124,12 +124,6 @@ module LinkedData
     end
 
     ##
-    # Retrieve ontology dependent objects
-    def ontology_objects
-      LinkedData::SampleData::Ontology.ontology_objects()
-    end
-
-    ##
     # Delete all ontologies and their submissions
     def delete_ontologies_and_submissions
       LinkedData::SampleData::Ontology.delete_ontologies_and_submissions

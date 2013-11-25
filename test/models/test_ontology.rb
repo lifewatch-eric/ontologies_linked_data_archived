@@ -108,44 +108,6 @@ class TestOntology < LinkedData::TestCase
     assert o.valid?
   end
 
-
-  def test_ontology_delete
-    count, acronyms, ontologies = create_ontologies_and_submissions(ont_count: 2, submission_count: 1, process_submission: true)
-    u, of, contact = ontology_objects()
-    o1 = ontologies[0]
-    o2 = ontologies[1]
-
-    n = LinkedData::Models::Note.new({
-      creator: u,
-      relatedOntology: [o1]
-    })
-    assert n.valid?
-    n.save()
-    assert_equal true, n.exist?(reload=true)
-
-    review_params = {
-        :creator => u,
-        :created => DateTime.new,
-        :body => "This is a test review.",
-        :ontologyReviewed => o1,
-        :usabilityRating => 0,
-        :coverageRating => 0,
-        :qualityRating => 0,
-        :formalityRating => 0,
-        :correctnessRating => 0,
-        :documentationRating => 0
-    }
-
-    r = LinkedData::Models::Review.new(review_params)
-    r.save()
-    assert_equal true, r.exist?(reload=true)
-
-    o1.delete()
-    assert_equal false, n.exist?(reload=true)
-    assert_equal false, r.exist?(reload=true)
-    assert_equal false, o1.exist?(reload=true)
-  end
-
   def test_ontology_lifecycle
     o = LinkedData::Models::Ontology.new({
       acronym: @acronym,
