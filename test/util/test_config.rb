@@ -1,19 +1,21 @@
-require "test/unit"
 require "ostruct"
+require_relative "../test_case"
 require_relative "../../lib/ontologies_linked_data"
 
-class TestLinkedDataConfig < MiniTest::Unit::TestCase
+class TestLinkedDataConfig < LinkedData::TestCase
 
   def self.before_suite
     @@sparql_holder = Goo.class_variable_get("@@sparql_backends")
-    @@settings_run_holder = LinkedData.instance_variable_get("@settings_run")
     @@settings_holder = LinkedData.settings
   end
 
   def self.after_suite
-    Goo.class_variable_set("@@sparql_backends", @@sparql_holder)
-    LinkedData.instance_variable_set("@settings_run", @@settings_run_holder)
-    LinkedData.instance_variable_set("@settings", @@settings_holder)
+    begin
+      Goo.class_variable_set("@@sparql_backends", @@sparql_holder)
+      LinkedData.instance_variable_set("@settings_run", true)
+    ensure
+      LinkedData.instance_variable_set("@settings", @@settings_holder)
+    end
   end
 
   def teardown
