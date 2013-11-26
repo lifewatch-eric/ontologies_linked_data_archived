@@ -24,6 +24,7 @@ module LinkedData
       attribute :subscription, enforce: [:list, :subscription]
 
       # Hypermedia settings
+      embed :subscription
       embed_values :role => [:role]
       serialize_default :username, :email, :role, :apikey
       serialize_never :passwordHash, :show_apikey

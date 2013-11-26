@@ -18,6 +18,8 @@ module LinkedData::Models::Users
     attribute :ontology, enforce: [:existence, :ontology]
     attribute :notification_type, enforce: [:existence, :notification_type]
     attribute :user, inverse: {on: :user, attribute: :subscription}
+    embedded true
+    embed_values notification_type: [:type]
   end
 end
 
