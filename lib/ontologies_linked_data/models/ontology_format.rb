@@ -27,7 +27,7 @@ module LinkedData
           return Goo.vocabulary(:metadata)[:treeView]
         end
         if skos?
-          return RDF::SKOS[:narrower]
+          return RDF::SKOS[:broader]
         end
         return RDF::RDFS[:subClassOf]
       end
