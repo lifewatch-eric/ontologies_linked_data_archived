@@ -17,7 +17,7 @@ require 'minitest/unit'
 MiniTest::Unit.autorun
 
 # Check to make sure you want to run if not pointed at localhost
-safe_hosts = Regexp.new(/localhost|ncbo-dev*|ncbo-stg-app-22*/)
+safe_hosts = Regexp.new(/localhost|ncbo-dev*|ncbo-stg-app-22*|ncbo-unittest*/)
 def safe_redis_hosts?(sh)
   return [LinkedData.settings.http_redis_host,
    LinkedData.settings.goo_redis_host].select { |x|
@@ -67,6 +67,11 @@ module LinkedData
       begin
         suite.before_suite if suite.respond_to?(:before_suite)
         super(suite, type)
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.join("\n\t")
+        puts "Traced from:"
+        raise e
       ensure
         suite.after_suite if suite.respond_to?(:after_suite)
       end

@@ -23,6 +23,7 @@ module LinkedData
     @settings.repository_folder      ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix        ||= "http://data.bioontology.org/"
     @settings.enable_security        ||= false
+    @settings.enable_slices          ||= false
 
     ### these params should be not ussed any more
     # removed so that dependencies shout

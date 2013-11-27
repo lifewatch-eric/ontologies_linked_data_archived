@@ -3,7 +3,7 @@ require 'set'
 class Object
 
   DO_NOT_SERIALIZE = %w(attributes table _cached_exist internals captures splat uuid password inverse_atttributes loaded_attributes modified_attributes previous_values persistent aggregates unmapped errors id)
-  CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI])
+  CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI, RDF::Literal])
 
   def to_flex_hash(options = {}, &block)
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass) || is_a?(NilClass)
@@ -73,6 +73,12 @@ class Object
         hash[convert_nonstandard_types(k, options, &block)] = v
       end
 
+      # Convert RDF literals to their equivalent Ruby typed value
+      if v.is_a?(RDF::Literal)
+        hash[k] = v.value
+        next
+      end
+
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       hash, modified = embed_goo_objects(hash, k, v, options, &block)
       next if modified
@@ -80,9 +86,6 @@ class Object
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
       next if modified
-
-      # Convert RDF literals to their equivalent Ruby typed value
-      v = v.value if v.is_a?(RDF::Literal)
 
       new_value = convert_nonstandard_types(v, options, &block)
 
