@@ -573,6 +573,11 @@ eos
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
+    LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation).each do |cls|
+      binding.pry
+    end
+    
+
     cno.bring(:submissions)
     sub = cno.submissions || []
     sub.each do |s|
