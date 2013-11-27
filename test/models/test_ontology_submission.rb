@@ -124,7 +124,15 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     roots = sub.roots
     LinkedData::Models::Class.in(sub).models(roots).include(:children).all
     roots.each do |root|
-      #missing test compare root.children to query inverse narrower with sparql 
+q_broader = <<-eos
+SELECT ?children WHERE {
+  ?children #{RDF::SKOS[:broader].to_ntriples} #{root.id.to_ntriples} }
+eos
+    children_query = []
+    Goo.sparql_query_client.query(q_broader).each_solution do |sol|
+      children_query << sol[:children].to_s
+    end
+    assert root.children.map { |x| x.id.to_s }.sort == children_query.sort
     end
   end
 
