@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 24f305759eaa5d4fd5c4b2f73a00bf738120b024
+  revision: f87f94bced96deae778854074a8aa47916ad896e
   branch: staging
   specs:
     goo (0.0.2)
@@ -36,13 +36,13 @@ GEM
     builder (3.2.2)
     coderay (1.1.0)
     cube-ruby (0.0.3)
-    docile (1.1.0)
+    docile (1.1.1)
     email_spec (1.5.0)
       launchy (~> 2.1)
       mail (~> 2.2)
     i18n (0.6.5)
     json_pure (1.8.1)
-    launchy (2.4.0)
+    launchy (2.4.1)
       addressable (~> 2.3)
     libxml-ruby (2.7.0)
     macaddr (1.6.1)
@@ -51,7 +51,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     method_source (0.8.2)
-    mime-types (1.25)
+    mime-types (1.25.1)
     minitest (4.7.5)
     multi_json (1.8.2)
     net-http-persistent (2.9)
@@ -59,7 +59,7 @@ GEM
     polyglot (0.3.3)
     pony (1.5.1)
       mail (>= 2.0)
-    pry (0.9.12.3)
+    pry (0.9.12.4)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
