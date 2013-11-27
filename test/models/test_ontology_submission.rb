@@ -115,15 +115,15 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
                                                        submissionId: 987)
                                                      .include(:version)
                                                      .first
-    roots = sub.roots.map { |x| x.id.to_s}.sort == ["http://www.ebi.ac.uk/efo/EFO_0000311",
+    assert sub.roots.map { |x| x.id.to_s}.sort == ["http://www.ebi.ac.uk/efo/EFO_0000311",
        "http://www.ebi.ac.uk/efo/EFO_0001444",
         "http://www.ifomis.org/bfo/1.1/snap#Disposition",
          "http://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:37577",
           "http://www.ebi.ac.uk/efo/EFO_0000635",
            "http://www.ebi.ac.uk/efo/EFO_0000324"].sort
+    roots = sub.roots
     LinkedData::Models::Class.in(sub).models(roots).include(:children).all
     roots.each do |root|
-      assert 1 != 0
       #missing test compare root.children to query inverse narrower with sparql 
     end
   end
