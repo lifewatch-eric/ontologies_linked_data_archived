@@ -18,12 +18,6 @@ class TestLinkedDataConfig < LinkedData::TestCase
     end
   end
 
-  def teardown
-    Goo.class_variable_set("@@sparql_backends", {})
-    LinkedData.instance_variable_set("@settings_run", false)
-    load(File.expand_path("../../../config/config.rb", __FILE__))
-  end
-
   def test_default_config
     # Override safety check
     Goo.class_variable_set("@@sparql_backends", {})
