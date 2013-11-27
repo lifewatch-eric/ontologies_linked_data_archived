@@ -20,6 +20,7 @@ module LinkedData
       attribute :obsolete, namespace: :owl, property: :deprecated, alias: true
 
       attribute :notation, namespace: :skos
+      attribute :prefixIRI, namespace: :metadata
 
       attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
 
