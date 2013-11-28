@@ -724,6 +724,13 @@ eos
     sub = LinkedData::Models::Ontology.find("BROTEST-METRICS").first.latest_submission(status: [:rdf, :metrics])
     sub.bring(:metrics)
 
+    LinkedData::Models::Class.where.in(sub).include(:prefixIRI).each do |cls|
+      assert !cls.prefixIRI.nil?
+      assert cls.prefixIRI.is_a?(String)
+      assert cls.prefixIRI[":"] != nil
+      assert cls.id.to_s[-4..-1].capitalize == cls.prefixIRI[-4..-1]
+    end
+
     metrics = sub.metrics
     metrics.bring_remaining
     assert_instance_of LinkedData::Models::Metric, metrics
