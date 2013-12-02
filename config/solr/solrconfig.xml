@@ -1154,6 +1154,19 @@
     -->
   </requestHandler>
 
+  <!-- request handler to return typeahead suggestions -->
+  <requestHandler name="/suggest" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">explicit</str>
+      <str name="defType">edismax</str>
+      <str name="rows">50</str>
+      <str name="fl">*,score</str>
+      <str name="qf">prefLabelSuggestEdge^50 synonymSuggestEdge</str>
+      <str name="pf">prefLabelSuggest^50</str>
+      <str name="sort">score desc,prefLabelExact asc</str>
+    </lst>
+  </requestHandler>
+
   <!-- Search Components
 
        Search components are registered to SolrCore and used by 
