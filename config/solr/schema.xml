@@ -59,8 +59,8 @@
   <copyField source="prefLabel" dest="prefLabelSuggestEdge" />
   <copyField source="prefLabel" dest="prefLabelSuggestNgram" />
 
-  <copyField source="synonym" dest="synonymExact"/>
   <copyField source="synonym" dest="text"/>
+  <copyField source="synonym" dest="synonymExact"/>
   <copyField source="synonym" dest="synonymSuggest" />
   <copyField source="synonym" dest="synonymSuggestEdge" />
   <copyField source="synonym" dest="synonymSuggestNgram" />
