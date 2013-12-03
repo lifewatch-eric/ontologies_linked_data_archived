@@ -34,7 +34,7 @@ module LinkedData::Models
             description: g.description,
             ontologies: g.ontologies
           })
-          slice.save rescue binding.pry
+          slice.save
         end
       end
     end
