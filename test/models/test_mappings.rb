@@ -69,6 +69,20 @@ class TestMapping < LinkedData::TestOntologyCommon
     return ps[0]
   end
 
+  def test_error_for_views() 
+    view = LinkedData::Models::Ontology.new(acronym: "FAKEVIEW", 
+                        name: "FAKEVIEW", 
+                        administeredBy: [LinkedData::Models::User.all.first], 
+                        viewOf: LinkedData::Models::Ontology.all.first)
+    view.save
+    process = get_process("LOOMTEST")
+    assert_raises ArgumentError do
+      tmp_log = Logger.new(TestLogFile.new)
+      loom = LinkedData::Mappings::Loom.new(LinkedData::Models::Ontology.all.first, view, tmp_log)
+      loom.start()
+    end
+  end
+
   def test_multiple_mapping()
 
     process = get_process("LOOMTEST")
