@@ -728,7 +728,8 @@ eos
       assert !cls.prefixIRI.nil?
       assert cls.prefixIRI.is_a?(String)
       assert cls.prefixIRI[":"] != nil
-      assert cls.id.to_s[-4..-1].capitalize == cls.prefixIRI[-4..-1]
+      cindex = cls.prefixIRI.index ":"
+      assert cls.id.to_s.upcase.end_with?(cls.prefixIRI[cindex+1..-1])
     end
 
     metrics = sub.metrics
