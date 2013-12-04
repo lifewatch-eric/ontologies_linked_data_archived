@@ -576,6 +576,7 @@ eos
     LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation, :prefixIRI).each do |cls|
       assert cls.prefixIRI.is_a?(String)
       assert cls.notation.nil?
+      assert !cls.id.to_s.start_with?(":")
     end
 
     cno.bring(:submissions)
@@ -727,9 +728,9 @@ eos
     LinkedData::Models::Class.where.in(sub).include(:prefixIRI).each do |cls|
       assert !cls.prefixIRI.nil?
       assert cls.prefixIRI.is_a?(String)
-      assert cls.prefixIRI[":"] != nil
-      cindex = cls.prefixIRI.index ":"
-      assert cls.id.to_s.upcase.end_with?(cls.prefixIRI[cindex+1..-1])
+      assert (!cls.prefixIRI.start_with?(":")) || (cls.prefixIRI[":"] != nil)
+      cindex = (cls.prefixIRI.index ":") || 0
+      assert cls.id.end_with?(cls.prefixIRI[cindex+1..-1])
     end
 
     metrics = sub.metrics
