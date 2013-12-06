@@ -144,7 +144,8 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
     n_roots = sub.roots.length
-    assert n_roots < 10
+    assert n_roots == 3 #just 3 with latest modifications. 
+    #strict comparison to be sure the merge with the tree_view branch goes fine
 
     LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation).each do |cls|
       assert_instance_of String,cls.prefLabel
