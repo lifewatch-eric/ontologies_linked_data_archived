@@ -50,7 +50,7 @@ module LinkedData
       embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition
       serialize_methods :properties
-      serialize_never :submissionAcronym, :submissionId, :submission
+      serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
       links_load submission: [ontology: [:acronym]]
       do_not_load :descendants, :ancestors
