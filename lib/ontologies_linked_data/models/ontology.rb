@@ -104,21 +104,23 @@ module LinkedData
 
       def next_submission_id
         self.bring(:submissions)
-        (highest_submission_id(status: :any) || 0) + 1
+        (highest_submission_id(status: :any) || 1) + 1
       end
 
       def highest_submission_id(options = {})
         reload = options[:reload] || false
         status = options[:status] || :ready
 
-        #just reload submissions - TODO: smarter
-        if reload || self.bring?(:submissions) ||
-            (self.submissions.first &&
-             (self.submissions.first.bring?(:submissionId) ||
-              self.submissions.first.bring?(:submissionStatus)))
-          LinkedData::Models::Ontology.where.models([self])
-                      .include(submissions: [:submissionId, :submissionStatus])
-                      .to_a
+        LinkedData::Models::Ontology.where.models([self])
+                    .include(submissions: [:submissionId, :submissionStatus])
+                    .to_a
+        self.submissions.each do |s|
+          if !s.loaded_attributes.include?(:submissionId)
+            s.bring(:submissionsId)
+          end
+          if !s.loaded_attributes.include?(:submissionStatus)
+            s.bring(:submissionStatus)
+          end
         end
 
         return 0 if self.submissions.nil? || self.submissions.empty?
