@@ -48,7 +48,7 @@ module LinkedData
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
-      serialize_default :prefLabel, :synonym, :definition
+      serialize_default :prefLabel, :synonym, :definition, :obsolete
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
