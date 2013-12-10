@@ -22,6 +22,7 @@ module LinkedData
       attribute :passwordHash, enforce: [:existence]
       attribute :apikey, :default => lambda {|x| SecureRandom.uuid}
       attribute :subscription, enforce: [:list, :subscription]
+      attribute :customOntology, enforce: [:list, :ontology]
 
       # Hypermedia settings
       embed :subscription
@@ -66,6 +67,10 @@ module LinkedData
       def password=(new_password)
         @password = Password.create(new_password)
         set_passwordHash(@password)
+      end
+
+      def custom_ontology_id_set
+        Set.new(self.customOntology.map {|o| o.id.to_s})
       end
 
       def to_s
