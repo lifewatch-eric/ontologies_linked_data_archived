@@ -5,8 +5,8 @@ module LinkedData
   module Models
     class MappingProcess < LinkedData::Models::Base
       model :mapping_process, :name_with => lambda { |s| process_id_generator(s) }
-      attribute :name, :single_value => true
-      attribute :creator, :single_value => true, :not_nil => true, :instance_of => { :with => :user }
+      attribute :name
+      attribute :creator, enforce: [:existence, :user]
 
       #only manual mappings
       attribute :source

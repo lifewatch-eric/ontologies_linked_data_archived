@@ -35,6 +35,9 @@ module LinkedData
       serialize_methods :classes
       embed :process, :classes
 
+      # Access control settings
+      grant_access_to_all true
+
       def self.mapping_id_generator(ins)
         return mapping_id_generator_iris(*ins.terms.map { |x| x.id })
       end

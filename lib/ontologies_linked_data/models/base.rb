@@ -152,6 +152,9 @@ module LinkedData
           # the original owner.
           reference_object = self.class.find(self.id).first if self.modified?
 
+          # Allow everyone to write
+          return if reference_object.access_for_all?
+
           # Load attributes needed by security
           if reference_object.access_control_load?
             # Only load ones that aren't loaded so we don't overwrite changes
