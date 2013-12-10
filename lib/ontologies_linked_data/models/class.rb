@@ -150,15 +150,17 @@ module LinkedData
         return paths
       end
 
-      def self.partially_load_children(models,threshold,submission)
+      def self.partially_load_children(models,threshold,submission,only_children_count=false)
 
         ld = [:prefLabel, :definition, :synonym]
 
         single_load = []
-        self.in(submission)
+        query = self.in(submission)
               .models(models)
-              .include(ld)
-              .aggregate(:count, :children).all
+        if only_children_count
+            query = query.include(ld)
+        end
+        query.aggregate(:count, :children).all
 
         models.each do |cls|
           if cls.aggregates.first.value > threshold
@@ -227,8 +229,8 @@ module LinkedData
           end
         end
 
-        LinkedData::Models::Class.
-          partially_load_children(childrens_hash.values,99,self.submission)
+       LinkedData::Models::Class.
+         partially_load_children(childrens_hash.values,99,self.submission,only_children_count=true)
 
         #build the tree
         root_node = path.first
@@ -252,7 +254,6 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
-
         return root_node
       end
 
