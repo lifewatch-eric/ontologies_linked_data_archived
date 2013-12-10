@@ -137,6 +137,19 @@ module LinkedData
         properties = self.unmapped
         bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
+
+        #hack to be remove when closing NCBO-453
+        orphan_id = "http://bioportal.bioontology.org/ontologies/umls/OrphanClass"
+        subClassOf = RDF::RDFS[:subClassOf].to_s
+        properties.each do |k,v|
+          if k.to_s ==  subClassOf
+            if v.is_a?(Array)
+              v.delete_if { |x| x.to_s == orphan_id}
+            end
+          end
+        end
+        #end hack
+        
         properties
       end
 
