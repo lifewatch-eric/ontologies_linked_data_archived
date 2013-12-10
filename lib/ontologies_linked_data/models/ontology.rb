@@ -1,3 +1,4 @@
+require 'fileutils'
 require_relative 'ontology_submission'
 require_relative 'review'
 require_relative 'group'

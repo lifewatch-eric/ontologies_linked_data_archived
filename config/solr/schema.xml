@@ -47,6 +47,8 @@
     <field name="text"              type="text_general" indexed="true"  stored="false" multiValued="true"/>
     <field name="property"          type="text_general" indexed="true"  stored="true"  multiValued="true" />
 
+    <field name="obsolete"          type="boolean" indexed="true"  stored="true"  multiValued="false" />
+
     <dynamicField name="*"  type="string"  indexed="false"  stored="true"  multiValued="true"/>
   </fields>
 

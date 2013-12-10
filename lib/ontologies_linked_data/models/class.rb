@@ -83,7 +83,9 @@ module LinkedData
             :ontologyId => self.submission.id.to_s,
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
+            :obsolete => self.obsolete.nil? ? "false" : self.obsolete.to_s
         }
+
         all_attrs = self.to_hash
         std = [:id, :prefLabel, :notation, :synonym, :definition]
 

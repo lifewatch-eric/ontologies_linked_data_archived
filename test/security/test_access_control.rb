@@ -39,7 +39,7 @@ class TestAccessControl < LinkedData::TestCase
     @@ont.bring_remaining
     @@user = @@ont.administeredBy.first
     @@user.bring_remaining
-    @@sub = @@ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
+    @@sub = @@ont.latest_submission(status: :any).bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
 
     @@note = LinkedData::Models::Note.new({
       creator: @@user,
