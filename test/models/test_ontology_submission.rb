@@ -144,7 +144,7 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
     n_roots = sub.roots.length
-    assert n_roots == 3 #just 3 with latest modifications. 
+    assert n_roots == 3 #just 3 with latest modifications.
     #strict comparison to be sure the merge with the tree_view branch goes fine
 
     LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation).each do |cls|
@@ -221,11 +221,11 @@ eos
     submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
     # Sort submissions in descending order of submissionId, extract last two submissions
     recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
-    sub1 = recent_submissions.last  # descending order, so last is first submission
-    sub2 = recent_submissions.first # descending order, so first is last submission
+    sub1 = recent_submissions.last  # descending order, so last is older submission
+    sub2 = recent_submissions.first # descending order, so first is latest submission
     assert(sub1.submissionId < sub2.submissionId, 'submissionId is in the wrong order')
-    assert(sub1.diffFilePath == nil, 'Should not create diff for first submission.')
-    assert(sub2.diffFilePath != nil, 'Failed to create diff for the second submission.')
+    assert(sub1.diffFilePath == nil, 'Should not create diff for older submission.')
+    assert(sub2.diffFilePath != nil, 'Failed to create diff for the latest submission.')
     # Cleanup
     bro.submissions.each {|s| s.delete}
   end

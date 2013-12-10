@@ -212,27 +212,27 @@ module LinkedData
         return zip_dst
       end
 
-      # accepts another submission in 'that'
-      def diff(logger, that)
+      # accepts another submission in 'older' (it should be an 'older' ontology version)
+      def diff(logger, older)
         begin
           self.bring_remaining
           self.bring(:diffFilePath)
           self.bring(:uploadFilePath)
-          that.bring(:uploadFilePath)
+          older.bring(:uploadFilePath)
           LinkedData::Diff.logger = logger
           bubastis = LinkedData::Diff::BubastisDiffCommand.new(
-              File.expand_path(self.uploadFilePath),
-              File.expand_path(that.uploadFilePath)
+              File.expand_path(older.uploadFilePath),
+              File.expand_path(self.uploadFilePath)
           )
           self.diffFilePath = bubastis.diff
           self.save
           #
           # TODO: Add submission status value for 'CREATED_DIFF' or something?
           #
-          logger.info("Processed diff")
+          logger.info("Bubastis diff processed")
           logger.flush
         rescue Exception => e
-          logger.info("Cannot process diff: " + e.message)
+          logger.error("Bubastis diff failed: " + e.message)
           logger.flush
           raise e
         end
@@ -634,23 +634,29 @@ eos
               # Get previous submission from ontology.submissions
               self.ontology.bring(:submissions)
               submissions = self.ontology.submissions
-              submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
-              # Sort submissions in descending order of submissionId, extract last two submissions
-              recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
-              if recent_submissions.length > 1
-                # validate that the most recent submission is the current submission
-                if self.submissionId == recent_submissions.first.submissionId
-                  prev = recent_submissions.last
-                  # Ensure that prev is older than the current submission
-                  if self.submissionId > prev.submissionId
-                    # generate a diff
-                    begin
-                      self.diff(logger, prev)
-                    rescue
-                      # pass, self.diff logs all errors
+              unless submissions.nil?
+                submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
+                # Sort submissions in descending order of submissionId, extract last two submissions
+                recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
+                if recent_submissions.length > 1
+                  # validate that the most recent submission is the current submission
+                  if self.submissionId == recent_submissions.first.submissionId
+                    prev = recent_submissions.last
+                    # Ensure that prev is older than the current submission
+                    if self.submissionId > prev.submissionId
+                      # generate a diff
+                      begin
+                        self.diff(logger, prev)
+                      rescue
+                        # pass, self.diff logs all errors
+                      end
                     end
                   end
+                else
+                  logger.info("Bubastis diff: no older submissions available for diffs.")
                 end
+              else
+                logger.info("Bubastis diff: no submissions available for diffs.")
               end
             end
 
