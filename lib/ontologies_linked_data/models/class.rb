@@ -141,12 +141,23 @@ module LinkedData
         #hack to be remove when closing NCBO-453
         orphan_id = "http://bioportal.bioontology.org/ontologies/umls/OrphanClass"
         subClassOf = RDF::RDFS[:subClassOf].to_s
+        filtered = false
+        change = Hash.new
         properties.each do |k,v|
           if k.to_s ==  subClassOf
             if v.is_a?(Array)
+              if v.index { |x| x.to_s == orphan_id}
+                filtered = true
+              end
               v.delete_if { |x| x.to_s == orphan_id}
             end
           end
+          unless k.to_s ==  subClassOf && filtered
+            change[k] = v
+          end
+        end
+        if filtered
+          properties = change
         end
         #end hack
         
