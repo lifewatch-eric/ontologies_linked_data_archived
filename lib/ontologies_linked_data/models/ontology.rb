@@ -162,7 +162,7 @@ module LinkedData
           self.projects.each do |p|
             p.bring(:ontologyUsed)
             p.bring_remaining
-            ontsUsed = p.ontologyUsed
+            ontsUsed = p.ontologyUsed.dup
             ontsUsed.select! {|x| x.id != self.id}
             p.ontologyUsed = ontsUsed
             p.save()
