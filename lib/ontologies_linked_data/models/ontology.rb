@@ -182,16 +182,11 @@ module LinkedData
           end
         end
 
-        # remove metrics & submissions
+        # remove submissions
         self.bring(:submissions)
         self.bring(:acronym) if self.bring?(:acronym)
         unless self.submissions.nil?
           self.submissions.each do |s|
-            s.bring(:metrics)
-            unless s.metrics.nil?
-              s.metrics.bring_remaining
-              s.metrics.delete
-            end
             s.delete(in_update: in_update, remove_index: false)
           end
         end

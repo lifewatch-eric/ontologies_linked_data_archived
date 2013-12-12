@@ -746,6 +746,9 @@ eos
         super(*args)
         self.ontology.unindex()
 
+        self.bring(:metrics) if self.bring?(:metrics)
+        self.metrics.delete if self.metrics
+
         if remove_index
           # need to re-index the previous submission (if exists)
           self.ontology.bring(:submissions)
