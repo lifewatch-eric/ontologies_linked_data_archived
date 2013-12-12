@@ -87,9 +87,6 @@ class TestMetric < LinkedData::TestCase
     assert metric_from_db.individuals == 2
     assert metric_from_db.properties == 3
     assert metric_from_db.maxDepth == 1
-
-    metric_from_db.delete
-    delete_submission
   end
 
 end
