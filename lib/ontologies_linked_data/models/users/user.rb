@@ -23,12 +23,13 @@ module LinkedData
       attribute :apikey, :default => lambda {|x| SecureRandom.uuid}
       attribute :subscription, enforce: [:list, :subscription]
       attribute :customOntology, enforce: [:list, :ontology]
+      attribute :resetToken
 
       # Hypermedia settings
       embed :subscription
       embed_values :role => [:role]
       serialize_default :username, :email, :role, :apikey
-      serialize_never :passwordHash, :show_apikey
+      serialize_never :passwordHash, :show_apikey, :resetToken
       serialize_filter lambda {|inst| show_apikey?(inst)}
 
       # Access control
