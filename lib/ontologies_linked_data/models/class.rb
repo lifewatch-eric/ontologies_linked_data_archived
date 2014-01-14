@@ -77,13 +77,17 @@ module LinkedData
         [cls.submission.ontology.acronym] rescue []
       end
 
+      def obsolete
+        return @obsolete || false
+      end
+
       def get_index_doc
         doc = {
             :resource_id => self.id.to_s,
             :ontologyId => self.submission.id.to_s,
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
-            :obsolete => self.obsolete.nil? ? "false" : self.obsolete.to_s
+            :obsolete => self.obsolete.to_s
         }
 
         all_attrs = self.to_hash
@@ -160,7 +164,7 @@ module LinkedData
           properties = change
         end
         #end hack
-        
+
         properties
       end
 

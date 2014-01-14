@@ -363,15 +363,16 @@ eos
     o.bring(:submissions)
     oss = o.submissions
     assert_equal 1, oss.length
-    ont_sub = oss[0]
+    ont_sub = oss.first
     ont_sub.bring_remaining
     assert ont_sub.ready?
-    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :obsolete).each do |c|
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
+    classes.each do |c|
       assert (not c.prefLabel.nil?)
       if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
-        assert c.obsolete
+        assert(c.obsolete, "Class should be obsolete: #{c.id}")
       else
-        assert c.obsolete.nil?
+        assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
       end
     end
   end
@@ -390,13 +391,13 @@ eos
     ont_sub = oss[0]
     ont_sub.bring_remaining
     assert ont_sub.ready?
-    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :obsolete).each do |c|
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
+    classes.each do |c|
       assert (not c.prefLabel.nil?)
-      if c.id.to_s["#class2"] || c.id.to_s["#class6"] ||
-         c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
-        assert c.obsolete
+      if c.id.to_s["#class2"] || c.id.to_s["#class6"] || c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
+        assert(c.obsolete, "Class should be obsolete: #{c.id}")
       else
-        assert c.obsolete.nil?
+        assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
       end
     end
   end
