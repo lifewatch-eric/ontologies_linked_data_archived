@@ -40,12 +40,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   def test_sanity_check_zip
     return if ENV["SKIP_PARSING"]
 
-    acronym = "RADTEST"
-    name = "RADTEST Bla"
+    acronym = "SDOTEST"
+    name = "SDOTEST Bla"
     ontologyFile = "./test/data/ontology_files/SDO.zip"
     id = 10
-
-    teardown
 
     owl, rad, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
 
