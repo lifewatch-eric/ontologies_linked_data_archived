@@ -5,7 +5,6 @@ require "rack"
 class TestOntologySubmission < LinkedData::TestOntologyCommon
 
   def test_valid_ontology
-    return if ENV["SKIP_PARSING"]
 
     acronym = "BRO-TST"
     name = "SNOMED-CT TEST"
@@ -38,7 +37,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_sanity_check_zip
-    return if ENV["SKIP_PARSING"]
 
     acronym = "SDOTEST"
     name = "SDOTEST Bla"
@@ -74,7 +72,6 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_duplicated_file_names
-    return if ENV["SKIP_PARSING"]
 
     acronym = "DUPTEST"
     name = "DUPTEST Bla"
@@ -246,7 +243,6 @@ eos
   end
 
   def test_submission_parse_zip
-    return if ENV["SKIP_PARSING"]
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
@@ -335,7 +331,6 @@ eos
   end
 
   def test_custom_obsolete_property
-    return if ENV["SKIP_PARSING"]
 
     acr = "OBSPROPS"
     init_test_ontology_msotest acr
@@ -360,7 +355,6 @@ eos
   end
 
   def test_custom_obsolete_branch
-    return if ENV["SKIP_PARSING"]
 
     acr = "OBSBRANCH"
     init_test_ontology_msotest acr
@@ -385,7 +379,6 @@ eos
   end
 
   def test_custom_property_generation
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -415,7 +408,6 @@ eos
   end
 
   def test_submission_root_classes
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -447,7 +439,6 @@ eos
 
   #escaping sequences
   def test_submission_parse_sbo
-    return if ENV["SKIP_PARSING"]
     acronym = "SBO-TST"
     name = "SBO Bla"
     ontologyFile = "./test/data/ontology_files/SBO.obo"
@@ -504,7 +495,6 @@ eos
 
   #ontology with import errors
   def test_submission_parse_cno
-    return if ENV["SKIP_PARSING"]
     acronym = "CNO-TST"
     name = "CNO Bla"
     ontologyFile = "./test/data/ontology_files/CNO_05.owl"
@@ -548,7 +538,6 @@ eos
 
   #multiple preflables
   def test_submission_parse_aero
-    return if ENV["SKIP_PARSING"]
     acronym = "AERO-TST"
     name = "aero Bla"
     ontologyFile = "./test/data/ontology_files/aero.owl"
