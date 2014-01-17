@@ -200,13 +200,12 @@ module LinkedData
     end
    
     def self.count_pattern(pattern)
-      q = "SELECT * WHERE { #{pattern} }"
+      q = "SELECT (count(?s) as ?c) WHERE { #{pattern} }"
       rs = Goo.sparql_query_client.query(q)
-      count = 0
       rs.each_solution do |sol|
-        count += 1
+        return sol[:c].object
       end
-      return count
+      return 0
     end
 
     def self.backend_4s_delete
