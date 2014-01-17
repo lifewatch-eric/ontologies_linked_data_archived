@@ -209,9 +209,28 @@ module LinkedData
       return count
     end
 
+    def self.backend_graphs()
+      graphs = []
+      q = "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }"
+      rs = Goo.sparql_query_client.query(q)
+      count = 0
+      do_not_delete = ["Role","Base","User","Type","Format","Status"]
+      rs.each_solution do |sol|
+        delete = true
+        do_not_delete.each do |d|
+          delete = delete && !sol[:g].to_s[d]
+        end
+        next if not delete
+        graphs << sol[:g].to_s
+      end
+      return graphs
+    end
+
     def self.backend_4s_delete
       if TestCase.count_pattern("?s ?p ?o") < 150000
-        Goo.sparql_update_client.update("DELETE {?s ?p ?o } WHERE { ?s ?p ?o }")
+        graphs = backend_graphs().each do |g|
+          Goo.sparql_update_client.update("DROP GRAPH <%s>"%g)
+        end
       else
         raise Exception, "Too many triples in KB, does not seem right to run tests"
       end
