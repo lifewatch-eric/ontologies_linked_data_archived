@@ -159,16 +159,18 @@ eos
 
   def test_submission_parse
     #This one has some nasty looking IRIS with slashes in the anchor
-    submission_parse("MCCLTEST", "MCCLS TEST",
-                     "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
-                     process_rdf: true, index_search: true,
-                     run_metrics: false, reasoning: true)
+    unless env["BP_SKIP_HEAVY_TESTS"] == "1"
+      submission_parse("MCCLTEST", "MCCLS TEST",
+                       "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
+                       process_rdf: true, index_search: true,
+                       run_metrics: false, reasoning: true)
 
-    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
-                                                       submissionId: 11)
-                                                     .include(:version)
-                                                     .first
-    assert sub.version == "3.0"
+      sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
+                                                         submissionId: 11)
+                                                       .include(:version)
+                                                       .first
+      assert sub.version == "3.0"
+    end
 
     #This one has resources wih accents.
     submission_parse("ONTOMATEST",
@@ -243,6 +245,7 @@ eos
   end
 
   def test_submission_parse_zip
+    return if ENV["BP_SKIP_HEAVY_TESTS"] == 1
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
