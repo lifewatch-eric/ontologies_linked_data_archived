@@ -4,16 +4,6 @@ require "rack"
 
 class TestOntologySubmission < LinkedData::TestOntologyCommon
 
-  def teardown
-    l = LinkedData::Models::Ontology.all
-    if l.length > 50
-      raise ArgumentError, "Too many ontologies in triple store. TESTS WILL DELETE DATA"
-    end
-    l.each do |os|
-      os.delete
-    end
-  end
-
   def test_valid_ontology
     return if ENV["SKIP_PARSING"]
 
@@ -82,6 +72,7 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.masterFileName = ont_submision.errors[:uploadFilePath][0][:options][0]
     assert ont_submision.valid?
     assert_equal 0, ont_submision.errors.length
+    LinkedData::TestCase.backend_4s_delete
   end
 
   def test_duplicated_file_names
@@ -227,7 +218,7 @@ eos
     assert(sub1.diffFilePath == nil, 'Should not create diff for older submission.')
     assert(sub2.diffFilePath != nil, 'Failed to create diff for the latest submission.')
     # Cleanup
-    bro.submissions.each {|s| s.delete}
+    LinkedData::TestCase.backend_4s_delete
   end
 
   def test_submission_diff_across_ontologies
@@ -264,14 +255,7 @@ eos
     ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1.zip"
     id = 10
 
-    bro = LinkedData::Models::Ontology.find(acronym)
-    if not bro.nil?
-      sub = bro.submissions || []
-      sub.each do |s|
-        s.load
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     assert (not ont_submision.valid?)
@@ -331,7 +315,7 @@ eos
       file.open
       assert file.read.eql?("test file"), "Test file content error: #{file.read}"
     ensure
-      delete_ontologies_and_submissions
+      LinkedData::TestCase.backend_4s_delete
       Thread.kill(server_thread)  # this will shutdown Rack::Server also
       sleep 3
       assert_equal(server_thread.alive?, false, msg="Rack::Server thread should be dead, it's not!")
@@ -460,9 +444,7 @@ eos
     #I have found them all
     assert(root_ids.length == 0)
 
-    ontology = os.ontology
-    os.delete
-    ontology.delete
+    LinkedData::TestCase.backend_4s_delete
   end
 
   #escaping sequences
@@ -473,14 +455,7 @@ eos
     ontologyFile = "./test/data/ontology_files/SBO.obo"
     id = 10
 
-    sbo = LinkedData::Models::Ontology.find(acronym).first
-    if not sbo.nil?
-      sbo.bring(:submissions)
-      sub = sbo.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -526,11 +501,7 @@ eos
       end
     end
 
-    sbo.bring(:submissions)
-    sub = sbo.submissions || []
-    sub.each do |s|
-        s.delete
-    end
+    LinkedData::TestCase.backend_4s_delete
   end
 
   #ontology with import errors
@@ -541,14 +512,7 @@ eos
     ontologyFile = "./test/data/ontology_files/CNO_05.owl"
     id = 10
 
-    cno = LinkedData::Models::Ontology.find(acronym)
-    if not cno.nil?
-      sub = cno.submissions || []
-      sub.each do |s|
-        s.load
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -581,11 +545,7 @@ eos
       assert !cls.id.to_s.start_with?(":")
     end
 
-    cno.bring(:submissions)
-    sub = cno.submissions || []
-    sub.each do |s|
-      s.delete
-    end
+    LinkedData::TestCase.backend_4s_delete
   end
 
   #multiple preflables
@@ -596,13 +556,7 @@ eos
     ontologyFile = "./test/data/ontology_files/aero.owl"
     id = 10
 
-    aero = LinkedData::Models::Ontology.find(acronym).first
-    if not aero.nil?
-      sub = aero.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -688,14 +642,7 @@ eos
     end while(page.next?)
     assert syns == 26
     assert defs == 285
-    aero = LinkedData::Models::Ontology.find(acronym).first
-    aero.bring(:submissions)
-    if not aero.nil?
-      sub = aero.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
   end
 
   def test_submission_metrics
