@@ -227,7 +227,7 @@ module LinkedData
     end
 
     def self.backend_4s_delete
-      if TestCase.count_pattern("?s ?p ?o") < 150000
+      if TestCase.count_pattern("?s ?p ?o") < 350000
         graphs = backend_graphs().each do |g|
           Goo.sparql_update_client.update("DROP GRAPH <%s>"%g)
         end
