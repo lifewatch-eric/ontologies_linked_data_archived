@@ -200,7 +200,7 @@ module LinkedData
     end
    
     def self.count_pattern(pattern)
-      q = "SELECT (count(?s) as ?c) WHERE { #{pattern} }"
+      q = "SELECT (count(DISTINCT ?s) as ?c) WHERE { #{pattern} }"
       rs = Goo.sparql_query_client.query(q)
       rs.each_solution do |sol|
         return sol[:c].object
@@ -209,7 +209,7 @@ module LinkedData
     end
 
     def self.backend_4s_delete
-      if TestCase.count_pattern("?s ?p ?o") < 350000
+      if TestCase.count_pattern("?s ?p ?o") < 400000
         Goo.sparql_update_client.update("DELETE {?s ?p ?o } WHERE { ?s ?p ?o }")
         LinkedData::Models::SubmissionStatus.init_enum
         LinkedData::Models::OntologyFormat.init_enum

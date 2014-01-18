@@ -159,7 +159,7 @@ eos
 
   def test_submission_parse
     #This one has some nasty looking IRIS with slashes in the anchor
-    unless env["BP_SKIP_HEAVY_TESTS"] == "1"
+    unless ENV["BP_SKIP_HEAVY_TESTS"] == "1"
       submission_parse("MCCLTEST", "MCCLS TEST",
                        "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
                        process_rdf: true, index_search: true,
@@ -245,7 +245,7 @@ eos
   end
 
   def test_submission_parse_zip
-    return if ENV["BP_SKIP_HEAVY_TESTS"] == 1
+    return if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
