@@ -244,7 +244,7 @@ module LinkedData
 
         self.class.in(submission)
               .models(items_hash.values)
-              .include(:prefLabel,:synonym).all
+              .include(:prefLabel,:synonym,:obsolete).all
 
         LinkedData::Models::Class
           .partially_load_children(items_hash.values,99,self.submission)
