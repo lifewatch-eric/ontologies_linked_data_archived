@@ -527,8 +527,10 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-    assert sub.missingImports.length == 1
-    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
+    assert sub.missingImports.length == 2
+    mi = sub.missingImports.sort
+    assert mi[0] == "http://purl.org/obo/owl/ro"
+    assert mi[1] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
     LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation, :prefixIRI).each do |cls|
       assert cls.prefixIRI.is_a?(String)
