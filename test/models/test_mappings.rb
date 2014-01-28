@@ -16,15 +16,7 @@ class TestMapping < LinkedData::TestOntologyCommon
       raise Exception, "KB with too many mappings to run test. Is this pointing to a TEST KB?"
     end
 
-    LinkedData::Models::MappingProcess.all do |m|
-      m.delete
-    end
-    LinkedData::Models::TermMapping.all do |m|
-      m.delete
-    end
-    LinkedData::Models::Mapping.all do |m|
-      m.delete
-    end
+    LinkedData::TestCase.backend_4s_delete
     ontologies_parse()
   end
 

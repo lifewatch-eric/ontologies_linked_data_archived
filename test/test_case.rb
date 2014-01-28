@@ -56,9 +56,11 @@ module LinkedData
 
     def _run_suites(suites, type)
       begin
+        TestCase.backend_4s_delete
         before_suites
         super(suites, type)
       ensure
+        TestCase.backend_4s_delete
         after_suites
       end
     end
@@ -196,6 +198,26 @@ module LinkedData
       m.delete
       assert_equal(false, m.exist?(reload=true), "Failed to delete model.")
     end
+   
+    def self.count_pattern(pattern)
+      q = "SELECT (count(DISTINCT ?s) as ?c) WHERE { #{pattern} }"
+      rs = Goo.sparql_query_client.query(q)
+      rs.each_solution do |sol|
+        return sol[:c].object
+      end
+      return 0
+    end
 
+    def self.backend_4s_delete
+      if TestCase.count_pattern("?s ?p ?o") < 400000
+        Goo.sparql_update_client.update("DELETE {?s ?p ?o } WHERE { ?s ?p ?o }")
+        LinkedData::Models::SubmissionStatus.init_enum
+        LinkedData::Models::OntologyFormat.init_enum
+        LinkedData::Models::Users::Role.init_enum
+        LinkedData::Models::Users::NotificationType.init_enum
+      else
+        raise Exception, "Too many triples in KB, does not seem right to run tests"
+      end
+    end
   end
 end
