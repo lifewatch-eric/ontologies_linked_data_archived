@@ -1,9 +1,10 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: e4775545c9a3b46d23d2961fc1475401c34a0af1
+  revision: a5a3aabe06419ce31dc0cf10039d3bcad847a4ec
   branch: staging
   specs:
     goo (0.0.2)
+      pry
       rdf (= 1.0.8)
       redis
       rest-client
