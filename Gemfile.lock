@@ -4,6 +4,7 @@ GIT
   branch: master
   specs:
     goo (0.0.2)
+      pry
       rdf (= 1.0.8)
       redis
       rest-client
@@ -36,7 +37,7 @@ GEM
     builder (3.2.2)
     coderay (1.1.0)
     cube-ruby (0.0.3)
-    docile (1.1.1)
+    docile (1.1.2)
     email_spec (1.5.0)
       launchy (~> 2.1)
       mail (~> 2.2)
@@ -59,7 +60,7 @@ GEM
     polyglot (0.3.3)
     pony (1.6.2)
       mail (>= 2.0)
-    pry (0.9.12.4)
+    pry (0.9.12.6)
       coderay (~> 1.0)
       method_source (~> 0.8)
       slop (~> 3.4)
@@ -69,7 +70,7 @@ GEM
     rake (10.1.1)
     rdf (1.0.8)
       addressable (>= 2.2)
-    redis (3.0.6)
+    redis (3.0.7)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rsolr (1.0.9)

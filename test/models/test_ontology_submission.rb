@@ -4,18 +4,7 @@ require "rack"
 
 class TestOntologySubmission < LinkedData::TestOntologyCommon
 
-  def teardown
-    l = LinkedData::Models::Ontology.all
-    if l.length > 50
-      raise ArgumentError, "Too many ontologies in triple store. TESTS WILL DELETE DATA"
-    end
-    l.each do |os|
-      os.delete
-    end
-  end
-
   def test_valid_ontology
-    return if ENV["SKIP_PARSING"]
 
     acronym = "BRO-TST"
     name = "SNOMED-CT TEST"
@@ -48,14 +37,11 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_sanity_check_zip
-    return if ENV["SKIP_PARSING"]
 
-    acronym = "RADTEST"
-    name = "RADTEST Bla"
+    acronym = "SDOTEST"
+    name = "SDOTEST Bla"
     ontologyFile = "./test/data/ontology_files/SDO.zip"
     id = 10
-
-    teardown
 
     owl, rad, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
 
@@ -82,10 +68,10 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     ont_submision.masterFileName = ont_submision.errors[:uploadFilePath][0][:options][0]
     assert ont_submision.valid?
     assert_equal 0, ont_submision.errors.length
+    LinkedData::TestCase.backend_4s_delete
   end
 
   def test_duplicated_file_names
-    return if ENV["SKIP_PARSING"]
 
     acronym = "DUPTEST"
     name = "DUPTEST Bla"
@@ -173,16 +159,18 @@ eos
 
   def test_submission_parse
     #This one has some nasty looking IRIS with slashes in the anchor
-    submission_parse("MCCLTEST", "MCCLS TEST",
-                     "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
-                     process_rdf: true, index_search: true,
-                     run_metrics: false, reasoning: true)
+    unless ENV["BP_SKIP_HEAVY_TESTS"] == "1"
+      submission_parse("MCCLTEST", "MCCLS TEST",
+                       "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
+                       process_rdf: true, index_search: true,
+                       run_metrics: false, reasoning: true)
 
-    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
-                                                       submissionId: 11)
-                                                     .include(:version)
-                                                     .first
-    assert sub.version == "3.0"
+      sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
+                                                         submissionId: 11)
+                                                       .include(:version)
+                                                       .first
+      assert sub.version == "3.0"
+    end
 
     #This one has resources wih accents.
     submission_parse("ONTOMATEST",
@@ -227,7 +215,7 @@ eos
     assert(sub1.diffFilePath == nil, 'Should not create diff for older submission.')
     assert(sub2.diffFilePath != nil, 'Failed to create diff for the latest submission.')
     # Cleanup
-    bro.submissions.each {|s| s.delete}
+    LinkedData::TestCase.backend_4s_delete
   end
 
   def test_submission_diff_across_ontologies
@@ -257,21 +245,14 @@ eos
   end
 
   def test_submission_parse_zip
-    return if ENV["SKIP_PARSING"]
+    return if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
     ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1.zip"
     id = 10
 
-    bro = LinkedData::Models::Ontology.find(acronym)
-    if not bro.nil?
-      sub = bro.submissions || []
-      sub.each do |s|
-        s.load
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     assert (not ont_submision.valid?)
@@ -331,7 +312,7 @@ eos
       file.open
       assert file.read.eql?("test file"), "Test file content error: #{file.read}"
     ensure
-      delete_ontologies_and_submissions
+      LinkedData::TestCase.backend_4s_delete
       Thread.kill(server_thread)  # this will shutdown Rack::Server also
       sleep 3
       assert_equal(server_thread.alive?, false, msg="Rack::Server thread should be dead, it's not!")
@@ -353,7 +334,6 @@ eos
   end
 
   def test_custom_obsolete_property
-    return if ENV["SKIP_PARSING"]
 
     acr = "OBSPROPS"
     init_test_ontology_msotest acr
@@ -363,21 +343,21 @@ eos
     o.bring(:submissions)
     oss = o.submissions
     assert_equal 1, oss.length
-    ont_sub = oss[0]
+    ont_sub = oss.first
     ont_sub.bring_remaining
     assert ont_sub.ready?
-    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :obsolete).each do |c|
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
+    classes.each do |c|
       assert (not c.prefLabel.nil?)
       if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
-        assert c.obsolete
+        assert(c.obsolete, "Class should be obsolete: #{c.id}")
       else
-        assert c.obsolete.nil?
+        assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
       end
     end
   end
 
   def test_custom_obsolete_branch
-    return if ENV["SKIP_PARSING"]
 
     acr = "OBSBRANCH"
     init_test_ontology_msotest acr
@@ -390,19 +370,18 @@ eos
     ont_sub = oss[0]
     ont_sub.bring_remaining
     assert ont_sub.ready?
-    LinkedData::Models::Class.in(ont_sub).include(:prefLabel,:synonymm, :obsolete).each do |c|
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
+    classes.each do |c|
       assert (not c.prefLabel.nil?)
-      if c.id.to_s["#class2"] || c.id.to_s["#class6"] ||
-         c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
-        assert c.obsolete
+      if c.id.to_s["#class2"] || c.id.to_s["#class6"] || c.id.to_s["#class_5"] || c.id.to_s["#class_7"]
+        assert(c.obsolete, "Class should be obsolete: #{c.id}")
       else
-        assert c.obsolete.nil?
+        assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
       end
     end
   end
 
   def test_custom_property_generation
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -432,7 +411,6 @@ eos
   end
 
   def test_submission_root_classes
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -459,27 +437,17 @@ eos
     #I have found them all
     assert(root_ids.length == 0)
 
-    ontology = os.ontology
-    os.delete
-    ontology.delete
+    LinkedData::TestCase.backend_4s_delete
   end
 
   #escaping sequences
   def test_submission_parse_sbo
-    return if ENV["SKIP_PARSING"]
     acronym = "SBO-TST"
     name = "SBO Bla"
     ontologyFile = "./test/data/ontology_files/SBO.obo"
     id = 10
 
-    sbo = LinkedData::Models::Ontology.find(acronym).first
-    if not sbo.nil?
-      sbo.bring(:submissions)
-      sub = sbo.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -525,29 +493,17 @@ eos
       end
     end
 
-    sbo.bring(:submissions)
-    sub = sbo.submissions || []
-    sub.each do |s|
-        s.delete
-    end
+    LinkedData::TestCase.backend_4s_delete
   end
 
   #ontology with import errors
   def test_submission_parse_cno
-    return if ENV["SKIP_PARSING"]
     acronym = "CNO-TST"
     name = "CNO Bla"
     ontologyFile = "./test/data/ontology_files/CNO_05.owl"
     id = 10
 
-    cno = LinkedData::Models::Ontology.find(acronym)
-    if not cno.nil?
-      sub = cno.submissions || []
-      sub.each do |s|
-        s.load
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -580,28 +536,17 @@ eos
       assert !cls.id.to_s.start_with?(":")
     end
 
-    cno.bring(:submissions)
-    sub = cno.submissions || []
-    sub.each do |s|
-      s.delete
-    end
+    LinkedData::TestCase.backend_4s_delete
   end
 
   #multiple preflables
   def test_submission_parse_aero
-    return if ENV["SKIP_PARSING"]
     acronym = "AERO-TST"
     name = "aero Bla"
     ontologyFile = "./test/data/ontology_files/aero.owl"
     id = 10
 
-    aero = LinkedData::Models::Ontology.find(acronym).first
-    if not aero.nil?
-      sub = aero.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
 
     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
@@ -687,14 +632,7 @@ eos
     end while(page.next?)
     assert syns == 26
     assert defs == 285
-    aero = LinkedData::Models::Ontology.find(acronym).first
-    aero.bring(:submissions)
-    if not aero.nil?
-      sub = aero.submissions || []
-      sub.each do |s|
-        s.delete
-      end
-    end
+    LinkedData::TestCase.backend_4s_delete
   end
 
   def test_submission_metrics

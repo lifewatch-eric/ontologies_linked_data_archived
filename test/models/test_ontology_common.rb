@@ -18,7 +18,10 @@ module LinkedData
       #ontology
       ont = LinkedData::Models::Ontology.where(:acronym => acronym).first
       if ont.nil?
-        ont = LinkedData::Models::Ontology.new(:acronym => acronym, :name => name_ont, administeredBy: [user]).save
+
+        ont = LinkedData::Models::Ontology.new(:acronym => acronym, :name => name_ont, administeredBy: [user])
+        binding.pry if not ont.valid?
+        ont.save
       end
 
       # contact
@@ -88,14 +91,8 @@ module LinkedData
       ont = LinkedData::Models::Ontology.find(acr)
                 .include(submissions: [:submissionStatus]).first
       if not ont.nil?
-        sub = ont.submissions || []
-        if sub.length > 0
-          return if sub[0].ready?
-        end
-        sub.each do |s|
-          s.delete
-        end
-        ont.delete
+        return
+        LinkedData::TestCase.backend_4s_delete
       end
       ont_submission =  LinkedData::Models::OntologySubmission.new({ :submissionId => 1 })
       assert (not ont_submission.valid?)
@@ -108,7 +105,8 @@ module LinkedData
 
       uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acr, 1, file_path)
       ont_submission.uploadFilePath = uploadFilePath
-      owl, ont, user, contact = submission_dependent_objects("OWL", acr, "test_linked_models", "some ont created by mso for testing")
+      owl, ont, user, contact = submission_dependent_objects("OWL", acr, "test_linked_models", 
+                                                             "%ssome ont created by mso for testing"%acr)
       ont.administeredBy = [user]
       ont_submission.contact = [contact]
       ont_submission.released = DateTime.now - 4

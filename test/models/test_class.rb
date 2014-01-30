@@ -4,7 +4,6 @@ require "logger"
 class TestClassModel < LinkedData::TestOntologyCommon
 
   def test_class_parents
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -59,7 +58,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_class_children
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -94,7 +92,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_path_to_root
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -119,7 +116,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_path_to_root_with_multiple_parents
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -149,7 +145,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_class_all_attributes
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
@@ -172,7 +167,6 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_children_count
-    return if ENV["SKIP_PARSING"]
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
