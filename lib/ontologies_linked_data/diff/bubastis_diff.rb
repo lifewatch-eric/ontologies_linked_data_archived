@@ -50,7 +50,7 @@ module LinkedData
       #
 
       def initialize(input_fileOld, input_fileNew)
-        @bubastis_jar_path = $project_bin + "bubastis.jar"
+        @bubastis_jar_path = LinkedData.bindir + "/bubastis.jar"
         @input_fileOld = input_fileOld
         @input_fileNew = input_fileNew
         @output_repo = File.expand_path(@input_fileNew).gsub(File.basename(@input_fileNew),'')

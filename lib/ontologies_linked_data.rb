@@ -38,4 +38,12 @@ models.each do |m|
   require m
 end
 
-$project_bin = project_root + '/../bin/'
+module LinkedData
+  def rootdir
+    File.dirname(File.absolute_path(__FILE__))
+  end
+
+  def bindir
+    File.expand_path(rootdir + '/../bin')
+  end
+end
