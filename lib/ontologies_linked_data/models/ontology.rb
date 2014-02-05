@@ -34,7 +34,7 @@ module LinkedData
       attribute :doNotUpdate, enforce: [:boolean]
       attribute :flat, enforce: [:boolean]
       attribute :hasDomain, namespace: :omv, enforce: [:list, :category]
-      attribute :summaryOnly
+      attribute :summaryOnly, enforce: [:boolean]
 
       attribute :acl, enforce: [:list, :user]
 
