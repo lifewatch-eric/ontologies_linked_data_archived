@@ -61,6 +61,7 @@ module LinkedData
       # Links
       links_load :submissionId, ontology: [:acronym]
       link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
+              LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/download"}, self.type_uri)
 
       # HTTP Cache settings
       cache_segment_instance lambda {|sub| segment_instance(sub)}
