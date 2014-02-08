@@ -108,40 +108,44 @@ module Mappings
   def self.mapping_counts_for_ontology(ont)
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
-    SELECT (strbefore(substr(str(?tid), 50),'/') as ?acr)
-  FROM <#{LinkedData::Models::Mapping.type_uri}>
-  FROM <#{LinkedData::Models::TermMapping.type_uri}>
+    SELECT ?ont (count(*) as ?count)
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
-  ?id <http://data.bioontology.org/metadata/terms> ?tid . }
+  ?id <http://data.bioontology.org/metadata/terms> [
+    <http://data.bioontology.org/metadata/ontology> ?ont ] .
+  } GROUP BY ?ont
 eos
-    result = {}
     epr = Goo.sparql_query_client(:main)
     this_acr = ont.id.split("/")[-1]
-    sols = epr.query(sparql_query, graphs: graphs)
-    sols.delete(this_acr)
-    return sols
+    results = {}
+    solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE})
+    solutions.each do |sol|
+      acr = sol[:ont].to_s.split("/")[-1]
+      if acr != this_acr
+        results[acr] = sol[:count].object
+      end
+    end
+    return results
   end
 
   def self.mapping_counts_per_ontology()
-    graphs = [LinkedData::Models::TermMapping.type_uri]
-    ontologies = LinkedData::Models::Ontology.where.all
-    result = {}
-    ontologies.each do |ont|
-      sparql_query = <<-eos
-  SELECT  (COUNT(?id) AS ?count_var )
-  FROM <#{LinkedData::Models::TermMapping.type_uri}>
+    graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
+    sparql_query = <<-eos
+    SELECT ?ont (count(*) as ?count)
   WHERE {
-      ?id  <http://data.bioontology.org/metadata/ontology>  #{ont.id.to_ntriples} . }
-  eos
-      epr = Goo.sparql_query_client(:main)
-      solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE})
-        .each do |sol|
-          result[ont.id.to_s.split("/")[-1]] = sol[:count_var].object
-      end
+  ?id <http://data.bioontology.org/metadata/terms> [
+    <http://data.bioontology.org/metadata/ontology> ?ont ] .
+  } GROUP BY ?ont
+eos
+    epr = Goo.sparql_query_client(:main)
+    results = {}
+    solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE})
+    solutions.each do |sol|
+      acr = sol[:ont].to_s.split("/")[-1]
+      results[acr] = sol[:count].object
     end
-    return result
+    return results
   end
 
   def self.recent_user_mappings(n)
