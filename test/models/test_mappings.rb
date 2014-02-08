@@ -330,6 +330,11 @@ class TestMapping < LinkedData::TestOntologyCommon
         assert 1!=0, "Outside of controlled set of mappings"
       end
     end
+
+    counts_ont1 = LinkedData::Mappings.mapping_counts_for_ontology(ont1)
+    assert counts_ont1 == {"MAPPING_TEST1"=>3, "MAPPING_TEST4"=>3}
+    counts_all = LinkedData::Mappings.mapping_counts_per_ontology()
+    assert counts_all == {"MAPPING_TEST1"=>8, "MAPPING_TEST2"=>6, "MAPPING_TEST4"=>8}
   end
 
   def test_cui
