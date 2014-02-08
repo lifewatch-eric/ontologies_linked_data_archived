@@ -587,7 +587,7 @@ eos
       count_headers += 1
       assert sol[:p].to_s["contributor"] || sol[:p].to_s["comment"] || sol[:p].to_s["definition"]
     end
-    assert count_headers == 3
+    assert count_headers == 4
 
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
