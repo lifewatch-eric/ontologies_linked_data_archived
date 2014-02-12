@@ -96,6 +96,19 @@ module LinkedData
             #"ANNOTATOR"
         ]
       end
+
+      def ==(that)
+        this_code = self.get_code_from_id
+        if that.is_a?(String)
+          # Assume it is a status code and work with it.
+          that_code = that
+        else
+          return false unless that.is_a?(LinkedData::Models::SubmissionStatus)
+          that_code = that.get_code_from_id
+        end
+        return this_code.equal? that_code
+      end
+
     end
   end
 end
