@@ -228,7 +228,7 @@ module LinkedData
           self.diffFilePath = bubastis.diff
           self.save
           #
-          # TODO: Add submission status value for 'CREATED_DIFF' or something?
+          # TODO: Add submission status value for 'DIFF' or something?
           #
           logger.info("Bubastis diff processed")
           logger.flush
@@ -532,46 +532,45 @@ eos
             add_submission_status(status)
           else
             if (process_rdf)
-              if not self.valid?
-                error = "Submission is not valid, it cannot be processed. Check errors"
-                logger.info(error)
-                logger.flush
-                raise ArgumentError, error
-              end
 
-              if not self.uploadFilePath
-                error = "Submission is missing an ontology file, cannot parse"
-                logger.info(error)
-                logger.flush
-                raise ArgumentError, error
-              end
+              # Remove all processing status types before starting RDF parsing etc.
+              self.submissionStatus = nil
+              self.save
 
+              # Parse RDF
               file_path = nil
-              status = LinkedData::Models::SubmissionStatus.find("RDF").first
-              #remove RDF status before starting
-              remove_submission_status(status)
-
               begin
+                if not self.valid?
+                  error = "Submission is not valid, it cannot be processed. Check errors."
+                  raise ArgumentError, error
+                end
+                if not self.uploadFilePath
+                  error = "Submission is missing an ontology file, cannot parse."
+                  raise ArgumentError, error
+                else
+                  status = LinkedData::Models::SubmissionStatus.find("UPLOADED").first
+                  add_submission_status(status)
+                end
+                status = LinkedData::Models::SubmissionStatus.find("RDF").first
                 zip_dst = unzip_submission(logger)
                 file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
                 generate_rdf(logger, file_path, reasoning=reasoning)
                 add_submission_status(status)
+                self.save
               rescue Exception => e
                 logger.info(e.message)
                 logger.flush
                 add_submission_status(status.get_error_status)
                 self.save
-                # if rdf generation fails, no point of continuing
+                # If RDF generation fails, no point of continuing
                 raise e
               end
 
               status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
-              #remove RDF_LABELS status before starting
-              remove_submission_status(status)
-
               begin
                 generate_missing_labels(logger, file_path)
                 add_submission_status(status)
+                self.save
               rescue Exception => e
                 logger.info(e.message)
                 logger.flush
@@ -582,10 +581,10 @@ eos
               end
 
               status = LinkedData::Models::SubmissionStatus.find("OBSOLETE").first
-              remove_submission_status(status)
               begin
                 generate_obsolete_classes(logger, file_path)
                 add_submission_status(status)
+                self.save
               rescue Exception => e
                 logger.info(e.message)
                 logger.flush
@@ -601,9 +600,6 @@ eos
             if (index_search)
               raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
               status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
-              #remove INDEXED status before starting
-              remove_submission_status(status)
-
               begin
                 index(logger, false)
                 add_submission_status(status)
@@ -612,14 +608,12 @@ eos
                 logger.info(e.message)
                 logger.flush
               end
+              self.save
             end
 
             if (run_metrics)
               raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
               status = LinkedData::Models::SubmissionStatus.find("METRICS").first
-              #remove METRICS status before starting
-              remove_submission_status(status)
-
               begin
                 process_metrics(logger)
                 add_submission_status(status)
@@ -629,9 +623,11 @@ eos
                 logger.info(e.message)
                 logger.flush
               end
+              self.save
             end
 
             if diff
+              status = LinkedData::Models::SubmissionStatus.find("DIFF").first
               # Get previous submission from ontology.submissions
               self.ontology.bring(:submissions)
               submissions = self.ontology.submissions
@@ -648,8 +644,12 @@ eos
                       # generate a diff
                       begin
                         self.diff(logger, prev)
+                        add_submission_status(status)
+                        self.save
                       rescue
-                        # pass, self.diff logs all errors
+                        # self.diff logs errors
+                        add_submission_status(status.get_error_status)
+                        self.save
                       end
                     end
                   end

@@ -9,7 +9,8 @@ module LinkedData
         "INDEXED", "ERROR_INDEXED",
         "METRICS",  "ERROR_METRICS",
         "ANNOTATOR", "ERROR_ANNOTATOR",
-        "ARCHIVED", "ERROR_ARCHIVED"
+        "ARCHIVED", "ERROR_ARCHIVED",
+        "DIFF", "ERROR_DIFF",
       ]
 
       USER_READABLE = {
@@ -20,7 +21,9 @@ module LinkedData
         "METRICS"         => "Class metrics calculated",
         "ERROR_METRICS"   => "Error calculating class metrics",
         "ANNOTATOR"       => "Processed for use in Annotator",
-        "ERROR_ANNOTATOR" => "Error processing for use in Annotator"
+        "ERROR_ANNOTATOR" => "Error processing for use in Annotator",
+        "DIFF"            => "Created submission version diff successfully",
+        "ERROR_DIFF"      => "Error creating submission version diff",
       }
 
       USER_IGNORE = [

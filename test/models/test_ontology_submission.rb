@@ -473,7 +473,6 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
                                              .include(:prefLabel, :synonym).all
@@ -576,7 +575,6 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
     #test for ontology headers added to the graph
     sparql_query = <<eos
 SELECT * WHERE {
