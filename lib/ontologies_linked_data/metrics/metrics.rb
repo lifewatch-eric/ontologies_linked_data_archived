@@ -45,13 +45,13 @@ module LinkedData
       cls_metrics[:maxDepth] = 0
       page = 1
       children_counts = []
+      classes_children = {}
       begin
         t0 = Time.now
         page_classes = paging.page(page).all
         logger.info("Metrics Classes Page #{page} of #{page_classes.total_pages}"+
                     " classes retrieved in #{Time.now - t0} sec.")
         logger.flush
-        classes_children = {}
         page_classes.each do |cls|
           cls_metrics[:classes] += 1
           #TODO: investigate
