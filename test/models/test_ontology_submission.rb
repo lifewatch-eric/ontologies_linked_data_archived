@@ -246,7 +246,7 @@ eos
 
   def test_submission_parse_zip
     skip
-    return if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
+    skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
