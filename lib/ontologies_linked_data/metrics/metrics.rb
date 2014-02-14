@@ -97,6 +97,10 @@ module LinkedData
     end
 
     def self.recursive_depth(cls,classes,depth,visited)
+      if depth > 60
+        #safety for cycles.
+        return branch_depts.max
+      end
       children = classes[cls]
       branch_depts = [depth+1]
       children.each do |ch|
