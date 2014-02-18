@@ -65,7 +65,7 @@ module LinkedData
       end
 
       def self.readable_statuses(statuses)
-        statuses = statuses.map {|s| s.code}
+        statuses = where.models(statuses).include(:code).to_a.map {|s| s.code}
         statuses = statuses - USER_IGNORE
         statuses.sort! {|a,b| VALUES.index(a) <=> VALUES.index(b)}
         statuses.map {|s| USER_READABLE[s] || s.capitalize}
