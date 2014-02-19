@@ -13,7 +13,6 @@ gem 'rsolr', '~> 1.0'
 gem 'minitest', '~> 4.0'
 gem 'cube-ruby', require: "cube"
 gem 'pony'
-gem 'systemu' # remove when https://github.com/ahoward/macaddr/pull/19 is resolved
 
 # Testing
 gem 'simplecov', :group => :test
