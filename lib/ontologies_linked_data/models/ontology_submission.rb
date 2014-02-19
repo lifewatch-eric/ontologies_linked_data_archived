@@ -532,6 +532,11 @@ eos
             add_submission_status(status)
           else
             if (process_rdf)
+              # Remove processing status types before starting RDF parsing etc.
+              self.submissionStatus = nil
+              status = LinkedData::Models::SubmissionStatus.find("UPLOADED").first
+              add_submission_status(status)
+              self.save
               # Parse RDF
               file_path = nil
               begin
