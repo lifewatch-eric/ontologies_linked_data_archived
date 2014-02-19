@@ -34,8 +34,7 @@ module LinkedData
       model :submission_status, name_with: :code
       attribute :code, enforce: [:existence, :unique]
       attribute :submissions,
-              :inverse => { :on => :ontology_submission,
-              :attribute => :submissionStatus }
+              :inverse => { :on => :ontology_submission, :attribute => :submissionStatus }
       enum VALUES
 
       def error?
@@ -98,7 +97,7 @@ module LinkedData
       end
 
       def ==(that)
-        this_code = self.get_code_from_id
+        this_code = get_code_from_id
         if that.is_a?(String)
           # Assume it is a status code and work with it.
           that_code = that
@@ -106,7 +105,7 @@ module LinkedData
           return false unless that.is_a?(LinkedData::Models::SubmissionStatus)
           that_code = that.get_code_from_id
         end
-        return this_code.equal? that_code
+        return this_code == that_code
       end
 
     end
