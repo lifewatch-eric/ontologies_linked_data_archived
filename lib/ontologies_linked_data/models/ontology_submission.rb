@@ -532,11 +532,6 @@ eos
             add_submission_status(status)
           else
             if (process_rdf)
-
-              # Remove all processing status types before starting RDF parsing etc.
-              self.submissionStatus = nil
-              self.save
-
               # Parse RDF
               file_path = nil
               begin
@@ -547,11 +542,9 @@ eos
                 if not self.uploadFilePath
                   error = "Submission is missing an ontology file, cannot parse."
                   raise ArgumentError, error
-                else
-                  status = LinkedData::Models::SubmissionStatus.find("UPLOADED").first
-                  add_submission_status(status)
                 end
                 status = LinkedData::Models::SubmissionStatus.find("RDF").first
+                remove_submission_status(status) #remove RDF status before starting
                 zip_dst = unzip_submission(logger)
                 file_path = zip_dst ? zip_dst.to_s : self.uploadFilePath.to_s
                 generate_rdf(logger, file_path, reasoning=reasoning)
