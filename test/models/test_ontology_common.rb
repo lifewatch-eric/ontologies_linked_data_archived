@@ -112,7 +112,7 @@ module LinkedData
       ont_submission.released = DateTime.now - 4
       ont_submission.hasOntologyLanguage = owl
       ont_submission.ontology = ont
-      if acr["OBS"]
+      if acr["OBS"] && !acr["DISCOVER"]
         if acr["BRANCH"]
           ont_submission.obsoleteParent =
             RDF::URI.new("http://bioportal.bioontology.org/ontologies/msotes#class1")
@@ -138,9 +138,11 @@ module LinkedData
       end
 
       roots = ont_submission.roots
-      #class99 is equilent to intersection of ...
+      #class99 is equivalent to intersection of ...
       #it shouldnt be at the root
-      if acr["OBSPROPS"]
+      if acr["OBSPROPSDISC"]
+        assert roots.length == 5
+      elsif acr["OBSPROPS"]
         assert roots.length == 4
       elsif acr["OBSBRANCH"]
         assert roots.length == 5

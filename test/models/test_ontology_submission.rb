@@ -334,6 +334,29 @@ eos
     end
   end
 
+  def test_discover_obo_in_owl_obsolete
+    acr = "OBSPROPSDISCOVER"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss.first
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
+    classes.each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["OBS"] || c.id.to_s["class6"]
+        assert(c.obsolete, "Class should be obsolete: #{c.id}")
+      else
+        assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
+      end
+    end
+  end
+
   def test_custom_obsolete_property
 
     acr = "OBSPROPS"
@@ -350,7 +373,7 @@ eos
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
     classes.each do |c|
       assert (not c.prefLabel.nil?)
-      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
+      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"] || c.id.to_s["OBS"]
         assert(c.obsolete, "Class should be obsolete: #{c.id}")
       else
         assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
