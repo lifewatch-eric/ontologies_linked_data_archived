@@ -387,6 +387,15 @@ eos
           end
           logger.info("Obsolete found #{classes_deprecated.length} for property #{self.obsoleteProperty.to_s}")
         end
+        if self.obsoleteParent.nil?
+          #try to find oboInOWL obsolete.
+          obo_in_owl_obsolete_class = LinkedData::Models::Class
+                                  .find(LinkedData::Utils::Triples.obo_in_owl_obsolete_uri)
+                                  .in(self).first
+          if obo_in_owl_obsolete_class
+            self.obsoleteParent = LinkedData::Utils::Triples.obo_in_owl_obsolete_uri
+          end
+        end
         if self.obsoleteParent
           class_obsolete_parent = LinkedData::Models::Class
                                   .find(self.obsoleteParent)

@@ -60,6 +60,10 @@ module LinkedData
                       RDF::URI.new("http://www.w3.org/2002/07/owl#deprecated"),
                       RDF::Literal.new("true", :datatype => RDF::XSD.boolean))
       end
+
+      def self.obo_in_owl_obsolete_uri
+        return RDF::URI.new "http://www.geneontology.org/formats/oboInOwl#ObsoleteClass"
+      end
     end
   end
 end
