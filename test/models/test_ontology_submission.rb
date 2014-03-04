@@ -708,6 +708,29 @@ eos
     assert metrics.maxChildCount == 65
     assert metrics.averageChildCount == 5
     assert metrics.maxDepth == 8
+
+    submission_parse("BROTEST-ISFLAT", "BRO testing metrics flat",
+                     "./test/data/ontology_files/BRO_v3.2.owl", 33,
+                     process_rdf: true, index_search: false,
+                     run_metrics: true, reasoning: true)
+
+    sub = LinkedData::Models::Ontology.find("BROTEST-ISFLAT").first
+      .latest_submission(status: [:rdf, :metrics])
+    sub.bring(:metrics)
+    metrics = sub.metrics
+    metrics.bring_remaining
+
+    #all the child metrics should be 0 since we declare it as flat
+    assert metrics.classes == 486
+    assert metrics.properties == 63
+    assert metrics.individuals == 82
+    assert metrics.classesWithOneChild == 0
+    #cause it has not the subproperty added
+    assert metrics.classesWithNoDefinition == 474
+    assert metrics.classesWithMoreThan25Children == 0
+    assert metrics.maxChildCount == 0
+    assert metrics.averageChildCount == 0
+    assert metrics.maxDepth == 0
   end
 
 end
