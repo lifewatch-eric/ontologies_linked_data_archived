@@ -245,7 +245,8 @@ eos
   end
 
   def test_submission_parse_zip
-    return if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
+    skip
+    skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
 
     acronym = "RADTEST"
     name = "RADTEST Bla"
@@ -333,6 +334,29 @@ eos
     end
   end
 
+  def test_discover_obo_in_owl_obsolete
+    acr = "OBSPROPSDISCOVER"
+    init_test_ontology_msotest acr
+
+    o = LinkedData::Models::Ontology.find(acr).first
+    o.bring_remaining
+    o.bring(:submissions)
+    oss = o.submissions
+    assert_equal 1, oss.length
+    ont_sub = oss.first
+    ont_sub.bring_remaining
+    assert ont_sub.ready?
+    classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
+    classes.each do |c|
+      assert (not c.prefLabel.nil?)
+      if c.id.to_s["OBS"] || c.id.to_s["class6"]
+        assert(c.obsolete, "Class should be obsolete: #{c.id}")
+      else
+        assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
+      end
+    end
+  end
+
   def test_custom_obsolete_property
 
     acr = "OBSPROPS"
@@ -349,7 +373,7 @@ eos
     classes = LinkedData::Models::Class.in(ont_sub).include(:prefLabel, :synonym, :obsolete).to_a
     classes.each do |c|
       assert (not c.prefLabel.nil?)
-      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"]
+      if c.id.to_s["#class6"] || c.id.to_s["#class1"] || c.id.to_s["#class99"] || c.id.to_s["OBS"]
         assert(c.obsolete, "Class should be obsolete: #{c.id}")
       else
         assert_equal(false, c.obsolete, "Class should not be obsolete: #{c.id}")
@@ -472,7 +496,6 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
                                              .include(:prefLabel, :synonym).all
@@ -575,7 +598,6 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
     #test for ontology headers added to the graph
     sparql_query = <<eos
 SELECT * WHERE {
@@ -686,6 +708,29 @@ eos
     assert metrics.maxChildCount == 65
     assert metrics.averageChildCount == 5
     assert metrics.maxDepth == 8
+
+    submission_parse("BROTEST-ISFLAT", "BRO testing metrics flat",
+                     "./test/data/ontology_files/BRO_v3.2.owl", 33,
+                     process_rdf: true, index_search: false,
+                     run_metrics: true, reasoning: true)
+
+    sub = LinkedData::Models::Ontology.find("BROTEST-ISFLAT").first
+      .latest_submission(status: [:rdf, :metrics])
+    sub.bring(:metrics)
+    metrics = sub.metrics
+    metrics.bring_remaining
+
+    #all the child metrics should be 0 since we declare it as flat
+    assert metrics.classes == 486
+    assert metrics.properties == 63
+    assert metrics.individuals == 82
+    assert metrics.classesWithOneChild == 0
+    #cause it has not the subproperty added
+    assert metrics.classesWithNoDefinition == 474
+    assert metrics.classesWithMoreThan25Children == 0
+    assert metrics.maxChildCount == 0
+    assert metrics.averageChildCount == 0
+    assert metrics.maxDepth == 0
   end
 
 end

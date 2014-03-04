@@ -3,6 +3,8 @@ require 'ontologies_linked_data/serializers/serializers'
 
 module LinkedData
   class Serializer
+    class AcceptHeaderError < StandardError; end
+
     def self.build_response(env, options = {})
       status = options[:status] || 200
       headers = options[:headers] || {}
@@ -14,34 +16,24 @@ module LinkedData
         params = env["rack.request.form_hash"]
       end
 
-      best = best_response_type(env, params)
-
-      # Error out if we don't support the foramt
-      unless LinkedData::MediaTypes.supported_base_type?(best)
-        return response(:status => 415)
-      end
-
       begin
+        best = best_response_type(env, params)
+
+        # Error out if we don't support the foramt
+        unless LinkedData::MediaTypes.supported_base_type?(best)
+          return response(:status => 415)
+        end
+
         response(
           :status => status,
           :content_type => "#{LinkedData::MediaTypes.media_type_from_base(best)};charset=utf-8",
           :body => serialize(best, obj, params, Rack::Request.new(env)),
           :headers => headers
         )
+      rescue AcceptHeaderError => ae
+        handle_error(ae, 400, ae.message)
       rescue Exception => e
-        begin
-          if print_stacktrace?
-            message = e.message + "\n\n  " + e.backtrace.join("\n  ")
-            ::LOGGER.debug message
-            response(:status => 500, :body => message)
-          else
-            response(:status => 500, :body => "Internal server error")
-          end
-        rescue Exception => e1
-          message = e1.message + "\n\n  " + e1.backtrace.join("\n  ")
-          ::LOGGER.debug message
-          response(:status => 500, :body => "Internal server error")
-        end
+        handle_error(e)
       end
     end
 
@@ -49,16 +41,38 @@ module LinkedData
       # Client accept header
       accept = env['rack-accept.request']
       # Out of the media types we offer, which would be best?
-      best = LinkedData::MediaTypes.base_type(accept.best_media_type(LinkedData::MediaTypes.all)) unless accept.nil?
+      begin
+        best = LinkedData::MediaTypes.base_type(accept.best_media_type(LinkedData::MediaTypes.all)) unless accept.nil?
+      rescue
+        accept_header_error = "Accept header `#{env['HTTP_ACCEPT']}` is invalid"
+      end
       # Try one other method to get the media type
       best ||= LinkedData::MediaTypes.base_type(env["HTTP_ACCEPT"])
       # If user provided a format via query string, override the accept header
       best = params["format"].to_sym if params["format"]
+      # We raise an accept header parse error here if user doesn't provide a format in the parameter
+      raise AcceptHeaderError, accept_header_error if !best && accept_header_error
       # Default format if none is provided
       best ||= LinkedData::MediaTypes::DEFAULT
     end
 
     private
+
+    def self.handle_error(error, status = 500, message = "Internal server error")
+      begin
+        if print_stacktrace?
+          message = error.message + "\n\n  " + error.backtrace.join("\n  ")
+          ::LOGGER.debug message
+          response(:status => status, :body => message)
+        else
+          response(:status => status, :body => message)
+        end
+      rescue Exception => e1
+        message = e1.message + "\n\n  " + e1.backtrace.join("\n  ")
+        ::LOGGER.debug message
+        response(:status => status, :body => message)
+      end
+    end
 
     def self.response(options = {})
       status = options[:status] || 200

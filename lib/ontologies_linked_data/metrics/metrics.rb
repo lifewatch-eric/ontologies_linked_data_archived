@@ -35,6 +35,8 @@ module LinkedData
       paging = LinkedData::Models::Class.in(submission)
                                         .include(:children,:definition)
                                         .page(1,size_page)
+      submission.ontology.bring(:flat) if submission.ontology.bring?(:flat)
+      is_flat = submission.ontology.flat
       cls_metrics = {}
       cls_metrics[:classes] = 0
       cls_metrics[:averageChildCount] = 0
@@ -59,38 +61,42 @@ module LinkedData
           unless cls.definition.is_a?(Array) && cls.definition.length > 0
             cls_metrics[:classesWithNoDefinition] += 1
           end
-          if cls.children.length > 24
-            cls_metrics[:classesWithMoreThan25Children] += 1
-          end
-          if cls.children.length == 1
-            cls_metrics[:classesWithOneChild] += 1
-          end
-          if cls.children.length > 0
-            children_counts << cls.children.length
-            classes_children[cls.id.to_s] = cls.children.map { |x| x.id.to_s}
+          unless is_flat
+            if cls.children.length > 24
+              cls_metrics[:classesWithMoreThan25Children] += 1
+            end
+            if cls.children.length == 1
+              cls_metrics[:classesWithOneChild] += 1
+            end
+            if cls.children.length > 0
+              children_counts << cls.children.length
+              classes_children[cls.id.to_s] = cls.children.map { |x| x.id.to_s}
+            end
           end
         end
         page = page_classes.next? ? page + 1 : nil
       end while(!page.nil?)
-      roots_depth = [0]
-      visited = Set.new
-      roots = submission.roots
-      if roots.length > 0
-        roots = roots.map { |x| x.id.to_s }
-        roots.each do |root|
-          next if classes_children[root].nil?
-          roots_depth << recursive_depth(root,classes_children,1,visited)
-          visited << root
+      unless is_flat
+        roots_depth = [0]
+        visited = Set.new
+        roots = submission.roots
+        if roots.length > 0
+          roots = roots.map { |x| x.id.to_s }
+          roots.each do |root|
+            next if classes_children[root].nil?
+            roots_depth << recursive_depth(root,classes_children,1,visited)
+            visited << root
+          end
         end
-      end
-      cls_metrics[:maxDepth]=roots_depth.max
-      if children_counts.length > 0
-        cls_metrics[:maxChildCount] = children_counts.max
-        sum = 0
-        children_counts.each do |x|
-          sum += x
+        cls_metrics[:maxDepth]=roots_depth.max
+        if children_counts.length > 0
+          cls_metrics[:maxChildCount] = children_counts.max
+          sum = 0
+          children_counts.each do |x|
+            sum += x
+          end
+          cls_metrics[:averageChildCount]  = (sum.to_f / children_counts.length).to_i
         end
-        cls_metrics[:averageChildCount]  = (sum.to_f / children_counts.length).to_i
       end
       logger.info("Class metrics finished in #{Time.now - t00} sec.")
       return cls_metrics
