@@ -20,7 +20,6 @@ module LinkedData
       if ont.nil?
 
         ont = LinkedData::Models::Ontology.new(:acronym => acronym, :name => name_ont, administeredBy: [user])
-        binding.pry if not ont.valid?
         ont.save
       end
 
