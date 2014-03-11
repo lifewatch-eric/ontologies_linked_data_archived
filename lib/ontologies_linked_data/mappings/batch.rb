@@ -73,6 +73,12 @@ module LinkedData
       def start()
         t0 = Time.now 
         @logger.info("Starting batch ...")
+        @ontologies.each do |ont|
+          ont.bring(:viewOf) if ont.bring?(:viewOf)
+          if !ont.viewOf.nil?
+            raise ArgumentError, "Mappings for views cannot be generated"
+          end
+        end
         label_dumps_file_paths = dumps()
         sorted_file_path = sort(label_dumps_file_paths,@sort_field)
         mapping_pairs = process_sort_results(sorted_file_path)

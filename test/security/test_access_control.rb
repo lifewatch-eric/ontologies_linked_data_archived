@@ -32,14 +32,14 @@ class TestAccessControl < LinkedData::TestCase
     @@restricted_ont.save
     @@restricted_user = @@restricted_ont.administeredBy.first
     @@restricted_user.bring_remaining
-    @@restricted_sub = @@restricted_ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
+    @@restricted_sub = @@restricted_ont.latest_submission(status: :any).bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
 
     @@ont = onts.shift
     @@ont.bring(:submissions)
     @@ont.bring_remaining
     @@user = @@ont.administeredBy.first
     @@user.bring_remaining
-    @@sub = @@ont.latest_submission.bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
+    @@sub = @@ont.latest_submission(status: :any).bring(*LinkedData::Models::OntologySubmission.goo_attrs_to_load)
 
     @@note = LinkedData::Models::Note.new({
       creator: @@user,
@@ -57,7 +57,7 @@ class TestAccessControl < LinkedData::TestCase
     LinkedData.settings.enable_security = @@old_security_setting if class_variable_defined?("@@old_security_setting")
     _delete_users
     self.new("after_suite").delete_ontologies_and_submissions
-    @@note.delete if class_variable_defined?("@@note")
+    @@note.delete if class_variable_defined?("@@note") && @@note.exist?
   end
 
   def self._delete_users

@@ -9,7 +9,8 @@ module LinkedData
         "INDEXED", "ERROR_INDEXED",
         "METRICS",  "ERROR_METRICS",
         "ANNOTATOR", "ERROR_ANNOTATOR",
-        "ARCHIVED", "ERROR_ARCHIVED"
+        "ARCHIVED", "ERROR_ARCHIVED",
+        "DIFF", "ERROR_DIFF",
       ]
 
       USER_READABLE = {
@@ -20,7 +21,9 @@ module LinkedData
         "METRICS"         => "Class metrics calculated",
         "ERROR_METRICS"   => "Error calculating class metrics",
         "ANNOTATOR"       => "Processed for use in Annotator",
-        "ERROR_ANNOTATOR" => "Error processing for use in Annotator"
+        "ERROR_ANNOTATOR" => "Error processing for use in Annotator",
+        "DIFF"            => "Created submission version diff successfully",
+        "ERROR_DIFF"      => "Error creating submission version diff",
       }
 
       USER_IGNORE = [
@@ -31,8 +34,7 @@ module LinkedData
       model :submission_status, name_with: :code
       attribute :code, enforce: [:existence, :unique]
       attribute :submissions,
-              :inverse => { :on => :ontology_submission,
-              :attribute => :submissionStatus }
+              :inverse => { :on => :ontology_submission, :attribute => :submissionStatus }
       enum VALUES
 
       def error?
@@ -62,7 +64,7 @@ module LinkedData
       end
 
       def self.readable_statuses(statuses)
-        statuses = statuses.map {|s| s.code}
+        statuses = where.models(statuses).include(:code).to_a.map {|s| s.code}
         statuses = statuses - USER_IGNORE
         statuses.sort! {|a,b| VALUES.index(a) <=> VALUES.index(b)}
         statuses.map {|s| USER_READABLE[s] || s.capitalize}
@@ -93,6 +95,19 @@ module LinkedData
             #"ANNOTATOR"
         ]
       end
+
+      def ==(that)
+        this_code = get_code_from_id
+        if that.is_a?(String)
+          # Assume it is a status code and work with it.
+          that_code = that
+        else
+          return false unless that.is_a?(LinkedData::Models::SubmissionStatus)
+          that_code = that.get_code_from_id
+        end
+        return this_code == that_code
+      end
+
     end
   end
 end

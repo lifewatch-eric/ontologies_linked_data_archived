@@ -44,6 +44,10 @@ module LinkedData::Security
       not self.class.access_control_settings[:access_control_load].empty?
     end
 
+    def access_for_all?
+      self.class.access_control_settings[:grant_access_to_all].first == true
+    end
+
     private
 
     def read_restricted_based_on?(based_on)
@@ -117,7 +121,8 @@ module LinkedData::Security
         :read_restriction_based_on,
         :read_access,
         :write_access,
-        :access_control_load
+        :access_control_load,
+        :grant_access_to_all
       ]
 
       ##

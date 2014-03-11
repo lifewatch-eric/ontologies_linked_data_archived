@@ -30,9 +30,10 @@ module LinkedData
       attribute :prefLabel, namespace: :skos, enforce: [:existence], alias: true
       attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
-      attribute :deprecated, namespace: :owl
+      attribute :obsolete, namespace: :owl, property: :deprecated, alias: true
 
       attribute :notation, namespace: :skos
+      attribute :prefixIRI, namespace: :metadata
 
       attribute :parents, namespace: :rdfs, 
                   property: lambda {|x| self.tree_view_property(x) },
@@ -67,9 +68,9 @@ module LinkedData
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
-      serialize_default :prefLabel, :synonym, :definition
+      serialize_default :prefLabel, :synonym, :definition, :obsolete
       serialize_methods :properties
-      serialize_never :submissionAcronym, :submissionId, :submission
+      serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
       links_load submission: [ontology: [:acronym]]
       do_not_load :descendants, :ancestors
@@ -107,13 +108,19 @@ module LinkedData
         [cls.submission.ontology.acronym] rescue []
       end
 
+      def obsolete
+        return @obsolete || false
+      end
+
       def get_index_doc
         doc = {
             :resource_id => self.id.to_s,
             :ontologyId => self.submission.id.to_s,
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
+            :obsolete => self.obsolete.to_s
         }
+
         all_attrs = self.to_hash
         std = [:id, :prefLabel, :notation, :synonym, :definition]
 
@@ -165,6 +172,30 @@ module LinkedData
         properties = self.unmapped
         bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
         properties.delete(bad_iri)
+
+        #hack to be remove when closing NCBO-453
+        orphan_id = "http://bioportal.bioontology.org/ontologies/umls/OrphanClass"
+        subClassOf = RDF::RDFS[:subClassOf].to_s
+        filtered = false
+        change = Hash.new
+        properties.each do |k,v|
+          if k.to_s ==  subClassOf
+            if v.is_a?(Array)
+              if v.index { |x| x.to_s == orphan_id}
+                filtered = true
+              end
+              v.delete_if { |x| x.to_s == orphan_id}
+            end
+          end
+          unless k.to_s ==  subClassOf && filtered
+            change[k] = v
+          end
+        end
+        if filtered
+          properties = change
+        end
+        #end hack
+
         properties
       end
 
@@ -180,15 +211,17 @@ module LinkedData
         return paths
       end
 
-      def self.partially_load_children(models,threshold,submission)
+      def self.partially_load_children(models,threshold,submission,only_children_count=false)
 
         ld = [:prefLabel, :definition, :synonym]
 
         single_load = []
-        self.in(submission)
+        query = self.in(submission)
               .models(models)
-              .include(ld)
-              .aggregate(:count, :children).all
+        if only_children_count
+            query = query.include(ld)
+        end
+        query.aggregate(:count, :children).all
 
         models.each do |cls|
           if cls.aggregates.first.value > threshold
@@ -242,7 +275,7 @@ module LinkedData
 
         self.class.in(submission)
               .models(items_hash.values)
-              .include(:prefLabel,:synonym).all
+              .include(:prefLabel,:synonym,:obsolete).all
 
         LinkedData::Models::Class
           .partially_load_children(items_hash.values,99,self.submission)
@@ -257,8 +290,8 @@ module LinkedData
           end
         end
 
-        LinkedData::Models::Class.
-          partially_load_children(childrens_hash.values,99,self.submission)
+       LinkedData::Models::Class.
+         partially_load_children(childrens_hash.values,99,self.submission,only_children_count=true)
 
         #build the tree
         root_node = path.first
@@ -282,7 +315,6 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
-
         return root_node
       end
 
@@ -328,8 +360,18 @@ module LinkedData
           path = paths[rec_i]
           p = path.last
           next if p.id.to_s["umls/OrphanClass"]
-          p.bring(parents: [:prefLabel,:synonym, :definition] ) if p.bring?(:parents)
-          if !p.id.to_s["#Thing"] && (recurse_on_path[i] && p.parents && p.parents.length > 0)
+          if p.bring?(:parents)
+            p.bring(parents: [:prefLabel,:synonym, :definition] )
+          end
+
+          if !p.loaded_attributes.include?(:parents)
+            # fail safely
+            LOGGER.error("Class #{p.id.to_s} from #{p.submission.id}  cannot load parents")
+            return
+          end
+
+          if !p.id.to_s["#Thing"] &&\
+              (recurse_on_path[i] && p.parents && p.parents.length > 0)
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end

@@ -16,15 +16,7 @@ class TestMapping < LinkedData::TestOntologyCommon
       raise Exception, "KB with too many mappings to run test. Is this pointing to a TEST KB?"
     end
 
-    LinkedData::Models::MappingProcess.all do |m|
-      m.delete
-    end
-    LinkedData::Models::TermMapping.all do |m|
-      m.delete
-    end
-    LinkedData::Models::Mapping.all do |m|
-      m.delete
-    end
+    LinkedData::TestCase.backend_4s_delete
     ontologies_parse()
   end
 
@@ -67,6 +59,20 @@ class TestMapping < LinkedData::TestOntologyCommon
     ps = LinkedData::Models::MappingProcess.where({:name => name }).to_a
     assert ps.length == 1
     return ps[0]
+  end
+
+  def test_error_for_views() 
+    view = LinkedData::Models::Ontology.new(acronym: "FAKEVIEW", 
+                        name: "FAKEVIEW", 
+                        administeredBy: [LinkedData::Models::User.all.first], 
+                        viewOf: LinkedData::Models::Ontology.all.first)
+    view.save
+    process = get_process("LOOMTEST")
+    assert_raises ArgumentError do
+      tmp_log = Logger.new(TestLogFile.new)
+      loom = LinkedData::Mappings::Loom.new(LinkedData::Models::Ontology.all.first, view, tmp_log)
+      loom.start()
+    end
   end
 
   def test_multiple_mapping()
@@ -324,6 +330,11 @@ class TestMapping < LinkedData::TestOntologyCommon
         assert 1!=0, "Outside of controlled set of mappings"
       end
     end
+
+    counts_ont1 = LinkedData::Mappings.mapping_counts_for_ontology(ont1)
+    assert counts_ont1 == {"MAPPING_TEST1"=>3, "MAPPING_TEST4"=>3}
+    counts_all = LinkedData::Mappings.mapping_counts_per_ontology()
+    assert counts_all == {"MAPPING_TEST1"=>8, "MAPPING_TEST2"=>6, "MAPPING_TEST4"=>8}
   end
 
   def test_cui

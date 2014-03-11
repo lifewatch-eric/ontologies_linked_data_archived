@@ -3,10 +3,13 @@ require 'set'
 class Object
 
   DO_NOT_SERIALIZE = %w(attributes table _cached_exist internals captures splat uuid password inverse_atttributes loaded_attributes modified_attributes previous_values persistent aggregates unmapped errors id)
-  CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI])
+  CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI, RDF::Literal])
 
   def to_flex_hash(options = {}, &block)
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass) || is_a?(NilClass)
+
+    # Make sure special include_for_class params are separated out
+    options[:include_for_class] = options[:params]["include_for_class"] if options[:params]
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
@@ -19,6 +22,15 @@ class Object
     except = Set.new(options[:except]).map! {|e| e.to_sym }
 
     hash = {}
+
+    # This is used in places where the class is not a top-level object
+    # For example, in the Annotator response. For these endpoints, we
+    # assume that include=prefLabel applies to the annotatedClass
+    # or wherever a class object appears in the response.
+    cls = self.respond_to?(:klass) ? self.klass : self.class
+    if cls == LinkedData::Models::Class && options[:include_for_class]
+      only = Set.new(options[:include_for_class] || []) rescue binding.pry
+    end
 
     if all # Get everything
       methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
@@ -73,6 +85,12 @@ class Object
         hash[convert_nonstandard_types(k, options, &block)] = v
       end
 
+      # Convert RDF literals to their equivalent Ruby typed value
+      if v.is_a?(RDF::Literal)
+        hash[k] = v.value
+        next
+      end
+
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       hash, modified = embed_goo_objects(hash, k, v, options, &block)
       next if modified
@@ -80,9 +98,6 @@ class Object
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
       next if modified
-
-      # Convert RDF literals to their equivalent Ruby typed value
-      v = v.value if v.is_a?(RDF::Literal)
 
       new_value = convert_nonstandard_types(v, options, &block)
 
@@ -269,7 +284,7 @@ class Object
     sample_object = value.is_a?(Enumerable) && !value.is_a?(Hash) ? value.first : value
 
     # Use the same options if the object to serialize is the same as the one containing it
-    options = sample_object.class == self.class ? options : {}
+    options = sample_object.class == self.class ? options : {include_for_class: options[:include_for_class]}
 
     # If we're using a struct here, we should get it's class
     sample_class = self.is_a?(Struct) && self.respond_to?(:klass) ? self.klass : self.class

@@ -1,3 +1,4 @@
+require 'fileutils'
 require_relative 'ontology_submission'
 require_relative 'review'
 require_relative 'group'
@@ -33,7 +34,7 @@ module LinkedData
       attribute :doNotUpdate, enforce: [:boolean]
       attribute :flat, enforce: [:boolean]
       attribute :hasDomain, namespace: :omv, enforce: [:list, :category]
-      attribute :summaryOnly
+      attribute :summaryOnly, enforce: [:boolean]
 
       attribute :acl, enforce: [:list, :user]
 
@@ -44,6 +45,7 @@ module LinkedData
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name, :summaryOnly
+      links_load :acronym
       link_to LinkedData::Hypermedia::Link.new("submissions", lambda {|s| "ontologies/#{s.acronym}/submissions"}, LinkedData::Models::OntologySubmission.uri_type),
               LinkedData::Hypermedia::Link.new("classes", lambda {|s| "ontologies/#{s.acronym}/classes"}, LinkedData::Models::Class.uri_type),
               LinkedData::Hypermedia::Link.new("single_class", lambda {|s| "ontologies/#{s.acronym}/classes/{class_id}"}, LinkedData::Models::Class.uri_type),
@@ -55,6 +57,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("categories", lambda {|s| "ontologies/#{s.acronym}/categories"}, LinkedData::Models::Category.uri_type),
               LinkedData::Hypermedia::Link.new("latest_submission", lambda {|s| "ontologies/#{s.acronym}/latest_submission"}, LinkedData::Models::OntologySubmission.uri_type),
               LinkedData::Hypermedia::Link.new("projects", lambda {|s| "ontologies/#{s.acronym}/projects"}, LinkedData::Models::Project.uri_type),
+              LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.acronym}/download"}, self.type_uri),
               LinkedData::Hypermedia::Link.new("views", lambda {|s| "ontologies/#{s.acronym}/views"}, self.type_uri),
               LinkedData::Hypermedia::Link.new("ui", lambda {|s| "http://#{LinkedData.settings.ui_host}/ontologies/#{s.acronym}"}, self.uri_type)
 
@@ -104,21 +107,23 @@ module LinkedData
 
       def next_submission_id
         self.bring(:submissions)
-        (highest_submission_id(status: :any) || 0) + 1
+        (highest_submission_id(status: :any) || 1) + 1
       end
 
       def highest_submission_id(options = {})
         reload = options[:reload] || false
         status = options[:status] || :ready
 
-        #just reload submissions - TODO: smarter
-        if reload || self.bring?(:submissions) ||
-            (self.submissions.first &&
-             (self.submissions.first.bring?(:submissionId) ||
-              self.submissions.first.bring?(:submissionStatus)))
-          LinkedData::Models::Ontology.where.models([self])
-                      .include(submissions: [:submissionId, :submissionStatus])
-                      .to_a
+        LinkedData::Models::Ontology.where.models([self])
+                    .include(submissions: [:submissionId, :submissionStatus])
+                    .to_a
+        self.submissions.each do |s|
+          if !s.loaded_attributes.include?(:submissionId)
+            s.bring(:submissionsId)
+          end
+          if !s.loaded_attributes.include?(:submissionStatus)
+            s.bring(:submissionStatus)
+          end
         end
 
         return 0 if self.submissions.nil? || self.submissions.empty?
@@ -135,18 +140,74 @@ module LinkedData
       end
 
       ##
-      # Override delete so that deleting an Ontology objects deletes all associated OntologySubmission objects
+      # Delete all artifacts of an ontology
       def delete(*args)
         options = {}
         args.each {|e| options.merge!(e) if e.is_a?(Hash)}
         in_update = options[:in_update] || false
+
+        # remove notes
+        self.bring(:notes)
+        self.notes.each {|n| n.delete} unless self.notes.nil?
+
+        # remove reviews
+        self.bring(:reviews)
+        self.reviews.each {|r| r.delete} unless self.reviews.nil?
+
+        # remove subscriptions
+        self.bring(:subscriptions)
+        self.subscriptions.each {|s| s.delete} unless self.subscriptions.nil?
+
+        # remove references to ontology in projects
+        self.bring(:projects)
+        unless self.projects.nil?
+          self.projects.each do |p|
+            p.bring(:ontologyUsed)
+            p.bring_remaining
+            ontsUsed = p.ontologyUsed.dup
+            ontsUsed.select! {|x| x.id != self.id}
+            p.ontologyUsed = ontsUsed
+            p.save()
+          end
+        end
+
+        # remove references to ontology in provisional classes
+        self.bring(:provisionalClasses)
+        unless self.provisionalClasses.nil?
+          self.provisionalClasses.each do |p|
+            p.bring(:ontology)
+            p.bring_remaining
+            onts = p.ontology
+            onts.select! {|x| x.id != self.id}
+            p.ontology = onts
+            p.save()
+          end
+        end
+
+        # remove submissions
         self.bring(:submissions)
         self.bring(:acronym) if self.bring?(:acronym)
         unless self.submissions.nil?
-          submissions.each do |s|
+          self.submissions.each do |s|
             s.delete(in_update: in_update, remove_index: false)
           end
         end
+
+        # remove views
+        self.bring(:views)
+        unless self.views.nil?
+          self.views.each do |v|
+            v.delete(in_update: in_update)
+          end
+        end
+
+        # remove index entries
+        unindex()
+
+        # delete all files
+        ontology_dir = File.join(LinkedData.settings.repository_folder, self.acronym.to_s)
+        FileUtils.rm_rf(ontology_dir)
+
         super(*args)
       end
 

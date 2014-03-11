@@ -22,11 +22,14 @@ module LinkedData
       attribute :passwordHash, enforce: [:existence]
       attribute :apikey, :default => lambda {|x| SecureRandom.uuid}
       attribute :subscription, enforce: [:list, :subscription]
+      attribute :customOntology, enforce: [:list, :ontology]
+      attribute :resetToken
 
       # Hypermedia settings
+      embed :subscription
       embed_values :role => [:role]
       serialize_default :username, :email, :role, :apikey
-      serialize_never :passwordHash, :show_apikey
+      serialize_never :passwordHash, :show_apikey, :resetToken
       serialize_filter lambda {|inst| show_apikey?(inst)}
 
       # Access control
@@ -65,6 +68,10 @@ module LinkedData
       def password=(new_password)
         @password = Password.create(new_password)
         set_passwordHash(@password)
+      end
+
+      def custom_ontology_id_set
+        Set.new(self.customOntology.map {|o| o.id.to_s})
       end
 
       def to_s

@@ -142,6 +142,9 @@ module LinkedData
           args.each {|e| options_hash.merge!(e) if e.is_a?(Hash)}
           user = options_hash[:user]
 
+          # Allow a passed option to short-cut the security process
+          return if options_hash[:override_security]
+
           user ||= Thread.current[:remote_user]
 
           reference_object = self
@@ -151,6 +154,9 @@ module LinkedData
           # an object without having to add the owner and have the owner remove
           # the original owner.
           reference_object = self.class.find(self.id).first if self.modified?
+
+          # Allow everyone to write
+          return if reference_object.access_for_all?
 
           # Load attributes needed by security
           if reference_object.access_control_load?

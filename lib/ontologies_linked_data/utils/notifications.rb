@@ -1,3 +1,4 @@
+require 'cgi'
 require 'pony'
 
 module LinkedData::Utils
@@ -73,6 +74,23 @@ module LinkedData::Utils
         body: body
       }
       send_ontology_notifications(options)
+    end
+
+    def self.reset_password(user, token)
+      subject = "[BioPortal] User #{user.username} password reset"
+      password_url = "http://#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
+      body = <<-EOS
+Someone has requested a password reset for user #{user.username}. If this was you, please click on the link below to reset your password. Otherwise, please ignore this email.<br/><br/>
+<a href="#{password_url}">#{password_url}</a><br/><br/>
+Thanks,<br/>
+BioPortal Team
+      EOS
+      options = {
+        subject: subject,
+        body: body,
+        recipients: user.email
+      }
+      notify(options)
     end
 
     private

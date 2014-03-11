@@ -5,7 +5,7 @@ require 'rack'
 class TestOntology < LinkedData::TestCase
 
   def self.before_suite
-    @@port = Random.rand(49152..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
+    @@port = Random.rand(55000..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
     @@thread = Thread.new do
       Rack::Server.start(
         app: lambda do |e|
@@ -106,6 +106,44 @@ class TestOntology < LinkedData::TestCase
     o.administeredBy = [@user]
 
     assert o.valid?
+  end
+
+  def test_ontology_delete
+    count, acronyms, ontologies = create_ontologies_and_submissions(ont_count: 2, submission_count: 1, process_submission: true)
+    u, of, contact = ontology_objects()
+    o1 = ontologies[0]
+    o2 = ontologies[1]
+
+    n = LinkedData::Models::Note.new({
+                                         creator: u,
+                                         relatedOntology: [o1]
+                                     })
+    assert n.valid?
+    n.save()
+    assert_equal true, n.exist?(reload=true)
+
+    review_params = {
+        :creator => u,
+        :created => DateTime.new,
+        :body => "This is a test review.",
+        :ontologyReviewed => o1,
+        :usabilityRating => 0,
+        :coverageRating => 0,
+        :qualityRating => 0,
+        :formalityRating => 0,
+        :correctnessRating => 0,
+        :documentationRating => 0
+    }
+
+    r = LinkedData::Models::Review.new(review_params)
+    r.save()
+    assert_equal true, r.exist?(reload=true)
+
+    o1.delete()
+    assert_equal false, n.exist?(reload=true)
+    assert_equal false, r.exist?(reload=true)
+    assert_equal false, o1.exist?(reload=true)
+    o2.delete()
   end
 
   def test_ontology_lifecycle
