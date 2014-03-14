@@ -668,7 +668,7 @@ eos
       count_headers += 1
       assert sol[:p].to_s["contributor"] || sol[:p].to_s["comment"]
     end
-    assert count_headers > 3
+    assert count_headers > 2
 
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
