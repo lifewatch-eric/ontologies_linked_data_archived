@@ -666,9 +666,9 @@ eos
     count_headers = 0
     Goo.sparql_query_client.query(sparql_query).each_solution do |sol|
       count_headers += 1
-      assert sol[:p].to_s["contributor"] || sol[:p].to_s["comment"] || sol[:p].to_s["definition"]
+      assert sol[:p].to_s["contributor"] || sol[:p].to_s["comment"]
     end
-    assert count_headers == 4
+    assert count_headers > 3
 
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
