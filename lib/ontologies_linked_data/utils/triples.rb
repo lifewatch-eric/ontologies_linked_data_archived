@@ -42,8 +42,6 @@ module LinkedData
           #obo syns
           triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasExactSynonym], 
                             subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
-          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasRelatedSynonym], 
-                            subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
           triples << triple(Goo.vocabulary(:obo_purl)[:synonym], subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
 
           #obo defs
