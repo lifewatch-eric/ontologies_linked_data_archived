@@ -304,7 +304,6 @@ eos
   end
 
   def test_submission_parse_zip
-    skip
     skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
 
     acronym = "RADTEST"
