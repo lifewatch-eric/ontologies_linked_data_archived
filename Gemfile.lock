@@ -33,7 +33,7 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
     addressable (2.3.5)
-    atomic (1.1.15)
+    atomic (1.1.16)
     bcrypt (3.1.7)
     builder (3.2.2)
     coderay (1.1.0)
@@ -84,7 +84,7 @@ GEM
     simplecov-html (0.8.0)
     slop (3.5.0)
     systemu (2.6.4)
-    thread_safe (0.2.0)
+    thread_safe (0.3.0)
       atomic (>= 1.1.7, < 2)
     treetop (1.4.15)
       polyglot
