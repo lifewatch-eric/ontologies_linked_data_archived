@@ -4,6 +4,7 @@ class Object
 
   DO_NOT_SERIALIZE = %w(attributes table _cached_exist internals captures splat uuid password inverse_atttributes loaded_attributes modified_attributes previous_values persistent aggregates unmapped errors id)
   CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI, RDF::Literal])
+  CONVERT_TO_STRING.dup.each {|c| CONVERT_TO_STRING += c.descendants}
 
   def to_flex_hash(options = {}, &block)
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass) || is_a?(NilClass)
