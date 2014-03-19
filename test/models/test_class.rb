@@ -7,7 +7,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -61,7 +61,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -96,7 +96,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -120,7 +120,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -148,7 +148,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -171,7 +171,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -304,4 +304,22 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
   end
 
+  def test_xml_literal_serialization
+    comment = "<ncicp:ComplexDefinition><ncicp:def-definition>A form of cancer that begins in melanocytes (cells that make the pigment melanin). It may begin in a mole (skin melanoma), but can also begin in other pigmented tissues, such as in the eye or in the intestines.</ncicp:def-definition><ncicp:def-source>NCI-GLOSS</ncicp:def-source></ncicp:ComplexDefinition>"
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
+                                                      submissionId: 1).all
+    assert(os.length == 1)
+    os = os[0]
+
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class6"
+
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:unmapped).to_a[0]
+
+    cls_hash = cls.to_flex_hash(only: [:properties])
+    xml_comment = cls_hash[:properties]["http://www.w3.org/2000/01/rdf-schema#comment"].first
+    assert_equal String, xml_comment.class
+    assert_equal comment, xml_comment
+  end
 end
