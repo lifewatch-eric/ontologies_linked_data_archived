@@ -496,6 +496,7 @@ class TestMapping < LinkedData::TestOntologyCommon
                                  .include(process: [:name])
                                  .all
 
+    binding.pry
     assert LinkedData::Models::TermMapping.where.all.length == 4
     assert mappings.length == 2
     mappings.each do |map|
