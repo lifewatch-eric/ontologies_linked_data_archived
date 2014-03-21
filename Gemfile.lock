@@ -84,7 +84,7 @@ GEM
     simplecov-html (0.8.0)
     slop (3.5.0)
     systemu (2.6.4)
-    thread_safe (0.3.0)
+    thread_safe (0.3.1)
       atomic (>= 1.1.7, < 2)
     treetop (1.4.15)
       polyglot
