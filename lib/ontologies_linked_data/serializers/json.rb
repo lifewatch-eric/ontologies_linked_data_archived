@@ -18,19 +18,18 @@ module LinkedData
           hash["@type"] = current_cls.type_uri.to_s if hash["@id"] && current_cls.respond_to?(:type_uri)
 
           # Generate links
-          show_links = options[:params].nil? || options[:params]["no_links"].nil? || !options[:params]["no_links"].eql?("true")
-          if show_links
+          if generate_links?(options)
             links = LinkedData::Hypermedia.generate_links(hashed_obj)
             unless links.empty?
               hash["links"] = links
-              hash["links"].merge!(generate_links_context(hashed_obj))
+              hash["links"].merge!(generate_links_context(hashed_obj)) if generate_context?(options)
             end
           end
 
           # Generate context
           if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
-            if options[:params].nil? || options[:params]["no_context"].nil? || !options[:params]["no_context"].eql?("true")
-              context = generate_context(hashed_obj, hash.keys, options)
+            if generate_context?(options)
+              context = generate_context(hashed_obj, hash.keys, options) if generate_context?(options)
               hash.merge!(context)
             end
           end
@@ -91,6 +90,24 @@ module LinkedData
           !current_cls.hypermedia_settings[:embed_values].empty? && current_cls.hypermedia_settings[:embed_values].first.key?(attribute)
         )
         embedded
+      end
+
+      def self.generate_context?(options)
+        params = options[:params]
+        params.nil? ||
+          (params["no_context"].nil? ||
+                     !params["no_context"].eql?("true")) &&
+          (params["include_context"].nil? ||
+                    !params["include_context"].eql?("false"))
+      end
+
+      def self.generate_links?(options)
+        params = options[:params]
+        params.nil? ||
+          (params["no_links"].nil? ||
+                     !params["no_links"].eql?("true")) &&
+          (params["include_links"].nil? ||
+                    !params["include_links"].eql?("false"))
       end
     end
   end
