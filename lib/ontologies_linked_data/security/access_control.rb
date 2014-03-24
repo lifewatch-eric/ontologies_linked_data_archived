@@ -143,7 +143,7 @@ module LinkedData::Security
           # Make sure defaults get loaded
           if type == :access_control_load
             DEFAULT_OWNER_ATTRIBUTES.each do |attr|
-              next unless cls.attributes.include?(attr)
+              next unless cls.respond_to?(:attributes) && cls.is_a?(Enumerable) && cls.attributes.include?(attr)
               cls.access_control_settings[type] << attr
             end
           end
