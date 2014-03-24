@@ -151,8 +151,8 @@ module LinkedData
 
           # If we have a modified object, we should do the security check
           # on the original. This allows a user to change the ownsership of
-          # an object without having to add the owner and have the owner remove
-          # the original owner.
+          # an object without having to add the owner and have the new owner
+          # remove the original owner.
           reference_object = self.class.find(self.id).first if self.modified?
 
           # Allow everyone to write

@@ -140,6 +140,13 @@ module LinkedData::Security
         super(cls)
         SETTINGS.each do |type|
           AccessControl.store_settings(cls, type, Set.new)
+          # Make sure defaults get loaded
+          if type == :access_control_load
+            DEFAULT_OWNER_ATTRIBUTES.each do |attr|
+              next unless cls.attributes.include?(attr)
+              cls.access_control_settings[type] << attr
+            end
+          end
         end
       end
     end
