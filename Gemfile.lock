@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 5a3e643e60bc5a0caa0ccbfefbaa0043a6366796
-  branch: treeview
+  revision: f3446b8563baff15c6804a133610b981008062e8
+  branch: merge_treeview
   specs:
     goo (0.0.2)
       pry
@@ -15,8 +15,8 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/sparql-client.git
-  revision: 972f264109779a7522552cda0325755dbc004edc
-  branch: treeview
+  revision: e6a2d6b4fda4e23d77a70c440f058bd08c801e26
+  branch: staging
   specs:
     sparql-client (1.0.4.1)
       json_pure (>= 1.4)
