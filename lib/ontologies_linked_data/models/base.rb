@@ -83,7 +83,7 @@ module LinkedData
 
         # Include attributes needed for security (if enabled)
         if LinkedData.settings.enable_security
-          access_control_attributes = self.access_control_settings[:access_control_load]
+          access_control_attributes = self.access_control_load_attrs
           extra_attrs.concat(access_control_attributes.to_a) unless access_control_attributes.nil? && access_control_attributes.empty?
         end
 
@@ -162,7 +162,7 @@ module LinkedData
           if reference_object.access_control_load?
             # Only load ones that aren't loaded so we don't overwrite changes
             not_loaded = []
-            reference_object.class.access_control_settings[:access_control_load].each do |attr|
+            reference_object.access_control_load_attrs.each do |attr|
               not_loaded << attr unless reference_object.loaded_attributes.include?(attr)
             end
             reference_object.bring(*not_loaded) unless not_loaded.empty?
