@@ -11,7 +11,7 @@ module LinkedData
       def save(*args)
         write_permission_check(*args)
         super(*args)
-        self.cache_write if LinkedData.settings.enable_http_cache
+        self.cache_invalidate if LinkedData.settings.enable_http_cache
         self
       end
 
