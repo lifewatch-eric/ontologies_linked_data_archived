@@ -1,9 +1,10 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 5bfbd9b562c93b44d132f69a801e824ba102fc7c
+  revision: 72847bee918b24fcdda4a65b811282e1234bae52
   branch: staging
   specs:
     goo (0.0.2)
+      addressable (= 2.3.5)
       pry
       rdf (= 1.0.8)
       redis
@@ -98,7 +99,6 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 4.0)
-  addressable (= 2.3.5)
   bcrypt (~> 3.0)
   cube-ruby
   email_spec
