@@ -74,7 +74,7 @@ GEM
     redis (3.0.7)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    rsolr (1.0.9)
+    rsolr (1.0.10)
       builder (>= 2.1.2)
     rubyzip (1.1.2)
     simplecov (0.8.2)
