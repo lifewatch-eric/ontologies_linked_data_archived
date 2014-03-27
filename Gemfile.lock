@@ -1,9 +1,10 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 96b789173332809b37b79626744abebda793786f
-  branch: master
+  revision: 72847bee918b24fcdda4a65b811282e1234bae52
+  branch: staging
   specs:
     goo (0.0.2)
+      addressable (= 2.3.5)
       pry
       rdf (= 1.0.8)
       redis
@@ -68,13 +69,13 @@ GEM
     rack (1.5.2)
     rack-test (0.6.2)
       rack (>= 1.0)
-    rake (10.2.0)
+    rake (10.2.1)
     rdf (1.0.8)
       addressable (>= 2.2)
     redis (3.0.7)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    rsolr (1.0.9)
+    rsolr (1.0.10)
       builder (>= 2.1.2)
     rubyzip (1.1.2)
     simplecov (0.8.2)
