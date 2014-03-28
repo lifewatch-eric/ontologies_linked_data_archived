@@ -223,6 +223,7 @@ module LinkedData
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
         roots = self.submission.roots
+        threshhold = 99
 
         #select one path that gets to root
         path = nil
@@ -247,7 +248,7 @@ module LinkedData
               .include(:prefLabel,:synonym,:obsolete).all
 
         LinkedData::Models::Class
-          .partially_load_children(items_hash.values,99,self.submission)
+          .partially_load_children(items_hash.values,threshhold,self.submission)
 
         path.reverse!
         path.last.instance_variable_set("@children",[])
@@ -260,7 +261,7 @@ module LinkedData
         end
 
        LinkedData::Models::Class.
-         partially_load_children(childrens_hash.values,99,self.submission,only_children_count=true)
+         partially_load_children(childrens_hash.values,threshhold,self.submission,only_children_count=true)
 
         #build the tree
         root_node = path.first
