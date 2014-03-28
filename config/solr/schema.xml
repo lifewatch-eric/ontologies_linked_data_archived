@@ -19,37 +19,39 @@
 <schema name="ncbo_class" version="1.5">
   <fields>   
     <!-- id is an internal Solr id -->
-    <field name="id"                type="string"       indexed="true"  stored="true"  multiValued="false" required="true"/>
-    <field name="resource_id"       type="string"       indexed="true"  stored="true"  multiValued="false" required="true"/>
+    <field name="id"                    type="string"             indexed="true"  stored="true"  multiValued="false" required="true" />
+    <field name="resource_id"           type="string"             indexed="true"  stored="true"  multiValued="false" required="true" />
 
     <!-- searchable fields -->
-    <field name="prefLabel"         type="text_general" indexed="true"  stored="true"  multiValued="false" /> 
-    <field name="prefLabelExact"    type="string_ci"    indexed="true"  stored="true"  multiValued="false" />
-    <field name="prefLabelSuggest"      type="text_suggest"       indexed="true" stored="true"  omitNorms="true" />
-    <field name="prefLabelSuggestEdge"  type="text_suggest_edge"  indexed="true" stored="false" />
-    <field name="prefLabelSuggestNgram" type="text_suggest_ngram" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true" />
+    <field name="prefLabel"             type="text_general"       indexed="true"  stored="true"  multiValued="false" />
+    <field name="prefLabelExact"        type="string_ci"          indexed="true"  stored="true"  multiValued="false" />
+    <field name="prefLabelSuggest"      type="text_suggest"       indexed="true"  stored="true"  omitNorms="true" />
+    <field name="prefLabelSuggestEdge"  type="text_suggest_edge"  indexed="true"  stored="false" />
+    <field name="prefLabelSuggestNgram" type="text_suggest_ngram" indexed="true"  stored="false" omitNorms="true" omitTermFreqAndPositions="true" />
 
-    <field name="synonym"           type="text_general" indexed="true"  stored="true"  multiValued="true" />
-    <field name="synonymExact"      type="string_ci"    indexed="true"  stored="true"  multiValued="true" />
-    <field name="synonymSuggest"      type="text_suggest"       indexed="true" stored="true"  omitNorms="true" multiValued="true" />
-    <field name="synonymSuggestEdge"  type="text_suggest_edge"  indexed="true" stored="false" multiValued="true" />
-    <field name="synonymSuggestNgram" type="text_suggest_ngram" indexed="true" stored="false" omitNorms="true" omitTermFreqAndPositions="true" multiValued="true" />
+    <field name="synonym"               type="text_general"       indexed="true"  stored="true"  multiValued="true" />
+    <field name="synonymExact"          type="string_ci"          indexed="true"  stored="true"  multiValued="true" />
+    <field name="synonymSuggest"        type="text_suggest"       indexed="true"  stored="true"  omitNorms="true" multiValued="true" />
+    <field name="synonymSuggestEdge"    type="text_suggest_edge"  indexed="true"  stored="false" multiValued="true" />
+    <field name="synonymSuggestNgram"   type="text_suggest_ngram" indexed="true"  stored="false" omitNorms="true" omitTermFreqAndPositions="true" multiValued="true" />
 
-    <field name="notation"          type="text_general" indexed="true"  stored="true"  multiValued="false" />
+    <field name="notation"              type="text_general"       indexed="true"  stored="true"  multiValued="false" />
 
-    <field name="definition"        type="string"       indexed="true"  stored="true"  multiValued="true" />     
-    <field name="submissionAcronym" type="string"       indexed="true"  stored="true"  multiValued="false" /> 
-    <field name="submissionId"      type="int"          indexed="true"  stored="true"  multiValued="false" />
-    <field name="_version_"         type="long"         indexed="true"  stored="true"/>
+    <field name="definition"            type="string"             indexed="true"  stored="true"  multiValued="true" />
+    <field name="submissionAcronym"     type="string"             indexed="true"  stored="true"  multiValued="false" />
+    <field name="submissionId"          type="int"                indexed="true"  stored="true"  multiValued="false" />
+    <field name="_version_"             type="long"               indexed="true"  stored="true"/>
 
     <!-- catchall field, containing all other searchable text fields (implemented
         via copyField further on in this schema  -->
-    <field name="text"              type="text_general" indexed="true"  stored="false" multiValued="true"/>
-    <field name="property"          type="text_general" indexed="true"  stored="true"  multiValued="true" />
+    <field name="text"                  type="text_general"       indexed="true"  stored="false" multiValued="true" />
 
-    <field name="obsolete"          type="boolean" indexed="true"  stored="true"  multiValued="false" />
+    <field name="property"              type="text_general"       indexed="true"  stored="true"  multiValued="true" />
+    <field name="propertyRaw"           type="text_general"       indexed="false" stored="true"  multiValued="false" />
 
-    <dynamicField name="*"  type="string"  indexed="false"  stored="true"  multiValued="true"/>
+    <field name="obsolete"              type="boolean"            indexed="true"  stored="true"  multiValued="false" />
+
+    <dynamicField name="*"              type="string"             indexed="false" stored="true"  multiValued="true" />
   </fields>
 
   <!-- field to use to determine and enforce document uniqueness. -->

@@ -1,5 +1,6 @@
 require "set"
 require "cgi"
+require "multi_json"
 require "ontologies_linked_data/models/notes/note"
 
 module LinkedData
@@ -90,7 +91,7 @@ module LinkedData
             :obsolete => self.obsolete.to_s
         }
 
-        all_attrs = self.to_hash
+        all_attrs = self.properties
         std = [:id, :prefLabel, :notation, :synonym, :definition]
 
         std.each do |att|
@@ -107,23 +108,34 @@ module LinkedData
         end
 
         all_attrs.delete :submission
-        props = []
-
         #for redundancy with prefLabel
         all_attrs.delete :label
+
+        props = {}
+        prop_vals = []
 
         all_attrs.each do |attr_key, attr_val|
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
+              props[attr_key] = []
               attr_val = attr_val.uniq
-              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
+
+              attr_val.map { |val|
+                real_val = val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip
+                prop_vals << real_val
+                props[attr_key] << real_val
+              }
             else
-              props << attr_val.to_s.strip
+              real_val = attr_val.to_s.strip
+              prop_vals << real_val
+              props[attr_key] = real_val
             end
           end
         end
-        props.uniq!
-        doc[:property] = props
+        prop_vals.uniq!
+        doc[:property] = prop_vals
+        doc[:propertyRaw] = MultiJson.dump(props)
+
         return doc
       end
 
