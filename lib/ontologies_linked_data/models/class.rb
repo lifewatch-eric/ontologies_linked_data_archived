@@ -275,6 +275,10 @@ module LinkedData
        LinkedData::Models::Class.
          partially_load_children(childrens_hash.values,threshhold,self.submission,only_children_count=true)
 
+        # Make sure original class ends up in the proper place
+        orig_cls_parent = path[-2].id
+        orig_cls = path.last
+
         #build the tree
         root_node = path.first
         tree_node = path.first
@@ -294,6 +298,11 @@ module LinkedData
               tree_node.children[i].instance_variable_set("@children",[])
             end
           end
+
+          if tree_node.id == orig_cls_parent && !tree_node.children.any? {|c| c.id == orig_cls.id}
+            tree_node.children << orig_cls
+          end
+
           tree_node = next_tree_node
           path.delete_at(0)
         end
