@@ -91,7 +91,7 @@ module LinkedData
             :obsolete => self.obsolete.to_s
         }
 
-        all_attrs = self.properties
+        all_attrs = self.to_hash
         std = [:id, :prefLabel, :notation, :synonym, :definition]
 
         std.each do |att|
@@ -114,7 +114,7 @@ module LinkedData
         props = {}
         prop_vals = []
 
-        all_attrs.each do |attr_key, attr_val|
+        self.properties.each do |attr_key, attr_val|
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
               props[attr_key] = []
