@@ -276,6 +276,7 @@ module LinkedData
          partially_load_children(childrens_hash.values,threshhold,self.submission,only_children_count=true)
 
         # Make sure original class ends up in the proper place
+        # If we're at the root, this gets ignored
         if path.length > 1
           orig_cls_parent = path[-2].id
           orig_cls = path.last
