@@ -264,8 +264,10 @@ module LinkedData
          partially_load_children(childrens_hash.values,threshhold,self.submission,only_children_count=true)
 
         # Make sure original class ends up in the proper place
-        orig_cls_parent = path[-2].id
-        orig_cls = path.last
+        if path.length > 1
+          orig_cls_parent = path[-2].id
+          orig_cls = path.last
+        end
 
         #build the tree
         root_node = path.first
@@ -287,7 +289,7 @@ module LinkedData
             end
           end
 
-          if tree_node.id == orig_cls_parent && !tree_node.children.any? {|c| c.id == orig_cls.id}
+          if orig_cls && tree_node.id == orig_cls_parent && !tree_node.children.any? {|c| c.id == orig_cls.id}
             tree_node.children << orig_cls
           end
 
