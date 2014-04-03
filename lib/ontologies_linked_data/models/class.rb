@@ -373,5 +373,18 @@ module LinkedData
 
     end
 
+    def hierarchy_query(class_ids)
+        filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
+        query = <<eos
+SELECT DISTINCT ?id ?parent ?graph WHERE { GRAPH ?graph { ?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parent . }
+FILTER (#{filter_ids})
+FILTER (!isBlank(?parent))
+FILTER (?parent != <http://www.w3.org/2002/07/owl#Thing>)
+}
+eos
+       return query
+    end
+
+
   end
 end
