@@ -160,6 +160,9 @@ eos
     epr.query(qdate, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
       procs << sol[:s]
     end
+    if procs.length == 0 
+      return []
+    end
     graphs = [LinkedData::Models::MappingProcess.type_uri]
     procs = procs.map { |x| "?o = #{x.to_ntriples}" }.join " || "
     qmappings = <<-eos
