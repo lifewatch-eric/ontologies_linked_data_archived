@@ -373,6 +373,32 @@ module LinkedData
 
     end
 
+    def retrieve_ascendents
+        #TODO: no pagination yet
+        current_level = 1
+
+        level_ids = [self.id.to_s]
+        all_ids = Set.new
+        while current_level <= levels do
+
+          next_level = []
+          query = hierarchy_query(level_ids)
+          Goo.sparql_query_client.query(query,query_options: {rules: :NONE})
+              .each do |sol|
+            parent = sol[:parent].to_s
+            ontology = sol[:graph].to_s
+            if self.submission.id.to_s == ontology
+              next_level << parent
+            end
+            current_level += 1
+            if current_level > 40
+              break
+            end
+            level_ids = next_level
+          end 
+        end
+    end
+
     def hierarchy_query(class_ids)
         filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
         query = <<eos
