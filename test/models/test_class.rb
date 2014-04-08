@@ -50,6 +50,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert ancestors.length == cls.ancestors.length
     ancestors.map! { |a| a.id.to_s }
     xxx = cls.retrieve_ascentors
+    xxx.map! { |a| a.id.to_s }
     data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
  "http://bioportal.bioontology.org/ontologies/msotes#class4",

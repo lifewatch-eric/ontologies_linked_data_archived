@@ -320,6 +320,15 @@ module LinkedData
       end
 
       def retrieve_ascentors
+        ids = retrieve_ascentors_ids
+        if ids.length == 0
+          return []
+        end
+        ids.map! { |x| RDF::URI.new(x) }
+        return LinkedData::Models::Class.in(self.submission).ids(ids).all
+      end
+
+      def retrieve_ascentors_ids
         current_level = 1
         max_levels = 40
 
