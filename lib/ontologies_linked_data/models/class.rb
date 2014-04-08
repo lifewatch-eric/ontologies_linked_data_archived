@@ -319,6 +319,50 @@ module LinkedData
         raise Goo::Base::AttributeNotLoaded, "Persistent object with `ancestors` not loaded"
       end
 
+      def retrieve_ascentors
+        current_level = 1
+        max_levels = 40
+
+
+        level_ids = Set.new([self.id.to_s])
+        all_ids = Set.new()
+        while current_level <= max_levels do
+          next_level = Set.new
+          query = hierarchy_query(level_ids)
+          Goo.sparql_query_client.query(query,query_options: {rules: :NONE})
+              .each do |sol|
+            parent = sol[:parent].to_s
+            ontology = sol[:graph].to_s
+            if self.submission.id.to_s == ontology
+              unless all_ids.include?(parent)
+                next_level << parent
+              end
+            end
+          end 
+          current_level += 1
+          pre_size = all_ids.length
+          all_ids.merge(next_level)
+          if all_ids.length == pre_size
+            #nothing new
+            return all_ids
+          end
+          level_ids = next_level
+        end
+        return all_ids
+      end
+
+      def hierarchy_query(class_ids)
+        filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
+        query = <<eos
+SELECT DISTINCT ?id ?parent ?graph WHERE { GRAPH ?graph { ?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parent . }
+FILTER (#{filter_ids})
+FILTER (!isBlank(?parent))
+FILTER (?parent != <http://www.w3.org/2002/07/owl#Thing>)
+}
+eos
+         return query
+      end
+
       private
 
       def append_if_not_there_already(path,r)
@@ -372,45 +416,5 @@ module LinkedData
       end
 
     end
-
-    def retrieve_ascendents
-        #TODO: no pagination yet
-        current_level = 1
-
-        level_ids = [self.id.to_s]
-        all_ids = Set.new
-        while current_level <= levels do
-
-          next_level = []
-          query = hierarchy_query(level_ids)
-          Goo.sparql_query_client.query(query,query_options: {rules: :NONE})
-              .each do |sol|
-            parent = sol[:parent].to_s
-            ontology = sol[:graph].to_s
-            if self.submission.id.to_s == ontology
-              next_level << parent
-            end
-            current_level += 1
-            if current_level > 40
-              break
-            end
-            level_ids = next_level
-          end 
-        end
-    end
-
-    def hierarchy_query(class_ids)
-        filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
-        query = <<eos
-SELECT DISTINCT ?id ?parent ?graph WHERE { GRAPH ?graph { ?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parent . }
-FILTER (#{filter_ids})
-FILTER (!isBlank(?parent))
-FILTER (?parent != <http://www.w3.org/2002/07/owl#Thing>)
-}
-eos
-       return query
-    end
-
-
   end
 end
