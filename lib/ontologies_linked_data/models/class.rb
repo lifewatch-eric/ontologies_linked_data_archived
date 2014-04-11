@@ -30,11 +30,11 @@ module LinkedData
                   transitive: true
 
       attribute :children, namespace: :rdfs, property: :subClassOf,
-                  inverse: { on: :class , :attribute => :parents }
+                  inverse: { on: :class, :attribute => :parents }
 
       #transitive children
       attribute :descendants, namespace: :rdfs, property: :subClassOf,
-                    inverse: { on: :class , attribute: :parents },
+                    inverse: { on: :class, attribute: :parents },
                     transitive: true
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
@@ -92,10 +92,12 @@ module LinkedData
         }
 
         all_attrs = self.to_hash
-        std = [:id, :prefLabel, :notation, :synonym, :definition]
+        std = [:id, :prefLabel, :notation, :synonym, :definition, :cui]
 
         std.each do |att|
           cur_val = all_attrs[att]
+          # don't store empty values
+          next if cur_val.nil? || cur_val.empty?
 
           if (cur_val.is_a?(Array))
             doc[att] = []
@@ -104,12 +106,13 @@ module LinkedData
           else
             doc[att] = cur_val.to_s.strip
           end
-          all_attrs.delete att
         end
 
-        all_attrs.delete :submission
-        #for redundancy with prefLabel
-        all_attrs.delete :label
+        # special handling for :semanticType (AKA tui)
+        if all_attrs[:semanticType] && !all_attrs[:semanticType].empty?
+          doc[:semanticType] = []
+          all_attrs[:semanticType].each { |semType| doc[:semanticType] << semType.split("/").last }
+        end
 
         props = {}
         prop_vals = []
