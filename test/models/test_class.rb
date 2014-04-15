@@ -93,6 +93,12 @@ class TestClassModel < LinkedData::TestOntologyCommon
     "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
     assert descendants.sort == data_descendants.sort
 
+    page = cls.retrieve_descendants(page=2,size=2)
+    assert page.total_pages == 2
+    assert page.prev_page == 1
+    assert page.next_page == nil
+    assert page.aggregate == 3
+    assert page[0].id.to_s == data_descendants[2]
   end
 
   def test_path_to_root
