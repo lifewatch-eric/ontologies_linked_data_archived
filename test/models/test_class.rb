@@ -42,21 +42,19 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.parents[0].submission, os)
 
     #transitive
-    cls.bring(:ancestors)
+    assert_raises ArgumentError do
+      cls.bring(:ancestors)
+    end
     ancestors = cls.ancestors.dup
     ancestors.each do |a|
       assert !a.submission.nil?
     end
     assert ancestors.length == cls.ancestors.length
     ancestors.map! { |a| a.id.to_s }
-    xxx = cls.retrieve_ascentors
-    xxx.map! { |a| a.id.to_s }
     data_ancestors = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
  "http://bioportal.bioontology.org/ontologies/msotes#class2",
  "http://bioportal.bioontology.org/ontologies/msotes#class4",
  "http://bioportal.bioontology.org/ontologies/msotes#class3"]
-    binding.pry
-    assert Set.new(xxx) == Set.new(data_ancestors)
     assert ancestors.sort == data_ancestors.sort
 
   end
@@ -85,7 +83,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.children[0].submission, os)
 
     #transitive
-    cls.bring(:descendants)
+    assert_raises ArgumentError do
+      cls.bring(:descendants)
+    end
     descendants = cls.descendants.dup
     descendants.map! { |a| a.id.to_s }
     data_descendants = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",

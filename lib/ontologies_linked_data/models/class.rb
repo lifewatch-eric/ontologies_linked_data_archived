@@ -26,16 +26,19 @@ module LinkedData
       attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
 
       #transitive parent
-      attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
-                  transitive: true
+      #attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
+      #            transitive: true
+      attribute :ancestors, namespace: :rdfs, property: :subClassOf, handler: :retrieve_ancestors
 
       attribute :children, namespace: :rdfs, property: :subClassOf,
                   inverse: { on: :class , :attribute => :parents }
 
       #transitive children
-      attribute :descendants, namespace: :rdfs, property: :subClassOf,
-                    inverse: { on: :class , attribute: :parents },
-                    transitive: true
+      #attribute :descendants, namespace: :rdfs, property: :subClassOf,
+      #              inverse: { on: :class , attribute: :parents },
+      #              transitive: true
+      attribute :descendants, namespace: :rdfs, property: :subClassOf, 
+          handler: :retrieve_descendants
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
@@ -312,37 +315,39 @@ module LinkedData
         return root_node
       end
 
-      def ancestors
-        if @ancestors
-          return @ancestors.select { |x| !x.id.to_s["owl#Thing"] }.freeze
-        end
-        raise Goo::Base::AttributeNotLoaded, "Persistent object with `ancestors` not loaded"
-      end
-
-      def retrieve_ascentors
-        ids = retrieve_ascentors_ids
+      def retrieve_ancestors
+        ids = retrieve_hierarchy_ids(:ancestors)
         if ids.length == 0
           return []
         end
+        ids.select { |x| !x["owl#Thing"] }
+        ids.map! { |x| RDF::URI.new(x) }
+        return LinkedData::Models::Class.in(self.submission).ids(ids).all
+      end
+
+      def retrieve_descendants
+        ids = retrieve_hierarchy_ids(:descendants)
+        if ids.length == 0
+          return []
+        end
+        ids.select { |x| !x["owl#Thing"] }
         ids.map! { |x| RDF::URI.new(x) }
         return LinkedData::Models::Class.in(self.submission).ids(ids).all
       end
 
       private
 
-      def retrieve_ancestors_ids
+      def retrieve_hierarchy_ids(direction=:ancestors)
         current_level = 1
         max_levels = 40
-
-
         level_ids = Set.new([self.id.to_s])
         all_ids = Set.new()
         while current_level <= max_levels do
           next_level = Set.new
-          query = hierarchy_query(level_ids)
+          query = hierarchy_query(direction,level_ids)
           Goo.sparql_query_client.query(query,query_options: {rules: :NONE})
               .each do |sol|
-            parent = sol[:parent].to_s
+            parent = sol[:node].to_s
             ontology = sol[:graph].to_s
             if self.submission.id.to_s == ontology
               unless all_ids.include?(parent)
@@ -362,13 +367,22 @@ module LinkedData
         return all_ids
       end
 
-      def hierarchy_query(class_ids)
+      def hierarchy_query(direction,class_ids)
         filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
+        directional_pattern = ""
+        if direction == :ancestors
+          directional_pattern = "?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?node . "
+        else
+          directional_pattern = "?node <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?id . "
+        end
+
         query = <<eos
-SELECT DISTINCT ?id ?parent ?graph WHERE { GRAPH ?graph { ?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parent . }
+SELECT DISTINCT ?id ?node ?graph WHERE { 
+GRAPH ?graph {
+  #{directional_pattern}
+}
 FILTER (#{filter_ids})
-FILTER (!isBlank(?parent))
-FILTER (?parent != <http://www.w3.org/2002/07/owl#Thing>)
+FILTER (!isBlank(?node))
 }
 eos
          return query
