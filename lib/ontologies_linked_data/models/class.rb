@@ -330,7 +330,7 @@ module LinkedData
 
       private
 
-      def retrieve_ascentors_ids
+      def retrieve_ancestors_ids
         current_level = 1
         max_levels = 40
 
