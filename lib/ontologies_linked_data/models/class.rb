@@ -328,6 +328,8 @@ module LinkedData
         return LinkedData::Models::Class.in(self.submission).ids(ids).all
       end
 
+      private
+
       def retrieve_ascentors_ids
         current_level = 1
         max_levels = 40
@@ -372,7 +374,6 @@ eos
          return query
       end
 
-      private
 
       def append_if_not_there_already(path,r)
         return nil if r.id.to_s["#Thing"]
