@@ -93,7 +93,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
     assert descendants.sort == data_descendants.sort
 
-    page = cls.retrieve_descendants(page=2,size=2)
+    page = cls.retrieve_descendents(page=2,size=2)
     assert page.total_pages == 2
     assert page.prev_page == 1
     assert page.next_page == nil

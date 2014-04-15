@@ -38,7 +38,7 @@ module LinkedData
       #              inverse: { on: :class , attribute: :parents },
       #              transitive: true
       attribute :descendants, namespace: :rdfs, property: :subClassOf, 
-          handler: :retrieve_descendants
+          handler: :retrieve_descendents
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
@@ -325,7 +325,7 @@ module LinkedData
         return LinkedData::Models::Class.in(self.submission).ids(ids).all
       end
 
-      def retrieve_descendants(page=nil,size=nil)
+      def retrieve_descendents(page=nil,size=nil)
         ids = retrieve_hierarchy_ids(:descendants)
         if ids.length == 0
           return []
