@@ -326,7 +326,6 @@ module LinkedData
       end
 
       def retrieve_descendants(page=nil,size=nil)
-        t = Time.now
         ids = retrieve_hierarchy_ids(:descendants)
         if ids.length == 0
           return []
@@ -339,7 +338,6 @@ module LinkedData
           rend = (page * size) -1
           ids = ids[rstart..rend]
         end
-        puts "rt descendants iids #{Time.now - t} sec"
         ids.map! { |x| RDF::URI.new(x) }
         models = LinkedData::Models::Class.in(self.submission).ids(ids).all
         if !page.nil?
@@ -356,23 +354,31 @@ module LinkedData
         level_ids = Set.new([self.id.to_s])
         all_ids = Set.new()
         graphs = [self.submission.id.to_s]
+        submission_id_string = self.submission.id.to_s
         while current_level <= max_levels do
           next_level = Set.new
-          #slices = level_ids.to_a.each_slice(800).to_a
-          query = hierarchy_query(direction,level_ids)
-          t0 = Time.now
-          Goo.sparql_query_client.query(query,query_options: {rules: :NONE }, graphs: graphs)
-              .each do |sol|
-            parent = sol[:node].to_s
-            next if !parent.start_with?("http")
-            ontology = sol[:graph].to_s
-            if self.submission.id.to_s == ontology
-              unless all_ids.include?(parent)
-                next_level << parent
-              end
-            end
-          end 
-          puts "query level #{current_level} #{level_ids.length} #{next_level.length} #{Time.now - t0} sec"
+          slices = level_ids.to_a.sort.each_slice(750).to_a
+          threads = []
+          slices.each_index do |i|
+            ids_slice = slices[i]
+            threads[i] = Thread.new {
+              next_level_thread = Set.new
+              query = hierarchy_query(direction,ids_slice)
+              Goo.sparql_query_client.query(query,query_options: {rules: :NONE }, graphs: graphs)
+                  .each do |sol|
+                parent = sol[:node].to_s
+                next if !parent.start_with?("http")
+                ontology = sol[:graph].to_s
+                if submission_id_string == ontology
+                  unless all_ids.include?(parent)
+                    next_level_thread << parent
+                  end
+                end
+              end 
+              Thread.current["next_level_thread"] = next_level_thread
+            }
+          end
+          threads.each {|t| t.join ; next_level.merge(t["next_level_thread"]) }
           current_level += 1
           pre_size = all_ids.length
           all_ids.merge(next_level)
@@ -386,7 +392,6 @@ module LinkedData
       end
 
       def hierarchy_query(direction,class_ids)
-        class_ids = class_ids.to_a.sort
         filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
         directional_pattern = ""
         if direction == :ancestors
