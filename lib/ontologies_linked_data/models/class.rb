@@ -358,11 +358,13 @@ module LinkedData
         graphs = [self.submission.id.to_s]
         while current_level <= max_levels do
           next_level = Set.new
+          #slices = level_ids.to_a.each_slice(800).to_a
           query = hierarchy_query(direction,level_ids)
           t0 = Time.now
           Goo.sparql_query_client.query(query,query_options: {rules: :NONE }, graphs: graphs)
               .each do |sol|
             parent = sol[:node].to_s
+            next if !parent.start_with?("http")
             ontology = sol[:graph].to_s
             if self.submission.id.to_s == ontology
               unless all_ids.include?(parent)
@@ -399,7 +401,6 @@ GRAPH ?graph {
   #{directional_pattern}
 }
 FILTER (#{filter_ids})
-FILTER (!isBlank(?node))
 }
 eos
          return query
