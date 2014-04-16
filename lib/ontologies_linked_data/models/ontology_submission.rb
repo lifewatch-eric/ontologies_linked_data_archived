@@ -401,10 +401,7 @@ eos
                                   .find(self.obsoleteParent)
                                   .in(self).first
           if class_obsolete_parent
-            descendents_obsolete = LinkedData::Models::Class
-                                      .where(ancestors: class_obsolete_parent)
-                                      .in(self)
-                                      .all
+            descendents_obsolete = class_obsolete_parent.descendants
             logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
             descendents_obsolete.each do |obs|
               classes_deprecated << obs.id
