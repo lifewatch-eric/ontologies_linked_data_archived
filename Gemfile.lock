@@ -1,9 +1,10 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 5bfbd9b562c93b44d132f69a801e824ba102fc7c
+  revision: be1647180d06a507e744adb0ccca6474590e1c95
   branch: staging
   specs:
     goo (0.0.2)
+      addressable (= 2.3.5)
       pry
       rdf (= 1.0.8)
       redis
@@ -46,7 +47,7 @@ GEM
     launchy (2.4.2)
       addressable (~> 2.3)
     libxml-ruby (2.7.0)
-    macaddr (1.7.0)
+    macaddr (1.7.1)
       systemu (~> 2.6.2)
     mail (2.5.4)
       mime-types (~> 1.16)
@@ -56,7 +57,7 @@ GEM
     minitest (4.7.5)
     multi_json (1.9.2)
     net-http-persistent (2.9.4)
-    oj (2.7.2)
+    oj (2.7.3)
     polyglot (0.3.4)
     pony (1.8)
       mail (>= 2.0)
