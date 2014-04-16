@@ -256,14 +256,10 @@ class TestClassModel < LinkedData::TestOntologyCommon
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
-    cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
+    assert_raises ArgumentError do
+      cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
                                       .include(:prefLabel,ancestors: [:prefLabel]).first
-    assert cls.ancestors.length == 7
-    cls.ancestors.each do |a|
-      next if a.id["Thing"]
-      assert_instance_of String, a.prefLabel
     end
-    assert_instance_of String, cls.prefLabel
   end
 
   def test_bro_paths_to_root
