@@ -25,18 +25,12 @@ module LinkedData
 
       attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
 
-      #transitive parent
-      #attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
-      #            transitive: true
       attribute :ancestors, namespace: :rdfs, property: :subClassOf, handler: :retrieve_ancestors
 
       attribute :children, namespace: :rdfs, property: :subClassOf,
-                  inverse: { on: :class , :attribute => :parents }
+                  inverse: { on: :class, :attribute => :parents }
 
       #transitive children
-      #attribute :descendants, namespace: :rdfs, property: :subClassOf,
-      #              inverse: { on: :class , attribute: :parents },
-      #              transitive: true
       attribute :descendants, namespace: :rdfs, property: :subClassOf, 
           handler: :retrieve_descendants
 
@@ -44,7 +38,7 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
-      attribute :cui, :namespace => :umls, alias: true
+      attribute :cui, enforce: [:list], :namespace => :umls, alias: true
       attribute :xref, :namespace => :oboinowl_gen, alias: true
 
       attribute :notes,
@@ -95,10 +89,12 @@ module LinkedData
         }
 
         all_attrs = self.to_hash
-        std = [:id, :prefLabel, :notation, :synonym, :definition]
+        std = [:id, :prefLabel, :notation, :synonym, :definition, :cui]
 
         std.each do |att|
           cur_val = all_attrs[att]
+          # don't store empty values
+          next if cur_val.nil? || cur_val.empty?
 
           if (cur_val.is_a?(Array))
             doc[att] = []
@@ -107,12 +103,13 @@ module LinkedData
           else
             doc[att] = cur_val.to_s.strip
           end
-          all_attrs.delete att
         end
 
-        all_attrs.delete :submission
-        #for redundancy with prefLabel
-        all_attrs.delete :label
+        # special handling for :semanticType (AKA tui)
+        if all_attrs[:semanticType] && !all_attrs[:semanticType].empty?
+          doc[:semanticType] = []
+          all_attrs[:semanticType].each { |semType| doc[:semanticType] << semType.split("/").last }
+        end
 
         props = {}
         prop_vals = []
