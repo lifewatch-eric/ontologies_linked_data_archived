@@ -609,7 +609,8 @@ eos
       count_headers += 1
       assert sol[:p].to_s["contributor"] || sol[:p].to_s["comment"] || sol[:p].to_s["definition"]
     end
-    assert count_headers == 4
+
+    assert count_headers == 3
 
     page_classes = LinkedData::Models::Class.in(sub)
                                              .page(1,1000)
@@ -698,16 +699,15 @@ eos
     metrics.bring_remaining
     assert_instance_of LinkedData::Models::Metric, metrics
 
-    assert metrics.classes == 486
-    assert metrics.properties == 63
-    assert metrics.individuals == 82
-    assert metrics.classesWithOneChild == 14
-    #cause it has not the subproperty added
-    assert metrics.classesWithNoDefinition == 474
-    assert metrics.classesWithMoreThan25Children == 2
-    assert metrics.maxChildCount == 65
-    assert metrics.averageChildCount == 5
-    assert metrics.maxDepth == 8
+    assert_equal 486, metrics.classes
+    assert_equal 63, metrics.properties
+    assert_equal 80, metrics.individuals
+    assert_equal 14, metrics.classesWithOneChild
+    assert_equal 474, metrics.classesWithNoDefinition
+    assert_equal 2, metrics.classesWithMoreThan25Children
+    assert_equal 65, metrics.maxChildCount
+    assert_equal 5, metrics.averageChildCount
+    assert_equal 8, metrics.maxDepth
 
     submission_parse("BROTEST-ISFLAT", "BRO testing metrics flat",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,
@@ -721,16 +721,16 @@ eos
     metrics.bring_remaining
 
     #all the child metrics should be 0 since we declare it as flat
-    assert metrics.classes == 486
-    assert metrics.properties == 63
-    assert metrics.individuals == 82
-    assert metrics.classesWithOneChild == 0
+    assert_equal 486, metrics.classes
+    assert_equal 63, metrics.properties
+    assert_equal 80, metrics.individuals
+    assert_equal 0, metrics.classesWithOneChild
     #cause it has not the subproperty added
-    assert metrics.classesWithNoDefinition == 474
-    assert metrics.classesWithMoreThan25Children == 0
-    assert metrics.maxChildCount == 0
-    assert metrics.averageChildCount == 0
-    assert metrics.maxDepth == 0
+    assert_equal 474, metrics.classesWithNoDefinition
+    assert_equal 0, metrics.classesWithMoreThan25Children
+    assert_equal 0, metrics.maxChildCount
+    assert_equal 0, metrics.averageChildCount
+    assert_equal 0, metrics.maxDepth
   end
 
 end
