@@ -73,13 +73,10 @@ class TestOntology < LinkedData::TestCase
     o = LinkedData::Models::Ontology.new
     o.name = @name
     o.administeredBy = [@user]
-    # acronym is not set yet, should be detected and reported in o.errors:
-
-    #binding.pry
-
-    assert(!o.valid?, "Failed to invalidate blank new ontology.")
-    assert(!o.errors[:acronym].nil? && !o.errors[:acronym][:existence].nil?,
-      "Failed to invalidate blank ontology acronym.")
+    # acronym is not set yet, should be detected exception thrown
+    assert_raises Goo::Base::IDGenerationError do
+      o.valid?
+    end
     _delete_objects
   end
 

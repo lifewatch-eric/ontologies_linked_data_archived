@@ -31,7 +31,7 @@ module LinkedData
                   inverse: { on: :class, :attribute => :parents }
 
       #transitive children
-      attribute :descendants, namespace: :rdfs, property: :subClassOf, 
+      attribute :descendants, namespace: :rdfs, property: :subClassOf,
           handler: :retrieve_descendants
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
@@ -46,7 +46,7 @@ module LinkedData
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
-      serialize_default :prefLabel, :synonym, :definition, :obsolete
+      serialize_default :prefLabel, :synonym, :definition, :cui, :semanticType, :obsolete
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
@@ -371,7 +371,7 @@ module LinkedData
                     next_level_thread << parent
                   end
                 end
-              end 
+              end
               Thread.current["next_level_thread"] = next_level_thread
             }
           end
@@ -398,7 +398,7 @@ module LinkedData
         end
 
         query = <<eos
-SELECT DISTINCT ?id ?node ?graph WHERE { 
+SELECT DISTINCT ?id ?node ?graph WHERE {
 GRAPH ?graph {
   #{directional_pattern}
 }
