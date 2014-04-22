@@ -108,7 +108,7 @@ module Mappings
   def self.mapping_counts_for_ontology(ont)
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
-    SELECT ?ont (count(*) as ?count)
+SELECT DISTINCT ?ont ?id
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
