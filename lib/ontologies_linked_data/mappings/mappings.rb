@@ -108,35 +108,48 @@ module Mappings
   def self.mapping_counts_for_ontology(ont)
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
-    SELECT ?ont (count(*) as ?count)
+SELECT DISTINCT ?ont ?id
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> #{ont.id.to_ntriples}  ] .
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> ?ont ] .
-  } GROUP BY ?ont
+}
 eos
     epr = Goo.sparql_query_client(:main)
     this_acr = ont.id.split("/")[-1]
     results = {}
-    solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE})
-    solutions.each do |sol|
-      acr = sol[:ont].to_s.split("/")[-1]
-      if acr != this_acr
-        results[acr] = sol[:count].object
+    solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE},
+                         content_type: "text/plain")
+    line = 0
+    solutions.split("\n").each do |sol|
+      if line > 0
+        ont,id = sol.split("\t")
+        acr = ont[1..-2].to_s.split("/")[-1]
+        if acr != this_acr
+          if !results.include?(acr)
+            results[acr] = Set.new
+          end
+          results[acr] << id
+        end
       end
+      line += 1
     end
-    return results
+    counts = {}
+    results.each do |k,v|
+      counts[k]=v.length
+    end
+    return counts
   end
 
   def self.mapping_counts_per_ontology()
     graphs = [LinkedData::Models::TermMapping.type_uri,LinkedData::Models::Mapping.type_uri]
     sparql_query = <<-eos
-    SELECT ?ont (count(*) as ?count)
+SELECT ?ont (count(*) as ?count)
   WHERE {
   ?id <http://data.bioontology.org/metadata/terms> [
     <http://data.bioontology.org/metadata/ontology> ?ont ] .
-  } GROUP BY ?ont
+} GROUP BY ?ont
 eos
     epr = Goo.sparql_query_client(:main)
     results = {}

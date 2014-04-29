@@ -12,8 +12,8 @@ gem 'libxml-ruby', '~> 2.0'
 gem 'rsolr', '~> 1.0'
 gem 'minitest', '~> 4.0'
 gem 'cube-ruby', require: "cube"
-gem 'addressable', '= 2.3.5'
 gem 'pony'
+gem 'addressable', '= 2.3.5' 
 
 # Testing
 gem 'simplecov', :group => :test

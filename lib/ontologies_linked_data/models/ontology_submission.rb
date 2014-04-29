@@ -401,10 +401,7 @@ eos
                                   .find(self.obsoleteParent)
                                   .in(self).first
           if class_obsolete_parent
-            descendents_obsolete = LinkedData::Models::Class
-                                      .where(ancestors: class_obsolete_parent)
-                                      .in(self)
-                                      .all
+            descendents_obsolete = class_obsolete_parent.descendants
             logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
             descendents_obsolete.each do |obs|
               classes_deprecated << obs.id
@@ -512,6 +509,7 @@ eos
       # Possible options with their defaults:
       #   process_rdf       = true
       #   index_search      = true
+      #   index_commit      = true
       #   run_metrics       = true
       #   reasoning         = true
       #   archive           = false
@@ -521,6 +519,7 @@ eos
         begin
           process_rdf = options[:process_rdf] == false ? false : true
           index_search = options[:index_search] == false ? false : true
+          index_commit = options[:index_commit] == false ? false : true
           run_metrics = options[:run_metrics] == false ? false : true
           reasoning = options[:reasoning] == false ? false : true
           archive = options[:archive] == true ? true : false
@@ -608,7 +607,7 @@ eos
               raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
               status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
               begin
-                index(logger, false)
+                index(logger, index_commit, false)
                 add_submission_status(status)
               rescue Exception => e
                 add_submission_status(status.get_error_status)
@@ -694,7 +693,7 @@ eos
         return self
       end
 
-      def index(logger, optimize = true)
+      def index(logger, commit = true, optimize = true)
         page = 1
         size = 2500
 
@@ -703,7 +702,7 @@ eos
           self.bring(:ontology) if self.bring?(:ontology)
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
           t0 = Time.now
-          self.ontology.unindex()
+          self.ontology.unindex(commit)
           logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped)
@@ -728,9 +727,12 @@ eos
 
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
-          t0 = Time.now
-          LinkedData::Models::Class.indexCommit()
-          logger.info("Solr index commit in #{Time.now - t0} sec.")
+
+          if (commit)
+            t0 = Time.now
+            LinkedData::Models::Class.indexCommit()
+            logger.info("Solr index commit in #{Time.now - t0} sec.")
+          end
         end
         logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
         logger.flush
@@ -750,9 +752,10 @@ eos
         options = {}
         args.each {|e| options.merge!(e) if e.is_a?(Hash)}
         remove_index = options[:remove_index] ? true : false
+        index_commit = options[:index_commit] == false ? false : true
 
         super(*args)
-        self.ontology.unindex()
+        self.ontology.unindex(index_commit)
 
         self.bring(:metrics) if self.bring?(:metrics)
         self.metrics.delete if self.metrics

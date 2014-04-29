@@ -24,7 +24,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     helper = LinkedData::TestOntologyCommon.new(self)
     helper.submission_parse(ONT_ACR1,
                      "MappingOntTest1",
-                     "./test/data/ontology_files/BRO_v3.2.owl", 11,
+                     "./test/data/ontology_files/BRO_v3.3.owl", 11,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     helper.submission_parse(ONT_ACR2,

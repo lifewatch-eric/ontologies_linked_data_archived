@@ -1,5 +1,6 @@
 require "set"
 require "cgi"
+require "multi_json"
 require "ontologies_linked_data/models/notes/note"
 
 module LinkedData
@@ -24,23 +25,20 @@ module LinkedData
 
       attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
 
-      #transitive parent
-      attribute :ancestors, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class],
-                  transitive: true
+      attribute :ancestors, namespace: :rdfs, property: :subClassOf, handler: :retrieve_ancestors
 
       attribute :children, namespace: :rdfs, property: :subClassOf,
-                  inverse: { on: :class , :attribute => :parents }
+                  inverse: { on: :class, :attribute => :parents }
 
       #transitive children
       attribute :descendants, namespace: :rdfs, property: :subClassOf,
-                    inverse: { on: :class , attribute: :parents },
-                    transitive: true
+          handler: :retrieve_descendants
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
-      attribute :cui, :namespace => :umls, alias: true
+      attribute :cui, enforce: [:list], :namespace => :umls, alias: true
       attribute :xref, :namespace => :oboinowl_gen, alias: true
 
       attribute :notes,
@@ -48,7 +46,7 @@ module LinkedData
 
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
-      serialize_default :prefLabel, :synonym, :definition, :obsolete
+      serialize_default :prefLabel, :synonym, :definition, :cui, :semanticType, :obsolete
       serialize_methods :properties
       serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
@@ -91,10 +89,12 @@ module LinkedData
         }
 
         all_attrs = self.to_hash
-        std = [:id, :prefLabel, :notation, :synonym, :definition]
+        std = [:id, :prefLabel, :notation, :synonym, :definition, :cui]
 
         std.each do |att|
           cur_val = all_attrs[att]
+          # don't store empty values
+          next if cur_val.nil? || cur_val.empty?
 
           if (cur_val.is_a?(Array))
             doc[att] = []
@@ -103,27 +103,39 @@ module LinkedData
           else
             doc[att] = cur_val.to_s.strip
           end
-          all_attrs.delete att
         end
 
-        all_attrs.delete :submission
-        props = []
+        # special handling for :semanticType (AKA tui)
+        if all_attrs[:semanticType] && !all_attrs[:semanticType].empty?
+          doc[:semanticType] = []
+          all_attrs[:semanticType].each { |semType| doc[:semanticType] << semType.split("/").last }
+        end
 
-        #for redundancy with prefLabel
-        all_attrs.delete :label
+        props = {}
+        prop_vals = []
 
-        all_attrs.each do |attr_key, attr_val|
+        self.properties.each do |attr_key, attr_val|
           if (!doc.include?(attr_key))
             if (attr_val.is_a?(Array))
+              props[attr_key] = []
               attr_val = attr_val.uniq
-              attr_val.map { |val| props << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
+
+              attr_val.map { |val|
+                real_val = val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip
+                prop_vals << real_val
+                props[attr_key] << real_val
+              }
             else
-              props << attr_val.to_s.strip
+              real_val = attr_val.to_s.strip
+              prop_vals << real_val
+              props[attr_key] = real_val
             end
           end
         end
-        props.uniq!
-        doc[:property] = props
+        prop_vals.uniq!
+        doc[:property] = prop_vals
+        doc[:propertyRaw] = MultiJson.dump(props)
+
         return doc
       end
 
@@ -299,14 +311,102 @@ module LinkedData
         return root_node
       end
 
-      def ancestors
-        if @ancestors
-          return @ancestors.select { |x| !x.id.to_s["owl#Thing"] }.freeze
+      def retrieve_ancestors
+        ids = retrieve_hierarchy_ids(:ancestors)
+        if ids.length == 0
+          return []
         end
-        raise Goo::Base::AttributeNotLoaded, "Persistent object with `ancestors` not loaded"
+        ids.select { |x| !x["owl#Thing"] }
+        ids.map! { |x| RDF::URI.new(x) }
+        return LinkedData::Models::Class.in(self.submission).ids(ids).all
+      end
+
+      def retrieve_descendants(page=nil,size=nil)
+        ids = retrieve_hierarchy_ids(:descendants)
+        if ids.length == 0
+          return []
+        end
+        ids.select { |x| !x["owl#Thing"] }
+        total_size = ids.length
+        if !page.nil?
+          ids = ids.to_a.sort
+          rstart = (page -1) * size
+          rend = (page * size) -1
+          ids = ids[rstart..rend]
+        end
+        ids.map! { |x| RDF::URI.new(x) }
+        models = LinkedData::Models::Class.in(self.submission).ids(ids).all
+        if !page.nil?
+          return Goo::Base::Page.new(page,size,total_size,models)
+        end
+        return models
       end
 
       private
+
+      def retrieve_hierarchy_ids(direction=:ancestors)
+        current_level = 1
+        max_levels = 40
+        level_ids = Set.new([self.id.to_s])
+        all_ids = Set.new()
+        graphs = [self.submission.id.to_s]
+        submission_id_string = self.submission.id.to_s
+        while current_level <= max_levels do
+          next_level = Set.new
+          slices = level_ids.to_a.sort.each_slice(750).to_a
+          threads = []
+          slices.each_index do |i|
+            ids_slice = slices[i]
+            threads[i] = Thread.new {
+              next_level_thread = Set.new
+              query = hierarchy_query(direction,ids_slice)
+              Goo.sparql_query_client.query(query,query_options: {rules: :NONE }, graphs: graphs)
+                  .each do |sol|
+                parent = sol[:node].to_s
+                next if !parent.start_with?("http")
+                ontology = sol[:graph].to_s
+                if submission_id_string == ontology
+                  unless all_ids.include?(parent)
+                    next_level_thread << parent
+                  end
+                end
+              end
+              Thread.current["next_level_thread"] = next_level_thread
+            }
+          end
+          threads.each {|t| t.join ; next_level.merge(t["next_level_thread"]) }
+          current_level += 1
+          pre_size = all_ids.length
+          all_ids.merge(next_level)
+          if all_ids.length == pre_size
+            #nothing new
+            return all_ids
+          end
+          level_ids = next_level
+        end
+        return all_ids
+      end
+
+      def hierarchy_query(direction,class_ids)
+        filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
+        directional_pattern = ""
+        if direction == :ancestors
+          directional_pattern = "?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?node . "
+        else
+          directional_pattern = "?node <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?id . "
+        end
+
+        query = <<eos
+SELECT DISTINCT ?id ?node ?graph WHERE {
+GRAPH ?graph {
+  #{directional_pattern}
+}
+FILTER (#{filter_ids})
+}
+eos
+         return query
+      end
+
 
       def append_if_not_there_already(path,r)
         return nil if r.id.to_s["#Thing"]
@@ -359,6 +459,5 @@ module LinkedData
       end
 
     end
-
   end
 end

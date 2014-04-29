@@ -42,7 +42,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.parents[0].submission, os)
 
     #transitive
-    cls.bring(:ancestors)
+    assert_raises ArgumentError do
+      cls.bring(:ancestors)
+    end
     ancestors = cls.ancestors.dup
     ancestors.each do |a|
       assert !a.submission.nil?
@@ -81,7 +83,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.children[0].submission, os)
 
     #transitive
-    cls.bring(:descendants)
+    assert_raises ArgumentError do
+      cls.bring(:descendants)
+    end
     descendants = cls.descendants.dup
     descendants.map! { |a| a.id.to_s }
     data_descendants = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
@@ -89,6 +93,12 @@ class TestClassModel < LinkedData::TestOntologyCommon
     "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
     assert descendants.sort == data_descendants.sort
 
+    page = cls.retrieve_descendants(page=2,size=2)
+    assert page.total_pages == 2
+    assert page.prev_page == 1
+    assert page.next_page == nil
+    assert page.aggregate == 3
+    assert page[0].id.to_s == data_descendants[2]
   end
 
   def test_path_to_root
@@ -246,14 +256,10 @@ class TestClassModel < LinkedData::TestOntologyCommon
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf, :indexed])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
-    cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
+    assert_raises ArgumentError do
+      cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
                                       .include(:prefLabel,ancestors: [:prefLabel]).first
-    assert cls.ancestors.length == 7
-    cls.ancestors.each do |a|
-      next if a.id["Thing"]
-      assert_instance_of String, a.prefLabel
     end
-    assert_instance_of String, cls.prefLabel
   end
 
   def test_bro_paths_to_root
