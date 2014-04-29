@@ -12,6 +12,13 @@ module LinkedData
 
         metrics = LinkedData::Models::Metric.new
         cls_metrics.each do |k,v|
+          unless v.instance_of?(Integer)
+            begin
+              v = Integer(v)
+            rescue ArgumentError
+              v = 0
+            end
+          end
           metrics.send("#{k}=",v)
         end
         metrics.individuals = number_individuals(submission)
