@@ -22,4 +22,6 @@ gem 'email_spec', :group => :test
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
 gem 'goo', github: 'ncbo/goo', branch: 'master'
+
+#SPARQL client NCBO mirror
 gem 'sparql-client', github: 'ncbo/sparql-client', branch: 'master'
