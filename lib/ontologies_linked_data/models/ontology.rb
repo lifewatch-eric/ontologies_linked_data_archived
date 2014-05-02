@@ -119,7 +119,7 @@ module LinkedData
                     .to_a
         self.submissions.each do |s|
           if !s.loaded_attributes.include?(:submissionId)
-            s.bring(:submissionsId)
+            s.bring(:submissionId)
           end
           if !s.loaded_attributes.include?(:submissionStatus)
             s.bring(:submissionStatus)
