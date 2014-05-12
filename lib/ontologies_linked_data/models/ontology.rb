@@ -119,7 +119,7 @@ module LinkedData
                     .to_a
         self.submissions.each do |s|
           if !s.loaded_attributes.include?(:submissionId)
-            s.bring(:submissionsId)
+            s.bring(:submissionId)
           end
           if !s.loaded_attributes.include?(:submissionStatus)
             s.bring(:submissionStatus)
@@ -145,6 +145,7 @@ module LinkedData
         options = {}
         args.each {|e| options.merge!(e) if e.is_a?(Hash)}
         in_update = options[:in_update] || false
+        index_commit = options[:index_commit] == false ? false : true
 
         # remove notes
         self.bring(:notes)
@@ -202,7 +203,7 @@ module LinkedData
         end
 
         # remove index entries
-        unindex()
+        unindex(index_commit)
 
         # delete all files
         ontology_dir = File.join(LinkedData.settings.repository_folder, self.acronym.to_s)
@@ -224,11 +225,11 @@ module LinkedData
         return self
       end
 
-      def unindex
+      def unindex(commit=true)
         self.bring(:acronym) if self.bring?(:acronym)
         query = "submissionAcronym:#{acronym}"
         Ontology.unindexByQuery(query)
-        Ontology.indexCommit()
+        Ontology.indexCommit() if commit
       end
     end
   end

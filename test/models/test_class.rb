@@ -7,7 +7,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -42,7 +42,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.parents[0].submission, os)
 
     #transitive
-    cls.bring(:ancestors)
+    assert_raises ArgumentError do
+      cls.bring(:ancestors)
+    end
     ancestors = cls.ancestors.dup
     ancestors.each do |a|
       assert !a.submission.nil?
@@ -61,7 +63,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -81,7 +83,9 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert_equal(cls.children[0].submission, os)
 
     #transitive
-    cls.bring(:descendants)
+    assert_raises ArgumentError do
+      cls.bring(:descendants)
+    end
     descendants = cls.descendants.dup
     descendants.map! { |a| a.id.to_s }
     data_descendants = ["http://bioportal.bioontology.org/ontologies/msotes#class_5",
@@ -89,6 +93,12 @@ class TestClassModel < LinkedData::TestOntologyCommon
     "http://bioportal.bioontology.org/ontologies/msotes#class_7"]
     assert descendants.sort == data_descendants.sort
 
+    page = cls.retrieve_descendants(page=2,size=2)
+    assert page.total_pages == 2
+    assert page.prev_page == 1
+    assert page.next_page == nil
+    assert page.aggregate == 3
+    assert page[0].id.to_s == data_descendants[2]
   end
 
   def test_path_to_root
@@ -96,7 +106,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -120,7 +130,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -148,7 +158,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -171,7 +181,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
 
-    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], 
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
                                                       submissionId: 1).all
     assert(os.length == 1)
     os = os[0]
@@ -246,14 +256,10 @@ class TestClassModel < LinkedData::TestOntologyCommon
     end
     os = LinkedData::Models::Ontology.find("BROTEST123").first.latest_submission(status: [:rdf])
     statistical_Text_Analysis = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Statistical_Text_Analysis"
-    cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
+    assert_raises ArgumentError do
+      cls = LinkedData::Models::Class.find(RDF::URI.new(statistical_Text_Analysis)).in(os)
                                       .include(:prefLabel,ancestors: [:prefLabel]).first
-    assert cls.ancestors.length == 7
-    cls.ancestors.each do |a|
-      next if a.id["Thing"]
-      assert_instance_of String, a.prefLabel
     end
-    assert_instance_of String, cls.prefLabel
   end
 
   def test_bro_paths_to_root
@@ -304,4 +310,22 @@ class TestClassModel < LinkedData::TestOntologyCommon
 
   end
 
+  def test_xml_literal_serialization
+    comment = "<ncicp:ComplexDefinition><ncicp:def-definition>A form of cancer that begins in melanocytes (cells that make the pigment melanin). It may begin in a mole (skin melanoma), but can also begin in other pigmented tissues, such as in the eye or in the intestines.</ncicp:def-definition><ncicp:def-source>NCI-GLOSS</ncicp:def-source></ncicp:ComplexDefinition>"
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
+                                                      submissionId: 1).all
+    assert(os.length == 1)
+    os = os[0]
+
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class6"
+
+    cls = LinkedData::Models::Class.find(class_id).in(os).include(:unmapped).to_a[0]
+
+    cls_hash = cls.to_flex_hash(only: [:properties])
+    xml_comment = cls_hash[:properties]["http://www.w3.org/2000/01/rdf-schema#comment"].first
+    assert_equal String, xml_comment.class
+    assert_equal comment, xml_comment
+  end
 end

@@ -40,8 +40,12 @@ module LinkedData::Security
       not self.class.access_control_settings[:read_restriction_based_on].empty?
     end
 
+    def access_control_load_attrs
+      self.class.access_control_load_attrs
+    end
+
     def access_control_load?
-      not self.class.access_control_settings[:access_control_load].empty?
+      self.class.access_control_load?
     end
 
     def access_for_all?
@@ -142,6 +146,27 @@ module LinkedData::Security
           AccessControl.store_settings(cls, type, Set.new)
         end
       end
+
+      def access_control_load_attrs
+        cls = self
+        attrs = cls.access_control_settings[:access_control_load]
+        DEFAULT_OWNER_ATTRIBUTES.each do |attr|
+          next unless cls.respond_to?(:attributes) && cls.attributes.include?(attr)
+          attrs << attr
+        end
+        attrs
+      end
+
+      def access_control_load?
+        cls = self
+        attrs = cls.access_control_settings[:access_control_load]
+        DEFAULT_OWNER_ATTRIBUTES.each do |attr|
+          next unless cls.respond_to?(:attributes) && cls.attributes.include?(attr)
+          attrs << attr
+        end
+        not attrs.empty?
+      end
+
     end
   end
 end

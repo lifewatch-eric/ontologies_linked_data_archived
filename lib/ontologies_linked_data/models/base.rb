@@ -11,6 +11,7 @@ module LinkedData
       def save(*args)
         write_permission_check(*args)
         super(*args)
+        self.cache_invalidate if LinkedData.settings.enable_http_cache
         self.cache_write if LinkedData.settings.enable_http_cache
         self
       end
@@ -26,6 +27,9 @@ module LinkedData
       # Override find method to make sure the id matches what is in the RDF store
       # Only do this if the setting is enabled, string comparison sucks
       def self.find(id, *options)
+        # Handle `+` to ` ` conversion here because Sinatra doesn't do it for URI's
+        id = id.gsub("+", " ") if id.include?("+")
+
         if LinkedData.settings.replace_url_prefix && id.to_s.start_with?(LinkedData.settings.rest_url_prefix)
           id = RDF::IRI.new(id.to_s.sub(LinkedData.settings.rest_url_prefix, LinkedData.settings.id_url_prefix))
         end
@@ -83,7 +87,7 @@ module LinkedData
 
         # Include attributes needed for security (if enabled)
         if LinkedData.settings.enable_security
-          access_control_attributes = self.access_control_settings[:access_control_load]
+          access_control_attributes = self.access_control_load_attrs
           extra_attrs.concat(access_control_attributes.to_a) unless access_control_attributes.nil? && access_control_attributes.empty?
         end
 
@@ -151,8 +155,8 @@ module LinkedData
 
           # If we have a modified object, we should do the security check
           # on the original. This allows a user to change the ownsership of
-          # an object without having to add the owner and have the owner remove
-          # the original owner.
+          # an object without having to add the owner and have the new owner
+          # remove the original owner.
           reference_object = self.class.find(self.id).first if self.modified?
 
           # Allow everyone to write
@@ -162,7 +166,7 @@ module LinkedData
           if reference_object.access_control_load?
             # Only load ones that aren't loaded so we don't overwrite changes
             not_loaded = []
-            reference_object.class.access_control_settings[:access_control_load].each do |attr|
+            reference_object.access_control_load_attrs.each do |attr|
               not_loaded << attr unless reference_object.loaded_attributes.include?(attr)
             end
             reference_object.bring(*not_loaded) unless not_loaded.empty?

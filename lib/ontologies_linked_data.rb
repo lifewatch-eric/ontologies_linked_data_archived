@@ -19,6 +19,7 @@ require "ontologies_linked_data/utils/triples"
 require "ontologies_linked_data/utils/notifications"
 require "ontologies_linked_data/parser/parser"
 require "ontologies_linked_data/diff/diff"
+require "ontologies_linked_data/monkeypatches/class" # load before object
 require "ontologies_linked_data/monkeypatches/object"
 require "ontologies_linked_data/monkeypatches/logging"
 require "ontologies_linked_data/sample_data/sample_data"

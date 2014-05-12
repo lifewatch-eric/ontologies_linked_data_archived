@@ -69,23 +69,51 @@ class TestOntology < LinkedData::TestCase
     o.delete unless o.nil?
   end
 
-  def test_invalid_acronym
+  def test_ontology_acronym_existence
+    o = LinkedData::Models::Ontology.new
+    o.name = @name
+    o.administeredBy = [@user]
+    # acronym is not set yet, should be detected exception thrown
+    assert_raises Goo::Base::IDGenerationError do
+      o.valid?
+    end
+    _delete_objects
+  end
+
+  def test_ontology_acronym_unique
+    _create_ontology_with_submissions
+    o1 = LinkedData::Models::Ontology.find(@acronym).first
+    assert(!o1.nil?, "Failed to create/save/read #{@acronym}.")
+    o1.bring_remaining
+    o2 = LinkedData::Models::Ontology.new
+    o2.name = @name
+    o2.administeredBy = [@user]
+    o2.acronym = @acronym
+    assert_equal(o1.acronym, o2.acronym, "Failed to set same acronym on o1 and o2")
+    # o1 and o2 have the same acronym, should be detected and reported in o2.errors:
+    assert(!o2.valid?, "Failed to invalidate duplicate ontology acronym.")
+    assert(!o2.errors[:acronym].nil? && !o2.errors[:acronym][:duplicate].nil?,
+      "Failed to invalidate duplicate ontology acronym.")
+    _delete_objects
+  end
+
+  def test_ontology_acronym_value_validation
     o = LinkedData::Models::Ontology.new
     o.acronym = "-1234"  # must start with A-Z
     o.valid?
-    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
     o = LinkedData::Models::Ontology.new
     o.acronym = "abc1234"  # must start with A-Z, no lower case allowed
     o.valid?
-    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
     o = LinkedData::Models::Ontology.new
     o.acronym = "1234ABC"  # must start with A-Z
     o.valid?
-    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
     o = LinkedData::Models::Ontology.new
     o.acronym = "ABCDEFGHIJKLMNOPQ"  # no more than 16 chars
     o.valid?
-    assert o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator]
+    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
     o = LinkedData::Models::Ontology.new
     o.acronym = "A"  # must begin with at least 1 char in A-Z
     o.valid?
@@ -98,13 +126,10 @@ class TestOntology < LinkedData::TestCase
   def test_valid_ontology
     o = LinkedData::Models::Ontology.new
     assert (not o.valid?)
-
     o.acronym = @acronym
     o.name = @name
-
     u = LinkedData::Models::User.new(username: "tim")
     o.administeredBy = [@user]
-
     assert o.valid?
   end
 
