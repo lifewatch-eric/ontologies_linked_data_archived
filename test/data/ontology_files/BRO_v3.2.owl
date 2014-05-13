@@ -10,7 +10,7 @@
     <!ENTITY core "http://www.w3.org/2004/02/skos/core#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY oboInOwl "http://www.geneontology.org/formats/oboInOwl#" >
+    <!ENTITY oboInOwl "http://www.geneontology.org/formats/oboInOWL#" >
     <!ENTITY activity "http://bioontology.org/ontologies/Activity.owl#" >
     <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
     <!ENTITY xsp "http://www.owl-ontologies.com/2005/08/07/xsp.owl#" >
@@ -32,7 +32,7 @@
      xmlns:swrl="http://www.w3.org/2003/11/swrl#"
      xmlns:BRO="http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#"
      xmlns:area="http://bioontology.org/ontologies/ResearchArea.owl#"
-     xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#"
+     xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOWL#"
      xmlns:dct="http://purl.org/dc/terms/"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
