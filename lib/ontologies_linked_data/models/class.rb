@@ -423,7 +423,7 @@ module LinkedData
       def hierarchy_query(direction,class_ids)
         filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
         directional_pattern = ""
-        property_tree = self.tree_view_property(self.submission)
+        property_tree = self.class.tree_view_property(self.submission)
         if direction == :ancestors
           directional_pattern = "?id <#{property_tree.to_s}> ?node . "
         else
