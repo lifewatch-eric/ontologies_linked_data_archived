@@ -599,7 +599,8 @@ eos
 
     sub = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acronym ], submissionId: id).all
     sub = sub[0]
-    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    #this is the only ontology that indexes and tests for no error
+    parse_options = {process_rdf: true, index_search: true, run_metrics: false, reasoning: true}
     begin
       tmp_log = Logger.new(TestLogFile.new)
       sub.process_submission(tmp_log, parse_options)
@@ -610,6 +611,9 @@ eos
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
     assert sub.missingImports.length == 1
     assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
+
+    #make sure no errors in statuses
+    sub.submissionStatus.select { |x| x.id.to_s["ERROR"] }.length == 0
 
     LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation, :prefixIRI).each do |cls|
       assert cls.prefixIRI.is_a?(String)
