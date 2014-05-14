@@ -12,7 +12,7 @@ module LinkedData
       model :class, name_with: :id, collection: :submission,
             namespace: :owl, :schemaless => :true,
             rdf_type: lambda { |*x| self.class_rdf_type(x) }
-            
+
       def self.class_rdf_type(*args)
         submission = args.flatten.first
         return RDF::OWL[:Class] if submission.nil?
@@ -36,12 +36,12 @@ module LinkedData
       attribute :notation, namespace: :skos
       attribute :prefixIRI, namespace: :metadata
 
-      attribute :parents, namespace: :rdfs, 
+      attribute :parents, namespace: :rdfs,
                   property: lambda {|x| self.tree_view_property(x) },
                   enforce: [:list, :class]
 
       #transitive parent
-      attribute :ancestors, namespace: :rdfs, 
+      attribute :ancestors, namespace: :rdfs,
                   property: :subClassOf,
                   enforce: [:list, :class],
                   transitive: true

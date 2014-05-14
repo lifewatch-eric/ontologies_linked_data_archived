@@ -792,7 +792,7 @@ eos
         else
           root_skos = <<eos
 SELECT DISTINCT ?root WHERE {
-GRAPH #{self.id.to_ntriples} { 
+GRAPH #{self.id.to_ntriples} {
   ?x #{RDF::SKOS[:hasTopConcept].to_ntriples} ?root .
 }}
 eos
