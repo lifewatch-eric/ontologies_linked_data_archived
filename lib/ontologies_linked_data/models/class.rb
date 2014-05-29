@@ -10,7 +10,20 @@ module LinkedData
 
     class Class < LinkedData::Models::Base
       model :class, name_with: :id, collection: :submission,
-            namespace: :owl, :schemaless => :true
+            namespace: :owl, :schemaless => :true,
+            rdf_type: lambda { |*x| self.class_rdf_type(x) }
+
+      def self.class_rdf_type(*args)
+        submission = args.flatten.first
+        return RDF::OWL[:Class] if submission.nil?
+        unless submission.loaded_attributes.include?(:hasOntologyLanguage)
+          submission.bring(:hasOntologyLanguage)
+        end
+        if submission.hasOntologyLanguage
+          return submission.hasOntologyLanguage.class_type
+        end
+        return RDF::OWL[:Class]
+      end
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
@@ -23,14 +36,22 @@ module LinkedData
       attribute :notation, namespace: :skos
       attribute :prefixIRI, namespace: :metadata
 
-      attribute :parents, namespace: :rdfs, property: :subClassOf, enforce: [:list, :class]
+      attribute :parents, namespace: :rdfs,
+                  property: lambda {|x| self.tree_view_property(x) },
+                  enforce: [:list, :class]
+
+      #transitive parent
+      attribute :ancestors, namespace: :rdfs,
+                  property: :subClassOf,
+                  enforce: [:list, :class],
+                  transitive: true
+
+      attribute :children, namespace: :rdfs,
+                  property: lambda {|x| self.tree_view_property(x) },
+                  inverse: { on: :class , :attribute => :parents }
 
       attribute :ancestors, namespace: :rdfs, property: :subClassOf, handler: :retrieve_ancestors
 
-      attribute :children, namespace: :rdfs, property: :subClassOf,
-                  inverse: { on: :class, :attribute => :parents }
-
-      #transitive children
       attribute :descendants, namespace: :rdfs, property: :subClassOf,
           handler: :retrieve_descendants
 
@@ -47,7 +68,7 @@ module LinkedData
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition, :cui, :semanticType, :obsolete
-      serialize_methods :properties
+      serialize_methods :properties, :childrenCount
       serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
       links_load submission: [ontology: [:acronym]]
@@ -69,6 +90,17 @@ module LinkedData
       cache_segment_instance lambda {|cls| segment_instance(cls) }
       cache_segment_keys [:class]
       cache_load submission: [ontology: [:acronym]]
+
+      def self.tree_view_property(*args)
+        submission = args.first
+        unless submission.loaded_attributes.include?(:hasOntologyLanguage)
+          submission.bring(:hasOntologyLanguage)
+        end
+        if submission.hasOntologyLanguage
+          return submission.hasOntologyLanguage.tree_property
+        end
+        return RDF::RDFS[:subClassOf]
+      end
 
       def self.segment_instance(cls)
         cls.submission.ontology.bring(:acronym) unless cls.submission.ontology.loaded_attributes.include?(:acronym)
@@ -275,12 +307,6 @@ module LinkedData
        LinkedData::Models::Class.
          partially_load_children(childrens_hash.values,threshhold,self.submission,only_children_count=true)
 
-        # Make sure original class ends up in the proper place
-        if path.length > 1
-          orig_cls_parent = path[-2].id
-          orig_cls = path.last
-        end
-
         #build the tree
         root_node = path.first
         tree_node = path.first
@@ -301,8 +327,8 @@ module LinkedData
             end
           end
 
-          if orig_cls && tree_node.id == orig_cls_parent && !tree_node.children.any? {|c| c.id == orig_cls.id}
-            tree_node.children << orig_cls
+          if path.length > 0 && next_tree_node.nil?
+            tree_node.children << path.shift
           end
 
           tree_node = next_tree_node
@@ -390,10 +416,11 @@ module LinkedData
       def hierarchy_query(direction,class_ids)
         filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
         directional_pattern = ""
+        property_tree = self.class.tree_view_property(self.submission)
         if direction == :ancestors
-          directional_pattern = "?id <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?node . "
+          directional_pattern = "?id <#{property_tree.to_s}> ?node . "
         else
-          directional_pattern = "?node <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?id . "
+          directional_pattern = "?node <#{property_tree.to_s}> ?id . "
         end
 
         query = <<eos

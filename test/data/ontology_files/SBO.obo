@@ -1473,7 +1473,7 @@ is_obsolete: true
 id: SBO:0000236
 name: physical entity representation
 def: "Representation of an entity that may participate in an interaction\, a process or relationship of significance.\n" [src_code:NR]
-synonym: "new synonym" []
+synonym: "new synonym" EXACT []
 is_a: SBO:0000000 ! systems biology representation
 
 [Term]
@@ -1914,7 +1914,7 @@ is_a: SBO:0000303 ! biochemical potential
 id: SBO:0000306
 name: pK
 def: "negative logarithm (base 10) of a dissociation constant.<math xmlns=\"http\://www.w3.org/1998/Math/MathML\">\n   <lambda>\n     <bvar><ci definitionURL=\"http\://biomodels.net/SBO/#SBO\:0000282\">K</ci></bvar>\n     <apply>\n       <minus/>\n       <apply>\n         <log/>\n         <ci>K</ci>\n       </apply>\n     </apply>\n   </lambda>\n</math>" [src_code:NR]
-synonym: "dissociation potential" []
+synonym: "dissociation potential" EXACT []
 is_a: SBO:0000303 ! biochemical potential
 is_a: SBO:0000309 ! dissociation characteristic
 
