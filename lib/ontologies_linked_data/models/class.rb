@@ -165,8 +165,16 @@ module LinkedData
           end
         end
         prop_vals.uniq!
-        doc[:property] = prop_vals
-        doc[:propertyRaw] = MultiJson.dump(props)
+
+        begin
+          doc[:property] = prop_vals
+          doc[:propertyRaw] = MultiJson.dump(props)
+        rescue JSON::GeneratorError => e
+          doc[:property] = nil
+          doc[:propertyRaw] = nil
+          # need to ignore non-UTF-8 characters in properties of classes (this is a rare issue)
+          puts "#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}"
+        end
 
         return doc
       end
@@ -474,7 +482,7 @@ eos
 
           if !p.loaded_attributes.include?(:parents)
             # fail safely
-            LOGGER.error("Class #{p.id.to_s} from #{p.submission.id}  cannot load parents")
+            LOGGER.error("Class #{p.id.to_s} from #{p.submission.id} cannot load parents")
             return
           end
 

@@ -545,6 +545,7 @@ eos
               status = LinkedData::Models::SubmissionStatus.find("UPLOADED").first
               add_submission_status(status)
               self.save
+
               # Parse RDF
               file_path = nil
               begin
@@ -564,7 +565,7 @@ eos
                 add_submission_status(status)
                 self.save
               rescue Exception => e
-                logger.info(e.message)
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
                 add_submission_status(status.get_error_status)
                 self.save
@@ -578,7 +579,7 @@ eos
                 add_submission_status(status)
                 self.save
               rescue Exception => e
-                logger.info(e.message)
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
                 add_submission_status(status.get_error_status)
                 self.save
@@ -592,7 +593,7 @@ eos
                 add_submission_status(status)
                 self.save
               rescue Exception => e
-                logger.info(e.message)
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
                 add_submission_status(status.get_error_status)
                 self.save
@@ -610,9 +611,9 @@ eos
                 index(logger, index_commit, false)
                 add_submission_status(status)
               rescue Exception => e
-                add_submission_status(status.get_error_status)
-                logger.info(e.message)
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
+                add_submission_status(status.get_error_status)
               end
               self.save
             end
@@ -624,10 +625,10 @@ eos
                 process_metrics(logger)
                 add_submission_status(status)
               rescue Exception => e
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+                logger.flush
                 self.metrics = nil
                 add_submission_status(status.get_error_status)
-                logger.info(e.message)
-                logger.flush
               end
               self.save
             end
