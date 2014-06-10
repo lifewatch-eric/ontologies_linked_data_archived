@@ -90,6 +90,34 @@ class TestProvisionalClass < LinkedData::TestCase
     end
   end
 
+  def test_provisional_class_filter_by_creator
+    username = "User Testing Filtering"
+    user = LinkedData::Models::User.new({username: username, email: "tester@example.org", password: "password"})
+    user.save
+    assert user.valid?, "#{user.errors}" 
+
+    pc_array = Array.new(3) { LinkedData::Models::ProvisionalClass.new }
+    pc_array.each_index do |i|
+      pc = pc_array[i]
+      pc.label = "PC Testing Filtering #{i}"
+      pc.creator = user
+      pc.save
+      assert pc.valid?, "#{pc.errors}"
+    end
+
+    user = LinkedData::Models::User.find(username).include(:provisionalClasses).first
+    assert_equal user.provisionalClasses.count, 3
+
+    pcs = LinkedData::Models::ProvisionalClass.where(creator: [username: username]).all
+    assert_equal pcs.count, 3
+
+    pc_array.each_index do |i|
+      pc = pc_array[i]
+      pc.delete
+    end
+    user.delete
+  end
+
   def test_provisional_class_synonym
     syns = ["Test Synonym 1", "Test Synonym 2", "Test Synonym 3"]
     pc = @provisional_class
