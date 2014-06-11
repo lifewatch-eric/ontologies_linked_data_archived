@@ -66,8 +66,7 @@ class TestProvisionalClass < LinkedData::TestCase
   def test_provisional_class_retrieval
     creators = ["Test User 0", "Test User 1", "Test User 2"]
     pc_array = Array.new(3) { LinkedData::Models::ProvisionalClass.new }
-    pc_array.each_index do |i|
-      pc = pc_array[i]
+    pc_array.each_with_index do |pc, i|      
       pc.label = "Test PC #{i}"
       pc.creator = LinkedData::Models::User.new({username: creators[i], email: "tester@example.org", password: "password"}).save
       pc.save
@@ -84,8 +83,7 @@ class TestProvisionalClass < LinkedData::TestCase
 
     pc1.first.delete
     pc2.first.delete
-    pc_array.each_index do |i|
-      pc = pc_array[i]
+    pc_array.each do |pc|
       pc.delete
     end
   end
@@ -97,8 +95,7 @@ class TestProvisionalClass < LinkedData::TestCase
     assert user.valid?, "#{user.errors}" 
 
     pc_array = Array.new(3) { LinkedData::Models::ProvisionalClass.new }
-    pc_array.each_index do |i|
-      pc = pc_array[i]
+    pc_array.each_with_index do |pc, i|
       pc.label = "PC Testing Filtering #{i}"
       pc.creator = user
       pc.save
@@ -111,8 +108,7 @@ class TestProvisionalClass < LinkedData::TestCase
     pcs = LinkedData::Models::ProvisionalClass.where(creator: [username: username]).all
     assert_equal pcs.count, 3
 
-    pc_array.each_index do |i|
-      pc = pc_array[i]
+    pc_array.each do |pc|
       pc.delete
     end
     user.delete
