@@ -255,7 +255,7 @@ module LinkedData
           owlapi = LinkedData::Parser::OWLAPICommand.new(
               File.expand_path(file_path),
               File.expand_path(self.data_folder.to_s),
-              self.masterFileName)
+              master_file: self.masterFileName)
           if !reasoning
             owlapi.disable_reasoner
           end
