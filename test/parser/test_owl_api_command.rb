@@ -16,7 +16,7 @@ class TestOWLApi < LinkedData::TestCase
       raise e
     end
 
-    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
+    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo)
     owlapi.parse
     assert(File.exist?(output_repo))
     assert(File.exist?(input_file))
@@ -28,7 +28,7 @@ class TestOWLApi < LinkedData::TestCase
 
     output_repo =  "/var/log/xxxxx"
     input_file = "test/data/ontology_files/"
-    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
+    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo)
     begin
       owlapi.parse
       assert(false)
@@ -41,7 +41,7 @@ class TestOWLApi < LinkedData::TestCase
 
     output_repo =  "/var/log/xxxxx"
     input_file = "test/data/ontology_files/aaaa"
-    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
+    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo)
     begin
       owlapi.parse
       assert(false)
@@ -55,7 +55,7 @@ class TestOWLApi < LinkedData::TestCase
 
     output_repo =  "/var/log/xxxxx"
     input_file = "test/data/ontology_files/radlex_owl_v3.0.1.zip"
-    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo,nil)
+    owlapi = LinkedData::Parser::OWLAPICommand.new(input_file,output_repo)
     begin
       owlapi.parse
       assert(false)
