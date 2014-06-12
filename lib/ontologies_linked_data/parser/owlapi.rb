@@ -12,11 +12,12 @@ module LinkedData
     end
 
     class OWLAPICommand
-      def initialize(input_file, output_repo, master_file=nil)
+      def initialize(input_file, output_repo, opts = {})
         @owlapi_wrapper_jar_path = LinkedData.bindir + "/owlapi_wrapper.jar"
         @input_file = input_file
         @output_repo = output_repo
-        @master_file = master_file
+        @master_file = opts[:master_file]
+        @logger = opts[:logger] || Parser.logger
         @file_triples_path = nil
         @missing_imports = nil
         @reasoning = true
@@ -35,7 +36,7 @@ module LinkedData
         if (not Dir.exist?(@output_repo))
           begin
             FileUtils.mkdir_p(@output_repo)
-          rescue SystemCallError => e
+          rescue SystemCallError
             raise MkdirException, "Output folder #{@output_repo} folder cannot be created."
           end
         end
@@ -71,24 +72,24 @@ module LinkedData
           File.delete errors_log
         end
         command_call = "java -DentityExpansionLimit=1500000 -Xmx5120M -jar #{@owlapi_wrapper_jar_path} #{options}"
-        Parser.logger.info("Java call [#{command_call}]")
+        @logger.info("Java call [#{command_call}]")
         stdout,stderr,status = Open3.capture3(command_call)
         if not status.success?
-          Parser.logger.error("OWLAPI java error in parse")
-          Parser.logger.error(stderr)
-          Parser.logger.error(stdout)
+          @logger.error("OWLAPI java error in parse")
+          @logger.error(stderr)
+          @logger.error(stdout)
           raise Parser::OWLAPIParserException, "OWLAPI java command exited with #{status.exitstatus}. Check parser logs."
         else
-          Parser.logger.info("OWLAPI java parse finished OK.")
-          Parser.logger.info(stderr)
-          Parser.logger.info(stdout)
+          @logger.info("OWLAPI java parse finished OK.")
+          @logger.info(stderr)
+          @logger.info(stdout)
         end
-        if not File.exist?(File.join([@output_repo, "owlapi.xrdf"]))
+        if not File.exist?(File.join([@output_repo, "owlapi.xrdf"])) || File.stat(File.join([@output_repo, "owlapi.xrdf"])).size == 0
           raise Parser::OWLAPIParserException, "OWLAPI java command exited with #{status.exitstatus}. " +\
           "Output file #{File.join([@output_repo, "owlapi.xrdf"])} cannot be found."
         else
           @file_triples_path = File.join([@output_repo, "owlapi.xrdf"])
-          Parser.logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
+          @logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
         end
         @missing_imports = []
         if File.exist? errors_log
