@@ -91,8 +91,8 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
   end
 
   def test_skos_ontology
-    submission_parse("SKOS-TEST", 
-                     "SKOS TEST Bla", 
+    submission_parse("SKOS-TEST",
+                     "SKOS TEST Bla",
                      "./test/data/ontology_files/efo_gwas.skos.owl", 987,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
@@ -197,7 +197,7 @@ eos
     assert roots.length == 3
     assert roots.map { |x| x.id.to_s }.sort == ["http://purl.obolibrary.org/obo/PATO_0000001",
       "http://purl.obolibrary.org/obo/CARO_0000000",
-      "http://purl.obolibrary.org/obo/GO_0008150"].sort 
+      "http://purl.obolibrary.org/obo/GO_0008150"].sort
   end
 
   def test_submission_parse_subfolders_zip
@@ -626,6 +626,8 @@ eos
 
   #multiple preflables
   def test_submission_parse_aero
+    skip "Re-enable when NCBO-851 is resolved"
+
     acronym = "AERO-TST"
     name = "aero Bla"
     ontologyFile = "./test/data/ontology_files/aero.owl"
