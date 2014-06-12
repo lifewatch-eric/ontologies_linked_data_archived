@@ -3,7 +3,7 @@ module LinkedData
     class <<self
       attr_accessor :logger
     end
-    class ParserException < Exception
+    class ParserException < StandardError
     end
     class MkdirException < ParserException
     end
