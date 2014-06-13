@@ -84,7 +84,7 @@ module LinkedData
           @logger.info(stderr)
           @logger.info(stdout)
         end
-        if not File.exist?(File.join([@output_repo, "owlapi.xrdf"])) || File.stat(File.join([@output_repo, "owlapi.xrdf"])).size == 0
+        if not File.exist?(File.join([@output_repo, "owlapi.xrdf"]))
           raise Parser::OWLAPIParserException, "OWLAPI java command exited with #{status.exitstatus}. " +\
           "Output file #{File.join([@output_repo, "owlapi.xrdf"])} cannot be found."
         else
