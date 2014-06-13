@@ -90,6 +90,10 @@ module LinkedData
         )
       end
 
+      def path_to_repo
+        return File.join([LinkedData.settings.repository_folder, ontology.acronym.to_s, submissionId.to_s])
+      end
+
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([LinkedData.settings.repository_folder, acronym.to_s, submissionId.to_s])
         name = filename || File.basename(File.new(src).path)
