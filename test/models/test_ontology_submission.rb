@@ -626,8 +626,6 @@ eos
 
   #multiple preflables
   def test_submission_parse_aero
-    skip "Re-enable when NCBO-851 is resolved"
-
     acronym = "AERO-TST"
     name = "aero Bla"
     ontologyFile = "./test/data/ontology_files/aero.owl"
@@ -717,7 +715,7 @@ eos
       paging.page(page.next_page) if page.next?
     end while(page.next?)
     assert syns == 26
-    assert defs == 285
+    assert defs == 291
     LinkedData::TestCase.backend_4s_delete
   end
 
