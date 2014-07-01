@@ -717,7 +717,7 @@ eos
       paging.page(page.next_page) if page.next?
     end while(page.next?)
     assert syns == 26
-    assert defs == 285
+    assert defs == 291
     LinkedData::TestCase.backend_4s_delete
   end
 

@@ -24,6 +24,7 @@ module LinkedData
       attribute :subscription, enforce: [:list, :subscription]
       attribute :customOntology, enforce: [:list, :ontology]
       attribute :resetToken
+      attribute :provisionalClasses, inverse: { on: :provisional_class, attribute: :creator }
 
       # Hypermedia settings
       embed :subscription
