@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 5e1bc5d80b93bfc2212775ee604841645814f784
+  revision: 12f60058a7938c3a0e2b3968cf477652e21697cb
   branch: staging
   specs:
     goo (0.0.2)
@@ -27,7 +27,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.0.7)
+    activesupport (4.0.8)
       i18n (~> 0.6, >= 0.6.9)
       minitest (~> 4.2)
       multi_json (~> 1.3)
