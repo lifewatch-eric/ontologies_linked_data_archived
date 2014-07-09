@@ -614,6 +614,10 @@ eos
                 logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
                 add_submission_status(status.get_error_status)
+                path_to_csv = File.join(self.data_folder, self.ontology.acronym.to_s + '.csv')
+                if File.file?(path_to_csv)
+                  FileUtils.delete(path_to_csv)
+                end
               end
               self.save
             end
@@ -708,6 +712,10 @@ eos
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped)
                                   .page(page,size)
+
+          writer = LinkedData::Utils::OntologyCSVWriter.new
+          writer.open(self.data_folder, self.ontology.acronym.to_s)
+
           begin #per page
             t0 = Time.now
             page_classes = paging.page(page,size).all
@@ -715,6 +723,7 @@ eos
             t0 = Time.now
             page_classes.each do |c|
               LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
+              writer.write_class(c)
             end
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
@@ -728,6 +737,8 @@ eos
 
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
+
+          writer.close
 
           if (commit)
             t0 = Time.now
