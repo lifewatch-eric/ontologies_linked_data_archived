@@ -76,7 +76,7 @@ module LinkedData
       end
 
       def to_s
-        "user:#{self.username}"
+        self.username.to_s
       end
 
       private
