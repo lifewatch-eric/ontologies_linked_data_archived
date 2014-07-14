@@ -55,7 +55,12 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
   end
 
   def get_path_to_csv
-    return File.join(@@path_to_repo, @@acronym + '.csv')
+    return File.join(@@path_to_repo, @@acronym + '.gz')
+  end
+
+  def get_csv_string
+    gz = Zlib::GzipReader.open(get_path_to_csv)
+    return gz.read
   end
 
   def test_csv_writer_valid
@@ -63,7 +68,7 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
   end
 
   def test_csv_writer_row_count
-    classes = CSV.read(get_path_to_csv, headers:true)
+    classes = CSV.parse(get_csv_string, headers:true)
     assert_equal true, @@num_classes == classes.count
   end
 
@@ -72,17 +77,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Fabrication Facility'
     id = 'http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Fabrication_Facility'
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal id, row[CLASS_ID]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal id, row[CLASS_ID]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end  
 
   def test_csv_writer_content_preferred_label
@@ -90,17 +93,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Funding Resource'
     id = 'http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Funding_Resource'
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[CLASS_ID] == id
-          assert_equal preferred_label, row[PREFERRED_LABEL]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[CLASS_ID] == id
+        assert_equal preferred_label, row[PREFERRED_LABEL]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_synonym
@@ -108,17 +109,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Database'
     synonym = 'Data Repository'
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal synonym, row[SYNONYMS]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal synonym, row[SYNONYMS]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_synonym_multiple
@@ -126,17 +125,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Bioinformatics'
     synonyms = ['Bioinformatics synonym 1', 'Bioinformatics synonym 2', 'Bioinformatics synonym 3']
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal synonyms, row[SYNONYMS].split('|').sort
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal synonyms, row[SYNONYMS].split('|').sort
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_definition
@@ -144,17 +141,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Fabrication Facility'
     definition = 'A defintion added for testing CSV generation.'
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal definition, row[DEFINITIONS]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal definition, row[DEFINITIONS]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_definition_multiple
@@ -162,17 +157,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Data Storage Service'
     definitions = ['Test definition A', 'Test definition B', 'Test definition C']
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal definitions, row[DEFINITIONS].split('|').sort
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal definitions, row[DEFINITIONS].split('|').sort
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_cui
@@ -180,17 +173,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Software Development'
     cui = 'C0150959'
     
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal cui, row[CUI]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal cui, row[CUI]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_cui_multiple
@@ -198,17 +189,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Social Networking'
     cuis = ['C0000001', 'C0000002', 'C0000003']
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal cuis, row[CUI].split('|').sort
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal cuis, row[CUI].split('|').sort
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_semantic_type
@@ -216,17 +205,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Social Networking'
     semantic_type = 'http://bioontology.org/ontologies/Activity.owl#Activity'
     
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal semantic_type, row[SEMANTIC_TYPES]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal semantic_type, row[SEMANTIC_TYPES]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_semantic_type_multiple
@@ -236,51 +223,45 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
                       'http://bioontology.org/ontologies/Activity.owl#Gene_Therapy',
                       'http://bioontology.org/ontologies/ResearchArea.owl#Area_of_Research']
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal semantic_types, row[SEMANTIC_TYPES].split('|').sort
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal semantic_types, row[SEMANTIC_TYPES].split('|').sort
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_obsolete
     class_exists = false
     preferred_label = 'High Dimensional Data'
     
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert row[OBSOLETE]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert row[OBSOLETE]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end  
 
   def test_csv_writer_content_non_obsolete
     class_exists = false
     preferred_label = 'Area of Research'
     
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal 'false', row[OBSOLETE]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal 'false', row[OBSOLETE]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_parent
@@ -288,17 +269,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     preferred_label = 'Deep Parsing'
     parent_id = 'http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Parsing'
     
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal parent_id, row[PARENTS]
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal parent_id, row[PARENTS]
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
   def test_csv_writer_content_parent_multiple
@@ -307,17 +286,15 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     parent_ids = ['http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#People_Resource', 
                   'http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Service_Resource']
 
-    CSV.open(get_path_to_csv, headers:true) do |c|
-      classes = c.each
-      classes.select do |row|
-        if row[PREFERRED_LABEL] == preferred_label
-          assert_equal parent_ids, row[PARENTS].split('|').sort
-          class_exists = true
-        end
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[PREFERRED_LABEL] == preferred_label
+        assert_equal parent_ids, row[PARENTS].split('|').sort
+        class_exists = true
       end
     end
 
-    assert class_exists, "Class not found: \"#{preferred_label}\""
+    assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
 end

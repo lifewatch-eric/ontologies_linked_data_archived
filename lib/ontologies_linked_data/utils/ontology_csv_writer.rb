@@ -1,13 +1,15 @@
 require 'csv'
+require 'zlib'
 
 module LinkedData
   module Utils
     class OntologyCSVWriter
 
       def open(path, ont_acronym)
-        filename = File.join(path, ont_acronym + '.csv')
-        @csv = CSV.open(filename, 'w', headers: true, return_headers: true, write_headers: true)
-
+        file = File.new(File.join(path, ont_acronym + '.gz'), 'w')
+        gz = Zlib::GzipWriter.new(file)
+        @csv = CSV.new(gz, headers: true, return_headers: true, write_headers: true)
+        
         # Would have preferred to simply use 'ID' for the first header value.
         # However, if the first two characters of a CSV file are 'ID', opening
         # the file with Excel for Mac displays an error message:
