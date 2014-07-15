@@ -27,11 +27,14 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     self.new('self').submission_parse(@@acronym, 'CSV TEST BRO', 
       './test/data/ontology_files/BRO_for_csv.owl', sub_id, 
       process_rdf: true, index_search: false, run_metrics: false, reasoning: true)
-    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: @@acronym], submissionId: sub_id).include(:version).first
-
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: @@acronym], submissionId: sub_id)
+            .include(:version, :submissionId, :ontology).first
+    sub.ontology.bring(:acronym)
+    
     # Open the CSV writer.
+    @@csv_path = sub.csv_path
     writer = LinkedData::Utils::OntologyCSVWriter.new
-    writer.open(@@path_to_repo, @@acronym)
+    writer.open(@@csv_path)
 
     # Write out the CSV.
     page = 1
@@ -54,17 +57,13 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     writer.close
   end
 
-  def get_path_to_csv
-    return File.join(@@path_to_repo, @@acronym + '.gz')
-  end
-
   def get_csv_string
-    gz = Zlib::GzipReader.open(get_path_to_csv)
+    gz = Zlib::GzipReader.open(@@csv_path)
     return gz.read
   end
 
   def test_csv_writer_valid
-    assert File.file?(get_path_to_csv)
+    assert File.file?(@@csv_path)
   end
 
   def test_csv_writer_row_count
