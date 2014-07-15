@@ -5,8 +5,8 @@ module LinkedData
   module Utils
     class OntologyCSVWriter
 
-      def open(path, ont_acronym)
-        file = File.new(File.join(path, ont_acronym + '.gz'), 'w')
+      def open(path)
+        file = File.new(path, 'w')
         gz = Zlib::GzipWriter.new(file)
         @csv = CSV.new(gz, headers: true, return_headers: true, write_headers: true)
         

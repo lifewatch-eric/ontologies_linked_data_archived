@@ -188,6 +188,10 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
+      def csv_path
+        return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
+      end
+
       def unzip_submission(logger)
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
@@ -714,7 +718,7 @@ eos
                                   .page(page,size)
 
           writer = LinkedData::Utils::OntologyCSVWriter.new
-          writer.open(self.data_folder, self.ontology.acronym.to_s)
+          writer.open(self.csv_path)
 
           begin #per page
             t0 = Time.now
