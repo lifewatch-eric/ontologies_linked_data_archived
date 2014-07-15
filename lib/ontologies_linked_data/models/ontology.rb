@@ -139,6 +139,26 @@ module LinkedData
         return submission_ids.max
       end
 
+      def properties
+        latest = latest_submission(status: [:rdf])
+        self.bring(:acronym) if self.bring?(:acronym)
+        raise Exception, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
+
+        # datatype props
+        datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents).all()
+        parents = []
+        datatype_props.each {|prop| prop.parents.each {|parent| parents << parent}}
+        LinkedData::Models::DatatypeProperty.in(latest).models(parents).include(:label, :definition).all()
+
+        # object props
+        object_props = LinkedData::Models::ObjectProperty.in(latest).include(:label, :definition, :parents).all()
+        parents = []
+        object_props.each {|prop| prop.parents.each {|parent| parents << parent}}
+        LinkedData::Models::ObjectProperty.in(latest).models(parents).include(:label, :definition).all()
+
+        return datatype_props + object_props
+      end
+
       ##
       # Delete all artifacts of an ontology
       def delete(*args)

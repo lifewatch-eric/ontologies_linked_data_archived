@@ -1,8 +1,8 @@
-require_relative "../test_case"
+require_relative "./test_ontology_common"
 require_relative "../../lib/ontologies_linked_data/purl/purl_client"
 require 'rack'
 
-class TestOntology < LinkedData::TestCase
+class TestOntology < LinkedData::TestOntologyCommon
 
   def self.before_suite
     @@port = Random.rand(55000..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
@@ -95,6 +95,42 @@ class TestOntology < LinkedData::TestCase
     assert(!o2.errors[:acronym].nil? && !o2.errors[:acronym][:duplicate].nil?,
       "Failed to invalidate duplicate ontology acronym.")
     _delete_objects
+  end
+
+  def test_ontology_properties
+    submission_parse("BRO35", "BRO3.5",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    ont = LinkedData::Models::Ontology.find('BRO35').first
+    ont.bring(:submissions)
+    sub = ont.submissions[0]
+    props = ont.properties()
+    assert_equal 63, props.length
+
+    datatype_props = []
+    object_props = []
+
+    props.each do |prop|
+      if (prop.class == LinkedData::Models::DatatypeProperty)
+        datatype_props << prop
+      elsif (prop.class == LinkedData::Models::ObjectProperty)
+        object_props << prop
+      end
+    end
+
+    assert_equal props.length, datatype_props.length + object_props.length
+
+    protein_type_prop = LinkedData::Models::DatatypeProperty.find(RDF::URI.new("http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#ProteinType")).in(sub).include(:label, :definition).first()
+    assert_equal "ProteinType", protein_type_prop.label[0]
+    assert_equal "broad classification of protein type based on structure or function", protein_type_prop.definition[0]
+
+    measurement_type_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#MeasurementType")).in(sub).include(:label, :definition).first()
+    assert_equal "MeasurementType", measurement_type_prop.label[0]
+    assert_equal "what kind of information is being capture in this measurement?", measurement_type_prop.definition[0]
+
+    broader_transitive_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#broaderTransitive")).in(sub).include(:parents).first()
+    assert_equal 1, broader_transitive_prop.parents.length
   end
 
   def test_ontology_acronym_value_validation
