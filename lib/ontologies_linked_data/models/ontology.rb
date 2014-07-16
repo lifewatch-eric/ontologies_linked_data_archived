@@ -11,6 +11,8 @@ require_relative '../purl/purl_client'
 module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
+      class ParsedSubmissionError < StandardError; end
+
       model :ontology, :name_with => :acronym
       attribute :acronym, namespace: :omv,
         enforce: [:unique, :existence, lambda { |inst,attr| validate_acronym(inst,attr) } ]
@@ -142,7 +144,7 @@ module LinkedData
       def properties
         latest = latest_submission(status: [:rdf])
         self.bring(:acronym) if self.bring?(:acronym)
-        raise Exception, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
 
         # datatype props
         datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents).all()

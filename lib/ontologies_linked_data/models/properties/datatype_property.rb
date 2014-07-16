@@ -15,6 +15,8 @@ module LinkedData
       attribute :parents, namespace: :rdfs, enforce: [:list, :datatype_property], property: :subPropertyOf
       # attribute :domain
       # attribute :range
+      # this command allows the parents to be serialized in the output
+      # embed :parents
     end
 
   end
