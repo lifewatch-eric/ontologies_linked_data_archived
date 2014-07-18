@@ -62,8 +62,7 @@ module LinkedData
       end
 
       def admin?
-        bring(role) if bring?(:role)
-        role.bring(:role) if role.bring?(:role)
+        bring(role: [:role]) if bring?(:role)
         return unless role
         role.map {|r| r.role}.include?(LinkedData::Models::Users::Role::ADMIN)
       end
