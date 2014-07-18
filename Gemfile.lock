@@ -82,7 +82,7 @@ GEM
       multi_json
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
-    slop (3.5.0)
+    slop (3.6.0)
     systemu (2.6.4)
     thread_safe (0.3.4)
     tzinfo (0.3.40)
