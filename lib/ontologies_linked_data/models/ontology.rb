@@ -253,6 +253,21 @@ module LinkedData
         Ontology.unindexByQuery(query)
         Ontology.indexCommit() if commit
       end
+
+      def restricted?
+        !self.viewingRestriction.eql?("public")
+      end
+
+      def accessible?(user)
+        bring(:acl) if bring?(:acl)
+        bring(:administeredBy) if bring?(:administeredBy)
+        if self.restricted?
+          return true
+        else
+          return true if self.acl.include?(user) || self.administeredBy.include?(user)
+        end
+        return false
+      end
     end
   end
 end
