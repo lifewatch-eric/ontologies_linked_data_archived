@@ -259,12 +259,13 @@ module LinkedData
       end
 
       def accessible?(user)
+        return true if user.admin?
         bring(:acl) if bring?(:acl)
         bring(:administeredBy) if bring?(:administeredBy)
         if self.restricted?
           return true
         else
-          return true if self.acl.include?(user) || self.administeredBy.include?(user)
+          return true if self.acl.map {|u| u.id.to_s}.include?(user.id.to_s) || self.administeredBy.map {|u| u.id.to_s}.include?(user.id.to_s)
         end
         return false
       end
