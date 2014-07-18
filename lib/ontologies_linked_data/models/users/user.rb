@@ -62,7 +62,9 @@ module LinkedData
       end
 
       def admin?
+        return false unless persistent?
         bring(role: [:role])
+        return false if role.empty?
         role.map {|r| r.role}.include?(LinkedData::Models::Users::Role::ADMIN)
       end
 
