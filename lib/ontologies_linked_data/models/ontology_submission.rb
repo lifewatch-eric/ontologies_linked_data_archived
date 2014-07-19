@@ -350,13 +350,15 @@ eos
             else
               prefLabel = c.prefLabel
             end
-            loomLabel = loom_transform_literal(prefLabel)
-            if loomLabel.length > 2
-              mapping_triples << LinkedData::Utils::Triples.loom_mapping_triple(
-                c.id, Goo.vocabulary(:metadata_def)[:mappingLoom], loomLabel)
+            if self.ontology.viewOf.nil?
+              loomLabel = loom_transform_literal(prefLabel)
+              if loomLabel.length > 2
+                mapping_triples << LinkedData::Utils::Triples.loom_mapping_triple(
+                  c.id, Goo.vocabulary(:metadata_def)[:mappingLoom], loomLabel)
+              end
+              mapping_triples << LinkedData::Utils::Triples.uri_mapping_triple(
+                c.id, Goo.vocabulary(:metadata_def)[:mappingSameURI], c.id)
             end
-            mapping_triples << LinkedData::Utils::Triples.uri_mapping_triple(
-              c.id, Goo.vocabulary(:metadata_def)[:mappingSameURI], c.id)
             count_classes += 1
           end
 
