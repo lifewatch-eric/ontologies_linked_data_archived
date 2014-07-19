@@ -618,9 +618,8 @@ eos
                 logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
                 add_submission_status(status.get_error_status)
-                path_to_csv = File.join(self.data_folder, self.ontology.acronym.to_s + '.csv')
-                if File.file?(path_to_csv)
-                  FileUtils.delete(path_to_csv)
+                if File.file?(self.csv_path)
+                  FileUtils.delete(self.csv_path)
                 end
               end
               self.save
