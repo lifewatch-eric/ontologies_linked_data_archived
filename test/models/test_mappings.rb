@@ -61,152 +61,11 @@ class TestMapping < LinkedData::TestOntologyCommon
     return ps[0]
   end
 
-  def test_error_for_views() 
-    view = LinkedData::Models::Ontology.new(acronym: "FAKEVIEW", 
-                        name: "FAKEVIEW", 
-                        administeredBy: [LinkedData::Models::User.all.first], 
-                        viewOf: LinkedData::Models::Ontology.all.first)
-    view.save
-    process = get_process("LOOMTEST")
-    assert_raises ArgumentError do
-      tmp_log = Logger.new(TestLogFile.new)
-      loom = LinkedData::Mappings::Loom.new(LinkedData::Models::Ontology.all.first, view, tmp_log)
-      loom.start()
-    end
-  end
-
-  def test_multiple_mapping()
-
-    process = get_process("LOOMTEST")
-
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
-    sub1 = ont1.latest_submission
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0]
-    sub2 = ont2.latest_submission
-    ont3 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR3 }).to_a[0]
-    sub3 = ont3.latest_submission
-    LinkedData::Models::Mapping.all.each do |occ|
-      occ.delete
-    end
-    LinkedData::Models::TermMapping.all.each do |tm|
-      tm.delete
-    end
-
-    ont1_terms_uris = ["http://bioontology.org/ontologies/Activity.owl#Activity",
- "http://bioontology.org/ontologies/Activity.owl#Biospecimen_Management",
- "http://bioontology.org/ontologies/Activity.owl#Community_Engagement",
- "http://bioontology.org/ontologies/Activity.owl#Deprecated_Activity",
- "http://bioontology.org/ontologies/Activity.owl#Gene_Therapy",
- "http://bioontology.org/ontologies/Activity.owl#Health_Services",
- "http://bioontology.org/ontologies/Activity.owl#Heath_Services",
- "http://bioontology.org/ontologies/Activity.owl#IRB",
- "http://bioontology.org/ontologies/Activity.owl#Medical_Device_Development",
- "http://bioontology.org/ontologies/Activity.owl#Novel_Therapeutics",
- "http://bioontology.org/ontologies/Activity.owl#Regulatory_Compliance"]
-
-    ont2_terms_uris = ["http://purl.obolibrary.org/obo/SBO_0000512",
- "http://purl.obolibrary.org/obo/SBO_0000513",
- "http://purl.obolibrary.org/obo/SBO_0000514",
- "http://purl.obolibrary.org/obo/SBO_0000515",
- "http://purl.obolibrary.org/obo/SBO_0000516",
- "http://purl.obolibrary.org/obo/SBO_0000517",
- "http://purl.obolibrary.org/obo/SBO_0000518",
- "http://purl.obolibrary.org/obo/SBO_0000519",
- "http://purl.obolibrary.org/obo/SBO_0000520",
- "http://purl.obolibrary.org/obo/SBO_0000521",
- "http://purl.obolibrary.org/obo/SBO_0000522"]
-
-
-    ont3_terms_uris = ["http://purl.obolibrary.org/obo/IAO_0000178",
- "http://purl.obolibrary.org/obo/IAO_0000179",
- "http://purl.obolibrary.org/obo/IAO_0000180",
- "http://purl.obolibrary.org/obo/IAO_0000181",
- "http://purl.obolibrary.org/obo/IAO_0000182",
- "http://purl.obolibrary.org/obo/IAO_0000183",
- "http://purl.obolibrary.org/obo/IAO_0000184",
- "http://purl.obolibrary.org/obo/IAO_0000185",
- "http://purl.obolibrary.org/obo/IAO_0000186",
- "http://purl.obolibrary.org/obo/IAO_0000225",
- "http://purl.obolibrary.org/obo/IAO_0000300"]
-
-    ont1_terms_uris.each_index do |i|
-      tm1 = LinkedData::Models::TermMapping.new(term: [RDF::IRI.new(ont1_terms_uris[i])], ontology: ont1)
-      tm1.save
-      tm2 = LinkedData::Models::TermMapping.new(term: [RDF::IRI.new(ont2_terms_uris[i])], ontology: ont2)
-      tm2.save
-      map = LinkedData::Models::Mapping.new(terms: [tm1, tm2], process: [process])
-      map.terms = [tm1,tm2]
-      assert map.valid?
-      map.save
-    end
-
-    assert LinkedData::Models::Mapping.all.length == ont1_terms_uris.length
-
-    mappings = LinkedData::Models::Mapping.where.include(terms:[ ontology: :acronym]).to_a
-    mappings.each do |map|
-      ont1_index = 0
-      ont2_index = 1
-      if map.terms[0].ontology.acronym != ONT_ACR1
-        ont1_index = 1
-        ont2_index = 0
-      end
-      i1 = ont1_terms_uris.index(map.terms[ont1_index])
-      i2 = ont2_terms_uris.index(map.terms[ont2_index])
-      assert i1 == i2
-    end
-
-    ont2_terms_uris.each_index do |i|
-      #reusing TermMapping
-      tm2 = LinkedData::Models::TermMapping.new(term: [ont2_terms_uris[i]], ontology: ont2)
-      assert  tm2.exist?
-      tm2 = LinkedData::Models::TermMapping.find(
-        LinkedData::Models::TermMapping.term_mapping_id_generator([ont2_terms_uris[i]],ont2.acronym)).first
-      tm3 = LinkedData::Models::TermMapping.new(term: [RDF::IRI.new(ont3_terms_uris[i])], ontology: ont3)
-      tm3.save
-      map = LinkedData::Models::Mapping.new(terms: [tm2, tm3], process: [process])
-      map.terms = [tm2,tm3]
-      assert map.valid?
-      map.save
-    end
-
-    assert LinkedData::Models::Mapping.all.length == (ont1_terms_uris.length + ont2_terms_uris.length)
-
-    mappings = LinkedData::Models::Mapping.where(terms: [ ontology: ont1]).to_a
-    assert mappings.length == 11
-
-    mappings = LinkedData::Models::Mapping.where(terms: [ ontology: ont2 ]).to_a
-    assert mappings.length == 22
-
-    mappings = LinkedData::Models::Mapping.where(terms: [ ontology: ont1 ])
-                                            .and(terms: [ ontology: ont2 ]).to_a
-    assert mappings.length == 11
-
-    mappings = LinkedData::Models::Mapping.where(terms: [ ontology: ont3 ]).to_a
-    assert mappings.length == 11
-  end
-
-
   def test_loom
-    LinkedData::Models::TermMapping.all.each do |map|
-      map.delete
-    end
-    LinkedData::Models::Mapping.all.each do |map|
-      map.delete
-    end
-
-    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0] #bro
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
-
-    $MAPPING_RELOAD_LABELS = true
-    begin
-      tmp_log = Logger.new(TestLogFile.new)
-      loom = LinkedData::Mappings::Loom.new(ont1, ont2,tmp_log)
-    rescue Exception => e
-      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
-      raise e
-    end
-
-    loom.start()
+    #bro
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
+    #fake ont
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0]
 
     mappings = LinkedData::Models::Mapping.where(terms: [ontology: ont1 ])
                                  .and(terms: [ontology: ont2 ])
@@ -351,7 +210,6 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR2 }).to_a[0] #cno
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0] #fake ont
 
-    $MAPPING_RELOAD_LABELS = true
     begin
       tmp_log = Logger.new(TestLogFile.new)
       cui = LinkedData::Mappings::CUI.new(ont1, ont2,tmp_log)
