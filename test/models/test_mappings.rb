@@ -78,10 +78,10 @@ class TestMapping < LinkedData::TestOntologyCommon
       return classes[0].xref == classes[1].xref
     end
     if map.type == "LOOM"
-      binding.pry
-      LinkedData::Models::OntologySubmission.loom_transform_literal
-
-      return classes[0].prefLabel == classes[1].prefLabel
+      ldOntSub = LinkedData::Models::OntologySubmission
+      label0 = ldOntSub.loom_transform_literal(classes[0].prefLabel)
+      label1 = ldOntSub.loom_transform_literal(classes[1].prefLabel)
+      return label0 == label1
     end
     if map.type == "CUI"
       return classes[0].cui == classes[1].cui
@@ -92,10 +92,7 @@ class TestMapping < LinkedData::TestOntologyCommon
   def test_mappings_ontology
     #bro
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
-    #fake ont
-    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0]
 
-  
     latest_sub = ont1.latest_submission
     mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1, 100)
     cui = 0
@@ -103,12 +100,13 @@ class TestMapping < LinkedData::TestOntologyCommon
     same_uri = 0
     loom = 0
     mappings.each do |map|
+      assert_equal(map.terms[0].submissionId.to_s, latest_sub.id.to_s)
       if map.type == "CUI"
         cui += 1
       elsif map.type == "XREF"
         xref += 1
       elsif map.type == "SAME_URI"
-        xref += 1
+        same_uri += 1
       elsif map.type == "LOOM"
         loom += 1
       else
@@ -116,13 +114,48 @@ class TestMapping < LinkedData::TestOntologyCommon
       end
       assert validate_mapping(map), "mapping is not valid"
     end
-    binding.pry
     assert_equal(mappings.length, 29)
     assert_equal(same_uri,10)
     assert_equal(cui, 3)
     assert_equal(xref,2)
     assert_equal(loom,14)
-    binding.pry
+  end
+
+  def test_mappings_two_ontologies
+    #bro
+    ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
+    #fake ont
+    ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0]
+
+    latest_sub1 = ont1.latest_submission
+    latest_sub2 = ont2.latest_submission
+    mappings = LinkedData::Mappings.mappings_ontologies(latest_sub1, latest_sub2,
+                                                        1, 100)
+    cui = 0
+    xref = 0
+    same_uri = 0
+    loom = 0
+    mappings.each do |map|
+      assert_equal(map.terms[0].submissionId.to_s, latest_sub1.id.to_s)
+      assert_equal(map.terms[1].submissionId.to_s, latest_sub2.id.to_s)
+      if map.type == "CUI"
+        cui += 1
+      elsif map.type == "XREF"
+        xref += 1
+      elsif map.type == "SAME_URI"
+        same_uri += 1
+      elsif map.type == "LOOM"
+        loom += 1
+      else
+        assert 1 == 0, "unknown type for this ontology #{map.type}"
+      end
+      assert validate_mapping(map), "mapping is not valid"
+    end
+    assert_equal(mappings.length, 10)
+    assert_equal(same_uri,5)
+    assert_equal(cui, 1)
+    assert_equal(xref,2)
+    assert_equal(loom,2)
   end
 
 end

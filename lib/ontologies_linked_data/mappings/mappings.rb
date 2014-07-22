@@ -12,14 +12,14 @@ module Mappings
     return predicates
   end
 
-  def self.mappings_ontology(sub,page,size)
+  def self.mappings_ontologies(sub1,sub2,page,size)
     mappings = []
     union_template = <<-eos
 {
-  GRAPH <#{sub.id.to_s}> {
+  GRAPH <#{sub1.id.to_s}> {
       ?s1 <predicate> ?o .
   }
-  GRAPH ?g {
+  GRAPH graph {
       ?s2 <predicate> ?o .
   }
   BIND ('_type' AS ?type) .
@@ -30,35 +30,59 @@ eos
     mapping_predicates().each do |_type,mapping_predicate| 
       union_block = union_template.gsub("predicate", mapping_predicate[0])
       union_block = union_block.sub("_type", _type)
+      if sub2.nil?
+        union_block = union_block.sub("graph","?g")
+      else
+        union_block = union_block.sub("graph","<#{sub2.id.to_s}>")
+      end
       blocks << union_block
     end
     unions = blocks.join("\nUNION\n")
 
     count_mappings_in_ontology = <<-eos
-SELECT DISTINCT ?s1 ?s2 ?g ?type
+SELECT DISTINCT ?s1 ?s2 graph ?type
 WHERE {
 unions
-FILTER (?g != <#{sub.id.to_s}>)
+filter
 FILTER ((?s1 != ?s2) || (?type = "SAME_URI"))
 } OFFSET offset LIMIT limit
 eos
     query = count_mappings_in_ontology.sub( "unions", unions)
+    if sub2.nil?
+      query = query.sub("graph","?g")
+      query = query.sub("filter","FILTER (?g != <#{sub1.id.to_s}>)")
+    else
+      query = query.sub("graph","")
+      query = query.sub("filter","")
+    end
     limit = size
     offset = (page-1) * size
     query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
-    puts query
     epr = Goo.sparql_query_client(:main)
-    graphs = [sub.id]
+    graphs = [sub1.id]
+    unless sub2.nil?
+      graphs << sub2.id
+    end
     solutions = epr.query(query,
                           graphs: graphs,
                           query_options: {rules: :NONE})
     solutions.each do |sol|
-      terms = [ LinkedData::Models::TermMapping.new(sol["s1"],sub.id),
-                LinkedData::Models::TermMapping.new(sol["s2"],sol["g"]) ]
+      graph2 = nil
+      if sub2.nil?
+        graph2 = sol["g"]
+      else
+        graph2 = sub2.id
+      end
+      terms = [ LinkedData::Models::TermMapping.new(sol["s1"],sub1.id),
+                LinkedData::Models::TermMapping.new(sol["s2"],graph2) ]
       mappings << LinkedData::Models::Mapping.new(terms,sol["type"].to_s)
     end
     return mappings
 
+  end
+
+  def self.mappings_ontology(sub,page,size)
+    return self.mappings_ontologies(sub,nil,page,size)
   end
 
   def self.mapping_counts_for_ontology(ont)
