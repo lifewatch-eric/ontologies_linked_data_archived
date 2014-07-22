@@ -1,7 +1,63 @@
 module LinkedData
 module Mappings
 
-  def self.mappings_ontology(ont,page,size)
+  def self.mapping_predicates()
+    predicates = {}
+    predicates["CUI"] = ["http://bioportal.bioontology.org/ontologies/umls/cui"]
+    predicates["XREF"] = ["http://www.geneontology.org/formats/oboInOwl#xref"]
+    predicates["SAME_URI"] = 
+      ["http://data.bioontology.org/metadata/def/mappingSameURI"] 
+    predicates["LOOM"] = 
+      ["http://data.bioontology.org/metadata/def/mappingLoom"] 
+    return predicates
+  end
+
+  def self.mappings_ontology(sub,page,size)
+    mappings = []
+    union_template = <<-eos
+{
+  GRAPH <#{sub.id.to_s}> {
+      ?s1 <predicate> ?o .
+  }
+  GRAPH ?g {
+      ?s2 <predicate> ?o .
+  }
+  BIND ('_type' AS ?type) .
+}
+eos
+
+    blocks = []
+    mapping_predicates().each do |_type,mapping_predicate| 
+      union_block = union_template.gsub("predicate", mapping_predicate[0])
+      union_block = union_block.sub("_type", _type)
+      blocks << union_block
+    end
+    unions = blocks.join("\nUNION\n")
+
+    count_mappings_in_ontology = <<-eos
+SELECT DISTINCT ?s1 ?s2 ?g ?type
+WHERE {
+unions
+FILTER (?g != <#{sub.id.to_s}>)
+FILTER ((?s1 != ?s2) || (?type = "SAME_URI"))
+} OFFSET offset LIMIT limit
+eos
+    query = count_mappings_in_ontology.sub( "unions", unions)
+    limit = size
+    offset = (page-1) * size
+    query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
+    puts query
+    epr = Goo.sparql_query_client(:main)
+    graphs = [sub.id]
+    solutions = epr.query(query,
+                          graphs: graphs,
+                          query_options: {rules: :NONE})
+    solutions.each do |sol|
+      terms = [ LinkedData::Models::TermMapping.new(sol["s1"],sub.id),
+                LinkedData::Models::TermMapping.new(sol["s2"],sol["g"]) ]
+      mappings << LinkedData::Models::Mapping.new(terms,sol["type"].to_s)
+    end
+    return mappings
 
   end
 
@@ -19,8 +75,10 @@ eos
     epr = Goo.sparql_query_client(:main)
     this_acr = ont.id.split("/")[-1]
     results = {}
-    solutions = epr.query(sparql_query, graphs: graphs,query_options: {rules: :NONE},
-                         content_type: "text/plain")
+    solutions = epr.query(sparql_query, 
+                          graphs: graphs,
+                          query_options: {rules: :NONE},
+                          content_type: "text/plain")
     line = 0
     solutions.split("\n").each do |sol|
       if line > 0

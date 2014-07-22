@@ -351,7 +351,7 @@ eos
               prefLabel = c.prefLabel
             end
             if self.ontology.viewOf.nil?
-              loomLabel = loom_transform_literal(prefLabel)
+              loomLabel = OntologySubmission.loom_transform_literal(prefLabel)
               if loomLabel.length > 2
                 mapping_triples << LinkedData::Utils::Triples.loom_mapping_triple(
                   c.id, Goo.vocabulary(:metadata_def)[:mappingLoom], loomLabel)
@@ -943,7 +943,7 @@ eos
         file_exists
       end
 
-      def loom_transform_literal(lit)
+      def self.loom_transform_literal(lit)
         res = []
         lit.each_char do |c|
           if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
