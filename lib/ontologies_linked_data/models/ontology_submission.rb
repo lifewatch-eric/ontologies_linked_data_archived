@@ -217,6 +217,13 @@ module LinkedData
         return zip_dst
       end
 
+      def delete_old_submission_files
+        path_to_repo = data_folder
+        submission_files = [File.join(path_to_repo, 'labels.ttl'), File.join(path_to_repo, 'mappings.ttl'), 
+                            File.join(path_to_repo, 'obsolete.ttl'), File.join(path_to_repo, 'owlapi.xrdf'), csv_path]
+        FileUtils.rm(submission_files, force: true)
+      end
+
       # accepts another submission in 'older' (it should be an 'older' ontology version)
       def diff(logger, older)
         begin
@@ -537,11 +544,25 @@ eos
           LinkedData::Parser.logger = logger
           status = nil
 
-          #TODO: for now, archiving simply means add "ARCHIVED" status. We need to expand the logic to include other appropriate actions (ie deleting backend, files, etc.)
           if (archive)
             self.submissionStatus = nil
             status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
             add_submission_status(status)
+
+            # Delete everything except for original ontology file.  
+            ontology.bring(:submissions)
+            submissions = ontology.submissions
+            unless submissions.nil?
+              # File deletion doesn't apply to most recent submission, and one prior.
+              if submissions.count >= 3
+                submissions.each { |s| s.bring(:submissionId) }
+                recent_submissions = submissions.sort { |a,b| b.submissionId <=> a.submissionId }[0..1]
+                if (self.submissionId < recent_submissions[1].submissionId)
+                  delete_old_submission_files
+                end
+              end
+            end
+
           else
             if (process_rdf)
               # Remove processing status types before starting RDF parsing etc.
