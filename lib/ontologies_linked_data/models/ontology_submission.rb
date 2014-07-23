@@ -9,6 +9,9 @@ module LinkedData
   module Models
 
     class OntologySubmission < LinkedData::Models::Base
+
+      FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf']
+
       model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
 
@@ -219,8 +222,7 @@ module LinkedData
 
       def delete_old_submission_files
         path_to_repo = data_folder
-        submission_files = [File.join(path_to_repo, 'labels.ttl'), File.join(path_to_repo, 'mappings.ttl'), 
-                            File.join(path_to_repo, 'obsolete.ttl'), File.join(path_to_repo, 'owlapi.xrdf'), csv_path]
+        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }.push(csv_path)
         FileUtils.rm(submission_files, force: true)
       end
 
