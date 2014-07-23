@@ -12,7 +12,7 @@ module Mappings
     return predicates
   end
 
-  def self.mappings_ontologies(sub1,sub2,page,size)
+  def self.mappings_ontologies(sub1,sub2,page,size,count=false,group=false)
     mappings = []
     union_template = <<-eos
 {
@@ -22,14 +22,18 @@ module Mappings
   GRAPH graph {
       ?s2 <predicate> ?o .
   }
-  BIND ('_type' AS ?type) .
+  bind 
 }
 eos
 
     blocks = []
     mapping_predicates().each do |_type,mapping_predicate| 
       union_block = union_template.gsub("predicate", mapping_predicate[0])
-      union_block = union_block.sub("_type", _type)
+      if count
+        union_block = union_block.sub("bind","")
+      else
+        union_block = union_block.sub("bind","BIND ('#{_type}' AS ?type)")
+      end
       if sub2.nil?
         union_block = union_block.sub("graph","?g")
       else
@@ -40,14 +44,28 @@ eos
     unions = blocks.join("\nUNION\n")
 
     count_mappings_in_ontology = <<-eos
-SELECT DISTINCT ?s1 ?s2 graph ?type
+SELECT variables 
 WHERE {
 unions
 filter
 FILTER ((?s1 != ?s2) || (?type = "SAME_URI"))
-} OFFSET offset LIMIT limit
+} page_group 
 eos
     query = count_mappings_in_ontology.sub( "unions", unions)
+    if count
+      if group
+        query = query.sub("page_group", "GROUP BY ?g")
+        query = query.sub("variables", "?g (count(?s2) as ?c)")
+      else
+        query = query.sub("page_group","")
+        query = query.sub("variables", "(count(?s2) as ?c)")
+      end
+    else
+      variables = "DISTINCT ?s1 ?s2 graph ?type"
+      pagination = "OFFSET offset LIMIT limit"
+      query = query.sub("page_group",pagination)
+      query = query.sub("variables", variables)
+    end
     if sub2.nil?
       query = query.sub("graph","?g")
       query = query.sub("filter","FILTER (?g != <#{sub1.id.to_s}>)")
@@ -55,9 +73,12 @@ eos
       query = query.sub("graph","")
       query = query.sub("filter","")
     end
-    limit = size
-    offset = (page-1) * size
-    query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
+    unless count
+      limit = size
+      offset = (page-1) * size
+      query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
+    end
+    puts query
     epr = Goo.sparql_query_client(:main)
     graphs = [sub1.id]
     unless sub2.nil?
@@ -66,16 +87,33 @@ eos
     solutions = epr.query(query,
                           graphs: graphs,
                           query_options: {rules: :NONE})
+    group_counts = nil
+    if count and group
+      group_counts = {}
+    end
     solutions.each do |sol|
-      graph2 = nil
-      if sub2.nil?
-        graph2 = sol["g"]
+      if count 
+        if group
+          binding.pry
+          acr = sol[:g].to_s.split("/")[-1]
+          group_counts[acr] = sol[:c].object
+        else
+          return sol["c"].object
+        end
       else
-        graph2 = sub2.id
+        graph2 = nil
+        if sub2.nil?
+          graph2 = sol[:g]
+        else
+          graph2 = sub2.id
+        end
+        terms = [ LinkedData::Models::TermMapping.new(sol[:s1],sub1.id),
+                  LinkedData::Models::TermMapping.new(sol[:s2],graph2) ]
+        mappings << LinkedData::Models::Mapping.new(terms,sol[:type].to_s)
       end
-      terms = [ LinkedData::Models::TermMapping.new(sol["s1"],sub1.id),
-                LinkedData::Models::TermMapping.new(sol["s2"],graph2) ]
-      mappings << LinkedData::Models::Mapping.new(terms,sol["type"].to_s)
+    end
+    unless group_counts.nil?
+      return group_counts
     end
     page = Goo::Base::Page.new(page,size,nil,mappings)
     return page

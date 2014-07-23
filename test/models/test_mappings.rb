@@ -124,6 +124,9 @@ class TestMapping < LinkedData::TestOntologyCommon
       end
       assert validate_mapping(map), "mapping is not valid"
     end
+    group_counts = LinkedData::Mappings.mappings_ontologies(latest_sub,nil,
+                                           nil,nil,count=true,group=false)
+    binding.pry
     assert_equal(mappings.length, 29)
     assert_equal(same_uri,10)
     assert_equal(cui, 3)
@@ -144,7 +147,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     size = 5 
     page_no = 1
     while keep_going
-      page = LinkedData::Mappings.mappings_ontology(latest_sub1,latest_sub2,
+      page = LinkedData::Mappings.mappings_ontologies(latest_sub1,latest_sub2,
                                                     page_no, size)
       assert_instance_of(Goo::Base::Page, page)
       keep_going = (page.length == size)
@@ -171,6 +174,9 @@ class TestMapping < LinkedData::TestOntologyCommon
       end
       assert validate_mapping(map), "mapping is not valid"
     end
+    count = LinkedData::Mappings.mappings_ontologies(latest_sub1,latest_sub2,
+                                           nil,nil,count=true,group=false)
+    binding.pry
     assert_equal(mappings.length, 10)
     assert_equal(same_uri,5)
     assert_equal(cui, 1)
