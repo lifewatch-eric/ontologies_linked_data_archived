@@ -77,8 +77,8 @@ eos
                 LinkedData::Models::TermMapping.new(sol["s2"],graph2) ]
       mappings << LinkedData::Models::Mapping.new(terms,sol["type"].to_s)
     end
-    return mappings
-
+    page = Goo::Base::Page.new(page,size,nil,mappings)
+    return page
   end
 
   def self.mappings_ontology(sub,page,size)

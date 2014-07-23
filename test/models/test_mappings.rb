@@ -94,7 +94,17 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
 
     latest_sub = ont1.latest_submission
-    mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1, 100)
+    keep_going = true
+    mappings = []
+    size = 10
+    page_no = 1
+    while keep_going
+      page = LinkedData::Mappings.mappings_ontology(latest_sub,page_no, size)
+      assert_instance_of(Goo::Base::Page, page)
+      keep_going = (page.length == size)
+      mappings += page
+      page_no += 1
+    end
     cui = 0
     xref = 0
     same_uri = 0
@@ -129,8 +139,18 @@ class TestMapping < LinkedData::TestOntologyCommon
 
     latest_sub1 = ont1.latest_submission
     latest_sub2 = ont2.latest_submission
-    mappings = LinkedData::Mappings.mappings_ontologies(latest_sub1, latest_sub2,
-                                                        1, 100)
+    keep_going = true
+    mappings = []
+    size = 5 
+    page_no = 1
+    while keep_going
+      page = LinkedData::Mappings.mappings_ontology(latest_sub1,latest_sub2,
+                                                    page_no, size)
+      assert_instance_of(Goo::Base::Page, page)
+      keep_going = (page.length == size)
+      mappings += page
+      page_no += 1
+    end
     cui = 0
     xref = 0
     same_uri = 0
