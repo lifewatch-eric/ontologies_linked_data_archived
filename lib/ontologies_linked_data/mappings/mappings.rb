@@ -23,34 +23,67 @@ module Mappings
   }
 }
 eos
+    group_count = nil
+    count = 0
+    if sub2.nil?
+      group_count = {}
+    end
     mapping_predicates().each do |_type,mapping_predicate| 
       block = template.gsub("predicate", mapping_predicate[0])
       if sub2.nil?
-        block = block.sub("graph","?g")
       else
-        block = block.sub("graph","<#{sub2.id.to_s}>")
       end
-      count_mappings_in_ontology = <<-eos
+      query_template = <<-eos
       SELECT variables 
       WHERE {
       block
       filter
-      } 
+      } group
       eos
-      query = count_mappings_in_ontology.sub("block", block)
+      query = query_template.sub("block", block)
+      filter = ""
+      if _type != "SAME_URI"
+        filter += "FILTER (?s1 != ?s2)"
+      end
       if sub2.nil?
-        filter = "FILTER (?g != <#{sub1.id.to_s}>)"
-        if _type != "SAME_URI"
-          filter += "\nFILTER (?s1 != ?s2)"
-        end
+        filter += "\nFILTER (?g != <#{sub1.id.to_s}>)"
         query = query.sub("graph","?g")
         query = query.sub("filter",filter)
+        query = query.sub("variables","?g (count(?s1) as ?c)")
+        query = query.sub("group", "GROUP BY ?g")
       else
-        query = query.sub("graph","")
-        query = query.sub("filter","")
+        query = query.sub("graph","<#{sub2.id.to_s}>")
+        query = query.sub("filter",filter)
+        query = query.sub("group","")
+        query = query.sub("variables","(count(?s1) as ?c)")
       end
+      epr = Goo.sparql_query_client(:main)
+      graphs = [sub1.id]
+      unless sub2.nil?
+        graphs << sub2.id
+      end
+      solutions = epr.query(query,
+                            graphs: graphs,
+                            query_options: {rules: :NONE})
+      solutions.each do |sol|
+        if sub2.nil?
+          acr = sol[:g].to_s.split("/")[-3]
+          unless group_count.include?(acr)
+            group_count[acr] = 0
+          end
+          group_count[acr] += sol[:c].object
+        else
+          count += sol[:c].object
+        end
+      end
+    end #per predicate query
+
+    if sub2.nil?
+      return group_count
     end
+    return count
   end
+
   def self.mappings_ontologies(sub1,sub2,page,size)
     mappings = []
     union_template = <<-eos

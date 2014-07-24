@@ -124,10 +124,19 @@ class TestMapping < LinkedData::TestOntologyCommon
       end
       assert validate_mapping(map), "mapping is not valid"
     end
-    binding.pry
-    group_counts = LinkedData::Mappings.mappings_ontologies(latest_sub,nil,
-                                           nil,nil,count=true,group=true)
-    binding.pry
+    by_ont_counts = LinkedData::Mappings.mapping_ontologies_count(latest_sub,nil)
+    total = 0
+    by_ont_counts.each do |k,v|
+      total += v
+    end
+    assert_equal(by_ont_counts.length, 3)
+    ["MAPPING_TEST2", "MAPPING_TEST3", "MAPPING_TEST4"].each do |x|
+      assert(by_ont_counts.include?(x))
+    end
+    assert_equal(by_ont_counts["MAPPING_TEST2"], 10)
+    assert_equal(by_ont_counts["MAPPING_TEST3"], 9)
+    assert_equal(by_ont_counts["MAPPING_TEST4"], 10)
+    assert_equal(total, 29)
     assert_equal(mappings.length, 29)
     assert_equal(same_uri,10)
     assert_equal(cui, 3)
@@ -175,9 +184,8 @@ class TestMapping < LinkedData::TestOntologyCommon
       end
       assert validate_mapping(map), "mapping is not valid"
     end
-    count = LinkedData::Mappings.mappings_ontologies(latest_sub1,latest_sub2,
-                                           nil,nil,count=true,group=false)
-    binding.pry
+    count = LinkedData::Mappings.mapping_ontologies_count(latest_sub1,
+                                                          latest_sub2)
     assert_equal(mappings.length, count)
     assert_equal(same_uri,5)
     assert_equal(cui, 1)
