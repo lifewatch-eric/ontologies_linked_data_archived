@@ -4,7 +4,7 @@ module Mappings
   def self.mapping_predicates()
     predicates = {}
     predicates["CUI"] = ["http://bioportal.bioontology.org/ontologies/umls/cui"]
-    predicates["XREF"] = ["http://www.geneontology.org/formats/oboInOwl#xref"]
+    predicates["XREF"] = ["http://www.geneontology.org/formats/oboInOwl#hasDbXref"]
     predicates["SAME_URI"] = 
       ["http://data.bioontology.org/metadata/def/mappingSameURI"] 
     predicates["LOOM"] = 
@@ -12,7 +12,46 @@ module Mappings
     return predicates
   end
 
-  def self.mappings_ontologies(sub1,sub2,page,size,count=false,group=false)
+  def self.mapping_ontologies_count(sub1,sub2)
+    template = <<-eos
+{
+  GRAPH <#{sub1.id.to_s}> {
+      ?s1 <predicate> ?o .
+  }
+  GRAPH graph {
+      ?s2 <predicate> ?o .
+  }
+}
+eos
+    mapping_predicates().each do |_type,mapping_predicate| 
+      block = template.gsub("predicate", mapping_predicate[0])
+      if sub2.nil?
+        block = block.sub("graph","?g")
+      else
+        block = block.sub("graph","<#{sub2.id.to_s}>")
+      end
+      count_mappings_in_ontology = <<-eos
+      SELECT variables 
+      WHERE {
+      block
+      filter
+      } 
+      eos
+      query = count_mappings_in_ontology.sub("block", block)
+      if sub2.nil?
+        filter = "FILTER (?g != <#{sub1.id.to_s}>)"
+        if _type != "SAME_URI"
+          filter += "\nFILTER (?s1 != ?s2)"
+        end
+        query = query.sub("graph","?g")
+        query = query.sub("filter",filter)
+      else
+        query = query.sub("graph","")
+        query = query.sub("filter","")
+      end
+    end
+  end
+  def self.mappings_ontologies(sub1,sub2,page,size)
     mappings = []
     union_template = <<-eos
 {
@@ -29,11 +68,7 @@ eos
     blocks = []
     mapping_predicates().each do |_type,mapping_predicate| 
       union_block = union_template.gsub("predicate", mapping_predicate[0])
-      if count
-        union_block = union_block.sub("bind","")
-      else
-        union_block = union_block.sub("bind","BIND ('#{_type}' AS ?type)")
-      end
+      union_block = union_block.sub("bind","BIND ('#{_type}' AS ?type)")
       if sub2.nil?
         union_block = union_block.sub("graph","?g")
       else
@@ -43,7 +78,7 @@ eos
     end
     unions = blocks.join("\nUNION\n")
 
-    count_mappings_in_ontology = <<-eos
+    mappings_in_ontology = <<-eos
 SELECT variables 
 WHERE {
 unions
@@ -51,21 +86,11 @@ filter
 FILTER ((?s1 != ?s2) || (?type = "SAME_URI"))
 } page_group 
 eos
-    query = count_mappings_in_ontology.sub( "unions", unions)
-    if count
-      if group
-        query = query.sub("page_group", "GROUP BY ?g")
-        query = query.sub("variables", "?g (count(?s2) as ?c)")
-      else
-        query = query.sub("page_group","")
-        query = query.sub("variables", "(count(?s2) as ?c)")
-      end
-    else
-      variables = "DISTINCT ?s1 ?s2 graph ?type"
-      pagination = "OFFSET offset LIMIT limit"
-      query = query.sub("page_group",pagination)
-      query = query.sub("variables", variables)
-    end
+    query = mappings_in_ontology.sub( "unions", unions)
+    variables = "DISTINCT ?s1 ?s2 graph ?type"
+    pagination = "OFFSET offset LIMIT limit"
+    query = query.sub("page_group",pagination)
+    query = query.sub("variables", variables)
     if sub2.nil?
       query = query.sub("graph","?g")
       query = query.sub("filter","FILTER (?g != <#{sub1.id.to_s}>)")
@@ -73,12 +98,9 @@ eos
       query = query.sub("graph","")
       query = query.sub("filter","")
     end
-    unless count
-      limit = size
-      offset = (page-1) * size
-      query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
-    end
-    puts query
+    limit = size
+    offset = (page-1) * size
+    query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
     epr = Goo.sparql_query_client(:main)
     graphs = [sub1.id]
     unless sub2.nil?
@@ -87,33 +109,16 @@ eos
     solutions = epr.query(query,
                           graphs: graphs,
                           query_options: {rules: :NONE})
-    group_counts = nil
-    if count and group
-      group_counts = {}
-    end
     solutions.each do |sol|
-      if count 
-        if group
-          binding.pry
-          acr = sol[:g].to_s.split("/")[-1]
-          group_counts[acr] = sol[:c].object
-        else
-          return sol["c"].object
-        end
+      graph2 = nil
+      if sub2.nil?
+        graph2 = sol[:g]
       else
-        graph2 = nil
-        if sub2.nil?
-          graph2 = sol[:g]
-        else
-          graph2 = sub2.id
-        end
-        terms = [ LinkedData::Models::TermMapping.new(sol[:s1],sub1.id),
-                  LinkedData::Models::TermMapping.new(sol[:s2],graph2) ]
-        mappings << LinkedData::Models::Mapping.new(terms,sol[:type].to_s)
+        graph2 = sub2.id
       end
-    end
-    unless group_counts.nil?
-      return group_counts
+      terms = [ LinkedData::Models::TermMapping.new(sol[:s1],sub1.id),
+                LinkedData::Models::TermMapping.new(sol[:s2],graph2) ]
+      mappings << LinkedData::Models::Mapping.new(terms,sol[:type].to_s)
     end
     page = Goo::Base::Page.new(page,size,nil,mappings)
     return page

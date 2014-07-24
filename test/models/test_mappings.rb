@@ -124,8 +124,9 @@ class TestMapping < LinkedData::TestOntologyCommon
       end
       assert validate_mapping(map), "mapping is not valid"
     end
+    binding.pry
     group_counts = LinkedData::Mappings.mappings_ontologies(latest_sub,nil,
-                                           nil,nil,count=true,group=false)
+                                           nil,nil,count=true,group=true)
     binding.pry
     assert_equal(mappings.length, 29)
     assert_equal(same_uri,10)
@@ -177,7 +178,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     count = LinkedData::Mappings.mappings_ontologies(latest_sub1,latest_sub2,
                                            nil,nil,count=true,group=false)
     binding.pry
-    assert_equal(mappings.length, 10)
+    assert_equal(mappings.length, count)
     assert_equal(same_uri,5)
     assert_equal(cui, 1)
     assert_equal(xref,2)
