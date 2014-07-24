@@ -555,13 +555,11 @@ eos
             ontology.bring(:submissions)
             submissions = ontology.submissions
             unless submissions.nil?
-              # File deletion doesn't apply to most recent submission, and one prior.
-              if submissions.count >= 3
-                submissions.each { |s| s.bring(:submissionId) }
-                recent_submissions = submissions.sort { |a,b| b.submissionId <=> a.submissionId }[0..1]
-                if (self.submissionId < recent_submissions[1].submissionId)
-                  delete_old_submission_files
-                end
+              submissions.each { |s| s.bring(:submissionId) }
+              submission = submissions.sort { |a,b| b.submissionId <=> a.submissionId }[0]
+              # Don't perform deletion if this is the most recent submission.
+              if (self.submissionId < submission.submissionId)
+                delete_old_submission_files
               end
             end
 

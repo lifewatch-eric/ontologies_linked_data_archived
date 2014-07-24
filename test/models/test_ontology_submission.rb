@@ -283,16 +283,29 @@ eos
                       run_metrics: false, reasoning: false, archive: true }  
 
     ont_count, ont_acronyms, ontologies = 
-      create_ontologies_and_submissions(ont_count: 1, submission_count: 3, 
+      create_ontologies_and_submissions(ont_count: 1, submission_count: 2, 
                                         process_submission: true, acronym: 'NCBO-545')
     # Sanity check.
     assert_equal 1, ontologies.count
-    assert_equal 3, ontologies[0].submissions.count
+    assert_equal 2, ontologies.first.submissions.count
 
     # Sort submissions in descending order.
-    sorted_submissions = ontologies[0].submissions.sort { |a,b| b.submissionId <=> a.submissionId }
+    sorted_submissions = ontologies.first.submissions.sort { |a,b| b.submissionId <=> a.submissionId }
 
-    # Process old submission.  Some files should be deleted.
+    # Process latest submission.  No files should be deleted.
+    sorted_submissions.first.process_submission(tmp_log, parse_options)
+    assert sorted_submissions.first.archived?
+
+    assert File.file?(File.join(sorted_submissions.first.data_folder, 'labels.ttl')), 
+      %-Missing ontology submission file: 'labels.ttl'-
+
+    assert File.file?(File.join(sorted_submissions.first.data_folder, 'owlapi.xrdf')), 
+      %-Missing ontology submission file: 'owlapi.xrdf'-
+    
+    assert File.file?(sorted_submissions.first.csv_path), 
+      %-Missing ontology submission file: '#{sorted_submissions.first.csv_path}'-
+
+    # Process one prior to latest submission.  Some files should be deleted.
     sorted_submissions.last.process_submission(tmp_log, parse_options)
     assert sorted_submissions.last.archived?
 
@@ -310,32 +323,6 @@ eos
 
     assert_equal false, File.file?(sorted_submissions.last.csv_path), 
       %-File deletion failed for '#{sorted_submissions.last.csv_path}'-
-    
-    # Process latest submission.  No files should be deleted.
-    sorted_submissions.first.process_submission(tmp_log, parse_options)
-    assert sorted_submissions.first.archived?
-
-    assert File.file?(File.join(sorted_submissions.first.data_folder, 'labels.ttl')), 
-      %-Missing ontology submission file: 'labels.ttl'-
-
-    assert File.file?(File.join(sorted_submissions.first.data_folder, 'owlapi.xrdf')), 
-      %-Missing ontology submission file: 'owlapi.xrdf'-
-    
-    assert File.file?(sorted_submissions.first.csv_path), 
-      %-Missing ontology submission file: '#{sorted_submissions.first.csv_path}'-
-
-    # Process one prior to latest submission.  No files should be deleted.
-    sorted_submissions[1].process_submission(tmp_log, parse_options)
-    assert sorted_submissions[1].archived?
-
-    assert File.file?(File.join(sorted_submissions[1].data_folder, 'labels.ttl')), 
-      %-Missing ontology submission file: 'labels.ttl'-
-
-    assert File.file?(File.join(sorted_submissions[1].data_folder, 'owlapi.xrdf')), 
-      %-Missing ontology submission file: 'owlapi.xrdf'-
-    
-    assert File.file?(sorted_submissions[1].csv_path), 
-      %-Missing ontology submission file: '#{sorted_submissions[1].csv_path}'-
   end
 
   def test_submission_diff_across_ontologies
