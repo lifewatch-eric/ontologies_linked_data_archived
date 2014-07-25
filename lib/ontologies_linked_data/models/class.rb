@@ -60,7 +60,8 @@ module LinkedData
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
       attribute :cui, enforce: [:list], :namespace => :umls, alias: true
-      attribute :xref, :namespace => :oboinowl_gen, alias: true
+      attribute :xref, :namespace => :oboinowl_gen, alias: true, 
+        :property => :hasDbXref
 
       attribute :notes,
             inverse: { on: :note, attribute: :relatedClass }

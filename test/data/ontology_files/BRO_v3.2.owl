@@ -55,7 +55,7 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    <owl:AnnotationProperty rdf:about="&oboInOwl;xref"/>
+    <owl:AnnotationProperty rdf:about="&oboInOwl;hasDbXref"/>
     
 
     <!-- http://bioontology.org/ontologies/biositemap.owl#definition -->
@@ -2780,7 +2780,7 @@ we think this should be deleted</desc:definition>
         <desc:definition rdf:datatype="&xsd;string">A resource that provides data, knowledge or narrative.</desc:definition>
         <rdfs:comment rdf:datatype="&xsd;string">As per alignment with NIF resource type hierarchy.</rdfs:comment>
         <core:prefLabel rdf:datatype="&xsd;string">Information Resource</core:prefLabel>
-        <oboInOwl:xref>xref0000001</oboInOwl:xref>
+        <oboInOwl:hasDbXref>hasDbXref0000001</oboInOwl:hasDbXref>
     </owl:Class>
     
 
@@ -5772,7 +5772,7 @@ radionuclide (tracer), which is introduced into the body on a biologically activ
 
     <owl:Class rdf:about="&desc;Biositemaps_Information_Model">
         <core:prefLabel rdf:datatype="&xsd;string">Biositemaps Information Model</core:prefLabel>
-        <oboInOwl:xref>xref0000000</oboInOwl:xref>
+        <oboInOwl:hasDbXref>hasDbXref0000000</oboInOwl:hasDbXref>
     </owl:Class>
     
 
