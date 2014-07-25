@@ -84,12 +84,12 @@ eos
     return count
   end
 
-  def self.mappings_ontologies(sub1,sub2,page,size)
+  def self.mappings_ontologies(sub1,sub2,page,size,classId=nil)
     mappings = []
     union_template = <<-eos
 {
   GRAPH <#{sub1.id.to_s}> {
-      ?s1 <predicate> ?o .
+      classId <predicate> ?o .
   }
   GRAPH graph {
       ?s2 <predicate> ?o .
@@ -97,6 +97,12 @@ eos
   bind 
 }
 eos
+
+    if classId.nil?
+      union_template = union_template.sub("classId", "?s1")
+    else
+      union_template = union_template.sub("classId", "<#{classId.to_s}>")
+    end
 
     blocks = []
     mapping_predicates().each do |_type,mapping_predicate| 
@@ -116,20 +122,29 @@ SELECT variables
 WHERE {
 unions
 filter
-FILTER ((?s1 != ?s2) || (?type = "SAME_URI"))
 } page_group 
 eos
     query = mappings_in_ontology.sub( "unions", unions)
-    variables = "DISTINCT ?s1 ?s2 graph ?type"
+    variables = "?s2 graph ?type"
+    if classId.nil?
+      variables = "?s1 " + variables
+    end
     pagination = "OFFSET offset LIMIT limit"
     query = query.sub("page_group",pagination)
     query = query.sub("variables", variables)
+    filter = ""
+    if classId.nil?
+      filter = "FILTER ((?s1 != ?s2) || (?type = 'SAME_URI'))"
+    else
+      filter = ""
+    end
     if sub2.nil?
       query = query.sub("graph","?g")
-      query = query.sub("filter","FILTER (?g != <#{sub1.id.to_s}>)")
+      filter += "\nFILTER (?g != <#{sub1.id.to_s}>)"
+      query = query.sub("filter",filter)
     else
       query = query.sub("graph","")
-      query = query.sub("filter","")
+      query = query.sub("filter",filter)
     end
     limit = size
     offset = (page-1) * size
@@ -142,6 +157,10 @@ eos
     solutions = epr.query(query,
                           graphs: graphs,
                           query_options: {rules: :NONE})
+    s1 = nil
+    unless classId.nil?
+      s1 = RDF::URI.new(classId.to_s)
+    end
     solutions.each do |sol|
       graph2 = nil
       if sub2.nil?
@@ -149,7 +168,10 @@ eos
       else
         graph2 = sub2.id
       end
-      terms = [ LinkedData::Models::TermMapping.new(sol[:s1],sub1.id),
+      if classId.nil?
+        s1 = sol[:s1]
+      end
+      terms = [ LinkedData::Models::TermMapping.new(s1,sub1.id),
                 LinkedData::Models::TermMapping.new(sol[:s2],graph2) ]
       mappings << LinkedData::Models::Mapping.new(terms,sol[:type].to_s)
     end
@@ -157,8 +179,8 @@ eos
     return page
   end
 
-  def self.mappings_ontology(sub,page,size)
-    return self.mappings_ontologies(sub,nil,page,size)
+  def self.mappings_ontology(sub,page,size,classId=nil)
+    return self.mappings_ontologies(sub,nil,page,size,classId=classId)
   end
 
   def self.mapping_counts_for_ontology(ont)

@@ -142,6 +142,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert_equal(cui, 3)
     assert_equal(xref,2)
     assert_equal(loom,14)
+    mappings.each do |map|
+      class_mappings = LinkedData::Mappings.mappings_ontology(
+                        latest_sub,1,100,map.terms[0].classId)
+      assert class_mappings.length > 0
+      class_mappings.each do |cmap|
+        assert validate_mapping(map)
+      end
+    end
   end
 
   def test_mappings_two_ontologies
@@ -186,6 +194,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     end
     count = LinkedData::Mappings.mapping_ontologies_count(latest_sub1,
                                                           latest_sub2)
+
     assert_equal(mappings.length, count)
     assert_equal(same_uri,5)
     assert_equal(cui, 1)
