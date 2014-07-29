@@ -127,7 +127,7 @@ class TestProject < LinkedData::TestCase
   def test_valid_project
     # The setup project parameters should be valid
     p = LinkedData::Models::Project.new(@project_params)
-    assert p.valid?
+    assert_equal(true, p.valid?, "Invalid project parameters: #{p.errors}")
     # Incrementally evaluate project validity...
     p = LinkedData::Models::Project.new
     assert (not p.valid?)
