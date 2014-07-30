@@ -162,9 +162,9 @@ module LinkedData
       assert_equal(false, m.errors[:creator].nil?) # We expect there to be errors on creator
       assert_instance_of(LinkedData::Models::User, user, "#{user} is not an instance of LinkedData::Models::User")
       assert_equal(true, user.valid?, "#{user} is not a valid instance of LinkedData::Models::User")
-      m.creator = user  # LinkedData::Models::User instance is valid, but other attributes may generate errors.
+      m.instance_of?(LinkedData::Models::Project) ? m.creator = [user] : m.creator = user
       assert_equal(false, m.valid?, "#{m} .valid? returned true, it was expected to be invalid.")
-      assert_equal(true, m.errors[:creator].nil?) # We expect there to be no errors on creator, there may be others.
+      assert_equal(true, m.errors[:creator].nil?, "Invalid model: #{m.errors}")
     end
 
     # Test the 'created' attribute of a GOO model

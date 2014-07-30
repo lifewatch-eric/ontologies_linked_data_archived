@@ -20,7 +20,7 @@ class TestProject < LinkedData::TestCase
     @project_params = {
       :name => "Great Project",
       :acronym => "GP",
-      :creator => @user,
+      :creator => [@user],
       :created => DateTime.new,
       :institution => "A university.",
       :contacts => "Anonymous Funk, Anonymous Miller.",
