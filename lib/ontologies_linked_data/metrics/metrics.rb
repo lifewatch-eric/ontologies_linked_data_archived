@@ -158,6 +158,7 @@ module LinkedData
     def self.hierarchy_depth?(graph,root,n,treeProp)
       sTemplate = "children <#{treeProp.to_s}> parent"
       hops = []
+      vars = []
       n.times do |i|
         hop = sTemplate.sub("children","?x#{i}")
         if i == 0
@@ -166,10 +167,12 @@ module LinkedData
           hop = hop.sub("parent", "?x#{i-1}")
         end
         hops << hop
+        vars << "?x#{i}"
       end
       joins = hops.join(".\n")
+      vars = vars.join(" ")
       query = <<eof
-SELECT ?x0 WHERE {
+SELECT #{vars} WHERE {
   GRAPH <#{graph.to_s}> {
     #{joins}
   } } LIMIT 1
