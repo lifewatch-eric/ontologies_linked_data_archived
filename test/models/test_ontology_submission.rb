@@ -663,9 +663,9 @@ eos
     #make sure no errors in statuses
     sub.submissionStatus.select { |x| x.id.to_s["ERROR"] }.length == 0
 
-    LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation, :prefixIRI).each do |cls|
-      assert cls.prefixIRI.is_a?(String)
-      assert cls.notation.nil?
+    LinkedData::Models::Class.where.in(sub)
+      .include(:prefLabel, :notation, :prefixIRI).each do |cls|
+      assert !cls.notation.nil? || !cls.prefixIRI.nil?
       assert !cls.id.to_s.start_with?(":")
     end
 
@@ -824,6 +824,9 @@ eos
     sub.bring(:metrics)
 
     LinkedData::Models::Class.where.in(sub).include(:prefixIRI).each do |cls|
+      if cls.id.to_s["Material_Resource"] || cls.id.to_s["People_Resource"]
+        next
+      end
       assert !cls.prefixIRI.nil?
       assert cls.prefixIRI.is_a?(String)
       assert (!cls.prefixIRI.start_with?(":")) || (cls.prefixIRI[":"] != nil)
