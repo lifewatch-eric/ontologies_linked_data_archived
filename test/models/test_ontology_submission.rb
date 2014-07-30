@@ -708,6 +708,33 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
+    sparql_query = <<eos
+SELECT * WHERE {
+GRAPH <http://data.bioontology.org/ontologies/AERO-TST/submissions/10>
+{ <http://purl.obolibrary.org/obo/AERO_0000001>
+   <http://www.w3.org/2004/02/skos/core#notation> ?o
+   }}
+eos
+    count_notation = 0
+    Goo.sparql_query_client.query(sparql_query).each_solution do |sol|
+      assert sol[:o].object == "CODE000001"
+      count_notation += 1
+    end
+    assert count_notation == 1
+    count_notation = 0
+    sparql_query = <<eos
+SELECT * WHERE {
+GRAPH <http://data.bioontology.org/ontologies/AERO-TST/submissions/10>
+{ <http://purl.obolibrary.org/obo/AERO_0000001>
+   <http://data.bioontology.org/metadata/prefixIRI> ?o
+   }}
+eos
+    count_notation = 0
+    Goo.sparql_query_client.query(sparql_query).each_solution do |sol|
+      assert true == false
+      count_notation += 1
+    end
+    assert count_notation == 0
     #test for ontology headers added to the graph
     sparql_query = <<eos
 SELECT * WHERE {
