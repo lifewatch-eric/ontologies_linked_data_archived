@@ -71,7 +71,7 @@ module LinkedData
         if File.exist? errors_log
           File.delete errors_log
         end
-        command_call = "java -DentityExpansionLimit=1500000 -Xmx5120M -jar #{@owlapi_wrapper_jar_path} #{options}"
+        command_call = "java -DentityExpansionLimit=1500000 -Xmx10240M -jar #{@owlapi_wrapper_jar_path} #{options}"
         @logger.info("Java call [#{command_call}]")
         stdout,stderr,status = Open3.capture3(command_call)
         if not status.success?

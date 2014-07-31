@@ -5,13 +5,11 @@ class TestHTTPCache < LinkedData::TestCase
   def self.before_suite
     @@cache_setting = LinkedData.settings.enable_http_cache
     LinkedData.settings.enable_http_cache = true
-    self.new("before_suite").delete_ontologies_and_submissions
     @@ontology, @@cls = self.new("before_suite")._ontology_and_class
   end
 
   def self.after_suite
     begin
-      self.new("after_suite").delete_ontologies_and_submissions
       LinkedData::HTTPCache.invalidate_all
     ensure
       LinkedData.settings.enable_http_cache = @@cache_setting
@@ -80,7 +78,6 @@ class TestHTTPCache < LinkedData::TestCase
   def test_ld_delete_invalidates
     results = create_ontologies_and_submissions(ont_count: 1, submission_count: 1, process_submission: false)
     ontology = results[2].first
-    last_modified = ontology.cache_write
     ontology.bring_remaining
     sleep(1)
     ontology.delete
@@ -125,6 +122,7 @@ class TestHTTPCache < LinkedData::TestCase
     assert_nil LinkedData::Models::Class.collection_last_modified
     last_modified_values = (classes.map {|c| c.last_modified}).compact
     assert last_modified_values.empty?
+    assert_equal [], LinkedData::HTTPCache.keys_for_invalidate_all
   end
 
 end

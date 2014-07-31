@@ -466,6 +466,7 @@ class TestMapping < LinkedData::TestOntologyCommon
   end
 
   def test_xref
+    skip
     LinkedData::Models::MappingProcess.all.each do |p|
       p.delete
     end

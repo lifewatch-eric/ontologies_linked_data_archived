@@ -17,6 +17,7 @@ require "ontologies_linked_data/serializers/serializers"
 require "ontologies_linked_data/utils/file"
 require "ontologies_linked_data/utils/triples"
 require "ontologies_linked_data/utils/notifications"
+require "ontologies_linked_data/utils/ontology_csv_writer"
 require "ontologies_linked_data/parser/parser"
 require "ontologies_linked_data/diff/diff"
 require "ontologies_linked_data/monkeypatches/class" # load before object

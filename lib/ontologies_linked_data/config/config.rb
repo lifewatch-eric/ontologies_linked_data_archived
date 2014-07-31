@@ -14,8 +14,6 @@ module LinkedData
 
     overide_connect_goo = false
 
-    yield @settings, overide_connect_goo if block_given?
-
     # Set defaults
     @settings.goo_port               ||= 9000
     @settings.goo_host               ||= "localhost"
@@ -69,6 +67,9 @@ module LinkedData
     @settings.smtp_password          ||= "password"
     @settings.smtp_auth_type         ||= :none # :none, :plain, :login, :cram_md5
     @settings.smtp_domain            ||= "localhost.localhost"
+
+    # Override defaults
+    yield @settings, overide_connect_goo if block_given?
 
     unless @settings.redis_host.nil?
       puts "Error: 'redis_host' is not a valid conf parameter."
@@ -130,17 +131,17 @@ module LinkedData
       conf.add_namespace(:skos, RDF::Vocabulary.new("http://www.w3.org/2004/02/skos/core#"))
       conf.add_namespace(:owl, RDF::Vocabulary.new("http://www.w3.org/2002/07/owl#"))
       conf.add_namespace(:rdfs, RDF::Vocabulary.new("http://www.w3.org/2000/01/rdf-schema#"))
-      conf.add_namespace(:metadata, 
-                         RDF::Vocabulary.new("http://data.bioontology.org/metadata/"), 
+      conf.add_namespace(:metadata,
+                         RDF::Vocabulary.new("http://data.bioontology.org/metadata/"),
                          default = true)
-      conf.add_namespace(:metadata_def, 
+      conf.add_namespace(:metadata_def,
                          RDF::Vocabulary.new("http://data.bioontology.org/metadata/def/"))
       conf.add_namespace(:dc, RDF::Vocabulary.new("http://purl.org/dc/elements/1.1/"))
       conf.add_namespace(:xsd, RDF::Vocabulary.new("http://www.w3.org/2001/XMLSchema#"))
-      conf.add_namespace(:oboinowl_gen, 
+      conf.add_namespace(:oboinowl_gen,
                          RDF::Vocabulary.new("http://www.geneontology.org/formats/oboInOwl#"))
       conf.add_namespace(:obo_purl, RDF::Vocabulary.new("http://purl.obolibrary.org/obo/"))
-      conf.add_namespace(:umls, 
+      conf.add_namespace(:umls,
                          RDF::Vocabulary.new("http://bioportal.bioontology.org/ontologies/umls/"))
       conf.id_prefix = "http://data.bioontology.org/"
       conf.pluralize_models(true)

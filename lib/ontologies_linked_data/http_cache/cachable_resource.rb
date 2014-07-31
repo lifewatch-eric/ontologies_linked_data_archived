@@ -4,11 +4,15 @@ require 'time'
 module LinkedData::HTTPCache
   def self.invalidate_all
     key_set = LinkedData::HTTPCache::CachableResource::KEY_SET
-    keys = redis.smembers(key_set)
+    keys = keys_for_invalidate_all()
     if keys
       keys.each_slice(500_000) {|chunk| redis.del chunk}
       redis.del key_set
     end
+  end
+
+  def self.keys_for_invalidate_all
+    redis.smembers(LinkedData::HTTPCache::CachableResource::KEY_SET)
   end
 
   def self.redis

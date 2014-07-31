@@ -9,6 +9,9 @@ module LinkedData
   module Models
 
     class OntologySubmission < LinkedData::Models::Base
+
+      FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf']
+
       model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
 
@@ -188,6 +191,10 @@ module LinkedData
         return File.join([self.data_folder, "unzipped"])
       end
 
+      def csv_path
+        return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
+      end
+
       def unzip_submission(logger)
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
@@ -211,6 +218,12 @@ module LinkedData
           logger.flush
         end
         return zip_dst
+      end
+
+      def delete_old_submission_files
+        path_to_repo = data_folder
+        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }.push(csv_path)
+        FileUtils.rm(submission_files, force: true)
       end
 
       # accepts another submission in 'older' (it should be an 'older' ontology version)
@@ -533,11 +546,23 @@ eos
           LinkedData::Parser.logger = logger
           status = nil
 
-          #TODO: for now, archiving simply means add "ARCHIVED" status. We need to expand the logic to include other appropriate actions (ie deleting backend, files, etc.)
           if (archive)
             self.submissionStatus = nil
             status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
             add_submission_status(status)
+
+            # Delete everything except for original ontology file.  
+            ontology.bring(:submissions)
+            submissions = ontology.submissions
+            unless submissions.nil?
+              submissions.each { |s| s.bring(:submissionId) }
+              submission = submissions.sort { |a,b| b.submissionId <=> a.submissionId }[0]
+              # Don't perform deletion if this is the most recent submission.
+              if (self.submissionId < submission.submissionId)
+                delete_old_submission_files
+              end
+            end
+
           else
             if (process_rdf)
               # Remove processing status types before starting RDF parsing etc.
@@ -614,6 +639,9 @@ eos
                 logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                 logger.flush
                 add_submission_status(status.get_error_status)
+                if File.file?(self.csv_path)
+                  FileUtils.delete(self.csv_path)
+                end
               end
               self.save
             end
@@ -708,6 +736,10 @@ eos
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped)
                                   .page(page,size)
+
+          writer = LinkedData::Utils::OntologyCSVWriter.new
+          writer.open(self.csv_path)
+
           begin #per page
             t0 = Time.now
             page_classes = paging.page(page,size).all
@@ -715,6 +747,7 @@ eos
             t0 = Time.now
             page_classes.each do |c|
               LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
+              writer.write_class(c)
             end
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
@@ -728,6 +761,8 @@ eos
 
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
+
+          writer.close
 
           if (commit)
             t0 = Time.now
