@@ -72,17 +72,17 @@ class TestProject < LinkedData::TestCase
     p = LinkedData::Models::Project.new
 
     # Missing attributes.
-    assert_equal(false, p.valid?, "#{p.errors}")
+    assert_equal(false, p.valid?, p.errors)
 
     # Required attributes present.
     p.acronym = @project_params[:acronym]
     p.description = @project_params[:description]
     p.creator = @project_params[:creator]
-    assert p.valid?, "#{p.errors}"
+    assert p.valid?, p.errors
 
     # Creator attribute not a list.
     p.creator = @user
-    assert_equal(false, p.valid?, "#{p.errors}")
+    assert_equal(false, p.valid?, p.errors)
 
     # Creator attribute is a list.
     users = Array.new(3) { LinkedData::Models::User.new }
@@ -91,10 +91,10 @@ class TestProject < LinkedData::TestCase
       user.email = 'test_user@example.org'
       user.password = 'password'
       user.save
-      assert user.valid?, "#{user.errors}"
+      assert user.valid?, user.errors
     end
     p.creator = users
-    assert p.valid?, "#{p.errors}"
+    assert p.valid?, p.errors
 
     # Proper number of creators.
     p.save
