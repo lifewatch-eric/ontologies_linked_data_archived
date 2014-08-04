@@ -96,11 +96,15 @@ module LinkedData
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([LinkedData.settings.repository_folder, acronym.to_s, submissionId.to_s])
         name = filename || File.basename(File.new(src).path)
+        # THIS LOGGER IS JUST FOR DEBUG - remove after NCBO-795 is closed
+        logger = Logger.new(Dir.pwd + "/create_permissions.log")
         if not Dir.exist? path_to_repo
           FileUtils.mkdir_p path_to_repo
+          logger.debug("Dir created #{path_to_repo} | #{"%o" % File.stat(path_to_repo).mode}") # NCBO-795
         end
         dst = File.join([path_to_repo, name])
         FileUtils.copy(src, dst)
+        logger.debug("File created #{dst} | #{"%o" % File.stat(dst).mode}") # NCBO-795
         if not File.exist? dst
           raise Exception, "Unable to copy #{src} to #{dst}"
         end
@@ -551,7 +555,7 @@ eos
             status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
             add_submission_status(status)
 
-            # Delete everything except for original ontology file.  
+            # Delete everything except for original ontology file.
             ontology.bring(:submissions)
             submissions = ontology.submissions
             unless submissions.nil?
