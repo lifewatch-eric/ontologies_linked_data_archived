@@ -15,6 +15,18 @@ GIT
       uuid
 
 GIT
+  remote: git://github.com/ncbo/resource_index.git
+  revision: 0373bbd24d471198ae64281244ad70b6919e53f8
+  specs:
+    resource_index (0.0.1)
+      elasticsearch
+      pony
+      ref
+      ruby-xxHash
+      sequel
+      typhoeus
+
+GIT
   remote: git://github.com/ncbo/sparql-client.git
   revision: fff5f36779bb630652922e5c4b5a558f026e0e2d
   branch: staging
@@ -39,9 +51,22 @@ GEM
     coderay (1.1.0)
     cube-ruby (0.0.3)
     docile (1.1.5)
+    elasticsearch (1.0.4)
+      elasticsearch-api (= 1.0.4)
+      elasticsearch-transport (= 1.0.4)
+    elasticsearch-api (1.0.4)
+      multi_json
+    elasticsearch-transport (1.0.4)
+      faraday
+      multi_json
     email_spec (1.6.0)
       launchy (~> 2.1)
       mail (~> 2.2)
+    ethon (0.7.1)
+      ffi (>= 1.3.0)
+    faraday (0.9.0)
+      multipart-post (>= 1.2, < 3)
+    ffi (1.9.3)
     i18n (0.6.11)
     json_pure (1.8.1)
     launchy (2.4.2)
@@ -55,6 +80,8 @@ GEM
     mime-types (2.3)
     minitest (4.7.5)
     multi_json (1.10.1)
+    multipart-post (2.0.0)
+    mysql2 (0.3.16)
     net-http-persistent (2.9.4)
     netrc (0.7.7)
     oj (2.10.0)
@@ -71,20 +98,26 @@ GEM
     rdf (1.0.8)
       addressable (>= 2.2)
     redis (3.1.0)
+    ref (1.0.5)
     rest-client (1.7.2)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
     rsolr (1.0.10)
       builder (>= 2.1.2)
+    ruby-xxHash (0.1.1)
     rubyzip (1.1.6)
+    sequel (4.13.0)
     simplecov (0.9.0)
       docile (~> 1.1.0)
       multi_json
       simplecov-html (~> 0.8.0)
     simplecov-html (0.8.0)
     slop (3.6.0)
+    sqlite3 (1.3.9)
     systemu (2.6.4)
     thread_safe (0.3.4)
+    typhoeus (0.6.9)
+      ethon (>= 0.7.1)
     tzinfo (0.3.40)
     uuid (2.3.7)
       macaddr (~> 1.0)
@@ -99,16 +132,20 @@ DEPENDENCIES
   cube-ruby
   email_spec
   goo!
+  jdbc-sqlite3
   libxml-ruby (~> 2.0)
   minitest (~> 4.0)
   multi_json (~> 1.0)
+  mysql2
   oj (~> 2.0)
   pony
   pry
   rack (~> 1.0)
   rack-test (~> 0.6)
   rake (~> 10.0)
+  resource_index!
   rsolr (~> 1.0)
   rubyzip (~> 1.0)
   simplecov
   sparql-client!
+  sqlite3
