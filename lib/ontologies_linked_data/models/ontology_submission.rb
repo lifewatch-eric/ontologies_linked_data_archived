@@ -100,11 +100,11 @@ module LinkedData
         logger = Logger.new(Dir.pwd + "/create_permissions.log")
         if not Dir.exist? path_to_repo
           FileUtils.mkdir_p path_to_repo
-          logger.debug("Dir created #{path_to_repo} | #{"%o" % File.stat(path_to_repo).mode}") # NCBO-795
+          logger.debug("Dir created #{path_to_repo} | #{"%o" % File.stat(path_to_repo).mode} | umask: #{File.umask}") # NCBO-795
         end
         dst = File.join([path_to_repo, name])
         FileUtils.copy(src, dst)
-        logger.debug("File created #{dst} | #{"%o" % File.stat(dst).mode}") # NCBO-795
+        logger.debug("File created #{dst} | #{"%o" % File.stat(dst).mode} | umask: #{File.umask}") # NCBO-795
         if not File.exist? dst
           raise Exception, "Unable to copy #{src} to #{dst}"
         end
