@@ -25,7 +25,7 @@ gem 'goo', github: 'ncbo/goo', branch: 'staging'
 gem 'sparql-client', github: 'ncbo/sparql-client', branch: 'staging'
 
 # ResourceIndex dependencies (managed per-platform)
-gem 'resource_index', github: 'ncbo/resource_index'
+gem 'ncbo_resource_index', github: 'ncbo/resource_index'
 
 platform :ruby do
   gem 'sqlite3'

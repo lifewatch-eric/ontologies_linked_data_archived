@@ -2,7 +2,7 @@ require "set"
 require "cgi"
 require "multi_json"
 require "ontologies_linked_data/models/notes/note"
-require "resource_index/class"
+require "ncbo_resource_index"
 
 module LinkedData
   module Models
