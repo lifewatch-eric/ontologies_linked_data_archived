@@ -16,10 +16,11 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 0373bbd24d471198ae64281244ad70b6919e53f8
+  revision: bfd5965cef5db3f578569c6194c2a289f6be2bde
   specs:
-    resource_index (0.0.1)
+    ncbo_resource_index (0.0.1)
       elasticsearch
+      mysql2
       pony
       ref
       ruby-xxHash
@@ -118,7 +119,7 @@ GEM
     thread_safe (0.3.4)
     typhoeus (0.6.9)
       ethon (>= 0.7.1)
-    tzinfo (0.3.40)
+    tzinfo (0.3.41)
     uuid (2.3.7)
       macaddr (~> 1.0)
 
@@ -137,13 +138,13 @@ DEPENDENCIES
   minitest (~> 4.0)
   multi_json (~> 1.0)
   mysql2
+  ncbo_resource_index!
   oj (~> 2.0)
   pony
   pry
   rack (~> 1.0)
   rack-test (~> 0.6)
   rake (~> 10.0)
-  resource_index!
   rsolr (~> 1.0)
   rubyzip (~> 1.0)
   simplecov
