@@ -20,7 +20,7 @@ class TestProject < LinkedData::TestCase
     @project_params = {
       :name => "Great Project",
       :acronym => "GP",
-      :creator => @user,
+      :creator => [@user],
       :created => DateTime.new,
       :institution => "A university.",
       :contacts => "Anonymous Funk, Anonymous Miller.",
@@ -66,6 +66,45 @@ class TestProject < LinkedData::TestCase
 
   def test_project_creator
     model_creator_test(LinkedData::Models::Project.new(acronym: "TST_PRJ"), @user)
+  end
+
+  def test_project_creator_multiple
+    p = LinkedData::Models::Project.new
+
+    # Missing attributes.
+    assert_equal(false, p.valid?, p.errors)
+
+    # Required attributes present.
+    p.acronym = @project_params[:acronym]
+    p.description = @project_params[:description]
+    p.creator = @project_params[:creator]
+    assert p.valid?, p.errors
+
+    # Creator attribute not a list.
+    p.creator = @user
+    assert_equal(false, p.valid?, p.errors)
+
+    # Creator attribute is a list.
+    users = Array.new(3) { LinkedData::Models::User.new }
+    users.each_with_index do |user, i|
+      user.username = "Test User #{i}"
+      user.email = 'test_user@example.org'
+      user.password = 'password'
+      user.save
+      assert user.valid?, user.errors
+    end
+    p.creator = users
+    assert p.valid?, p.errors
+
+    # Proper number of creators.
+    p.save
+    p1 = LinkedData::Models::Project.where(creator: [username: 'Test User 0']).first
+    p1.bring(creator: [:username])
+    assert_equal(3, p1.creator.length)  
+
+    # Proper list of users in creator attribute.
+    creators = p1.creator.sort { |a,b| a.username <=> b.username }
+    creators.zip(users).map { |x,y| assert x.id == y.id }
   end
 
   def test_project_description
@@ -127,7 +166,7 @@ class TestProject < LinkedData::TestCase
   def test_valid_project
     # The setup project parameters should be valid
     p = LinkedData::Models::Project.new(@project_params)
-    assert p.valid?
+    assert_equal(true, p.valid?, "Invalid project parameters: #{p.errors}")
     # Incrementally evaluate project validity...
     p = LinkedData::Models::Project.new
     assert (not p.valid?)

@@ -308,6 +308,13 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert paths[1] != paths[2]
     assert paths[0] != paths[2]
 
+    #xref test in bro
+    classId = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Information_Resource"
+    classIR = LinkedData::Models::Class.find(RDF::URI.new(classId))
+      .in(os).include(:xref,:prefLabel).first
+    assert_equal(classIR.xref, "hasDbXref0000001")
+    assert_equal(classIR.prefLabel, "Information Resource")
+
   end
 
   def test_xml_literal_serialization

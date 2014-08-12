@@ -5,7 +5,7 @@ require 'uri'
 module LinkedData::Purl
   class Client
     PURL_ONTOLOGY_PATH = lambda { |acronym| "/ontology/#{acronym}" }
-    TARGET_ONTOLOGY_PATH = lambda { |acronym| "/ontologies/#{acronym}" }
+    TARGET_ONTOLOGY_PATH = lambda { |acronym| "/ontologies/#{acronym}/classes" }
     PURL_PATH = lambda { |acronym| "/purl#{PURL_ONTOLOGY_PATH.call(acronym)}" }
     PURL_ADMIN_PATH = lambda { |acronym| "/admin#{PURL_PATH.call(acronym)}" }
 

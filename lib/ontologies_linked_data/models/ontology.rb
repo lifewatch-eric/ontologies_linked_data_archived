@@ -11,6 +11,8 @@ require_relative '../purl/purl_client'
 module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
+      class ParsedSubmissionError < StandardError; end
+
       model :ontology, :name_with => :acronym
       attribute :acronym, namespace: :omv,
         enforce: [:unique, :existence, lambda { |inst,attr| validate_acronym(inst,attr) } ]
@@ -139,6 +141,26 @@ module LinkedData
         return submission_ids.max
       end
 
+      def properties
+        latest = latest_submission(status: [:rdf])
+        self.bring(:acronym) if self.bring?(:acronym)
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
+
+        # datatype props
+        datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents).all()
+        parents = []
+        datatype_props.each {|prop| prop.parents.each {|parent| parents << parent}}
+        LinkedData::Models::DatatypeProperty.in(latest).models(parents).include(:label, :definition).all()
+
+        # object props
+        object_props = LinkedData::Models::ObjectProperty.in(latest).include(:label, :definition, :parents).all()
+        parents = []
+        object_props.each {|prop| prop.parents.each {|parent| parents << parent}}
+        LinkedData::Models::ObjectProperty.in(latest).models(parents).include(:label, :definition).all()
+
+        return datatype_props + object_props
+      end
+
       ##
       # Delete all artifacts of an ontology
       def delete(*args)
@@ -230,6 +252,22 @@ module LinkedData
         query = "submissionAcronym:#{acronym}"
         Ontology.unindexByQuery(query)
         Ontology.indexCommit() if commit
+      end
+
+      def restricted?
+        !self.viewingRestriction.eql?("public")
+      end
+
+      def accessible?(user)
+        return true if user.admin?
+        bring(:acl) if bring?(:acl)
+        bring(:administeredBy) if bring?(:administeredBy)
+        if self.restricted?
+          return true
+        else
+          return true if self.acl.map {|u| u.id.to_s}.include?(user.id.to_s) || self.administeredBy.map {|u| u.id.to_s}.include?(user.id.to_s)
+        end
+        return false
       end
     end
   end

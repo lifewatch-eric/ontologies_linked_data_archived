@@ -2,6 +2,7 @@ require "set"
 require "cgi"
 require "multi_json"
 require "ontologies_linked_data/models/notes/note"
+require "ncbo_resource_index"
 
 module LinkedData
   module Models
@@ -9,6 +10,8 @@ module LinkedData
     end
 
     class Class < LinkedData::Models::Base
+      include ResourceIndex::Class
+
       model :class, name_with: :id, collection: :submission,
             namespace: :owl, :schemaless => :true,
             rdf_type: lambda { |*x| self.class_rdf_type(x) }
@@ -60,7 +63,8 @@ module LinkedData
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
       attribute :cui, enforce: [:list], :namespace => :umls, alias: true
-      attribute :xref, :namespace => :oboinowl_gen, alias: true
+      attribute :xref, :namespace => :oboinowl_gen, alias: true,
+        :property => :hasDbXref
 
       attribute :notes,
             inverse: { on: :note, attribute: :relatedClass }

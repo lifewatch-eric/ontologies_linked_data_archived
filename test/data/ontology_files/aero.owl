@@ -228,6 +228,7 @@ The initial domain for this work are reports of adverse events following immuniz
 
     <owl:Class rdf:about="http://purl.obolibrary.org/obo/AERO_0000001">
         <rdfs:label xml:lang="en">diagnosis guideline</rdfs:label>
+        <oboInOwl:id>CODE000001</oboInOwl:id>
         <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/IAO_0000033"/>
         <UBERON:IAO_0000115 xml:lang="en">A directive information entity that specifies how to establish a diagnosis based on clinical findings</UBERON:IAO_0000115>
     </owl:Class>
