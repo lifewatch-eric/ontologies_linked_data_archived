@@ -26,12 +26,3 @@ gem 'sparql-client', github: 'ncbo/sparql-client', branch: 'staging'
 
 # ResourceIndex dependencies (managed per-platform)
 gem 'ncbo_resource_index', github: 'ncbo/resource_index'
-
-platform :ruby do
-  gem 'sqlite3'
-  gem 'mysql2'
-end
-
-platform :jruby do
-  gem 'jdbc-sqlite3'
-end
