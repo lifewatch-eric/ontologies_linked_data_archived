@@ -1,27 +1,14 @@
 
 module LinkedData
   module Models
-    class TermMapping
-      def initialize(classId,submissionId)
-        @classId = classId
-        @submissionId = submissionId
-      end
-      def classId
-        return @classId
-      end
-      def submissionId
-        return @submissionId
-      end
-    end
-
     class Mapping
-      def initialize(terms, type, process=nil)
-        @terms = terms
+      def initialize(classes, type, process=nil)
+        @classes = classes
         @process = process
         @type = type
       end
-      def terms
-        return @terms
+      def classes
+        return @classes
       end
       def process
         return @process

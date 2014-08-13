@@ -171,9 +171,9 @@ eos
       if classId.nil?
         s1 = sol[:s1]
       end
-      terms = [ LinkedData::Models::TermMapping.new(s1,sub1.id),
-                LinkedData::Models::TermMapping.new(sol[:s2],graph2) ]
-      mappings << LinkedData::Models::Mapping.new(terms,sol[:type].to_s)
+      classes = [ read_only_class(s1.to_s,sub1.id.to_s),
+                read_only_class(sol[:s2].to_s,graph2.to_s) ]
+      mappings << LinkedData::Models::Mapping.new(classes,sol[:type].to_s)
     end
     page = Goo::Base::Page.new(page,size,nil,mappings)
     return page
@@ -181,6 +181,25 @@ eos
 
   def self.mappings_ontology(sub,page,size,classId=nil)
     return self.mappings_ontologies(sub,nil,page,size,classId=classId)
+  end
+
+  def self.read_only_class(classId,submissionId)
+      ontologyId = submissionId.split("/")[0..-3]
+      acronym = ontologyId.last
+      ontologyId = ontologyId.join("/")
+      ontology = LinkedData::Models::Ontology
+            .read_only(
+              id: RDF::IRI.new(ontologyId),
+              acronym: acronym)
+      submission = LinkedData::Models::OntologySubmission
+            .read_only(
+              id: RDF::IRI.new(ontologyId+"/submissions/latest"),
+              ontology: ontology)
+      mappedClass = LinkedData::Models::Class
+            .read_only(
+              id: RDF::IRI.new(classId), 
+              submission: submission )
+      return mappedClass
   end
 
 end
