@@ -39,32 +39,16 @@ class TestMapping < LinkedData::TestOntologyCommon
                      run_metrics: false, reasoning: true)
   end
 
-  def get_process(name)
-    #just some user
-    user = LinkedData::Models::User.where.include(:username).all[0]
-
-    #process
-    ps = LinkedData::Models::MappingProcess.where({:name => name })
-    ps.each do |p|
-      p.delete
-    end
-    p = LinkedData::Models::MappingProcess.new(:creator => user, :name => name)
-    assert p.valid?
-    p.save
-    ps = LinkedData::Models::MappingProcess.where({:name => name }).to_a
-    assert ps.length == 1
-    return ps[0]
-  end
-
   def validate_mapping(map)
     prop = map.type.downcase.to_sym
     prop = :prefLabel if map.type == "LOOM"
     prop = nil if map.type == "SAME_URI"
 
     classes = []
-    map.terms.each do |t|
-      sub = LinkedData::Models::OntologySubmission.find(t.submissionId).first
-      cls = LinkedData::Models::Class.find(t.classId).in(sub)
+    map.classes.each do |t|
+      sub = LinkedData::Models::Ontology.find(t.submission.ontology.id)
+                .first.latest_submission
+      cls = LinkedData::Models::Class.find(t.id).in(sub)
       unless prop.nil?
         cls.include(prop)
       end
@@ -94,6 +78,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
 
     latest_sub = ont1.latest_submission
+    latest_sub.bring(ontology: [:acronym])
     keep_going = true
     mappings = []
     size = 10
@@ -110,7 +95,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     same_uri = 0
     loom = 0
     mappings.each do |map|
-      assert_equal(map.terms[0].submissionId.to_s, latest_sub.id.to_s)
+      assert_equal(map.classes[0].submission.ontology.acronym,
+                   latest_sub.ontology.acronym)
       if map.type == "CUI"
         cui += 1
       elsif map.type == "XREF"
@@ -144,7 +130,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert_equal(loom,14)
     mappings.each do |map|
       class_mappings = LinkedData::Mappings.mappings_ontology(
-                        latest_sub,1,100,map.terms[0].classId)
+                        latest_sub,1,100,map.classes[0].id)
       assert class_mappings.length > 0
       class_mappings.each do |cmap|
         assert validate_mapping(map)
@@ -159,7 +145,9 @@ class TestMapping < LinkedData::TestOntologyCommon
     ont2 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR4 }).to_a[0]
 
     latest_sub1 = ont1.latest_submission
+    latest_sub1.bring(ontology: [:acronym])
     latest_sub2 = ont2.latest_submission
+    latest_sub2.bring(ontology: [:acronym])
     keep_going = true
     mappings = []
     size = 5 
@@ -177,8 +165,10 @@ class TestMapping < LinkedData::TestOntologyCommon
     same_uri = 0
     loom = 0
     mappings.each do |map|
-      assert_equal(map.terms[0].submissionId.to_s, latest_sub1.id.to_s)
-      assert_equal(map.terms[1].submissionId.to_s, latest_sub2.id.to_s)
+      assert_equal(map.classes[0].submission.ontology.acronym, 
+                   latest_sub1.ontology.acronym)
+      assert_equal(map.classes[1].submission.ontology.acronym,
+                  latest_sub2.ontology.acronym)
       if map.type == "CUI"
         cui += 1
       elsif map.type == "XREF"
@@ -200,6 +190,41 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert_equal(cui, 1)
     assert_equal(xref,2)
     assert_equal(loom,2)
+  end
+
+  def test_mappings_rest
+    mapping_term_a = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image_Algorithm",
+      "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image",
+      "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Integration_and_Interoperability_Tools" ]
+    mapping_ont_a = ["BRO-TEST-MAP-0","BRO-TEST-MAP-0","BRO-TEST-MAP-0"]
+
+
+    mapping_term_b = ["http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000202",
+      "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000203",
+      "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000205" ]
+    mapping_ont_b = ["CNO-TEST-MAP-0","CNO-TEST-MAP-0","CNO-TEST-MAP-0"]
+
+    relations = [ "http://www.w3.org/2004/02/skos/core#exactMatch",
+                  "http://www.w3.org/2004/02/skos/core#closeMatch",
+                  "http://www.w3.org/2004/02/skos/core#relatedMatch" ]
+    user = LinkedData::Models::User.where.include(:username).all[0]
+    assert user != nil
+    3.times do |i|
+      process = LinkedData::Models::MappingProcess.new
+      process.name = "proc#{i}"
+      process.relation = RDF::URI.new(relations[i])
+      process.creator= user
+      process.save
+      classes = []
+      classes << LinkedData::Mappings.read_only_class(
+                    mapping_term_a[i], mapping_ont_a[i])
+      classes << LinkedData::Mappings.read_only_class(
+                    mapping_term_b[i], mapping_ont_b[i])
+      LinkedData::Mappings.create_rest_mapping(classes,process)
+    end
+    binding.pry
+    
+    
   end
 
 end

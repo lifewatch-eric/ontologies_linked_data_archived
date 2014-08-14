@@ -497,6 +497,10 @@ eos
         end
       end
 
+      def urn_id()
+        return "urn:#{self.submission.ontology.acronym}:#{self.id.to_s}"
+      end
+
     end
   end
 end

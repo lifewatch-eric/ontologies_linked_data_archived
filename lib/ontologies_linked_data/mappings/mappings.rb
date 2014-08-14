@@ -9,6 +9,8 @@ module Mappings
       ["http://data.bioontology.org/metadata/def/mappingSameURI"] 
     predicates["LOOM"] = 
       ["http://data.bioontology.org/metadata/def/mappingLoom"] 
+    predicates["REST"] =
+      ["http://data.bioontology.org/metadata/def/mappingRest"]
     return predicates
   end
 
@@ -200,6 +202,46 @@ eos
               id: RDF::IRI.new(classId), 
               submission: submission )
       return mappedClass
+  end
+
+  def self.create_rest_mapping(classes,process)
+    unless process.instance_of? LinkedData::Models::MappingProcess
+      raise ArgumentError, "Process should be instance of MappingProcess"
+    end
+    if classes.length != 2
+      raise ArgumentError, "Create REST is avalaible for two classes. " +
+                           "Request contains #{classes.length} classes."
+    end
+    #first create back up mapping that lives across submissions
+    backup_mapping = RestBackupMapping.new
+    backup_mapping.uuid = UUID.new.generate
+    backup_mapping.process = process
+    class_urns = []
+    classes.each do |c|
+      class_urns << c.urn_id()
+    end
+    backup_mapping.class_urns = class_urns
+    backup_mapping.save
+
+    #second add the mapping id to current submission graphs
+    rest_predicate = mapping_predicates()["REST"]
+    classes.each do |c|
+      sub = c.submission
+      unless sub.id.to_s["latest"].nil?
+        #the submission in the class might point to latest
+        sub = LinkedData::Models::Ontology.find(c.submission.ontology.id)
+                .first
+                .latest_submission
+      end
+      query_update =<<eof
+INSERT DATA {
+GRAPH <#{sub.id.to_s}> {
+  <#{c.id.to_s}> <#{rest_predicate}> <#{backup_mapping.id.to_s} .
+  }
+}
+eof
+        Goo.sparql_update_client.update(query_update, graph: sub.id) 
+    end
   end
 
 end
