@@ -131,8 +131,6 @@ eos
     if classId.nil?
       variables = "?s1 " + variables
     end
-    pagination = "OFFSET offset LIMIT limit"
-    query = query.sub("page_group",pagination)
     query = query.sub("variables", variables)
     filter = ""
     if classId.nil?
@@ -148,9 +146,15 @@ eos
       query = query.sub("graph","")
       query = query.sub("filter",filter)
     end
-    limit = size
-    offset = (page-1) * size
-    query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
+    if size > 0
+      pagination = "OFFSET offset LIMIT limit"
+      query = query.sub("page_group",pagination)
+      limit = size
+      offset = (page-1) * size
+      query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
+    else
+      query = query.sub("page_group","")
+    end
     epr = Goo.sparql_query_client(:main)
     graphs = [sub1.id]
     unless sub2.nil?
