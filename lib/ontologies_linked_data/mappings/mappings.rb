@@ -205,17 +205,26 @@ eos
       return mappedClass
   end
 
-  def self.migrate_rest_mappings(submission_id)
+  def self.migrate_rest_mappings(acronym)
     mappings = LinkedData::Models::RestBackupMapping
                 .where.include(:uuid, :class_urns, :process).all
     if mappings.length == 0
       return []
     end
-    to_migrate = []
+    triples = []
+
+    rest_predicate = mapping_predicates()["REST"][0]
     mappings.each do |m|
-      binding.pry
+      m.class_urns.each do |u|
+        u = u.to_s
+        if u.start_with?("urn:#{acronym}")
+          class_id = u.split(":")[2..-1].join(":")
+          triples << 
+            " <#{class_id}> <#{rest_predicate}> <#{m.id}> . "
+        end
+      end
     end
-    return to_migrate
+    return triples
     
   end
 

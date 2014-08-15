@@ -274,9 +274,7 @@ class TestMapping < LinkedData::TestOntologyCommon
         rest_mapping_count += 1
       end
     end
-
-    binding.pry
-    
+    assert rest_mapping_count == 3
   end
 
 end
