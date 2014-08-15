@@ -196,13 +196,20 @@ class TestMapping < LinkedData::TestOntologyCommon
     mapping_term_a = ["http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image_Algorithm",
       "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image",
       "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Integration_and_Interoperability_Tools" ]
-    mapping_ont_a = ["BRO-TEST-MAP-0","BRO-TEST-MAP-0","BRO-TEST-MAP-0"]
+    submissions_a = [
+"http://data.bioontology.org/ontologies/MAPPING_TEST1/submissions/latest",
+"http://data.bioontology.org/ontologies/MAPPING_TEST1/submissions/latest",
+"http://data.bioontology.org/ontologies/MAPPING_TEST1/submissions/latest" ]
+
 
 
     mapping_term_b = ["http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000202",
       "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000203",
       "http://purl.org/incf/ontology/Computational_Neurosciences/cno_alpha.owl#cno_0000205" ]
-    mapping_ont_b = ["CNO-TEST-MAP-0","CNO-TEST-MAP-0","CNO-TEST-MAP-0"]
+    submissions_b = [
+"http://data.bioontology.org/ontologies/MAPPING_TEST2/submissions/latest",
+"http://data.bioontology.org/ontologies/MAPPING_TEST2/submissions/latest",
+"http://data.bioontology.org/ontologies/MAPPING_TEST2/submissions/latest" ]
 
     relations = [ "http://www.w3.org/2004/02/skos/core#exactMatch",
                   "http://www.w3.org/2004/02/skos/core#closeMatch",
@@ -217,13 +224,58 @@ class TestMapping < LinkedData::TestOntologyCommon
       process.save
       classes = []
       classes << LinkedData::Mappings.read_only_class(
-                    mapping_term_a[i], mapping_ont_a[i])
+                    mapping_term_a[i], submissions_a[i])
       classes << LinkedData::Mappings.read_only_class(
-                    mapping_term_b[i], mapping_ont_b[i])
+                    mapping_term_b[i], submissions_b[i])
       LinkedData::Mappings.create_rest_mapping(classes,process)
     end
-    binding.pry
+    ont_id = submissions_a.first.split("/")[0..-3].join("/")
+    latest_sub = LinkedData::Models::Ontology
+                    .find(RDF::URI.new(ont_id))
+                    .first
+                    .latest_submission
+    mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
+    rest_mapping_count = 0
+    mappings.each do |m|
+      if m.type == "REST"
+        rest_mapping_count += 1
+        assert_equal m.classes.length, 2
+        c1 =  m.classes.select { 
+                        |c| c.submission.id.to_s["TEST1"] }.first
+        c2 = m.classes.select { 
+                        |c| c.submission.id.to_s["TEST2"] }.first
+        assert c1 != nil
+        assert c2 != nil
+        ia = mapping_term_a.index c1.id.to_s
+        ib = mapping_term_b.index c2.id.to_s
+        assert ia != nil
+        assert ib != nil
+        assert ia == ib
+      end
+    end
+    assert_equal rest_mapping_count, 3
     
+    #in a new submission we should have moved the rest mappings
+
+    helper = LinkedData::TestOntologyCommon.new(self)
+    helper.submission_parse(ONT_ACR1,
+                     "MappingOntTest1",
+                     "./test/data/ontology_files/BRO_v3.3.owl", 12,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: true)
+    latest_sub = LinkedData::Models::Ontology
+                    .find(RDF::URI.new(ont_id))
+                    .first
+                    .latest_submission
+    mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
+    rest_mapping_count = 0
+    mappings.each do |m|
+      if m.type == "REST"
+        rest_mapping_count += 1
+      end
+    end
+
+    binding.pry
     
   end
 

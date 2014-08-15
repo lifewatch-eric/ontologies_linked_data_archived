@@ -379,6 +379,11 @@ eos
             count_classes += 1
           end
 
+          LinkedData::Mappings
+            .migrate_rest_mappings(self.id.to_s).all do |m|
+              binding.pry
+          end
+
           if (label_triples.length > 0)
             logger.info("Asserting #{label_triples.length} labels in " + 
                         "#{self.id.to_ntriples}")

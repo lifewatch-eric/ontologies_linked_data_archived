@@ -28,6 +28,10 @@ module LinkedData
         return RDF::OWL[:Class]
       end
 
+      def self.urn_id(acronym,classId)
+        return "urn:#{acronym}:#{classId.to_s}"
+      end
+
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
       attribute :label, namespace: :rdfs, enforce: [:list]
@@ -495,10 +499,6 @@ eos
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end
-      end
-
-      def urn_id()
-        return "urn:#{self.submission.ontology.acronym}:#{self.id.to_s}"
       end
 
     end

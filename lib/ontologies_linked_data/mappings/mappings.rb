@@ -200,8 +200,23 @@ eos
       mappedClass = LinkedData::Models::Class
             .read_only(
               id: RDF::IRI.new(classId), 
-              submission: submission )
+              submission: submission,
+              urn_id: LinkedData::Models::Class.urn_id(acronym,classId) )
       return mappedClass
+  end
+
+  def self.migrate_rest_mappings(submission_id)
+    mappings = LinkedData::Models::RestBackupMapping
+                .where.include(:uuid, :class_urns, :process).all
+    if mappings.length == 0
+      return []
+    end
+    to_migrate = []
+    mappings.each do |m|
+      binding.pry
+    end
+    return to_migrate
+    
   end
 
   def self.create_rest_mapping(classes,process)
@@ -213,18 +228,18 @@ eos
                            "Request contains #{classes.length} classes."
     end
     #first create back up mapping that lives across submissions
-    backup_mapping = RestBackupMapping.new
+    backup_mapping = LinkedData::Models::RestBackupMapping.new
     backup_mapping.uuid = UUID.new.generate
     backup_mapping.process = process
     class_urns = []
     classes.each do |c|
-      class_urns << c.urn_id()
+      class_urns << RDF::URI.new(c.urn_id())
     end
     backup_mapping.class_urns = class_urns
     backup_mapping.save
 
     #second add the mapping id to current submission graphs
-    rest_predicate = mapping_predicates()["REST"]
+    rest_predicate = mapping_predicates()["REST"][0]
     classes.each do |c|
       sub = c.submission
       unless sub.id.to_s["latest"].nil?
@@ -236,7 +251,7 @@ eos
       query_update =<<eof
 INSERT DATA {
 GRAPH <#{sub.id.to_s}> {
-  <#{c.id.to_s}> <#{rest_predicate}> <#{backup_mapping.id.to_s} .
+  <#{c.id.to_s}> <#{rest_predicate}> <#{backup_mapping.id.to_s}> .
   }
 }
 eof
