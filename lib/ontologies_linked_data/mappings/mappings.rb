@@ -181,6 +181,9 @@ eos
                 read_only_class(sol[:s2].to_s,graph2.to_s) ]
       mappings << LinkedData::Models::Mapping.new(classes,sol[:type].to_s)
     end
+    if size == 0
+      return mappings
+    end
     page = Goo::Base::Page.new(page,size,nil,mappings)
     return page
   end
