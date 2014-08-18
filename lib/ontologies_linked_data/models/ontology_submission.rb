@@ -199,6 +199,10 @@ module LinkedData
         return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
       end
 
+      def parsing_log_path
+        return self.uploadFilePath + '_parsing.log'
+      end
+
       def unzip_submission(logger)
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
