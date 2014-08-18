@@ -230,7 +230,7 @@ module LinkedData
 
       def delete_old_submission_files
         path_to_repo = data_folder
-        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }.push(csv_path)
+        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }.push(csv_path, parsing_log_path)
         FileUtils.rm(submission_files, force: true)
       end
 

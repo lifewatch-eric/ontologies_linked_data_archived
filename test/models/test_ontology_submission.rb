@@ -327,6 +327,9 @@ eos
 
     assert_equal false, File.file?(old_sub.csv_path), 
       %-File deletion failed for '#{old_sub.csv_path}'-
+
+    assert_equal false, File.file?(old_sub.parsing_log_path), 
+      %-File deletion failed for '#{old_sub.parsing_log_path}'-
   end
 
   def test_submission_diff_across_ontologies
