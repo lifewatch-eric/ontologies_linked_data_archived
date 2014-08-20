@@ -200,7 +200,7 @@ module LinkedData
       end
 
       def parsing_log_path
-        return self.uploadFilePath + '_parsing.log'
+        return self.uploadFilePath.nil? ? nil : self.uploadFilePath + '_parsing.log'
       end
 
       def unzip_submission(logger)
