@@ -3,7 +3,7 @@ module LinkedData
   module Models
     class Mapping
       include LinkedData::Hypermedia::Resource
-      embed :classes
+      embed :classes, :process
 
       def initialize(classes, type, process=nil)
         @classes = classes

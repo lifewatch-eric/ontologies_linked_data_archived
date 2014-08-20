@@ -185,6 +185,16 @@ eos
       return mappings
     end
     page = Goo::Base::Page.new(page,size,nil,mappings)
+    counts = mapping_ontologies_count(sub1,sub2)
+    if counts.instance_of?(Hash)
+      total = 0
+      counts.each do |k,v|
+        total = total + v
+      end
+      page.aggregate = total
+    else
+      page.aggregate = counts
+    end
     return page
   end
 
@@ -249,7 +259,14 @@ eos
     backup_mapping.process = process
     class_urns = []
     classes.each do |c|
-      class_urns << RDF::URI.new(c.urn_id())
+      if c.instance_of?LinkedData::Models::Class
+        acronym = c.submission.id.to_s.split("/")[-3]
+        class_urns << RDF::URI.new(
+          LinkedData::Models::Class.urn_id(acronym,c.id.to_s))
+          
+      else
+        class_urns << RDF::URI.new(c.urn_id())
+      end
     end
     backup_mapping.class_urns = class_urns
     backup_mapping.save
@@ -273,6 +290,8 @@ GRAPH <#{sub.id.to_s}> {
 eof
         Goo.sparql_update_client.update(query_update, graph: sub.id) 
     end
+    mapping = LinkedData::Models::Mapping.new(classes,"REST",process)
+    return mapping
   end
 
 end
