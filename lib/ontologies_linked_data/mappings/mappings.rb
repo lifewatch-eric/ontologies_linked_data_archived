@@ -294,5 +294,42 @@ eof
     return mapping
   end
 
+  def self.recent_user_mappings(n)
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    qdate = <<-eos
+SELECT ?s
+FROM <#{LinkedData::Models::MappingProcess.type_uri}>
+WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } ORDER BY DESC(?o) LIMIT #{n}
+eos
+    epr = Goo.sparql_query_client(:main)
+    procs = []
+    epr.query(qdate, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+      procs << sol[:s]
+    end
+    if procs.length == 0 
+      return []
+    end
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    procs = procs.map { |x| "?o = #{x.to_ntriples}" }.join " || "
+    qmappings = <<-eos
+SELECT ?s
+FROM <#{LinkedData::Models::Mapping.type_uri}>
+WHERE { ?s <http://data.bioontology.org/metadata/process> ?o .
+FILTER (#{procs})
+}
+eos
+    epr = Goo.sparql_query_client(:main)
+    mapping_ids = []
+    epr.query(qmappings, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+      mapping_ids << sol[:s]
+    end
+    mappings = mapping_ids.map { |x| LinkedData::Models::Mapping.find(x)
+                                     .include(terms: [ :term, ontology: [ :acronym ] ])
+                                     .include(process: [:name, :creator, :date ])
+                                     .first 
+                               }
+    return mappings.sort_by { |x| x.process.first.date }.reverse[0..n-1]
+  end
+
 end
 end
