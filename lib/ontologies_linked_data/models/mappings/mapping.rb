@@ -28,12 +28,12 @@ module LinkedData
       attribute :process, enforce: [:existence, :mapping_process]
     end
 
+    #only manual mappings
     class MappingProcess < LinkedData::Models::Base
           model :mapping_process, name_with: :name
           attribute :name, enforce: [:unique, :existence]
           attribute :creator, enforce: [:existence, :user]
 
-          #only manual mappings
           attribute :source
           attribute :relation, enforce: [:uri]
           attribute :source_contact_info
@@ -41,7 +41,6 @@ module LinkedData
           attribute :comment
           attribute :date, enforce: [:date_time]
 
-          # Hypermedia settings
           embedded true
     end
   end
