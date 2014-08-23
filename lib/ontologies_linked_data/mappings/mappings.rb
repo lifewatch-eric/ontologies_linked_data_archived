@@ -299,7 +299,8 @@ eof
     qdate = <<-eos
 SELECT ?s
 FROM <#{LinkedData::Models::MappingProcess.type_uri}>
-WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } ORDER BY DESC(?o) LIMIT #{n}
+WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } 
+ORDER BY DESC(?o) LIMIT #{n}
 eos
     epr = Goo.sparql_query_client(:main)
     procs = []
@@ -310,24 +311,42 @@ eos
       return []
     end
     graphs = [LinkedData::Models::MappingProcess.type_uri]
+    proc_object = Hash.new
+    LinkedData::Models::MappingProcess.where
+        .include(LinkedData::Models::MappingProcess.attributes)
+        .all.each do |obj|
+          #highly cached query
+          proc_object[obj.id.to_s] = obj
+    end
     procs = procs.map { |x| "?o = #{x.to_ntriples}" }.join " || "
+    rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
-SELECT ?s
-FROM <#{LinkedData::Models::Mapping.type_uri}>
-WHERE { ?s <http://data.bioontology.org/metadata/process> ?o .
+SELECT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
+WHERE { 
+  ?uuid <http://data.bioontology.org/metadata/process> ?o .
+
+  GRAPH ?s1 {
+    ?c1 <#{rest_predicate}> ?uuid .
+  }
+  GRAPH ?s2 {
+    ?c2 <#{rest_predicate}> ?uuid .
+  }
 FILTER (#{procs})
 }
 eos
     epr = Goo.sparql_query_client(:main)
-    mapping_ids = []
-    epr.query(qmappings, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
-      mapping_ids << sol[:s]
+    mappings = []
+    epr.query(qmappings, 
+              graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+      classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
+                read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
+      process = proc_object[sol[:o].to_s]
+      mapping = LinkedData::Models::Mapping.new(classes,"REST",
+                                                process,
+                                                sol[:uuid])
+      mappings << mapping
     end
-    mappings = mapping_ids.map { |x| LinkedData::Models::Mapping.find(x)
-                                     .include(terms: [ :term, ontology: [ :acronym ] ])
-                                     .include(process: [:name, :creator, :date ])
-                                     .first 
-                               }
+    binding.pry
     return mappings.sort_by { |x| x.process.first.date }.reverse[0..n-1]
   end
 

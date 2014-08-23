@@ -5,10 +5,11 @@ module LinkedData
       include LinkedData::Hypermedia::Resource
       embed :classes, :process
 
-      def initialize(classes, type, process=nil)
+      def initialize(classes, type, process=nil, id=nil)
         @classes = classes
         @process = process
         @type = type
+        @id = id
       end
       def classes
         return @classes
@@ -30,8 +31,9 @@ module LinkedData
 
     #only manual mappings
     class MappingProcess < LinkedData::Models::Base
-          model :mapping_process, name_with: :name
-          attribute :name, enforce: [:unique, :existence]
+          model :mapping_process, 
+                :name_with => lambda { |s| process_id_generator(s) }
+          attribute :name, enforce: [:existence]
           attribute :creator, enforce: [:existence, :user]
 
           attribute :source
@@ -42,6 +44,18 @@ module LinkedData
           attribute :date, enforce: [:date_time]
 
           embedded true
+
+          def self.process_id_generator(inst)
+            if inst.date
+              #rest mapping
+              return RDF::IRI.new(
+        "#{(self.namespace)}mapping_processes/#{CGI.escape(inst.name.to_s)}" +
+        "-#{CGI.escape(inst.creator.username)}" +
+        "-#{UUID.new.generate}")
+            end
+            return RDF::IRI.new(
+              "#{(self.namespace)}mapping_processes/#{CGI.escape(inst.name.to_s)}-#{CGI.escape(inst.creator.username)}")
+          end
     end
   end
 end
