@@ -245,6 +245,75 @@ eos
     
   end
 
+  def self.delete_rest_mapping(mapping_id)
+    mapping = get_rest_mapping(mapping_id)
+    if mapping.nil?
+      return nil
+    end
+    rest_predicate = mapping_predicates()["REST"][0]
+    classes = mapping.classes
+    classes.each do |c|
+      sub = c.submission
+      unless sub.id.to_s["latest"].nil?
+        #the submission in the class might point to latest
+        sub = LinkedData::Models::Ontology.find(c.submission.ontology.id)
+                .first
+                .latest_submission
+      end
+      query_update =<<eof
+DELETE DATA {
+GRAPH <#{sub.id.to_s}> {
+  <#{c.id.to_s}> <#{rest_predicate}> <#{mapping.id.to_s}> .
+  }
+}
+eof
+        Goo.sparql_update_client.update(query_update,
+            graphs: [sub.id, LinkedData::Models::MappingProcess.type_uri])
+    end
+    mapping.process.delete
+    backup = LinkedData::Models::RestBackupMapping.find(mapping_id).first
+    unless backup.nil?
+      backup.delete
+    end
+    return mapping
+  end
+
+  def self.get_rest_mapping(mapping_id)
+    backup = LinkedData::Models::RestBackupMapping.find(mapping_id).first
+    if backup.nil?
+      return nil
+    end
+    rest_predicate = mapping_predicates()["REST"][0]
+    qmappings = <<-eos
+SELECT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
+WHERE { 
+  ?uuid <http://data.bioontology.org/metadata/process> ?o .
+
+  GRAPH ?s1 {
+    ?c1 <#{rest_predicate}> ?uuid .
+  }
+  GRAPH ?s2 {
+    ?c2 <#{rest_predicate}> ?uuid .
+  }
+FILTER(?uuid = <#{mapping_id}>)
+FILTER(?s1 != ?s2)
+} LIMIT 1
+eos
+    epr = Goo.sparql_query_client(:main)
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    mapping = nil
+    epr.query(qmappings,
+              graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+      classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
+                read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
+      process = LinkedData::Models::MappingProcess.find(sol[:o]).first
+      mapping = LinkedData::Models::Mapping.new(classes,"REST",
+                                                process,
+                                                sol[:uuid])
+    end
+    return mapping
+  end
+
   def self.create_rest_mapping(classes,process)
     unless process.instance_of? LinkedData::Models::MappingProcess
       raise ArgumentError, "Process should be instance of MappingProcess"
@@ -288,13 +357,14 @@ GRAPH <#{sub.id.to_s}> {
   }
 }
 eof
-        Goo.sparql_update_client.update(query_update, graph: sub.id) 
+        Goo.sparql_update_client.update(query_update,
+            graphs: [sub.id, LinkedData::Models::MappingProcess.type_uri])
     end
     mapping = LinkedData::Models::Mapping.new(classes,"REST",process)
     return mapping
   end
 
-  def self.recent_user_mappings(n)
+  def self.recent_rest_mappings(n)
     graphs = [LinkedData::Models::MappingProcess.type_uri]
     qdate = <<-eos
 SELECT ?s
