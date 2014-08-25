@@ -346,8 +346,7 @@ eos
                                                 sol[:uuid])
       mappings << mapping
     end
-    binding.pry
-    return mappings.sort_by { |x| x.process.first.date }.reverse[0..n-1]
+    return mappings.sort_by { |x| x.process.date }.reverse[0..n-1]
   end
 
 end
