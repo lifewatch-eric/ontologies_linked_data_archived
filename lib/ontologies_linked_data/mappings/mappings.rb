@@ -14,6 +14,44 @@ module Mappings
     return predicates
   end
 
+  def self.mapping_counts()
+    query =<<-eos
+SELECT ?s1 (count(?c1) as ?c) WHERE {
+  GRAPH ?s1 {
+    ?c1 <mapping_predicate> ?o .
+  }
+  GRAPH ?s2 {
+    ?c2 <mapping_predicate> ?o .
+  }
+  FILTER(?s1 != ?s2 extra)
+} GROUP BY ?s1
+eos
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    counts = {}
+    epr = Goo.sparql_query_client(:main)
+    mapping_predicates.each do |type,predicates|
+      predicates.each do |predicate|
+        query_count = query.gsub("mapping_predicate",predicate)
+        if type != "SAME_URI"
+          query_count = query_count.gsub("extra","&& ?c1 != ?c2")
+        else
+          query_count = query_count.gsub("extra","")
+        end
+        solutions = epr.query(query_count,
+                            graphs: graphs,
+                            query_options: {rules: :NONE})
+        solutions.each do |sol|
+          acronym = sol[:s1].to_s.split("/")[-3]
+          if counts[acronym].nil?
+            counts[acronym] = 0
+          end
+          counts[acronym] += sol[:c].object
+        end
+      end
+    end
+    return counts
+  end
+
   def self.mapping_ontologies_count(sub1,sub2)
     template = <<-eos
 {
@@ -41,7 +79,7 @@ eos
       block
       filter
       } group
-      eos
+eos
       query = query_template.sub("block", block)
       filter = ""
       if _type != "SAME_URI"
@@ -60,7 +98,7 @@ eos
         query = query.sub("variables","(count(?s1) as ?c)")
       end
       epr = Goo.sparql_query_client(:main)
-      graphs = [sub1.id]
+      graphs = [sub1.id, LinkedData::Models::MappingProcess.type_uri]
       unless sub2.nil?
         graphs << sub2.id
       end
