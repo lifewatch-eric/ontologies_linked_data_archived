@@ -989,7 +989,7 @@ eos
       def self.loom_transform_literal(lit)
         res = []
         lit.each_char do |c|
-          if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+          if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
             res << c.downcase
           end
         end

@@ -14,41 +14,52 @@ module Mappings
     return predicates
   end
 
-  def self.mapping_counts()
-    query =<<-eos
-SELECT ?s1 (count(?c1) as ?c) WHERE {
-  GRAPH ?s1 {
-    ?c1 <mapping_predicate> ?o .
-  }
-  GRAPH ?s2 {
-    ?c2 <mapping_predicate> ?o .
-  }
-  FILTER(?s1 != ?s2 extra)
-} GROUP BY ?s1
-eos
-    graphs = [LinkedData::Models::MappingProcess.type_uri]
-    counts = {}
-    epr = Goo.sparql_query_client(:main)
-    mapping_predicates.each do |type,predicates|
-      predicates.each do |predicate|
-        query_count = query.gsub("mapping_predicate",predicate)
-        if type != "SAME_URI"
-          query_count = query_count.gsub("extra","&& ?c1 != ?c2")
-        else
-          query_count = query_count.gsub("extra","")
-        end
-        solutions = epr.query(query_count,
-                            graphs: graphs,
-                            query_options: {rules: :NONE})
-        solutions.each do |sol|
-          acronym = sol[:s1].to_s.split("/")[-3]
-          if counts[acronym].nil?
-            counts[acronym] = 0
-          end
-          counts[acronym] += sol[:c].object
-        end
+  def self.retrieve_latest_submissions()
+    status = "RDF"
+    include_ready = status.eql?("READY") ? true : false
+    status = "RDF" if status.eql?("READY")
+    includes = []
+    includes << :submissionStatus
+    includes << :submissionId
+    includes << { ontology: [:acronym, :viewOf] }
+    submissions_query = OntologySubmission
+                          .where(submissionStatus: [ code: status])
+
+    filter = Goo::Filter.new(ontology: [:viewOf]).unbound
+    submissions_query = submissions_query.filter(filter)
+    submissions = submissions_query.include(includes).to_a
+
+    # Figure out latest parsed submissions using all submissions
+    latest_submissions = {}
+    submissions.each do |sub|
+      next if include_ready && !sub.ready?
+      latest_submissions[sub.ontology.acronym] ||= sub
+      otherId = latest_submissions[sub.ontology.acronym].submissionId
+      if sub.submissionId > otherId
+        latest_submissions[sub.ontology.acronym] = sub
       end
     end
+    return latest_submissions
+  end
+
+  def self.mapping_counts()
+    t = Time.now
+    latest = retrieve_latest_submissions()
+    counts = {}
+    i = 0
+    latest.each do |acro,sub|
+      t0 = Time.now
+      s_counts = mapping_ontologies_count(sub,nil)
+      s_total = 0
+      s_counts.each do |k,v|
+        s_total += v
+      end
+      counts[acro] = s_total
+      i += 1
+      puts "#{i}/#{latest.count} " +
+            "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}"
+    end
+    puts "Total time #{Time.now - t} sec."
     return counts
   end
 
@@ -78,7 +89,7 @@ eos
       WHERE {
       block
       filter
-      } group
+      }
 eos
       query = query_template.sub("block", block)
       filter = ""
@@ -89,12 +100,10 @@ eos
         filter += "\nFILTER (?g != <#{sub1.id.to_s}>)"
         query = query.sub("graph","?g")
         query = query.sub("filter",filter)
-        query = query.sub("variables","?g (count(?s1) as ?c)")
-        query = query.sub("group", "GROUP BY ?g")
+        query = query.sub("variables","?g")
       else
         query = query.sub("graph","<#{sub2.id.to_s}>")
         query = query.sub("filter",filter)
-        query = query.sub("group","")
         query = query.sub("variables","(count(?s1) as ?c)")
       end
       epr = Goo.sparql_query_client(:main)
@@ -102,18 +111,37 @@ eos
       unless sub2.nil?
         graphs << sub2.id
       end
-      solutions = epr.query(query,
-                            graphs: graphs,
-                            query_options: {rules: :NONE})
-      solutions.each do |sol|
-        if sub2.nil?
-          acr = sol[:g].to_s.split("/")[-3]
-          unless group_count.include?(acr)
-            group_count[acr] = 0
+      solutions = nil
+      if sub2.nil?
+        solutions = epr.query(query,
+                              graphs: graphs,
+                              content_type: "text/plain",
+                              query_options: {rules: :NONE})
+        line = 0
+        solutions.split("\n").each do |sol|
+          if line > 0
+            acr = sol.split("/")[-3]
+            unless group_count.include?(acr)
+              group_count[acr] = 0
+            end
+            group_count[acr] += 1
           end
-          group_count[acr] += sol[:c].object
-        else
-          count += sol[:c].object
+          line += 1
+        end
+      else
+        solutions = epr.query(query,
+                              graphs: graphs,
+                              query_options: {rules: :NONE})
+        solutions.each do |sol|
+          if sub2.nil?
+            acr = sol[:g].to_s.split("/")[-3]
+            unless group_count.include?(acr)
+              group_count[acr] = 0
+            end
+            group_count[acr] += 1
+          else
+            count += sol[:c].object
+          end
         end
       end
     end #per predicate query
