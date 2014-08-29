@@ -23,8 +23,8 @@ module LinkedData
         name = options[:name]
         file_path = options[:file_path]
         acr_suffix = options[:acronym_suffix]
-
         u, of, contact = ontology_objects()
+        of = LinkedData::Models::OntologyFormat.find(options[:ontology_format]).include(:acronym).first if options[:ontology_format]
         contact.save if contact.modified?
 
         ont_acronyms = []
@@ -112,6 +112,23 @@ module LinkedData
         end
 
         return ont_count, ont_acronyms, ontologies
+      end
+
+      def self.load_semantic_types_ontology(options = {})
+        file_path = options[:file_path]
+        file_path = "../../../../test/data/ontology_files/umls_semantictypes.ttl" if file_path.nil?
+
+        count, acronyms, sty = create_ontologies_and_submissions({
+          ont_count: 1,
+          submission_count: 1,
+          process_submission: true,
+          acronym: "STY",
+          ontology_format: "UMLS",
+          name: "Semantic Types Ontology",
+          acronym_suffix: "",
+          file_path: file_path
+        })
+        sty
       end
 
       def self.ontology_objects

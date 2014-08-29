@@ -10,7 +10,7 @@ module LinkedData
 
     class OntologySubmission < LinkedData::Models::Base
 
-      FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf']
+      FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf', 'errors.log']
 
       model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
@@ -199,6 +199,10 @@ module LinkedData
         return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
       end
 
+      def parsing_log_path
+        return self.uploadFilePath.nil? ? nil : self.uploadFilePath + '_parsing.log'
+      end
+
       def unzip_submission(logger)
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
@@ -226,7 +230,9 @@ module LinkedData
 
       def delete_old_submission_files
         path_to_repo = data_folder
-        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }.push(csv_path)
+        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }
+        submission_files.push(csv_path)
+        submission_files.push(parsing_log_path) unless parsing_log_path.nil?
         FileUtils.rm(submission_files, force: true)
       end
 

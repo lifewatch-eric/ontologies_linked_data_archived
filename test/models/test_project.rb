@@ -75,9 +75,11 @@ class TestProject < LinkedData::TestCase
     assert_equal(false, p.valid?, p.errors)
 
     # Required attributes present.
+    p.name = @project_params[:name]
     p.acronym = @project_params[:acronym]
     p.description = @project_params[:description]
     p.creator = @project_params[:creator]
+    p.homePage = @project_params[:homePage]
     assert p.valid?, p.errors
 
     # Creator attribute not a list.
