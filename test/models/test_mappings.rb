@@ -58,9 +58,6 @@ class TestMapping < LinkedData::TestOntologyCommon
     if map.type == "SAME_URI"
       return classes[0].id.to_s == classes[1].id.to_s
     end
-    if map.type == "XREF"
-      return classes[0].xref == classes[1].xref
-    end
     if map.type == "LOOM"
       ldOntSub = LinkedData::Models::OntologySubmission
       label0 = ldOntSub.loom_transform_literal(classes[0].prefLabel)
@@ -74,6 +71,9 @@ class TestMapping < LinkedData::TestOntologyCommon
   end
 
   def test_mappings_ontology
+    LinkedData::Models::RestBackupMapping.all.each do |m|
+      LinkedData::Mappings.delete_rest_mapping(m.id)
+    end
     #bro
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
 
@@ -91,7 +91,6 @@ class TestMapping < LinkedData::TestOntologyCommon
       page_no += 1
     end
     cui = 0
-    xref = 0
     same_uri = 0
     loom = 0
     mappings.each do |map|
@@ -99,8 +98,6 @@ class TestMapping < LinkedData::TestOntologyCommon
                    latest_sub.ontology.acronym)
       if map.type == "CUI"
         cui += 1
-      elsif map.type == "XREF"
-        xref += 1
       elsif map.type == "SAME_URI"
         same_uri += 1
       elsif map.type == "LOOM"
@@ -115,18 +112,17 @@ class TestMapping < LinkedData::TestOntologyCommon
     by_ont_counts.each do |k,v|
       total += v
     end
-    assert_equal(by_ont_counts.length, 3)
+    assert_equal(by_ont_counts.length, 4)
     ["MAPPING_TEST2", "MAPPING_TEST3", "MAPPING_TEST4"].each do |x|
       assert(by_ont_counts.include?(x))
     end
     assert_equal(by_ont_counts["MAPPING_TEST2"], 10)
     assert_equal(by_ont_counts["MAPPING_TEST3"], 9)
-    assert_equal(by_ont_counts["MAPPING_TEST4"], 10)
+    assert_equal(by_ont_counts["MAPPING_TEST4"], 8)
     assert_equal(total, 29)
     assert_equal(mappings.length, 29)
     assert_equal(same_uri,10)
     assert_equal(cui, 3)
-    assert_equal(xref,2)
     assert_equal(loom,14)
     mappings.each do |map|
       class_mappings = LinkedData::Mappings.mappings_ontology(
@@ -161,7 +157,6 @@ class TestMapping < LinkedData::TestOntologyCommon
       page_no += 1
     end
     cui = 0
-    xref = 0
     same_uri = 0
     loom = 0
     mappings.each do |map|
@@ -171,8 +166,6 @@ class TestMapping < LinkedData::TestOntologyCommon
                   latest_sub2.ontology.acronym)
       if map.type == "CUI"
         cui += 1
-      elsif map.type == "XREF"
-        xref += 1
       elsif map.type == "SAME_URI"
         same_uri += 1
       elsif map.type == "LOOM"
@@ -188,7 +181,6 @@ class TestMapping < LinkedData::TestOntologyCommon
     assert_equal(mappings.length, count)
     assert_equal(same_uri,5)
     assert_equal(cui, 1)
-    assert_equal(xref,2)
     assert_equal(loom,2)
   end
 

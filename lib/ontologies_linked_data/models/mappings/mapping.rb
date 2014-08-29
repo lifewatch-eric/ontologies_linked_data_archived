@@ -44,7 +44,8 @@ module LinkedData
           attribute :source_contact_info
           attribute :source_name
           attribute :comment
-          attribute :date, enforce: [:date_time, :existence]
+          attribute :date, enforce: [:date_time], 
+                      :default => lambda {|x| DateTime.new }
 
           embedded true
 
