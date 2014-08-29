@@ -100,7 +100,9 @@ eos
         filter += "FILTER (?s1 != ?s2)"
       end
       if sub2.nil?
-        filter += "\nFILTER (?g != <#{sub1.id.to_s}>)"
+        ont_id = sub1.id.to_s.split("/")[0..-3].join("/")
+        #STRSTARTS is used to not count older graphs
+        filter += "\nFILTER (!STRSTARTS(str(?g),'#{ont_id}'))"
         query = query.sub("graph","?g")
         query = query.sub("filter",filter)
         query = query.sub("variables","?g (count(?s1) as ?c)")
@@ -198,7 +200,9 @@ eos
     end
     if sub2.nil?
       query = query.sub("graph","?g")
-      filter += "\nFILTER (?g != <#{sub1.id.to_s}>)"
+      ont_id = sub1.id.to_s.split("/")[0..-3].join("/")
+      #STRSTARTS is used to not count older graphs
+      filter += "\nFILTER (!STRSTARTS(str(?g),'#{ont_id}'))"
       query = query.sub("filter",filter)
     else
       query = query.sub("graph","")

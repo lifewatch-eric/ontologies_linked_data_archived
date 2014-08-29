@@ -112,15 +112,15 @@ class TestMapping < LinkedData::TestOntologyCommon
     by_ont_counts.each do |k,v|
       total += v
     end
-    assert_equal(by_ont_counts.length, 4)
+    assert_equal(by_ont_counts.length, 3)
     ["MAPPING_TEST2", "MAPPING_TEST3", "MAPPING_TEST4"].each do |x|
       assert(by_ont_counts.include?(x))
     end
     assert_equal(by_ont_counts["MAPPING_TEST2"], 10)
     assert_equal(by_ont_counts["MAPPING_TEST3"], 9)
     assert_equal(by_ont_counts["MAPPING_TEST4"], 8)
-    assert_equal(total, 29)
-    assert_equal(mappings.length, 29)
+    assert_equal(total, 27)
+    assert_equal(mappings.length, 27)
     assert_equal(same_uri,10)
     assert_equal(cui, 3)
     assert_equal(loom,14)
