@@ -41,7 +41,7 @@ module Mappings
     return latest_submissions
   end
 
-  def self.mapping_counts()
+  def self.mapping_counts(enable_debug=false)
     t = Time.now
     latest = retrieve_latest_submissions()
     counts = {}
@@ -55,10 +55,14 @@ module Mappings
       end
       counts[acro] = s_total
       i += 1
-      puts "#{i}/#{latest.count} " +
+      if enable_debug
+        puts "#{i}/#{latest.count} " +
             "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}"
+      end
     end
-    puts "Total time #{Time.now - t} sec."
+    if enable_debug
+      puts "Total time #{Time.now - t} sec."
+    end
     return counts
   end
 
@@ -116,26 +120,20 @@ eos
       if sub2.nil?
         solutions = epr.query(query,
                               graphs: graphs,
-#                              content_type: "text/plain",
                               query_options: {rules: :NONE, graphs: graphs })
         solutions.each do |sol|
           acr = sol[:g].to_s.split("/")[-3]
-          group_count[acr] = sol[:c].object
+          if group_count[acr].nil?
+            group_count[acr] = 0
+          end
+          group_count[acr] += sol[:c].object
         end
       else
         solutions = epr.query(query,
                               graphs: graphs,
                               query_options: {rules: :NONE})
         solutions.each do |sol|
-          if sub2.nil?
-            acr = sol[:g].to_s.split("/")[-3]
-            unless group_count.include?(acr)
-              group_count[acr] = 0
-            end
-            group_count[acr] += 1
-          else
-            count += sol[:c].object
-          end
+          count += sol[:c].object
         end
       end
     end #per predicate query
