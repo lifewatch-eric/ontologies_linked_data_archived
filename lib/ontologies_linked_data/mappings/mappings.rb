@@ -4,7 +4,6 @@ module Mappings
   def self.mapping_predicates()
     predicates = {}
     predicates["CUI"] = ["http://bioportal.bioontology.org/ontologies/umls/cui"]
-    predicates["XREF"] = ["http://www.geneontology.org/formats/oboInOwl#hasDbXref"]
     predicates["SAME_URI"] = 
       ["http://data.bioontology.org/metadata/def/mappingSameURI"] 
     predicates["LOOM"] = 
@@ -89,7 +88,7 @@ eos
       WHERE {
       block
       filter
-      }
+      } group
 eos
       query = query_template.sub("block", block)
       filter = ""
@@ -100,11 +99,13 @@ eos
         filter += "\nFILTER (?g != <#{sub1.id.to_s}>)"
         query = query.sub("graph","?g")
         query = query.sub("filter",filter)
-        query = query.sub("variables","?g")
+        query = query.sub("variables","?g (count(?s1) as ?c)")
+        query = query.sub("group","GROUP BY ?g")
       else
         query = query.sub("graph","<#{sub2.id.to_s}>")
         query = query.sub("filter",filter)
         query = query.sub("variables","(count(?s1) as ?c)")
+        query = query.sub("group","")
       end
       epr = Goo.sparql_query_client(:main)
       graphs = [sub1.id, LinkedData::Models::MappingProcess.type_uri]
@@ -115,18 +116,11 @@ eos
       if sub2.nil?
         solutions = epr.query(query,
                               graphs: graphs,
-                              content_type: "text/plain",
-                              query_options: {rules: :NONE})
-        line = 0
-        solutions.split("\n").each do |sol|
-          if line > 0
-            acr = sol.split("/")[-3]
-            unless group_count.include?(acr)
-              group_count[acr] = 0
-            end
-            group_count[acr] += 1
-          end
-          line += 1
+#                              content_type: "text/plain",
+                              query_options: {rules: :NONE, graphs: graphs })
+        solutions.each do |sol|
+          acr = sol[:g].to_s.split("/")[-3]
+          group_count[acr] = sol[:c].object
         end
       else
         solutions = epr.query(query,
