@@ -347,7 +347,7 @@ eof
     end
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
-SELECT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
+SELECT ?s1 ?c1 ?s2 ?c2 ?uuid
 WHERE { 
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
@@ -424,6 +424,42 @@ eof
     end
     mapping = LinkedData::Models::Mapping.new(classes,"REST",process)
     return mapping
+  end
+
+  def self.mappings_for_classids(class_ids,types=["REST","CUI"])
+    predicates = {}
+    types.each do |t|
+      predicates[mapping_predicates()[t][0]] = t
+    end
+    qmappings = <<-eos
+SELECT ?s1 ?c1 ?s2 ?c2 ?pred
+WHERE { 
+  GRAPH ?s1 {
+    ?c1 ?pred ?o .
+  }
+  GRAPH ?s2 {
+    ?c2 ?pred ?o .
+  }
+FILTER(?s1 != ?s2)
+FILTER(filter_pred)
+FILTER(filter_classes)
+}
+eos
+    qmappings = qmappings.gsub("filter_pred",
+                    predicates.keys.map { |x| "?pred = <#{x}>"}.join(" || "))
+    qmappings = qmappings.gsub("filter_classes",
+                      class_ids.map { |x| "?c1 = <#{x}>" }.join(" || "))
+    epr = Goo.sparql_query_client(:main)
+    graphs = [LinkedData::Models::MappingProcess.type_uri]
+    mappings = []
+    epr.query(qmappings,
+              graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+      classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
+                read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
+      type = predicates[sol[:pred].to_s]
+      mappings << LinkedData::Models::Mapping.new(classes,type)
+    end
+    return mappings
   end
 
   def self.recent_rest_mappings(n)
