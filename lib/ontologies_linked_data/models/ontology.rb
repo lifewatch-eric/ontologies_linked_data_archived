@@ -43,8 +43,6 @@ module LinkedData
       attribute :viewOf, enforce: [:ontology]
       attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
 
-      attribute :term_mappings, :inverse => { on: :term_mapping, attribute: :ontology }
-
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name, :summaryOnly
       links_load :acronym
