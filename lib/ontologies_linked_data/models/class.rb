@@ -28,6 +28,10 @@ module LinkedData
         return RDF::OWL[:Class]
       end
 
+      def self.urn_id(acronym,classId)
+        return "urn:#{acronym}:#{classId.to_s}"
+      end
+
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
 
       attribute :label, namespace: :rdfs, enforce: [:list]
