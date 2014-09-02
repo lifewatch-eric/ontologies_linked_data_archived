@@ -187,7 +187,7 @@ filter
 } page_group 
 eos
     query = mappings_in_ontology.sub( "unions", unions)
-    variables = "?s2 graph ?type"
+    variables = "?s2 graph ?type ?o"
     if classId.nil?
       variables = "?s1 " + variables
     end
@@ -241,7 +241,23 @@ eos
       end
       classes = [ read_only_class(s1.to_s,sub1.id.to_s),
                 read_only_class(sol[:s2].to_s,graph2.to_s) ]
-      mappings << LinkedData::Models::Mapping.new(classes,sol[:type].to_s)
+
+      backup_mapping = nil
+      mapping = nil
+      if sol[:type].to_s == "REST"
+        backup_mapping = LinkedData::Models::RestBackupMapping
+                      .find(sol[:o]).include(:process).first
+        backup_mapping.process.bring_remaining
+      end
+      if backup_mapping.nil?
+        mapping = LinkedData::Models::Mapping.new(
+                    classes,sol[:type].to_s)
+      else
+        mapping = LinkedData::Models::Mapping.new(
+                    classes,sol[:type].to_s,
+                    backup_mapping.process,backup_mapping.id)
+      end
+      mappings << mapping
     end
     if size == 0
       return mappings
@@ -347,7 +363,7 @@ eof
     end
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
-SELECT ?s1 ?c1 ?s2 ?c2 ?uuid
+SELECT ?s1 ?c1 ?s2 ?c2 ?uuid ?o
 WHERE { 
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
@@ -427,12 +443,13 @@ eof
   end
 
   def self.mappings_for_classids(class_ids,types=["REST","CUI"])
+    class_ids = class_ids.uniq
     predicates = {}
     types.each do |t|
       predicates[mapping_predicates()[t][0]] = t
     end
     qmappings = <<-eos
-SELECT ?s1 ?c1 ?s2 ?c2 ?pred
+SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?pred
 WHERE { 
   GRAPH ?s1 {
     ?c1 ?pred ?o .
