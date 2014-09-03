@@ -21,7 +21,7 @@ module Mappings
     includes << :submissionStatus
     includes << :submissionId
     includes << { ontology: [:acronym, :viewOf] }
-    submissions_query = OntologySubmission
+    submissions_query = LinkedData::Models::OntologySubmission
                           .where(submissionStatus: [ code: status])
 
     filter = Goo::Filter.new(ontology: [:viewOf]).unbound
@@ -41,7 +41,10 @@ module Mappings
     return latest_submissions
   end
 
-  def self.mapping_counts(enable_debug=false)
+  def self.mapping_counts(enable_debug=false,logger=nil)
+    if enable_debug and logger.nil?
+      logger = Logger.new($stdout)
+    end
     t = Time.now
     latest = retrieve_latest_submissions()
     counts = {}
