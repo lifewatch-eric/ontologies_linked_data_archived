@@ -85,7 +85,7 @@ eos
     if sub2.nil?
       group_count = {}
     end
-    mapping_predicates().each do |_type,mapping_predicate| 
+    mapping_predicates().each do |_source,mapping_predicate| 
       block = template.gsub("predicate", mapping_predicate[0])
       if sub2.nil?
       else
@@ -99,7 +99,7 @@ eos
 eos
       query = query_template.sub("block", block)
       filter = ""
-      if _type != "SAME_URI"
+      if _source != "SAME_URI"
         filter += "FILTER (?s1 != ?s2)"
       end
       if sub2.nil?
@@ -170,9 +170,9 @@ eos
     end
 
     blocks = []
-    mapping_predicates().each do |_type,mapping_predicate| 
+    mapping_predicates().each do |_source,mapping_predicate| 
       union_block = union_template.gsub("predicate", mapping_predicate[0])
-      union_block = union_block.sub("bind","BIND ('#{_type}' AS ?type)")
+      union_block = union_block.sub("bind","BIND ('#{_source}' AS ?source)")
       if sub2.nil?
         union_block = union_block.sub("graph","?g")
       else
@@ -190,14 +190,14 @@ filter
 } page_group 
 eos
     query = mappings_in_ontology.sub( "unions", unions)
-    variables = "?s2 graph ?type ?o"
+    variables = "?s2 graph ?source ?o"
     if classId.nil?
       variables = "?s1 " + variables
     end
     query = query.sub("variables", variables)
     filter = ""
     if classId.nil?
-      filter = "FILTER ((?s1 != ?s2) || (?type = 'SAME_URI'))"
+      filter = "FILTER ((?s1 != ?s2) || (?source = 'SAME_URI'))"
     else
       filter = ""
     end
@@ -247,17 +247,17 @@ eos
 
       backup_mapping = nil
       mapping = nil
-      if sol[:type].to_s == "REST"
+      if sol[:source].to_s == "REST"
         backup_mapping = LinkedData::Models::RestBackupMapping
                       .find(sol[:o]).include(:process).first
         backup_mapping.process.bring_remaining
       end
       if backup_mapping.nil?
         mapping = LinkedData::Models::Mapping.new(
-                    classes,sol[:type].to_s)
+                    classes,sol[:source].to_s)
       else
         mapping = LinkedData::Models::Mapping.new(
-                    classes,sol[:type].to_s,
+                    classes,sol[:source].to_s,
                     backup_mapping.process,backup_mapping.id)
       end
       mappings << mapping
@@ -445,10 +445,10 @@ eof
     return mapping
   end
 
-  def self.mappings_for_classids(class_ids,types=["REST","CUI"])
+  def self.mappings_for_classids(class_ids,sources=["REST","CUI"])
     class_ids = class_ids.uniq
     predicates = {}
-    types.each do |t|
+    sources.each do |t|
       predicates[mapping_predicates()[t][0]] = t
     end
     qmappings = <<-eos
@@ -476,8 +476,8 @@ eos
               graphs: graphs,query_options: {rules: :NONE}).each do |sol|
       classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
                 read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
-      type = predicates[sol[:pred].to_s]
-      mappings << LinkedData::Models::Mapping.new(classes,type)
+      source = predicates[sol[:pred].to_s]
+      mappings << LinkedData::Models::Mapping.new(classes,source)
     end
     return mappings
   end

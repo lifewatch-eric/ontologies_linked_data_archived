@@ -4,12 +4,12 @@ module LinkedData
     class Mapping
       include LinkedData::Hypermedia::Resource
       embed :classes, :process
-      serialize_default :id, :type, :classes, :process
+      serialize_default :id, :source, :classes, :process
 
-      def initialize(classes, type, process=nil, id=nil)
+      def initialize(classes, source, process=nil, id=nil)
         @classes = classes
         @process = process
-        @type = type
+        @source = source
         @id = id
       end
       def classes
@@ -18,8 +18,8 @@ module LinkedData
       def process
         return @process
       end
-      def type
-        return @type
+      def source
+        return @source
       end
       def id
         return @id

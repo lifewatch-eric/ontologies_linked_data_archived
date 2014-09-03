@@ -40,9 +40,9 @@ class TestMapping < LinkedData::TestOntologyCommon
   end
 
   def validate_mapping(map)
-    prop = map.type.downcase.to_sym
-    prop = :prefLabel if map.type == "LOOM"
-    prop = nil if map.type == "SAME_URI"
+    prop = map.source.downcase.to_sym
+    prop = :prefLabel if map.source == "LOOM"
+    prop = nil if map.source == "SAME_URI"
 
     classes = []
     map.classes.each do |t|
@@ -55,16 +55,16 @@ class TestMapping < LinkedData::TestOntologyCommon
       cls = cls.first
       classes << cls unless cls.nil?
     end
-    if map.type == "SAME_URI"
+    if map.source == "SAME_URI"
       return classes[0].id.to_s == classes[1].id.to_s
     end
-    if map.type == "LOOM"
+    if map.source == "LOOM"
       ldOntSub = LinkedData::Models::OntologySubmission
       label0 = ldOntSub.loom_transform_literal(classes[0].prefLabel)
       label1 = ldOntSub.loom_transform_literal(classes[1].prefLabel)
       return label0 == label1
     end
-    if map.type == "CUI"
+    if map.source == "CUI"
       return classes[0].cui == classes[1].cui
     end
     return false
@@ -96,14 +96,14 @@ class TestMapping < LinkedData::TestOntologyCommon
     mappings.each do |map|
       assert_equal(map.classes[0].submission.ontology.acronym,
                    latest_sub.ontology.acronym)
-      if map.type == "CUI"
+      if map.source == "CUI"
         cui += 1
-      elsif map.type == "SAME_URI"
+      elsif map.source == "SAME_URI"
         same_uri += 1
-      elsif map.type == "LOOM"
+      elsif map.source == "LOOM"
         loom += 1
       else
-        assert 1 == 0, "unknown type for this ontology #{map.type}"
+        assert 1 == 0, "unknown source for this ontology #{map.source}"
       end
       assert validate_mapping(map), "mapping is not valid"
     end
@@ -164,14 +164,14 @@ class TestMapping < LinkedData::TestOntologyCommon
                    latest_sub1.ontology.acronym)
       assert_equal(map.classes[1].submission.ontology.acronym,
                   latest_sub2.ontology.acronym)
-      if map.type == "CUI"
+      if map.source == "CUI"
         cui += 1
-      elsif map.type == "SAME_URI"
+      elsif map.source == "SAME_URI"
         same_uri += 1
-      elsif map.type == "LOOM"
+      elsif map.source == "LOOM"
         loom += 1
       else
-        assert 1 == 0, "unknown type for this ontology #{map.type}"
+        assert 1 == 0, "unknown source for this ontology #{map.source}"
       end
       assert validate_mapping(map), "mapping is not valid"
     end
@@ -229,7 +229,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
     rest_mapping_count = 0
     mappings.each do |m|
-      if m.type == "REST"
+      if m.source == "REST"
         rest_mapping_count += 1
         assert_equal m.classes.length, 2
         c1 =  m.classes.select { 
@@ -262,7 +262,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
     rest_mapping_count = 0
     mappings.each do |m|
-      if m.type == "REST"
+      if m.source == "REST"
         rest_mapping_count += 1
       end
     end
