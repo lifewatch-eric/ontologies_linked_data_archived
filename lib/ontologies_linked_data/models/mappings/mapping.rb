@@ -24,6 +24,9 @@ module LinkedData
       def id
         return @id
       end
+      def self.type_uri
+        LinkedData.settings.id_url_prefix+"metadata/Mapping"
+      end
     end
 
     class RestBackupMapping < LinkedData::Models::Base
@@ -35,7 +38,7 @@ module LinkedData
 
     #only manual mappings
     class MappingProcess < LinkedData::Models::Base
-          model :mapping_process, 
+          model :mapping_process,
                 :name_with => lambda { |s| process_id_generator(s) }
           attribute :name, enforce: [:existence]
           attribute :creator, enforce: [:existence, :user]
@@ -45,7 +48,7 @@ module LinkedData
           attribute :source_contact_info
           attribute :source_name
           attribute :comment
-          attribute :date, enforce: [:date_time], 
+          attribute :date, enforce: [:date_time],
                       :default => lambda {|x| DateTime.new }
 
           embedded true
