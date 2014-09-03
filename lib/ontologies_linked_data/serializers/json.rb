@@ -10,7 +10,7 @@ module LinkedData
           current_cls = hashed_obj.respond_to?(:klass) ? hashed_obj.klass : hashed_obj.class
 
           # Add the id to json-ld attribute
-          if current_cls.ancestors.include?(Goo::Base::Resource) && !current_cls.embedded?
+          if current_cls.ancestors.include?(LinkedData::Hypermedia::Resource) && !current_cls.embedded?
             prefixed_id = LinkedData.settings.replace_url_prefix ? hashed_obj.id.to_s.gsub(LinkedData.settings.id_url_prefix, LinkedData.settings.rest_url_prefix) : hashed_obj.id.to_s
             hash["@id"] = prefixed_id
           end
