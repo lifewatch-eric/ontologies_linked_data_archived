@@ -4,7 +4,7 @@ module LinkedData
     class Mapping
       include LinkedData::Hypermedia::Resource
       embed :classes, :process
-      serialize_default :id, :classes, :process
+      serialize_default :id, :type, :classes, :process
 
       def initialize(classes, type, process=nil, id=nil)
         @classes = classes
