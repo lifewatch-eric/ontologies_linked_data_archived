@@ -1,73 +1,61 @@
-require_relative '../ontology'
-require_relative '../class'
-require_relative './process'
-
 
 module LinkedData
   module Models
-    class TermMapping < LinkedData::Models::Base
+    class Mapping
+      include LinkedData::Hypermedia::Resource
+      embed :classes, :process
+      serialize_default :id, :type, :classes, :process
 
-      model :term_mapping, :name_with => lambda { |s| term_mapping_id_generator(s.term,s.ontology.acronym) }
-      attribute :term, enforce: [ :uri, :existence , :list]
-      attribute :ontology, enforce: [:existence, :ontology ]
-      attribute :mappings, :inverse => { on: :mapping, attribute: :terms }
-
-      def self.term_mapping_id_generator(term,acronym)
-        term_vals=term.map { |t| t.to_s }
-        term_vals.sort!
-        val_to_hash = term_vals.join("-")
-        hashed_value = Digest::SHA1.hexdigest(val_to_hash)
-        return RDF::IRI.new(
-        "#{(self.namespace)}termmapping/#{acronym}/#{hashed_value}")
+      def initialize(classes, type, process=nil, id=nil)
+        @classes = classes
+        @process = process
+        @type = type
+        @id = id
+      end
+      def classes
+        return @classes
+      end
+      def process
+        return @process
+      end
+      def type
+        return @type
+      end
+      def id
+        return @id
       end
     end
 
-    class Mapping < LinkedData::Models::Base
-      model :mapping, :name_with => lambda { |s| mapping_id_generator(s) }
-      attribute :terms, enforce: [ :term_mapping, :existence, :list ]
+    class RestBackupMapping < LinkedData::Models::Base
+      model :rest_backup_mapping, name_with: :uuid
+      attribute :uuid, enforce: [:existence, :unique]
+      attribute :class_urns, enforce: [:uri, :existence, :list]
+      attribute :process, enforce: [:existence, :mapping_process]
+    end
 
-      #mappings can exist without process
-      attribute :process, enforce: [ :mapping_process, :list ]
+    #only manual mappings
+    class MappingProcess < LinkedData::Models::Base
+          model :mapping_process, 
+                :name_with => lambda { |s| process_id_generator(s) }
+          attribute :name, enforce: [:existence]
+          attribute :creator, enforce: [:existence, :user]
 
-      # Hypermedia settings for serializer
-      serialize_default :process, :classes
-      serialize_never :terms
-      serialize_methods :classes
-      embed :process, :classes
+          attribute :source
+          attribute :relation, enforce: [:uri]
+          attribute :source_contact_info
+          attribute :source_name
+          attribute :comment
+          attribute :date, enforce: [:date_time], 
+                      :default => lambda {|x| DateTime.new }
 
-      # Access control settings
-      grant_access_to_all true
+          embedded true
 
-      def self.mapping_id_generator(ins)
-        return mapping_id_generator_iris(*ins.terms.map { |x| x.id })
-      end
-
-      def self.mapping_id_generator_iris(*term_ids)
-        term_ids.each do |t|
-          raise ArgumentError, "Terms must be URIs" if !(t.instance_of? RDF::URI)
-        end
-        val_to_hash = (term_ids.map{ |t| t.to_s}).sort.join("-")
-        hashed_value = Digest::SHA1.hexdigest(val_to_hash)
-        return RDF::IRI.new(
-          "#{(self.namespace)}mapping/#{hashed_value}")
-      end
-
-      def classes
-        submissions = {}
-        classes = []
-        terms.each do |term_mapping|
-          term_mapping.term.each do |term|
-            unless submissions[term_mapping.ontology]
-              ont = term_mapping.ontology
-              submission = LinkedData::Models::OntologySubmission.read_only(id: ont.id.to_s + "/latest_submission", ontology: ont)
-              submissions[term_mapping.ontology] = submission
-            end
-            cls = LinkedData::Models::Class.read_only(id: term, submission: submissions[term_mapping.ontology])
-            classes << cls
+          def self.process_id_generator(inst)
+              return RDF::IRI.new(
+        "#{(self.namespace)}mapping_processes/" +
+        "-#{CGI.escape(inst.creator.username)}" +
+        "-#{UUID.new.generate}")
           end
-        end
-        classes
-      end
     end
   end
 end
