@@ -2,6 +2,7 @@ require "set"
 require "cgi"
 require "multi_json"
 require "ontologies_linked_data/models/notes/note"
+require "ontologies_linked_data/mappings/mappings"
 require "ncbo_resource_index"
 
 module LinkedData
@@ -194,13 +195,13 @@ module LinkedData
         return cc.value
       end
 
+      BAD_PROPERTY_URIS = LinkedData::Mappings.mapping_predicates.values.flatten + ['http://bioportal.bioontology.org/metadata/def/prefLabel']
       def properties
         if self.unmapped.nil?
           raise Exception, "Properties can be call only with :unmmapped attributes preloaded"
         end
         properties = self.unmapped
-        bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
-        properties.delete(bad_iri)
+        BAD_PROPERTY_URIS.each {|bad_iri| properties.delete(RDF::URI.new(bad_iri))}
 
         #hack to be remove when closing NCBO-453
         orphan_id = "http://bioportal.bioontology.org/ontologies/umls/OrphanClass"
