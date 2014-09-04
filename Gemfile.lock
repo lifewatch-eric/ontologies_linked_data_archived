@@ -52,12 +52,12 @@ GEM
     coderay (1.1.0)
     cube-ruby (0.0.3)
     docile (1.1.5)
-    elasticsearch (1.0.4)
-      elasticsearch-api (= 1.0.4)
-      elasticsearch-transport (= 1.0.4)
-    elasticsearch-api (1.0.4)
+    elasticsearch (1.0.5)
+      elasticsearch-api (= 1.0.5)
+      elasticsearch-transport (= 1.0.5)
+    elasticsearch-api (1.0.5)
       multi_json
-    elasticsearch-transport (1.0.4)
+    elasticsearch-transport (1.0.5)
       faraday
       multi_json
     email_spec (1.6.0)
