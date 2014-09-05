@@ -343,7 +343,7 @@ eos
       end
       graph_delete = RDF::Graph.new
       graph_delete << [c.id, RDF::URI.new(rest_predicate), mapping.id]
-      Goo.sparql_update_client.insert_data(graph_delete, graph: sub.id)
+      Goo.sparql_update_client.delete_data(graph_delete, graph: sub.id)
     end
     mapping.process.delete
     backup = LinkedData::Models::RestBackupMapping.find(mapping_id).first
