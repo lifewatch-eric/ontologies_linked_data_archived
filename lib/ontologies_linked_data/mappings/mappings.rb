@@ -341,15 +341,9 @@ eos
                 .first
                 .latest_submission
       end
-      query_update =<<eof
-DELETE DATA {
-GRAPH <#{sub.id.to_s}> {
-  <#{c.id.to_s}> <#{rest_predicate}> <#{mapping.id.to_s}> .
-  }
-}
-eof
-        Goo.sparql_update_client.update(query_update,
-            graphs: [sub.id, LinkedData::Models::MappingProcess.type_uri])
+      graph_delete = RDF::Graph.new
+      graph_delete << [c.id, RDF::URI.new(rest_predicate), mapping.id]
+      Goo.sparql_update_client.insert_data(graph_insert, graph: sub.id)
     end
     mapping.process.delete
     backup = LinkedData::Models::RestBackupMapping.find(mapping_id).first
@@ -431,15 +425,9 @@ eos
                 .first
                 .latest_submission
       end
-      query_update =<<eof
-INSERT DATA {
-GRAPH <#{sub.id.to_s}> {
-  <#{c.id.to_s}> <#{rest_predicate}> <#{backup_mapping.id.to_s}> .
-  }
-}
-eof
-        Goo.sparql_update_client.update(query_update,
-            graphs: [sub.id, LinkedData::Models::MappingProcess.type_uri])
+      graph_insert = RDF::Graph.new
+      graph_insert << [c.id, RDF::URI.new(rest_predicate), backup_mapping.id]
+      Goo.sparql_update_client.insert_data(graph_insert, graph: sub.id)
     end
     mapping = LinkedData::Models::Mapping.new(classes,"REST",process)
     return mapping
