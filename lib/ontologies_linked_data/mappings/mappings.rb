@@ -69,7 +69,7 @@ module Mappings
     return counts
   end
 
-  def self.mapping_ontologies_count(sub1,sub2)
+  def self.mapping_ontologies_count(sub1,sub2,reload_cache=false)
     template = <<-eos
 {
   GRAPH <#{sub1.id.to_s}> {
@@ -124,8 +124,7 @@ eos
       solutions = nil
       if sub2.nil?
         solutions = epr.query(query,
-                              graphs: graphs,
-                              query_options: {rules: :NONE, graphs: graphs })
+                              graphs: graphs, reload_cache: reload_cache)
         solutions.each do |sol|
           acr = sol[:g].to_s.split("/")[-3]
           if group_count[acr].nil?
@@ -135,8 +134,7 @@ eos
         end
       else
         solutions = epr.query(query,
-                              graphs: graphs,
-                              query_options: {rules: :NONE})
+                              graphs: graphs )
         solutions.each do |sol|
           count += sol[:c].object
         end
@@ -149,7 +147,7 @@ eos
     return count
   end
 
-  def self.mappings_ontologies(sub1,sub2,page,size,classId=nil)
+  def self.mappings_ontologies(sub1,sub2,page,size,classId=nil,reload_cache=false)
     mappings = []
     union_template = <<-eos
 {
@@ -226,8 +224,7 @@ eos
       graphs << sub2.id
     end
     solutions = epr.query(query,
-                          graphs: graphs,
-                          query_options: {rules: :NONE})
+                          graphs: graphs, reload_cache: reload_cache)
     s1 = nil
     unless classId.nil?
       s1 = RDF::URI.new(classId.to_s)
@@ -279,8 +276,9 @@ eos
     return page
   end
 
-  def self.mappings_ontology(sub,page,size,classId=nil)
-    return self.mappings_ontologies(sub,nil,page,size,classId=classId)
+  def self.mappings_ontology(sub,page,size,classId=nil,reload_cache=false)
+    return self.mappings_ontologies(sub,nil,page,size,classId=classId,
+                                    reload_cache=reload_cache)
   end
 
   def self.read_only_class(classId,submissionId)
@@ -378,7 +376,7 @@ eos
     graphs = [LinkedData::Models::MappingProcess.type_uri]
     mapping = nil
     epr.query(qmappings,
-              graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+              graphs: graphs).each do |sol|
       classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
                 read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
       process = LinkedData::Models::MappingProcess.find(sol[:o]).first
@@ -461,7 +459,7 @@ eos
     graphs = [LinkedData::Models::MappingProcess.type_uri]
     mappings = []
     epr.query(qmappings,
-              graphs: graphs,query_options: {rules: :NONE}).each do |sol|
+              graphs: graphs).each do |sol|
       classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
                 read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
       source = predicates[sol[:pred].to_s]
