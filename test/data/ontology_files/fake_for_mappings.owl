@@ -36,7 +36,7 @@
      -->
 
     <owl:AnnotationProperty rdf:about="&umls;cui"/>
-    <owl:AnnotationProperty rdf:about="&oboInOwl;xref"/>
+    <owl:AnnotationProperty rdf:about="&oboInOwl;hasDbXref"/>
     
 
 
@@ -74,7 +74,7 @@
     <!-- http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/Material_Resource">
-        <oboInOwl:xref>xref0000001</oboInOwl:xref>
+        <oboInOwl:hasDbXref>hasDbXref0000001</oboInOwl:hasDbXref>
         <skos:prefLabel>Material Resource</skos:prefLabel>
     </owl:Class>
     
@@ -131,7 +131,7 @@
     <owl:Class rdf:about="http://www.semanticweb.org/manuelso/ontologies/mappings/fake/process">
         <skos:prefLabel>process</skos:prefLabel>
         <skos:altLabel>proc</skos:altLabel>
-        <oboInOwl:xref>xref0000000</oboInOwl:xref>
+        <oboInOwl:hasDbXref>hasDbXref0000000</oboInOwl:hasDbXref>
         <skos:altLabel>activity</skos:altLabel>
     </owl:Class>
 </rdf:RDF>

@@ -3,11 +3,11 @@ module LinkedData
     class Project < LinkedData::Models::Base
       model :project, :name_with => :acronym
       attribute :acronym, enforce: [:unique, :existence]
-      attribute :creator, enforce: [:existence, :user]
+      attribute :creator, enforce: [:existence, :user, :list]
       attribute :created, enforce: [:date_time], :default => lambda {|x| DateTime.new }
       attribute :updated, enforce: [:date_time], :default => lambda {|x| DateTime.new }
-      attribute :name
-      attribute :homePage, enforce: [:uri]
+      attribute :name, enforce: [:existence]
+      attribute :homePage, enforce: [:uri, :existence]
       attribute :description, enforce: [:existence]
       attribute :contacts
       attribute :institution

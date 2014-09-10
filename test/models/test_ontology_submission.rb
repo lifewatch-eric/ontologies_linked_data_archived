@@ -220,7 +220,7 @@ eos
     #This one has some nasty looking IRIS with slashes in the anchor
     unless ENV["BP_SKIP_HEAVY_TESTS"] == "1"
       submission_parse("MCCLTEST", "MCCLS TEST",
-                       "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
+                 "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
                        process_rdf: true, index_search: true,
                        run_metrics: false, reasoning: true)
 
@@ -278,7 +278,6 @@ eos
   end
 
   def test_process_submission_archive
-    tmp_log = Logger.new(TestLogFile.new)
     parse_options = { process_rdf: false, index_search: false, index_commit: false, 
                       run_metrics: false, reasoning: false, archive: true }  
 
@@ -293,36 +292,44 @@ eos
     sorted_submissions = ontologies.first.submissions.sort { |a,b| b.submissionId <=> a.submissionId }
 
     # Process latest submission.  No files should be deleted.
-    sorted_submissions.first.process_submission(tmp_log, parse_options)
-    assert sorted_submissions.first.archived?
+    latest_sub = sorted_submissions.first
+    latest_sub.process_submission(Logger.new(latest_sub.parsing_log_path), parse_options)
+    assert latest_sub.archived?
 
-    assert File.file?(File.join(sorted_submissions.first.data_folder, 'labels.ttl')), 
+    assert File.file?(File.join(latest_sub.data_folder, 'labels.ttl')), 
       %-Missing ontology submission file: 'labels.ttl'-
 
-    assert File.file?(File.join(sorted_submissions.first.data_folder, 'owlapi.xrdf')), 
+    assert File.file?(File.join(latest_sub.data_folder, 'owlapi.xrdf')), 
       %-Missing ontology submission file: 'owlapi.xrdf'-
     
-    assert File.file?(sorted_submissions.first.csv_path), 
-      %-Missing ontology submission file: '#{sorted_submissions.first.csv_path}'-
+    assert File.file?(latest_sub.csv_path), 
+      %-Missing ontology submission file: '#{latest_sub.csv_path}'-
+
+    assert File.file?(latest_sub.parsing_log_path), 
+      %-Missing ontology submission file: '#{latest_sub.parsing_log_path}'-
 
     # Process one prior to latest submission.  Some files should be deleted.
-    sorted_submissions.last.process_submission(tmp_log, parse_options)
-    assert sorted_submissions.last.archived?
+    old_sub = sorted_submissions.last
+    old_sub.process_submission(Logger.new(old_sub.parsing_log_path), parse_options)
+    assert old_sub.archived?
 
-    assert_equal false, File.file?(File.join(sorted_submissions.last.data_folder, 'labels.ttl')),
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'labels.ttl')),
       %-File deletion failed for 'labels.ttl'-
 
-    assert_equal false, File.file?(File.join(sorted_submissions.last.data_folder, 'mappings.ttl')), 
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'mappings.ttl')), 
       %-File deletion failed for 'mappings.ttl'-
 
-    assert_equal false, File.file?(File.join(sorted_submissions.last.data_folder, 'obsolete.ttl')), 
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'obsolete.ttl')), 
       %-File deletion failed for 'obsolete.ttl'-
 
-    assert_equal false, File.file?(File.join(sorted_submissions.last.data_folder, 'owlapi.xrdf')), 
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'owlapi.xrdf')), 
       %-File deletion failed for 'owlapi.xrdf'-
 
-    assert_equal false, File.file?(sorted_submissions.last.csv_path), 
-      %-File deletion failed for '#{sorted_submissions.last.csv_path}'-
+    assert_equal false, File.file?(old_sub.csv_path), 
+      %-File deletion failed for '#{old_sub.csv_path}'-
+
+    assert_equal false, File.file?(old_sub.parsing_log_path), 
+      %-File deletion failed for '#{old_sub.parsing_log_path}'-
   end
 
   def test_submission_diff_across_ontologies

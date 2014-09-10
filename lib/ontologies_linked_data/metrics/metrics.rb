@@ -17,6 +17,8 @@ module LinkedData
               v = Integer(v)
             rescue ArgumentError
               v = 0
+            rescue TypeError
+              v = 0
             end
           end
           metrics.send("#{k}=",v)

@@ -69,6 +69,15 @@ module LinkedData
       def self.obo_in_owl_obsolete_uri
         return RDF::URI.new "http://www.geneontology.org/formats/oboInOwl#ObsoleteClass"
       end
+
+      def self.loom_mapping_triple(class_id,property,label)
+        return triple(class_id,property,
+                      RDF::Literal.new(label, :datatype => RDF::XSD.string))
+      end
+
+      def self.uri_mapping_triple(class_id,property,uri_class)
+        return triple(class_id,property,uri_class)
+      end
       def self.obo_definition_standard
         return RDF::URI.new("http://purl.obolibrary.org/obo/IAO_0000115")
       end

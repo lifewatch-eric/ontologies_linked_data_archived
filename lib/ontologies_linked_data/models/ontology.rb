@@ -1,12 +1,12 @@
 require 'fileutils'
-require_relative 'ontology_submission'
-require_relative 'review'
-require_relative 'group'
-require_relative 'metric'
-require_relative 'category'
-require_relative 'project'
-require_relative 'notes/note'
-require_relative '../purl/purl_client'
+require 'ontologies_linked_data/models/ontology_submission'
+require 'ontologies_linked_data/models/review'
+require 'ontologies_linked_data/models/group'
+require 'ontologies_linked_data/models/metric'
+require 'ontologies_linked_data/models/category'
+require 'ontologies_linked_data/models/project'
+require 'ontologies_linked_data/models/notes/note'
+require 'ontologies_linked_data/purl/purl_client'
 
 module LinkedData
   module Models
@@ -42,8 +42,6 @@ module LinkedData
 
       attribute :viewOf, enforce: [:ontology]
       attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
-
-      attribute :term_mappings, :inverse => { on: :term_mapping, attribute: :ontology }
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name, :summaryOnly

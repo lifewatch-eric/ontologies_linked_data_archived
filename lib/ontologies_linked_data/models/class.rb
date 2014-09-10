@@ -2,6 +2,8 @@ require "set"
 require "cgi"
 require "multi_json"
 require "ontologies_linked_data/models/notes/note"
+require "ontologies_linked_data/mappings/mappings"
+require "ncbo_resource_index"
 
 module LinkedData
   module Models
@@ -9,6 +11,8 @@ module LinkedData
     end
 
     class Class < LinkedData::Models::Base
+      include ResourceIndex::Class
+
       model :class, name_with: :id, collection: :submission,
             namespace: :owl, :schemaless => :true,
             rdf_type: lambda { |*x| self.class_rdf_type(x) }
@@ -23,6 +27,10 @@ module LinkedData
           return submission.hasOntologyLanguage.class_type
         end
         return RDF::OWL[:Class]
+      end
+
+      def self.urn_id(acronym,classId)
+        return "urn:#{acronym}:#{classId.to_s}"
       end
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
@@ -60,7 +68,7 @@ module LinkedData
 
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
       attribute :cui, enforce: [:list], :namespace => :umls, alias: true
-      attribute :xref, :namespace => :oboinowl_gen, alias: true, 
+      attribute :xref, :namespace => :oboinowl_gen, alias: true,
         :property => :hasDbXref
 
       attribute :notes,
@@ -187,13 +195,13 @@ module LinkedData
         return cc.value
       end
 
+      BAD_PROPERTY_URIS = LinkedData::Mappings.mapping_predicates.values.flatten + ['http://bioportal.bioontology.org/metadata/def/prefLabel']
       def properties
         if self.unmapped.nil?
           raise Exception, "Properties can be call only with :unmmapped attributes preloaded"
         end
         properties = self.unmapped
-        bad_iri = RDF::URI.new('http://bioportal.bioontology.org/metadata/def/prefLabel')
-        properties.delete(bad_iri)
+        BAD_PROPERTY_URIS.each {|bad_iri| properties.delete(RDF::URI.new(bad_iri))}
 
         #hack to be remove when closing NCBO-453
         orphan_id = "http://bioportal.bioontology.org/ontologies/umls/OrphanClass"

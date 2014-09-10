@@ -10,7 +10,7 @@ module LinkedData
 
     class OntologySubmission < LinkedData::Models::Base
 
-      FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf']
+      FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf', 'errors.log']
 
       model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
@@ -96,11 +96,15 @@ module LinkedData
       def self.copy_file_repository(acronym, submissionId, src, filename = nil)
         path_to_repo = File.join([LinkedData.settings.repository_folder, acronym.to_s, submissionId.to_s])
         name = filename || File.basename(File.new(src).path)
+        # THIS LOGGER IS JUST FOR DEBUG - remove after NCBO-795 is closed
+        logger = Logger.new(Dir.pwd + "/create_permissions.log")
         if not Dir.exist? path_to_repo
           FileUtils.mkdir_p path_to_repo
+          logger.debug("Dir created #{path_to_repo} | #{"%o" % File.stat(path_to_repo).mode} | umask: #{File.umask}") # NCBO-795
         end
         dst = File.join([path_to_repo, name])
         FileUtils.copy(src, dst)
+        logger.debug("File created #{dst} | #{"%o" % File.stat(dst).mode} | umask: #{File.umask}") # NCBO-795
         if not File.exist? dst
           raise Exception, "Unable to copy #{src} to #{dst}"
         end
@@ -195,6 +199,10 @@ module LinkedData
         return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
       end
 
+      def parsing_log_path
+        return self.uploadFilePath.nil? ? nil : self.uploadFilePath + '_parsing.log'
+      end
+
       def unzip_submission(logger)
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
@@ -222,7 +230,9 @@ module LinkedData
 
       def delete_old_submission_files
         path_to_repo = data_folder
-        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }.push(csv_path)
+        submission_files = FILES_TO_DELETE.map { |f| File.join(path_to_repo, f) }
+        submission_files.push(csv_path)
+        submission_files.push(parsing_log_path) unless parsing_log_path.nil?
         FileUtils.rm(submission_files, force: true)
       end
 
@@ -311,6 +321,7 @@ eos
         return if self.hasOntologyLanguage.umls?
 
         save_in_file = File.join(File.dirname(file_path), "labels.ttl")
+        save_in_file_mappings = File.join(File.dirname(file_path), "mappings.ttl")
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
         result = Goo.sparql_data_client.append_triples(
             self.id,
@@ -324,12 +335,15 @@ eos
         paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).page(page, size)
 
         begin #per page
+          prefLabel = nil
           label_triples = []
+          mapping_triples = []
           t0 = Time.now
           page_classes = paging.page(page,size).read_only.all
           t1 = Time.now
           logger.info(
-              "#{page_classes.length} in page #{page} classes for #{self.id.to_ntriples} (#{t1 - t0} sec)." +
+            "#{page_classes.length} in page #{page} classes for "+
+                  "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
                   " Total pages #{page_classes.total_pages}.")
           logger.flush
 
@@ -339,9 +353,13 @@ eos
 
               if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
                 rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
-                rdfs_labels = c.label if rdfs_labels.nil? || rdfs_labels.length == 0
+                if rdfs_labels.nil? || rdfs_labels.length == 0
+                  rdfs_labels = c.label 
+                end
               end
-              rdfs_labels = [rdfs_labels] if rdfs_labels and not (rdfs_labels.instance_of?Array)
+              if rdfs_labels and not (rdfs_labels.instance_of?Array)
+                rdfs_labels = [rdfs_labels] 
+              end
               label = nil
 
               if rdfs_labels && rdfs_labels.length > 0
@@ -351,12 +369,29 @@ eos
               end
               label_triples << LinkedData::Utils::Triples.label_for_class_triple(
                   c.id, Goo.vocabulary(:metadata_def)[:prefLabel],label)
+              prefLabel = label
+            else
+              prefLabel = c.prefLabel
+            end
+            if self.ontology.viewOf.nil?
+              loomLabel = OntologySubmission.loom_transform_literal(prefLabel)
+              if loomLabel.length > 2
+                mapping_triples << LinkedData::Utils::Triples.loom_mapping_triple(
+                  c.id, Goo.vocabulary(:metadata_def)[:mappingLoom], loomLabel)
+              end
+              mapping_triples << LinkedData::Utils::Triples.uri_mapping_triple(
+                c.id, Goo.vocabulary(:metadata_def)[:mappingSameURI], c.id)
             end
             count_classes += 1
           end
 
+          rest_mappings = LinkedData::Mappings
+            .migrate_rest_mappings(self.ontology.acronym)
+          mapping_triples.concat rest_mappings
+
           if (label_triples.length > 0)
-            logger.info("Asserting #{label_triples.length} labels in #{self.id.to_ntriples}")
+            logger.info("Asserting #{label_triples.length} labels in " + 
+                        "#{self.id.to_ntriples}")
             logger.flush
             label_triples = label_triples.join "\n"
             fsave.write(label_triples)
@@ -370,6 +405,23 @@ eos
             logger.flush
           else
             logger.info("No labels generated in page #{page_classes.total_pages}.")
+            logger.flush
+          end
+          if (mapping_triples.length > 0) 
+            fsave_mappings = File.open(save_in_file_mappings,"w")
+            logger.info("Asserting #{mapping_triples.length} mappings in " + 
+                        "#{self.id.to_ntriples}")
+            logger.flush
+            mapping_triples = mapping_triples.join "\n"
+            fsave_mappings.write(mapping_triples)
+            fsave_mappings.close()
+            t0 = Time.now
+            result = Goo.sparql_data_client.append_triples(
+                self.id,
+                mapping_triples,
+                mime_type="application/x-turtle")
+            t1 = Time.now
+            logger.info("Mapping labels asserted in #{t1 - t0} sec.")
             logger.flush
           end
           page = page_classes.next? ? page + 1 : nil
@@ -551,7 +603,7 @@ eos
             status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
             add_submission_status(status)
 
-            # Delete everything except for original ontology file.  
+            # Delete everything except for original ontology file.
             ontology.bring(:submissions)
             submissions = ontology.submissions
             unless submissions.nil?
@@ -938,6 +990,16 @@ eos
           files.each { |file| return true if file.include?(filename) }
         end
         file_exists
+      end
+
+      def self.loom_transform_literal(lit)
+        res = []
+        lit.each_char do |c|
+          if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+            res << c.downcase
+          end
+        end
+        return res.join ''
       end
 
     end
