@@ -41,7 +41,7 @@ module Mappings
     return latest_submissions
   end
 
-  def self.mapping_counts(enable_debug=false,logger=nil)
+  def self.mapping_counts(enable_debug=false,logger=nil,reload_cache=false)
     if enable_debug and logger.nil?
       logger = Logger.new($stdout)
     end
@@ -51,7 +51,7 @@ module Mappings
     i = 0
     latest.each do |acro,sub|
       t0 = Time.now
-      s_counts = mapping_ontologies_count(sub,nil)
+      s_counts = mapping_ontologies_count(sub,nil,reload_cache=reload_cache)
       s_total = 0
       s_counts.each do |k,v|
         s_total += v
