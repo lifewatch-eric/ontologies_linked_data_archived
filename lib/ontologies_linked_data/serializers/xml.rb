@@ -15,8 +15,8 @@ module LinkedData
             end
 
             # Generate links
-            show_links = options[:params].nil? || options[:params]["no_links"].nil? || !options[:params]["no_links"].eql?("true")
-            if show_links
+            # NOTE: If this logic changes, also change in json.rb
+            if generate_links?(options)
               links_xml = generate_links(hashed_obj)
               hash["links"] = links_xml unless links_xml.empty?
             end
@@ -118,6 +118,15 @@ module LinkedData
         name = cls.name.split('::').last
         name[0] = name[0].downcase
         name
+      end
+
+      def self.generate_links?(options)
+        params = options[:params]
+        params.nil? ||
+          (params["no_links"].nil? ||
+                     !params["no_links"].eql?("true")) &&
+          (params["include_links"].nil? ||
+                    !params["include_links"].eql?("false"))
       end
     end
   end
