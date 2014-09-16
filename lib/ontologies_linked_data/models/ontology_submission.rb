@@ -186,6 +186,9 @@ module LinkedData
       end
 
       def data_folder
+        bring(:ontology) if bring?(:ontology)
+        self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
+        bring(:submissionId) if bring?(:submissionId)
         return File.join(LinkedData.settings.repository_folder,
                          self.ontology.acronym.to_s,
                          self.submissionId.to_s)
@@ -197,6 +200,10 @@ module LinkedData
 
       def csv_path
         return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
+      end
+
+      def rdf_path
+        return File.join(self.data_folder, "owlapi.xrdf")
       end
 
       def parsing_log_path
@@ -354,11 +361,11 @@ eos
               if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
                 rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
                 if rdfs_labels.nil? || rdfs_labels.length == 0
-                  rdfs_labels = c.label 
+                  rdfs_labels = c.label
                 end
               end
               if rdfs_labels and not (rdfs_labels.instance_of?Array)
-                rdfs_labels = [rdfs_labels] 
+                rdfs_labels = [rdfs_labels]
               end
               label = nil
 
@@ -390,7 +397,7 @@ eos
           mapping_triples.concat rest_mappings
 
           if (label_triples.length > 0)
-            logger.info("Asserting #{label_triples.length} labels in " + 
+            logger.info("Asserting #{label_triples.length} labels in " +
                         "#{self.id.to_ntriples}")
             logger.flush
             label_triples = label_triples.join "\n"
@@ -407,9 +414,9 @@ eos
             logger.info("No labels generated in page #{page_classes.total_pages}.")
             logger.flush
           end
-          if (mapping_triples.length > 0) 
+          if (mapping_triples.length > 0)
             fsave_mappings = File.open(save_in_file_mappings,"w")
-            logger.info("Asserting #{mapping_triples.length} mappings in " + 
+            logger.info("Asserting #{mapping_triples.length} mappings in " +
                         "#{self.id.to_ntriples}")
             logger.flush
             mapping_triples = mapping_triples.join "\n"
