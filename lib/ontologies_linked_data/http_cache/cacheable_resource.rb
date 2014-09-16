@@ -3,7 +3,7 @@ require 'time'
 
 module LinkedData::HTTPCache
   def self.invalidate_all
-    key_set = LinkedData::HTTPCache::CachableResource::KEY_SET
+    key_set = LinkedData::HTTPCache::CacheableResource::KEY_SET
     keys = keys_for_invalidate_all()
     if keys
       keys.each_slice(500_000) {|chunk| redis.del chunk}
@@ -12,7 +12,7 @@ module LinkedData::HTTPCache
   end
 
   def self.keys_for_invalidate_all
-    redis.smembers(LinkedData::HTTPCache::CachableResource::KEY_SET)
+    redis.smembers(LinkedData::HTTPCache::CacheableResource::KEY_SET)
   end
 
   def self.redis
@@ -21,7 +21,7 @@ module LinkedData::HTTPCache
     @redis
   end
 
-  module CachableResource
+  module CacheableResource
     KEY_SET = "httpcache:keys"
     KEY_PREFIX = "httpcache:last_modified"
     SEGMENT_KEY_PREFIX = "httpcache:last_modified:segment"
@@ -206,7 +206,7 @@ module LinkedData::HTTPCache
       # Write methods on the class based on settings names
       SETTINGS.each do |method_name|
         define_method method_name do |*args|
-          CachableResource.store_settings(self, method_name, args)
+          CacheableResource.store_settings(self, method_name, args)
         end
       end
 
@@ -216,7 +216,7 @@ module LinkedData::HTTPCache
       def inherited(cls)
         super(cls)
         SETTINGS.each do |type|
-          CachableResource.store_settings(cls, type, [])
+          CacheableResource.store_settings(cls, type, [])
         end
       end
     end
