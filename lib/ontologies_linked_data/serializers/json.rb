@@ -18,6 +18,7 @@ module LinkedData
           hash["@type"] = current_cls.type_uri.to_s if hash["@id"] && current_cls.respond_to?(:type_uri)
 
           # Generate links
+          # NOTE: If this logic changes, also change in xml.rb
           if generate_links?(options)
             links = LinkedData::Hypermedia.generate_links(hashed_obj)
             unless links.empty?
