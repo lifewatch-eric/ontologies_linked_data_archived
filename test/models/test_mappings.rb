@@ -37,6 +37,42 @@ class TestMapping < LinkedData::TestOntologyCommon
                      "./test/data/ontology_files/fake_for_mappings.owl", 44,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
+    LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
+  end
+
+  def test_mapping_count_models
+    LinkedData::Models::MappingCount.where.all do |x|
+      x.delete
+    end
+    m = LinkedData::Models::MappingCount.new
+    assert !m.valid?
+    m.ontologies = ["BRO"]
+    m.pair_count = false
+    m.count = 123
+    assert m.valid?
+    m.save
+    assert LinkedData::Models::MappingCount.where(ontologies: "BRO").all.count == 1
+    m = LinkedData::Models::MappingCount.new
+    assert !m.valid?
+    m.ontologies = ["BRO","FMA"]
+    m.count = 321
+    m.pair_count = true
+    assert m.valid?
+    m.save
+    assert LinkedData::Models::MappingCount.where(ontologies: "BRO").all.count == 2
+    result = LinkedData::Models::MappingCount.where(ontologies: "BRO")
+                                      .and(ontologies: "FMA").include(:count).all
+    assert result.length == 1
+    assert result.first.count == 321
+    result = LinkedData::Models::MappingCount.where(ontologies: "BRO")
+                                                .and(pair_count: true)
+                                                .include(:count)
+                                                .all
+    assert result.length == 1
+    assert result.first.count == 321
+    LinkedData::Models::MappingCount.where.all do |x|
+      x.delete
+    end
   end
 
   def validate_mapping(map)
@@ -74,6 +110,8 @@ class TestMapping < LinkedData::TestOntologyCommon
     LinkedData::Models::RestBackupMapping.all.each do |m|
       LinkedData::Mappings.delete_rest_mapping(m.id)
     end
+    LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
+    assert LinkedData::Models::MappingCount.where.all.length > 2
     #bro
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
 
@@ -135,6 +173,8 @@ class TestMapping < LinkedData::TestOntologyCommon
   end
 
   def test_mappings_two_ontologies
+    LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
+    assert LinkedData::Models::MappingCount.where.all.length > 2
     #bro
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
     #fake ont
@@ -226,6 +266,8 @@ class TestMapping < LinkedData::TestOntologyCommon
                     .find(RDF::URI.new(ont_id))
                     .first
                     .latest_submission
+    LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
+    assert LinkedData::Models::MappingCount.where.all.length > 2
     mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
     rest_mapping_count = 0
     mappings.each do |m|
@@ -259,6 +301,8 @@ class TestMapping < LinkedData::TestOntologyCommon
                     .find(RDF::URI.new(ont_id))
                     .first
                     .latest_submission
+    LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
+    assert LinkedData::Models::MappingCount.where.all.length > 2
     mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
     rest_mapping_count = 0
     mappings.each do |m|

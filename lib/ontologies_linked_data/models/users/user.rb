@@ -61,6 +61,15 @@ module LinkedData
         self
       end
 
+      def save(*args)
+        # Reset ontology cache if user changes their custom set
+        if LinkedData.settings.enable_http_cache && self.modified_attributes.include?(:customOntology)
+          Ontology.cache_collection_invalidate
+          OntologySubmission.cache_collection_invalidate
+        end
+        super
+      end
+
       def admin?
         return false unless persistent?
         bring(role: [:role])

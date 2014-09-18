@@ -25,7 +25,7 @@ require "ontologies_linked_data/monkeypatches/object"
 require "ontologies_linked_data/monkeypatches/logging"
 require "ontologies_linked_data/sample_data/sample_data"
 require "ontologies_linked_data/mappings/mappings"
-require "ontologies_linked_data/http_cache/cachable_resource"
+require "ontologies_linked_data/http_cache/cacheable_resource"
 require "ontologies_linked_data/metrics/metrics"
 
 # Require base model
