@@ -42,8 +42,8 @@ module Mappings
   end
 
   def self.mapping_counts(enable_debug=false,logger=nil,reload_cache=false)
-    if enable_debug and logger.nil?
-      logger = Logger.new($stdout)
+    if not enable_debug
+      logger = nil
     end
     t = Time.now
     latest = retrieve_latest_submissions()
@@ -59,12 +59,12 @@ module Mappings
       counts[acro] = s_total
       i += 1
       if enable_debug
-        puts "#{i}/#{latest.count} " +
-            "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}"
+        logger.info("#{i}/#{latest.count} " +
+            "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
       end
     end
     if enable_debug
-      puts "Total time #{Time.now - t} sec."
+      logger.info("Total time #{Time.now - t} sec.")
     end
     return counts
   end
@@ -149,17 +149,25 @@ eos
 
   def self.mappings_ontologies(sub1,sub2,page,size,classId=nil,reload_cache=false)
     persistent_count = 0
-    pcount = LinkedData::Models::MappingCount.where(
-        ontologies: [sub1.ontology.acronym]
-    ).and(pair_count: false)
+    acr1 = sub1.id.to_s.split("/")[-3]
+    acr2 = nil
     if not sub2.nil?
-      pcount = pcount.and(ontologies: [sub2.ontology.acronym])
+      acr2 = sub2.id.to_s.split("/")[-3]
     end
+    pcount = LinkedData::Models::MappingCount.where(
+        ontologies: acr1
+    )
+    if not acr2 == nil
+      pcount = pcount.and(ontologies: acr2)
+    end
+    f = Goo::Filter.new(:pair_count) == (not acr2.nil?)
+    pcount = pcount.filter(f)
+    pcount = pcount.include(:count)
     pcount = pcount.all
     if pcount.length == 0
       persistent_count = 0
     else
-      persistent_count = pcount.first
+      persistent_count = pcount.first.count
     end
     if persistent_count == 0
         p = Goo::Base::Page.new(page,size,nil,[])
@@ -530,6 +538,100 @@ eos
       mappings << mapping
     end
     return mappings.sort_by { |x| x.process.date }.reverse[0..n-1]
+  end
+
+  def self.retrieve_latest_submissions(options = {})
+    status = (options[:status] || "RDF").to_s.upcase
+    include_ready = status.eql?("READY") ? true : false
+    status = "RDF" if status.eql?("READY")
+    any = true if status.eql?("ANY")
+    include_views = options[:include_views] || false
+    if any
+      submissions_query = LinkedData::Models::OntologySubmission.where
+    else
+      submissions_query = LinkedData::Models::OntologySubmission
+                            .where(submissionStatus: [ code: status])
+    end
+
+    submissions_query = submissions_query.filter(Goo::Filter.new(ontology: [:viewOf]).unbound) unless include_views
+    submissions = submissions_query.
+        include(:submissionStatus,:submissionId, ontology: [:acronym]).to_a
+
+    latest_submissions = {}
+    submissions.each do |sub|
+      next if include_ready && !sub.ready?
+      latest_submissions[sub.ontology.acronym] ||= sub
+      latest_submissions[sub.ontology.acronym] = sub if sub.submissionId > latest_submissions[sub.ontology.acronym].submissionId
+    end
+    return latest_submissions
+  end
+
+  def self.create_mapping_counts(logger)
+    new_counts = LinkedData::Mappings.mapping_counts(
+                                        enable_debug=true,logger=logger,
+                                        reload_cache=true)
+    persistent_counts = {}
+    LinkedData::Models::MappingCount.where(pair_count: false)
+      .include(:ontologies,:count)
+    .include(:all)
+    .all
+    .each do |m|
+      persistent_counts[m.ontologies.first] = m
+    end
+    
+    new_counts.each_key do |acr|
+      new_count = new_counts[acr]
+      if persistent_counts.include?(acr)
+        inst = persistent_counts[acr]
+        if new_count != inst.count
+          inst.bring_remaining
+          inst.count = new_count
+          inst.save
+        end
+      else
+        m = LinkedData::Models::MappingCount.new
+        m.ontologies = [acr]
+        m.pair_count = false
+        m.count = new_count
+        m.save
+      end
+    end
+
+    retrieve_latest_submissions.each do |acr,sub|
+
+      new_counts = LinkedData::Mappings
+                .mapping_ontologies_count(sub,nil,reload_cache=true)
+      persistent_counts = {}
+      LinkedData::Models::MappingCount.where(pair_count: true)
+                                             .and(ontologies: acr)
+      .include(:ontologies,:count)
+      .all
+      .each do |m|
+        other = m.ontologies.first
+        if other == acr
+          other = m.ontologies[1]
+        end
+        persistent_counts[other] = m
+      end
+      
+      new_counts.each_key do |other|
+        new_count = new_counts[other]
+        if persistent_counts.include?(other)
+          inst = persistent_counts[other]
+          if new_count != inst.count
+            inst.bring_remaining
+            inst.count = new_count
+            inst.save
+          end
+        else
+          m = LinkedData::Models::MappingCount.new
+          m.count = new_count
+          m.ontologies = [acr,other]
+          m.pair_count = true
+          m.save
+        end
+      end
+    end
   end
 
 end
