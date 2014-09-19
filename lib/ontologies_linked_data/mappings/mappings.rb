@@ -571,7 +571,8 @@ eos
                                         enable_debug=true,logger=logger,
                                         reload_cache=true)
     persistent_counts = {}
-    LinkedData::Models::MappingCount.where(pair_count: false)
+    f = Goo::Filter.new(:pair_count) == false
+    LinkedData::Models::MappingCount.where.filter(f)
       .include(:ontologies,:count)
     .include(:all)
     .all
