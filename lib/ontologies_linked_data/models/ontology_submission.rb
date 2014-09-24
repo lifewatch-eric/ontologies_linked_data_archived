@@ -281,7 +281,16 @@ module LinkedData
           logger.flush
           mime_type = LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE)
         else
-          labels_file = File.join(File.dirname(file_path), "labels.ttl")
+          output_rdf = File.join(File.dirname(file_path), "owlapi.xrdf")
+          if File.exist?(output_rdf)
+            logger.info("deleting old owlapi.xrdf ..")
+            deleted = FileUtils.rm(output_rdf)
+            if deleted.length > 0
+              logger.info("deleted")
+            else
+              logger.info("error deleting owlapi.rdf")
+            end
+          end
           owlapi = LinkedData::Parser::OWLAPICommand.new(
               File.expand_path(file_path),
               File.expand_path(self.data_folder.to_s),
