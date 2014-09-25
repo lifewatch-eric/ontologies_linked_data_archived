@@ -94,4 +94,39 @@ class TestNotifications < LinkedData::TestCase
       subscription.delete if subscription
     end
   end
+
+  def test_remote_ontology_pull_notification
+    begin
+      ont_count, acronyms, ontologies = LinkedData::SampleData::Ontology.create_ontologies_and_submissions(ont_count: 1, submission_count: 1, process_submission: false)
+
+      ont = LinkedData::Models::Ontology.find(ontologies[0].id).include(:acronym, :administeredBy, :name, :submissions).first
+      ont_admins = Array.new(3) { LinkedData::Models::User.new }
+      ont_admins.each_with_index do |user, i|
+        user.username = "Test User #{i}"
+        user.email = "tester_#{i}@example.org"
+        user.password = "password"
+        user.save
+        assert user.valid?, user.errors
+      end
+      ont.administeredBy = ont_admins
+      ont.save
+      assert ont.valid?, ont.errors
+
+      sub = ont.submissions.first
+      sub.bring_remaining
+      assert sub.valid?, sub.errors
+      LinkedData::Utils::Notifications.remote_ontology_pull(sub)
+
+      assert last_email_sent.subject.include? "[BioPortal] Load from URL failure for #{ont.name}"
+      recipients = []
+      ont_admins.each do |user|
+        recipients << user.email
+      end
+      assert_equal recipients.sort, last_email_sent.to.sort
+    ensure
+      ont_admins.each do |user|
+        user.delete if user
+      end
+    end
+  end
 end

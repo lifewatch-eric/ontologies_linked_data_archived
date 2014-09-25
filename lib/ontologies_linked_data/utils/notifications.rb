@@ -76,6 +76,30 @@ module LinkedData::Utils
       send_ontology_notifications(options)
     end
 
+    def self.remote_ontology_pull(submission)
+      submission.bring_remaining
+      ontology = submission.ontology
+      ontology.bring(:name, :acronym, :administeredBy)
+
+      subject = "[BioPortal] Load from URL failure for #{ontology.name}"
+      body = REMOTE_PULL_FAILURE.gsub("%ont_pull_location%", submission.pullLocation.to_s)
+                                .gsub("%ont_name%", ontology.name)
+                                .gsub("%ont_acronym%", ontology.acronym)
+                                .gsub("%ontology_location%", LinkedData::Hypermedia.generate_links(ontology)["ui"])
+      recipients = []
+      ontology.administeredBy.each do |user|
+        user.bring(:email) if user.bring?(:email)
+        recipients << user.email 
+      end
+
+      options = {
+        subject: subject,
+        body: body,
+        recipients: recipients
+      }
+      notify(options)
+    end
+
     def self.reset_password(user, token)
       subject = "[BioPortal] User #{user.username} password reset"
       password_url = "http://#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
@@ -160,6 +184,22 @@ SUBMISSION_PROCESSED = <<EOS
 Please contact %admin_email% if you have questions.
 <br><br>
 The ontology can be <a href="%ontology_location%">browsed in BioPortal</a>.
+<br><br>
+Thank you,<br>
+The BioPortal Team
+EOS
+
+REMOTE_PULL_FAILURE = <<EOS
+BioPortal failed to load %ont_name% (%ont_acronym%) from URL: %ont_pull_location%.  
+<br><br>
+Please verify the URL you provided for daily loading of your ontology:
+<ol>
+<li>Make sure you are signed in to BioPortal.</li>
+<li>Navigate to your ontology summary page: %ontology_location%.</li>
+<li>Click the &quot;Edit submission information&quot; link.</li>
+<li>In the Location row, verify that you entered a valid URL for daily loading of your ontology in the URL text area.</li>
+</ol>
+If you need further assistance, please <a href="mailto:support@bioontology.org">contact us</a> via the BioPortal support mailing list.
 <br><br>
 Thank you,<br>
 The BioPortal Team
