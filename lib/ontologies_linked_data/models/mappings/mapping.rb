@@ -30,6 +30,8 @@ module LinkedData
     end
 
     class RestBackupMapping < LinkedData::Models::Base
+      include LinkedData::HTTPCache::CacheableResource
+      cache_timeout 3600
       model :rest_backup_mapping, name_with: :uuid
       attribute :uuid, enforce: [:existence, :unique]
       attribute :class_urns, enforce: [:uri, :existence, :list]
