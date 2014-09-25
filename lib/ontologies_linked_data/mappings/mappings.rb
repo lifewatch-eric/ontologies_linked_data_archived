@@ -62,6 +62,7 @@ module Mappings
         logger.info("#{i}/#{latest.count} " +
             "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
       end
+      sleep(5)
     end
     if enable_debug
       logger.info("Total time #{Time.now - t} sec.")
@@ -571,7 +572,8 @@ eos
                                         enable_debug=true,logger=logger,
                                         reload_cache=true)
     persistent_counts = {}
-    LinkedData::Models::MappingCount.where(pair_count: false)
+    f = Goo::Filter.new(:pair_count) == false
+    LinkedData::Models::MappingCount.where.filter(f)
       .include(:ontologies,:count)
     .include(:all)
     .all
@@ -586,14 +588,22 @@ eos
         if new_count != inst.count
           inst.bring_remaining
           inst.count = new_count
-          inst.save
+          if not inst.valid? && logger
+            logger.info("Error saving #{inst.id.to_s} #{inst.errors}")
+          else
+             inst.save
+          end
         end
       else
         m = LinkedData::Models::MappingCount.new
         m.ontologies = [acr]
         m.pair_count = false
         m.count = new_count
-        m.save
+        if not m.valid? && logger
+          logger.info("Error saving #{inst.id.to_s} #{inst.errors}")
+        else
+           m.save
+        end
       end
     end
 
