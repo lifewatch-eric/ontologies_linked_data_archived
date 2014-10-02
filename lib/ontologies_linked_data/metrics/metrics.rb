@@ -190,7 +190,7 @@ eof
       propFilter = defProps.map { |x| "?p = <#{x.to_s}>" }
       propFilter = propFilter.join " || "
       query = <<-eos
-SELECT (count(?s) as ?c) WHERE { 
+SELECT (count(DISTINCT ?s) as ?c) WHERE {
     GRAPH <#{subId.to_s}> {
           ?s a <#{Goo.namespaces[:owl][:Class]}> .
             ?s ?p ?o .

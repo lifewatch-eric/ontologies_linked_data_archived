@@ -113,6 +113,7 @@ module LinkedData
                 uncompressed_file.write(gz.read())
                 file.close
                 file = uncompressed_file
+                gz.close()
               end
             end
           end
