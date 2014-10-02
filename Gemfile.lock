@@ -107,7 +107,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.1.1)
     rubyzip (1.1.6)
-    sequel (4.14.0)
+    sequel (4.15.0)
     simplecov (0.9.1)
       docile (~> 1.1.0)
       multi_json (~> 1.0)
