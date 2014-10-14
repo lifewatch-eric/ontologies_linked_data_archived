@@ -792,7 +792,7 @@ eos
 
       def index(logger, commit = true, optimize = true)
         page = 1
-        size = 2500
+        size = 500
 
         count_classes = 0
         time = Benchmark.realtime do
