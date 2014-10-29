@@ -334,8 +334,6 @@ eos
       end
 
       def generate_missing_labels(logger, file_path)
-        return if self.hasOntologyLanguage.umls?
-
         save_in_file = File.join(File.dirname(file_path), "labels.ttl")
         save_in_file_mappings = File.join(File.dirname(file_path), "mappings.ttl")
         property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
