@@ -71,6 +71,8 @@ module LinkedData
         inst.bring(attr) if inst.bring?(attr)
         acronym = inst.send(attr)
 
+        return [] if acronym.nil?
+
         errors = []
 
         if acronym.match(/\A[^a-z^A-Z]{1}/)
