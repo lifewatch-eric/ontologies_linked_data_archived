@@ -97,6 +97,50 @@ class TestOntology < LinkedData::TestOntologyCommon
     _delete_objects
   end
 
+  def test_ontology_acronym_validity
+    too_long = %w("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "WAY_TOO_LONG_WAY_TOO_LONG")
+    disallowed_chars = %w(TEST$#@ONT, X^MEN)
+    lowercase = %w(aaaaa AAaa aaAA)
+    starts_with_num = %w(99BOTTLES, 100PERCENT)
+    all_bad = "99TEST$$$$$$$$$ONTaaONTaa"
+
+    ont = LinkedData::Models::Ontology.new
+
+    too_long.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :length)
+    end
+
+    disallowed_chars.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :special_characters)
+    end
+
+    lowercase.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :capital_letters)
+    end
+
+    starts_with_num.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :start_with_letter)
+    end
+
+    ont.acronym = all_bad
+    ont.valid?
+    errors = ont.errors[:acronym]
+    assert errors.key? :length
+    assert errors.key? :special_characters
+    assert errors.key? :capital_letters
+    assert errors.key? :start_with_letter
+  end
+
+  def _acronym_validation_failed_with_error?(ont, error)
+    ont.valid?
+    errors = (ont.errors || {})[:acronym] || {}
+    errors.keys.include?(error)
+  end
+
   def test_ontology_properties
     submission_parse("BRO35", "BRO3.5",
                      "./test/data/ontology_files/BRO_v3.5.owl", 1,

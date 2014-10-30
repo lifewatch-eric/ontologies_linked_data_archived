@@ -69,12 +69,27 @@ module LinkedData
 
       def self.validate_acronym(inst,attr)
         inst.bring(attr) if inst.bring?(attr)
-        value = inst.send(attr)
-        acronym_regex = /\A[A-Z]{1}[-_0-9A-Z]{0,15}\Z/
-        if (acronym_regex.match value).nil?
-          return [:acronym_value_validator,"The acronym value #{value} is invalid"]
+        acronym = inst.send(attr)
+
+        errors = []
+
+        if acronym.match(/\A[^a-z^A-Z]{1}/)
+          errors << [:start_with_letter, "`acronym` must start with a letter"]
         end
-        return [:acronym_value_validator, nil]
+
+        if acronym.match(/[a-z]/)
+          errors << [:capital_letters, "`acronym` must be all capital letters"]
+        end
+
+        if acronym.match(/[^-_0-9a-zA-Z]/)
+          errors << [:special_characters, "`acronym` must only contain the folowing characters: -, _, letters, and numbers"]
+        end
+
+        if acronym.match(/.{17,}/)
+          errors << [:length, "`acronym` must be sixteen characters or less"]
+        end
+
+        return errors.flatten
       end
 
       def latest_submission(options = {})
