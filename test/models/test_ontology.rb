@@ -97,6 +97,58 @@ class TestOntology < LinkedData::TestOntologyCommon
     _delete_objects
   end
 
+  def test_ontology_acronym_validity
+    too_long = %w("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "WAY_TOO_LONG_WAY_TOO_LONG")
+    disallowed_chars = %w(TEST$#@ONT, X^MEN)
+    lowercase = %w(aaaaa AAaa aaAA)
+    starts_with_num = %w(99BOTTLES, 100PERCENT)
+    all_bad = "99TEST$$$$$$$$$ONTaaONTaa"
+
+    ont = LinkedData::Models::Ontology.new
+
+    too_long.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :length)
+    end
+
+    disallowed_chars.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :special_characters)
+    end
+
+    lowercase.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :capital_letters)
+    end
+
+    starts_with_num.each do |a|
+      ont.acronym = a
+      assert _acronym_validation_failed_with_error?(ont, :start_with_letter)
+    end
+
+    ont.acronym = all_bad
+    ont.valid?
+    errors = ont.errors[:acronym]
+    assert errors.key? :length
+    assert errors.key? :special_characters
+    assert errors.key? :capital_letters
+    assert errors.key? :start_with_letter
+
+    o = LinkedData::Models::Ontology.new
+    o.acronym = "A"  # must begin with at least 1 char in A-Z
+    o.valid?
+    assert !o.errors[:acronym]
+    o.acronym = "ABCDEFGHIJKLMNOP"  # up to 16 chars OK
+    o.valid?
+    assert !o.errors[:acronym]
+  end
+
+  def _acronym_validation_failed_with_error?(ont, error)
+    ont.valid?
+    errors = (ont.errors || {})[:acronym] || {}
+    errors.keys.include?(error)
+  end
+
   def test_ontology_properties
     submission_parse("BRO35", "BRO3.5",
                      "./test/data/ontology_files/BRO_v3.5.owl", 1,
@@ -131,32 +183,6 @@ class TestOntology < LinkedData::TestOntologyCommon
 
     broader_transitive_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#broaderTransitive")).in(sub).include(:parents).first()
     assert_equal 1, broader_transitive_prop.parents.length
-  end
-
-  def test_ontology_acronym_value_validation
-    o = LinkedData::Models::Ontology.new
-    o.acronym = "-1234"  # must start with A-Z
-    o.valid?
-    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
-    o = LinkedData::Models::Ontology.new
-    o.acronym = "abc1234"  # must start with A-Z, no lower case allowed
-    o.valid?
-    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
-    o = LinkedData::Models::Ontology.new
-    o.acronym = "1234ABC"  # must start with A-Z
-    o.valid?
-    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
-    o = LinkedData::Models::Ontology.new
-    o.acronym = "ABCDEFGHIJKLMNOPQ"  # no more than 16 chars
-    o.valid?
-    assert (o.errors[:acronym] && o.errors[:acronym][:acronym_value_validator])
-    o = LinkedData::Models::Ontology.new
-    o.acronym = "A"  # must begin with at least 1 char in A-Z
-    o.valid?
-    assert !o.errors[:acronym]
-    o.acronym = "ABCDEFGHIJKLMNOP"  # up to 16 chars OK
-    o.valid?
-    assert !o.errors[:acronym]
   end
 
   def test_valid_ontology
