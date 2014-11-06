@@ -166,10 +166,13 @@ class TestClassModel < LinkedData::TestOntologyCommon
     class_id = RDF::URI.new "http://bioportal.bioontology.org/ontologies/msotes#class2"
     cls = LinkedData::Models::Class.find(class_id).in(os).include(:unmapped).first
     versionInfo = Goo.vocabulary(:owl)[:versionInfo]
-    uris = cls.unmapped.keys.map {|k| k.to_s}
+    uris = cls.properties.keys.map {|k| k.to_s}
     assert uris.include?(versionInfo.to_s)
 
-    cls.unmapped.each do |k,v|
+    bad_property = "http://data.bioontology.org/metadata/def/mappingLoom"
+    assert !uris.include?(bad_property)
+
+    cls.properties.each do |k,v|
       if k == versionInfo
         assert v[0].value == "some version info"
       end
