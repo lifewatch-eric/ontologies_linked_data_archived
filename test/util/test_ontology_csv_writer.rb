@@ -3,16 +3,6 @@ require 'csv'
 
 class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
-  # CSV column headers
-  CLASS_ID = 'Class ID'
-  PREFERRED_LABEL = 'Preferred Label'
-  SYNONYMS = 'Synonyms'
-  DEFINITIONS = 'Definitions'
-  CUI = 'CUI'
-  SEMANTIC_TYPES = 'Semantic Types'
-  OBSOLETE = 'Obsolete'
-  PARENTS = 'Parents'
-
   def self.before_suite
     @@acronym = 'CSV_TEST_BRO'
     sub_id = 1
@@ -30,21 +20,23 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: @@acronym], submissionId: sub_id)
             .include(:version, :submissionId, :ontology).first
     sub.ontology.bring(:acronym)
-    
+    @@ontology = sub.ontology
+
     # Open the CSV writer.
     @@csv_path = sub.csv_path
     writer = LinkedData::Utils::OntologyCSVWriter.new
-    writer.open(@@csv_path)
+    writer.open(sub.ontology, @@csv_path)
 
     # Write out the CSV.
     page = 1
     size = 2500
     @@num_classes = 0
-    props_to_include = LinkedData::Models::Class.goo_attrs_to_load() << :parents
-    paging = LinkedData::Models::Class.in(sub).include(props_to_include).page(page, size)
+    paging = LinkedData::Models::Class.in(sub).include(:unmapped).page(page, size)
 
     while !page.nil?
       page_classes = paging.page(page, size).all
+      props_to_include = LinkedData::Models::Class.goo_attrs_to_load() << :parents
+      LinkedData::Models::Class.in(sub).include(props_to_include).models(page_classes).all
       
       page_classes.each do |c|
         writer.write_class(c)
@@ -71,6 +63,12 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     assert_equal true, @@num_classes == classes.count
   end
 
+  def test_csv_writer_column_count
+    csv = CSV.parse(get_csv_string, headers:true)
+    # We currently have 8 "standard BioPortal properties".
+    assert_equal @@ontology.properties.size + 8, csv.headers.size 
+  end
+
   def test_csv_writer_content_id
     class_exists = false
     preferred_label = 'Fabrication Facility'
@@ -78,8 +76,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal id, row[CLASS_ID]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal id, row[LinkedData::Utils::OntologyCSVWriter::CLASS_ID]
         class_exists = true
       end
     end
@@ -94,8 +92,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[CLASS_ID] == id
-        assert_equal preferred_label, row[PREFERRED_LABEL]
+      if row[LinkedData::Utils::OntologyCSVWriter::CLASS_ID] == id
+        assert_equal preferred_label, row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL]
         class_exists = true
       end
     end
@@ -110,8 +108,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal synonym, row[SYNONYMS]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal synonym, row[LinkedData::Utils::OntologyCSVWriter::SYNONYMS]
         class_exists = true
       end
     end
@@ -126,8 +124,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal synonyms, row[SYNONYMS].split('|').sort
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal synonyms, row[LinkedData::Utils::OntologyCSVWriter::SYNONYMS].split('|').sort
         class_exists = true
       end
     end
@@ -142,8 +140,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal definition, row[DEFINITIONS]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal definition, row[LinkedData::Utils::OntologyCSVWriter::DEFINITIONS]
         class_exists = true
       end
     end
@@ -158,8 +156,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal definitions, row[DEFINITIONS].split('|').sort
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal definitions, row[LinkedData::Utils::OntologyCSVWriter::DEFINITIONS].split('|').sort
         class_exists = true
       end
     end
@@ -174,8 +172,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal cui, row[CUI]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal cui, row[LinkedData::Utils::OntologyCSVWriter::CUI]
         class_exists = true
       end
     end
@@ -190,8 +188,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal cuis, row[CUI].split('|').sort
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal cuis, row[LinkedData::Utils::OntologyCSVWriter::CUI].split('|').sort
         class_exists = true
       end
     end
@@ -206,8 +204,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal semantic_type, row[SEMANTIC_TYPES]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal semantic_type, row[LinkedData::Utils::OntologyCSVWriter::SEMANTIC_TYPES]
         class_exists = true
       end
     end
@@ -224,8 +222,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal semantic_types, row[SEMANTIC_TYPES].split('|').sort
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal semantic_types, row[LinkedData::Utils::OntologyCSVWriter::SEMANTIC_TYPES].split('|').sort
         class_exists = true
       end
     end
@@ -239,8 +237,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert row[OBSOLETE]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert row[LinkedData::Utils::OntologyCSVWriter::OBSOLETE]
         class_exists = true
       end
     end
@@ -254,8 +252,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal 'false', row[OBSOLETE]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal 'false', row[LinkedData::Utils::OntologyCSVWriter::OBSOLETE]
         class_exists = true
       end
     end
@@ -270,8 +268,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal parent_id, row[PARENTS]
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal parent_id, row[LinkedData::Utils::OntologyCSVWriter::PARENTS]
         class_exists = true
       end
     end
@@ -287,8 +285,8 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     classes = CSV.parse(get_csv_string, headers:true)
     classes.select do |row|
-      if row[PREFERRED_LABEL] == preferred_label
-        assert_equal parent_ids, row[PARENTS].split('|').sort
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal parent_ids, row[LinkedData::Utils::OntologyCSVWriter::PARENTS].split('|').sort
         class_exists = true
       end
     end
@@ -296,4 +294,20 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
     assert class_exists, %Q<Class not found: "#{preferred_label}">
   end
 
+  def test_csv_writer_content_props_other
+    class_exists = false
+    preferred_label = 'Modular Component'
+    prop_id = 'http://bioontology.org/ontologies/biositemap.owl#replacedBy'
+    prop_val = 'http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Data_Resource'
+    
+    classes = CSV.parse(get_csv_string, headers:true)
+    classes.select do |row|
+      if row[LinkedData::Utils::OntologyCSVWriter::PREF_LABEL] == preferred_label
+        assert_equal prop_val, row[prop_id]
+        class_exists = true
+      end
+    end
+
+    assert class_exists, %Q<Class not found: "#{preferred_label}">  
+  end
 end

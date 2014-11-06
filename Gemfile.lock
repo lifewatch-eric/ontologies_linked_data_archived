@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: c5ecc87783724228ca938fb1d8b690d9441c589f
+  revision: d433c4f6cc9df9bf9630a68272941a7e62516d41
   branch: staging
   specs:
     goo (0.0.2)
@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 4d10333a431866156ccf6d80b63574dc5b60ba0b
+  revision: 36128148661efcc47b072c6060712623157077f3
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -40,7 +40,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.0.10)
+    activesupport (4.0.11)
       i18n (~> 0.6, >= 0.6.9)
       minitest (~> 4.2)
       multi_json (~> 1.3)
