@@ -5,52 +5,79 @@ module LinkedData
   module Utils
     class OntologyCSVWriter
 
-      def open(path)
+      # Column headers for Standard BioPortal properties.
+      CLASS_ID = 'Class ID'
+      PREF_LABEL = 'Preferred Label'
+      SYNONYMS = 'Synonyms'
+      DEFINITIONS = 'Definitions'
+      CUI = 'CUI'
+      SEMANTIC_TYPES = 'Semantic Types'
+      OBSOLETE = 'Obsolete'
+      PARENTS = 'Parents'
+
+      def open(ont, path)
         file = File.new(path, 'w')
         gz = Zlib::GzipWriter.new(file)
         @csv = CSV.new(gz, headers: true, return_headers: true, write_headers: true)
-        
-        # Would have preferred to simply use 'ID' for the first header value.
-        # However, if the first two characters of a CSV file are 'ID', opening
-        # the file with Excel for Mac displays an error message:
-        # 'Excel has detected that <your-file-name>.csv is a SYLK file, but cannot load it.'
-        # Link to issue report at Microsoft Support: http://support.microsoft.com/kb/215591/EN-US.
-        @csv << ["Class ID","Preferred Label","Synonyms","Definitions","Obsolete","CUI","Semantic Types","Parents"]
+        @property_ids = ont.properties.map { |prop| [prop.id.to_s, get_prop_label(prop)] }.to_h
+        write_header(ont)
+      end
+
+      def write_header(ont)
+        props_bioportal_standard = [CLASS_ID,PREF_LABEL,SYNONYMS,DEFINITIONS,OBSOLETE,CUI,SEMANTIC_TYPES,PARENTS]
+        props_other = ont.properties.map { |prop| get_prop_label(prop) }
+        props_other.sort! { |a,b| a.downcase <=> b.downcase }
+        @headers = props_bioportal_standard.concat(props_other)
+        @csv << @headers
       end
 
       def write_class(ont_class)
-        row = CSV::Row.new([], [], false)
+        row = CSV::Row.new(@headers, Array.new(@headers.size), false)
 
         # ID
-        row << ont_class.id
+        row[CLASS_ID] = ont_class.id
 
         # Preferred label
-        row << ont_class.prefLabel
+        row[PREF_LABEL] = ont_class.prefLabel
 
         # Synonyms
         synonyms = ont_class.synonym
-        synonyms.empty? ? row << nil : row << synonyms.join('|')
+        row[SYNONYMS] = synonyms.join('|') unless synonyms.empty?
 
         # Definitions
         definitions = ont_class.definition
-        definitions.empty? ? row << nil : row << definitions.join('|')
+        row[DEFINITIONS] = definitions.join('|') unless definitions.empty?
 
         # Obsolete
-        row << ont_class.obsolete
+        row[OBSOLETE] = ont_class.obsolete
 
         # CUI
         cuis = ont_class.cui
-        cuis.empty? ? row << nil : row << cuis.join('|')
+        row[CUI] = cuis.join('|') unless cuis.empty?
 
         # Semantic types
         semantic_types = ont_class.semanticType
-        semantic_types.empty? ? row << nil : row << semantic_types.join('|')
+        row[SEMANTIC_TYPES] = semantic_types.join('|') unless semantic_types.empty?
 
         # Parents
         parents = ont_class.parents
-        parents.empty? ? row << nil : row << get_parent_ids(parents)
+        row[PARENTS] = get_parent_ids(parents) unless parents.empty?
+
+        # Other properties.
+        props = ont_class.properties
+        props.each do |p|
+          id = p.first.to_s
+          if @property_ids.has_key?(id)
+            values = p.last.map { |v| v.to_s }
+            row[@property_ids[id]] = values.join('|')
+          end
+        end
 
         @csv << row
+      end
+
+      def close
+        @csv.close
       end
 
       def get_parent_ids(parents)
@@ -61,10 +88,9 @@ module LinkedData
         return parent_ids.join('|')
       end
 
-      def close
-        @csv.close
+      def get_prop_label(prop)
+        prop.label.empty? ? prop.id.to_s : prop.label.first.to_s
       end
-
     end
   end
 end
