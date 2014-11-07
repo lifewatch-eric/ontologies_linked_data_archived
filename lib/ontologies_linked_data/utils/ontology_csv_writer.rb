@@ -19,7 +19,7 @@ module LinkedData
         file = File.new(path, 'w')
         gz = Zlib::GzipWriter.new(file)
         @csv = CSV.new(gz, headers: true, return_headers: true, write_headers: true)
-        @property_ids = ont.properties.map { |prop| [prop.id.to_s, get_prop_label(prop)] }.to_h
+        @property_ids = Hash[ont.properties.map { |prop| [prop.id.to_s, get_prop_label(prop)] }]
         write_header(ont)
       end
 
