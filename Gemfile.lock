@@ -29,7 +29,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/sparql-client.git
-  revision: 9a91b7db5f3fe2befb67a365aca737be7093f0e3
+  revision: a5251d5902f84ab108e37fa17f7374ac12887e3a
   branch: staging
   specs:
     sparql-client (1.0.4.1)
