@@ -158,20 +158,23 @@ class TestOntology < LinkedData::TestOntologyCommon
     ont.bring(:submissions)
     sub = ont.submissions[0]
     props = ont.properties()
-    assert_equal 63, props.length
+    assert_equal 82, props.length
 
     datatype_props = []
     object_props = []
+    annotation_props = []
 
     props.each do |prop|
       if (prop.class == LinkedData::Models::DatatypeProperty)
         datatype_props << prop
       elsif (prop.class == LinkedData::Models::ObjectProperty)
         object_props << prop
+      elsif (prop.class == LinkedData::Models::AnnotationProperty)
+        annotation_props << prop
       end
     end
 
-    assert_equal props.length, datatype_props.length + object_props.length
+    assert_equal props.length, datatype_props.length + object_props.length + annotation_props.length
 
     protein_type_prop = LinkedData::Models::DatatypeProperty.find(RDF::URI.new("http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#ProteinType")).in(sub).include(:label, :definition).first()
     assert_equal "ProteinType", protein_type_prop.label[0]
@@ -183,6 +186,10 @@ class TestOntology < LinkedData::TestOntologyCommon
 
     broader_transitive_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#broaderTransitive")).in(sub).include(:parents).first()
     assert_equal 1, broader_transitive_prop.parents.length
+
+    history_note_prop = LinkedData::Models::AnnotationProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#historyNote")).in(sub).include(:label, :definition, :parents).first()
+    assert_equal 1, history_note_prop.parents.length
+    assert_equal "A note about the past state/use/meaning of a concept.", history_note_prop.definition[0]
   end
 
   def test_valid_ontology

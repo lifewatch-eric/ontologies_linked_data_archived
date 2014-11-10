@@ -173,7 +173,13 @@ module LinkedData
         object_props.each {|prop| prop.parents.each {|parent| parents << parent}}
         LinkedData::Models::ObjectProperty.in(latest).models(parents).include(:label, :definition).all()
 
-        return datatype_props + object_props
+        # annotation props
+        annotation_props = LinkedData::Models::AnnotationProperty.in(latest).include(:label, :definition, :parents).all()
+        parents = []
+        annotation_props.each {|prop| prop.parents.each {|parent| parents << parent}}
+        LinkedData::Models::AnnotationProperty.in(latest).models(parents).include(:label, :definition).all()
+
+        return datatype_props + object_props + annotation_props
       end
 
       ##
