@@ -804,7 +804,7 @@ eos
                                   .page(page,size)
 
           writer = LinkedData::Utils::OntologyCSVWriter.new
-          writer.open(self.csv_path)
+          writer.open(self.ontology, self.csv_path)
 
           begin #per page
             t0 = Time.now

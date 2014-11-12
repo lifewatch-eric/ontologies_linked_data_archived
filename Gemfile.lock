@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 6d76c08b34a3e5e11c0c0c59394f98bb92dec092
-  branch: master
+  revision: 1f8e2266a54bcd03520057d3fb1ba0ac21a3c8b9
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 36128148661efcc47b072c6060712623157077f3
+  revision: 85c3150a01584542ea09582fbc32953030096f77
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -29,8 +29,8 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/sparql-client.git
-  revision: 1bfd9bf0e5ff4dbf121d96517e41fa22e1df35e8
-  branch: master
+  revision: a5251d5902f84ab108e37fa17f7374ac12887e3a
+  branch: staging
   specs:
     sparql-client (1.0.4.1)
       json_pure (>= 1.4)
@@ -82,10 +82,10 @@ GEM
     minitest (4.7.5)
     multi_json (1.10.1)
     multipart-post (2.0.0)
-    mysql2 (0.3.16)
+    mysql2 (0.3.17)
     net-http-persistent (2.9.4)
     netrc (0.8.0)
-    oj (2.11.0)
+    oj (2.11.1)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
