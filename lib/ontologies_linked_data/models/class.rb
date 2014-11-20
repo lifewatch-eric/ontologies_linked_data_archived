@@ -196,12 +196,14 @@ module LinkedData
       end
 
       BAD_PROPERTY_URIS = LinkedData::Mappings.mapping_predicates.values.flatten + ['http://bioportal.bioontology.org/metadata/def/prefLabel']
+      EXCEPTION_URIS = ["http://bioportal.bioontology.org/ontologies/umls/cui"]
+      BLACKLIST_URIS = BAD_PROPERTY_URIS - EXCEPTION_URIS
       def properties
         if self.unmapped.nil?
           raise Exception, "Properties can be call only with :unmmapped attributes preloaded"
         end
         properties = self.unmapped
-        BAD_PROPERTY_URIS.each {|bad_iri| properties.delete(RDF::URI.new(bad_iri))}
+        BLACKLIST_URIS.each {|bad_iri| properties.delete(RDF::URI.new(bad_iri))}
         properties
       end
 
