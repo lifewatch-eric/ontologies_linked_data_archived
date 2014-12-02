@@ -27,13 +27,19 @@ module LinkedData
       # Override find method to make sure the id matches what is in the RDF store
       # Only do this if the setting is enabled, string comparison sucks
       def self.find(id, *options)
-        # Handle `+` to ` ` conversion here because Sinatra doesn't do it for URI's
-        id = id.gsub("+", " ") if id.include?("+")
-
         if LinkedData.settings.replace_url_prefix && id.to_s.start_with?(LinkedData.settings.rest_url_prefix)
           id = RDF::IRI.new(id.to_s.sub(LinkedData.settings.rest_url_prefix, LinkedData.settings.id_url_prefix))
         end
-        super(id, *options)
+
+        found = super(id, *options)
+
+        # Handle `+` to ` ` conversion here because Sinatra doesn't do it for URI's
+        if (found.nil? || found.empty?) && id.include?("+")
+          id = id.gsub("+", " ")
+          found = super(id, *options)
+        end
+
+        found
       end
 
       ##
