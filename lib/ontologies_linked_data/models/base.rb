@@ -31,19 +31,10 @@ module LinkedData
           id = RDF::IRI.new(id.to_s.sub(LinkedData.settings.rest_url_prefix, LinkedData.settings.id_url_prefix))
         end
 
-        # Calling super gives of a Where object. IT DOES NOT RUN A SPARQL QUERY.
-        # Unfortunately, we need the fallback behavior for pluses in the URL, so we run
-        # an extra query to check. We should fix the plus problem to solve this,
-        # because it's likely going to generate a lot of extra queries.
-        return_where = super(id, *options)
-        value_check = super(id, *options)
-
         # Handle `+` to ` ` conversion here because Sinatra doesn't do it for URI's
-        if value_check.empty? && id.include?("+")
-          return_where = super(id.gsub("+", " "), *options)
-        end
+        id = id.gsub("+", " ") unless id.start_with?("http")
 
-        return_where
+        super(id, *options)
       end
 
       ##
