@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 512b45345a8987109b2819edeaec571b3d4b2ff1
+  revision: 5607a1a76cc02c4ffc668044f26577467588d984
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -95,7 +95,7 @@ GEM
     rack (1.5.2)
     rack-test (0.6.2)
       rack (>= 1.0)
-    rake (10.4.1)
+    rake (10.4.2)
     rdf (1.0.8)
       addressable (>= 2.2)
     redis (3.1.0)
