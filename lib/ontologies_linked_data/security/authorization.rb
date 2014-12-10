@@ -25,6 +25,7 @@ module LinkedData
         req = Rack::Request.new(env)
         params = req.params
         apikey = find_apikey(env, params)
+        req.update_param("apikey", apikey)
 
         unless apikey
           status = 401
