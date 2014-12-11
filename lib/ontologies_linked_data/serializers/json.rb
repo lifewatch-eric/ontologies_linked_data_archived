@@ -98,8 +98,8 @@ module LinkedData
         params.nil? ||
           (params["no_context"].nil? ||
                      !params["no_context"].eql?("true")) &&
-          (params["include_context"].nil? ||
-                    !params["include_context"].eql?("false"))
+          (params["display_context"].nil? ||
+                    !params["display_context"].eql?("false"))
       end
 
       def self.generate_links?(options)
@@ -107,8 +107,8 @@ module LinkedData
         params.nil? ||
           (params["no_links"].nil? ||
                      !params["no_links"].eql?("true")) &&
-          (params["include_links"].nil? ||
-                    !params["include_links"].eql?("false"))
+          (params["display_links"].nil? ||
+                    !params["display_links"].eql?("false"))
       end
     end
   end

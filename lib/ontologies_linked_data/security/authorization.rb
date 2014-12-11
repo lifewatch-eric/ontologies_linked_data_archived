@@ -22,9 +22,10 @@ module LinkedData
         return @app.call(env) if ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"])
         return @app.call(env) if env["HTTP_REFERER"] && env["HTTP_REFERER"].start_with?(LinkedData.settings.rest_url_prefix)
 
-        params = env["rack.request.query_hash"] || env["rack.request.form_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
-
+        req = Rack::Request.new(env)
+        params = req.params
         apikey = find_apikey(env, params)
+        req.update_param("apikey", apikey)
 
         unless apikey
           status = 401

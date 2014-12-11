@@ -30,7 +30,7 @@ class Object
     # or wherever a class object appears in the response.
     cls = self.respond_to?(:klass) ? self.klass : self.class
     if cls == LinkedData::Models::Class && options[:include_for_class]
-      only = Set.new(options[:include_for_class] || []) rescue binding.pry
+      only = Set.new(options[:include_for_class] || [])
     end
 
     if all # Get everything

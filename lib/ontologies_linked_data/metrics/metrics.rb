@@ -180,7 +180,16 @@ SELECT #{vars} WHERE {
   } } LIMIT 1
 eof
       rs = Goo.sparql_query_client.query(query)
+      items = Set.new
       rs.each do |sol|
+        n.times do |i|
+          item = sol["x#{i}"]
+          if items.include?(item)
+            #there is a cycle
+            return false
+          end
+          items << item
+        end
         return true
       end
       return false

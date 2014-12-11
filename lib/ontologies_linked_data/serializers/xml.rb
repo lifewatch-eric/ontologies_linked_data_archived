@@ -125,8 +125,8 @@ module LinkedData
         params.nil? ||
           (params["no_links"].nil? ||
                      !params["no_links"].eql?("true")) &&
-          (params["include_links"].nil? ||
-                    !params["include_links"].eql?("false"))
+          (params["display_links"].nil? ||
+                    !params["display_links"].eql?("false"))
       end
     end
   end
