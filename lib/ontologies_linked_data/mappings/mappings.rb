@@ -208,7 +208,7 @@ eos
     unions = blocks.join("\nUNION\n")
 
     mappings_in_ontology = <<-eos
-SELECT variables 
+SELECT DISTINCT variables
 WHERE {
 unions
 filter
@@ -376,7 +376,7 @@ eos
     end
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
-SELECT ?s1 ?c1 ?s2 ?c2 ?uuid ?o
+SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?uuid ?o
 WHERE { 
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
@@ -489,7 +489,7 @@ eos
   def self.recent_rest_mappings(n)
     graphs = [LinkedData::Models::MappingProcess.type_uri]
     qdate = <<-eos
-SELECT ?s
+SELECT DISTINCT ?s
 FROM <#{LinkedData::Models::MappingProcess.type_uri}>
 WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } 
 ORDER BY DESC(?o) LIMIT #{n}
@@ -513,7 +513,7 @@ eos
     procs = procs.map { |x| "?o = #{x.to_ntriples}" }.join " || "
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
-SELECT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
+SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
 WHERE { 
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
