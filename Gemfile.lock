@@ -84,7 +84,7 @@ GEM
     multipart-post (2.0.0)
     mysql2 (0.3.17)
     net-http-persistent (2.9.4)
-    netrc (0.10.1)
+    netrc (0.10.2)
     oj (2.11.1)
     pony (1.11)
       mail (>= 2.0)
