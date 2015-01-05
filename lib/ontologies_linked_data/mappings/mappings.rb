@@ -4,10 +4,10 @@ module Mappings
   def self.mapping_predicates()
     predicates = {}
     predicates["CUI"] = ["http://bioportal.bioontology.org/ontologies/umls/cui"]
-    predicates["SAME_URI"] = 
-      ["http://data.bioontology.org/metadata/def/mappingSameURI"] 
-    predicates["LOOM"] = 
-      ["http://data.bioontology.org/metadata/def/mappingLoom"] 
+    predicates["SAME_URI"] =
+      ["http://data.bioontology.org/metadata/def/mappingSameURI"]
+    predicates["LOOM"] =
+      ["http://data.bioontology.org/metadata/def/mappingLoom"]
     predicates["REST"] =
       ["http://data.bioontology.org/metadata/def/mappingRest"]
     return predicates
@@ -86,13 +86,13 @@ eos
     if sub2.nil?
       group_count = {}
     end
-    mapping_predicates().each do |_source,mapping_predicate| 
+    mapping_predicates().each do |_source,mapping_predicate|
       block = template.gsub("predicate", mapping_predicate[0])
       if sub2.nil?
       else
       end
       query_template = <<-eos
-      SELECT variables 
+      SELECT variables
       WHERE {
       block
       filter
@@ -184,7 +184,7 @@ eos
   GRAPH graph {
       ?s2 <predicate> ?o .
   }
-  bind 
+  bind
 }
 eos
 
@@ -195,7 +195,7 @@ eos
     end
 
     blocks = []
-    mapping_predicates().each do |_source,mapping_predicate| 
+    mapping_predicates().each do |_source,mapping_predicate|
       union_block = union_template.gsub("predicate", mapping_predicate[0])
       union_block = union_block.sub("bind","BIND ('#{_source}' AS ?source)")
       if sub2.nil?
@@ -212,7 +212,7 @@ SELECT DISTINCT variables
 WHERE {
 unions
 filter
-} page_group 
+} page_group
 eos
     query = mappings_in_ontology.sub( "unions", unions)
     variables = "?s2 graph ?source ?o"
@@ -313,7 +313,7 @@ eos
               ontology: ontology)
       mappedClass = LinkedData::Models::Class
             .read_only(
-              id: RDF::IRI.new(classId), 
+              id: RDF::IRI.new(classId),
               submission: submission,
               urn_id: LinkedData::Models::Class.urn_id(acronym,classId) )
       return mappedClass
@@ -333,13 +333,13 @@ eos
         u = u.to_s
         if u.start_with?("urn:#{acronym}")
           class_id = u.split(":")[2..-1].join(":")
-          triples << 
+          triples <<
             " <#{class_id}> <#{rest_predicate}> <#{m.id}> . "
         end
       end
     end
     return triples
-    
+
   end
 
   def self.delete_rest_mapping(mapping_id)
@@ -377,7 +377,7 @@ eos
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
 SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?uuid ?o
-WHERE { 
+WHERE {
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
   GRAPH ?s1 {
@@ -423,7 +423,7 @@ eos
         acronym = c.submission.id.to_s.split("/")[-3]
         class_urns << RDF::URI.new(
           LinkedData::Models::Class.urn_id(acronym,c.id.to_s))
-          
+
       else
         class_urns << RDF::URI.new(c.urn_id())
       end
@@ -457,7 +457,7 @@ eos
     end
     qmappings = <<-eos
 SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?pred
-WHERE { 
+WHERE {
   GRAPH ?s1 {
     ?c1 ?pred ?o .
   }
@@ -491,7 +491,7 @@ eos
     qdate = <<-eos
 SELECT DISTINCT ?s
 FROM <#{LinkedData::Models::MappingProcess.type_uri}>
-WHERE { ?s <http://data.bioontology.org/metadata/date> ?o } 
+WHERE { ?s <http://data.bioontology.org/metadata/date> ?o }
 ORDER BY DESC(?o) LIMIT #{n}
 eos
     epr = Goo.sparql_query_client(:main)
@@ -499,7 +499,7 @@ eos
     epr.query(qdate, graphs: graphs,query_options: {rules: :NONE}).each do |sol|
       procs << sol[:s]
     end
-    if procs.length == 0 
+    if procs.length == 0
       return []
     end
     graphs = [LinkedData::Models::MappingProcess.type_uri]
@@ -514,7 +514,7 @@ eos
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
 SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
-WHERE { 
+WHERE {
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
   GRAPH ?s1 {
@@ -524,11 +524,14 @@ WHERE {
     ?c2 <#{rest_predicate}> ?uuid .
   }
 FILTER (#{procs})
+FILTER(?s1 != ?s2)
+FILTER(?c1 != ?c2)
 }
 eos
     epr = Goo.sparql_query_client(:main)
     mappings = []
-    epr.query(qmappings, 
+    binding.pry
+    epr.query(qmappings,
               graphs: graphs,query_options: {rules: :NONE}).each do |sol|
       classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
                 read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
@@ -580,7 +583,7 @@ eos
     .each do |m|
       persistent_counts[m.ontologies.first] = m
     end
-    
+
     new_counts.each_key do |acr|
       new_count = new_counts[acr]
       if persistent_counts.include?(acr)
@@ -623,7 +626,7 @@ eos
         end
         persistent_counts[other] = m
       end
-      
+
       new_counts.each_key do |other|
         new_count = new_counts[other]
         if persistent_counts.include?(other)
