@@ -300,9 +300,15 @@ eos
   end
 
   def self.read_only_class(classId,submissionId)
-      ontologyId = submissionId.split("/")[0..-3]
-      acronym = ontologyId.last
-      ontologyId = ontologyId.join("/")
+      ontologyId = submissionId
+      acronym = nil
+      unless submissionId["submissions"].nil?
+        ontologyId = submissionId.split("/")[0..-3]
+        acronym = ontologyId.last
+        ontologyId = ontologyId.join("/")
+      else
+        acronym = ontologyId.split("/")[-1]
+      end
       ontology = LinkedData::Models::Ontology
             .read_only(
               id: RDF::IRI.new(ontologyId),
@@ -513,28 +519,27 @@ eos
     procs = procs.map { |x| "?o = #{x.to_ntriples}" }.join " || "
     rest_predicate = mapping_predicates()["REST"][0]
     qmappings = <<-eos
-SELECT DISTINCT ?s1 ?c1 ?s2 ?c2 ?o ?uuid
+SELECT DISTINCT ?ont1 ?c1 ?ont2 ?c2 ?o ?uuid
 WHERE {
   ?uuid <http://data.bioontology.org/metadata/process> ?o .
 
+  ?s1 <http://data.bioontology.org/metadata/ontology> ?ont1 .
   GRAPH ?s1 {
     ?c1 <#{rest_predicate}> ?uuid .
   }
+  ?s2 <http://data.bioontology.org/metadata/ontology> ?ont2 .
   GRAPH ?s2 {
     ?c2 <#{rest_predicate}> ?uuid .
   }
 FILTER (#{procs})
-FILTER(?s1 != ?s2)
-FILTER(?c1 != ?c2)
 }
 eos
     epr = Goo.sparql_query_client(:main)
     mappings = []
-    binding.pry
     epr.query(qmappings,
               graphs: graphs,query_options: {rules: :NONE}).each do |sol|
-      classes = [ read_only_class(sol[:c1].to_s,sol[:s1].to_s),
-                read_only_class(sol[:c2].to_s,sol[:s2].to_s) ]
+      classes = [ read_only_class(sol[:c1].to_s,sol[:ont1].to_s),
+                read_only_class(sol[:c2].to_s,sol[:ont2].to_s) ]
       process = proc_object[sol[:o].to_s]
       mapping = LinkedData::Models::Mapping.new(classes,"REST",
                                                 process,
