@@ -11,10 +11,8 @@ module LinkedData
       body = options[:body] || ""
       obj = options[:ld_object] || body
 
-      params = env["rack.request.query_hash"] || Rack::Utils.parse_query(env["QUERY_STRING"])
-      if params.length == 0 && env["rack.request.form_hash"] && env["rack.request.form_hash"].length > 0
-        params = env["rack.request.form_hash"]
-      end
+      req = Rack::Request.new(env)
+      params = req.params
 
       begin
         best = best_response_type(env, params)
@@ -86,7 +84,7 @@ module LinkedData
     end
 
     def self.serialize(type, obj, params, request)
-      only = params["include"] || []
+      only = params["display"] || []
       only = only.split(",") unless only.kind_of?(Array)
       only, all = [], true if only[0].eql?("all")
       options = {:only => only, :all => all, :params => params, :request => request}
