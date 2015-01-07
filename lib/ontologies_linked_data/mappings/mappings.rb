@@ -531,6 +531,8 @@ WHERE {
   GRAPH ?s2 {
     ?c2 <#{rest_predicate}> ?uuid .
   }
+FILTER(?ont1 != ?ont2)
+FILTER(?c1 != ?c2)
 FILTER (#{procs})
 }
 eos
