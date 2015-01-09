@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 42f8901e56f1f6b7c625b123ead635ea55b54e17
+  revision: b383ba2b42efe9a0eab9075e7feafda1fcaf925f
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -69,7 +69,7 @@ GEM
       multipart-post (>= 1.2, < 3)
     ffi (1.9.6)
     i18n (0.7.0)
-    json_pure (1.8.1)
+    json_pure (1.8.2)
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.7.0)
@@ -116,7 +116,7 @@ GEM
     slop (3.6.0)
     systemu (2.6.4)
     thread_safe (0.3.4)
-    typhoeus (0.6.9)
+    typhoeus (0.7.0)
       ethon (>= 0.7.1)
     tzinfo (0.3.42)
     uuid (2.3.7)
