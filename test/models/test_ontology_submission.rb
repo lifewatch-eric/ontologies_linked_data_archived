@@ -175,10 +175,23 @@ eos
     assert n_roots == 3 #just 3 with latest modifications.
     #strict comparison to be sure the merge with the tree_view branch goes fine
 
-    LinkedData::Models::Class.where.in(sub).include(:prefLabel, :notation).each do |cls|
-      assert_instance_of String,cls.prefLabel
-      assert_instance_of String,cls.notation
-      assert cls.notation[-6..-1] == cls.id.to_s[-6..-1]
+    LinkedData::Models::Class.where.in(sub)
+      .include(:prefLabel,:synonym,:notation).each do |cls|
+        assert_instance_of String,cls.prefLabel
+        assert_instance_of String,cls.notation
+        assert cls.notation[-6..-1] == cls.id.to_s[-6..-1]
+        #NCBO-1007 - hasNarrowSynonym
+        if cls.id.to_s["CL_0000003"]
+          assert cls.synonym[0] == "cell in vivo"
+        end
+        #NCBO-1007 - hasBroadSynonym
+        if cls.id.to_s["CL_0000137"]
+          assert cls.synonym == "bone cell"
+        end
+        #NCBO-1007 - hasRelatedSynonym
+        if cls.id.to_s["TAO_0000223"]
+          assert cls.synonym.length == 6
+        end
     end
 
 
@@ -278,11 +291,11 @@ eos
   end
 
   def test_process_submission_archive
-    parse_options = { process_rdf: false, index_search: false, index_commit: false, 
-                      run_metrics: false, reasoning: false, archive: true }  
+    parse_options = { process_rdf: false, index_search: false, index_commit: false,
+                      run_metrics: false, reasoning: false, archive: true }
 
-    ont_count, ont_acronyms, ontologies = 
-      create_ontologies_and_submissions(ont_count: 1, submission_count: 2, 
+    ont_count, ont_acronyms, ontologies =
+      create_ontologies_and_submissions(ont_count: 1, submission_count: 2,
                                         process_submission: true, acronym: 'NCBO-545')
     # Sanity check.
     assert_equal 1, ontologies.count
@@ -296,16 +309,16 @@ eos
     latest_sub.process_submission(Logger.new(latest_sub.parsing_log_path), parse_options)
     assert latest_sub.archived?
 
-    assert File.file?(File.join(latest_sub.data_folder, 'labels.ttl')), 
+    assert File.file?(File.join(latest_sub.data_folder, 'labels.ttl')),
       %-Missing ontology submission file: 'labels.ttl'-
 
-    assert File.file?(File.join(latest_sub.data_folder, 'owlapi.xrdf')), 
+    assert File.file?(File.join(latest_sub.data_folder, 'owlapi.xrdf')),
       %-Missing ontology submission file: 'owlapi.xrdf'-
-    
-    assert File.file?(latest_sub.csv_path), 
+
+    assert File.file?(latest_sub.csv_path),
       %-Missing ontology submission file: '#{latest_sub.csv_path}'-
 
-    assert File.file?(latest_sub.parsing_log_path), 
+    assert File.file?(latest_sub.parsing_log_path),
       %-Missing ontology submission file: '#{latest_sub.parsing_log_path}'-
 
     # Process one prior to latest submission.  Some files should be deleted.
@@ -316,19 +329,19 @@ eos
     assert_equal false, File.file?(File.join(old_sub.data_folder, 'labels.ttl')),
       %-File deletion failed for 'labels.ttl'-
 
-    assert_equal false, File.file?(File.join(old_sub.data_folder, 'mappings.ttl')), 
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'mappings.ttl')),
       %-File deletion failed for 'mappings.ttl'-
 
-    assert_equal false, File.file?(File.join(old_sub.data_folder, 'obsolete.ttl')), 
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'obsolete.ttl')),
       %-File deletion failed for 'obsolete.ttl'-
 
-    assert_equal false, File.file?(File.join(old_sub.data_folder, 'owlapi.xrdf')), 
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'owlapi.xrdf')),
       %-File deletion failed for 'owlapi.xrdf'-
 
-    assert_equal false, File.file?(old_sub.csv_path), 
+    assert_equal false, File.file?(old_sub.csv_path),
       %-File deletion failed for '#{old_sub.csv_path}'-
 
-    assert_equal false, File.file?(old_sub.parsing_log_path), 
+    assert_equal false, File.file?(old_sub.parsing_log_path),
       %-File deletion failed for '#{old_sub.parsing_log_path}'-
   end
 
