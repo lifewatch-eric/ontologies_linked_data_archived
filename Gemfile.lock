@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: b383ba2b42efe9a0eab9075e7feafda1fcaf925f
+  revision: f8d0059e2afb633cae346fea7eaff8464cd7f1d5
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -72,7 +72,7 @@ GEM
     json_pure (1.8.2)
     launchy (2.4.3)
       addressable (~> 2.3)
-    libxml-ruby (2.7.0)
+    libxml-ruby (2.8.0)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
     mail (2.6.3)
@@ -85,7 +85,7 @@ GEM
     mysql2 (0.3.17)
     net-http-persistent (2.9.4)
     netrc (0.10.2)
-    oj (2.11.1)
+    oj (2.11.2)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
