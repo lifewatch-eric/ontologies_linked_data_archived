@@ -186,7 +186,7 @@ eos
         end
         #NCBO-1007 - hasBroadSynonym
         if cls.id.to_s["CL_0000137"]
-          assert cls.synonym == "bone cell"
+          assert cls.synonym[0] == "bone cell"
         end
         #NCBO-1007 - hasRelatedSynonym
         if cls.id.to_s["TAO_0000223"]
