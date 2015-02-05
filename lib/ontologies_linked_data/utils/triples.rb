@@ -41,9 +41,21 @@ module LinkedData
 
         if ont_sub.hasOntologyLanguage.obo?
           #obo syns
-          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasExactSynonym], 
+          #<http://www.geneontology.org/formats/oboInOwl#hasExactSynonym> 10M
+          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasExactSynonym],
                             subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
           triples << triple(Goo.vocabulary(:obo_purl)[:synonym], subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
+          #NCBO-1007
+
+          #<http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym> 22K
+          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasBroadSynonym],
+                            subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
+          #<http://www.geneontology.org/formats/oboInOwl#hasNarrowSynonym>  49K
+          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasNarrowSynonym],
+                            subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
+          #<http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym>  6M
+          triples << triple(Goo.vocabulary(:oboinowl_gen)[:hasRelatedSynonym],
+                            subPropertyOf, Goo.vocabulary(:skos)[:altLabel])
 
           #obo defs
           triples << triple(obo_definition_standard(),

@@ -28,6 +28,7 @@ module LinkedData::Utils
         body: options[:body],
         headers: headers,
         via: :smtp,
+        enable_starttls_auto: LinkedData.settings.enable_starttls_auto,
         via_options: mail_options
       })
     end
@@ -89,7 +90,7 @@ module LinkedData::Utils
       recipients = []
       ontology.administeredBy.each do |user|
         user.bring(:email) if user.bring?(:email)
-        recipients << user.email 
+        recipients << user.email
       end
 
       options = {
@@ -190,7 +191,7 @@ The BioPortal Team
 EOS
 
 REMOTE_PULL_FAILURE = <<EOS
-BioPortal failed to load %ont_name% (%ont_acronym%) from URL: %ont_pull_location%.  
+BioPortal failed to load %ont_name% (%ont_acronym%) from URL: %ont_pull_location%.
 <br><br>
 Please verify the URL you provided for daily loading of your ontology:
 <ol>

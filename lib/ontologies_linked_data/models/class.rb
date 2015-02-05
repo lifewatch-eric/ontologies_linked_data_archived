@@ -20,6 +20,12 @@ module LinkedData
       def self.class_rdf_type(*args)
         submission = args.flatten.first
         return RDF::OWL[:Class] if submission.nil?
+        if submission.bring?(:classType)
+          submission.bring(:classType)
+        end
+        if not submission.classType.nil?
+          return submission.classType
+        end
         unless submission.loaded_attributes.include?(:hasOntologyLanguage)
           submission.bring(:hasOntologyLanguage)
         end

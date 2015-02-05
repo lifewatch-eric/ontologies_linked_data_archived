@@ -67,6 +67,7 @@ module LinkedData
     @settings.smtp_password          ||= "password"
     @settings.smtp_auth_type         ||= :none # :none, :plain, :login, :cram_md5
     @settings.smtp_domain            ||= "localhost.localhost"
+    @settings.enable_starttls_auto   ||= false # set to true for use with gmail
 
     # Override defaults
     yield @settings, overide_connect_goo if block_given?

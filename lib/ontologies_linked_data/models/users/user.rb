@@ -20,7 +20,7 @@ module LinkedData
       attribute :lastName
       attribute :created, enforce: [:date_time], :default => lambda { |record| DateTime.now }
       attribute :passwordHash, enforce: [:existence]
-      attribute :apikey, :default => lambda {|x| SecureRandom.uuid}
+      attribute :apikey, enforce: [:unique], :default => lambda {|x| SecureRandom.uuid}
       attribute :subscription, enforce: [:list, :subscription]
       attribute :customOntology, enforce: [:list, :ontology]
       attribute :resetToken

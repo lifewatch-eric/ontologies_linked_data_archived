@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 5607a1a76cc02c4ffc668044f26577467588d984
+  revision: a3735ff490c10a1092d346cc6382c9542112d1cb
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -40,7 +40,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.0.12)
+    activesupport (4.0.13)
       i18n (~> 0.6, >= 0.6.9)
       minitest (~> 4.2)
       multi_json (~> 1.3)
@@ -63,16 +63,16 @@ GEM
     email_spec (1.6.0)
       launchy (~> 2.1)
       mail (~> 2.2)
-    ethon (0.7.1)
+    ethon (0.7.2)
       ffi (>= 1.3.0)
-    faraday (0.9.0)
+    faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.6)
-    i18n (0.6.11)
-    json_pure (1.8.1)
+    i18n (0.7.0)
+    json_pure (1.8.2)
     launchy (2.4.3)
       addressable (~> 2.3)
-    libxml-ruby (2.7.0)
+    libxml-ruby (2.8.0)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
     mail (2.6.3)
@@ -84,16 +84,16 @@ GEM
     multipart-post (2.0.0)
     mysql2 (0.3.17)
     net-http-persistent (2.9.4)
-    netrc (0.10.0)
-    oj (2.11.1)
+    netrc (0.10.2)
+    oj (2.11.4)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    rack (1.5.2)
-    rack-test (0.6.2)
+    rack (1.6.0)
+    rack-test (0.6.3)
       rack (>= 1.0)
     rake (10.4.2)
     rdf (1.0.8)
@@ -107,7 +107,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.3.0)
     rubyzip (1.1.6)
-    sequel (4.17.0)
+    sequel (4.18.0)
     simplecov (0.9.1)
       docile (~> 1.1.0)
       multi_json (~> 1.0)
@@ -116,7 +116,7 @@ GEM
     slop (3.6.0)
     systemu (2.6.4)
     thread_safe (0.3.4)
-    typhoeus (0.6.9)
+    typhoeus (0.7.0)
       ethon (>= 0.7.1)
     tzinfo (0.3.42)
     uuid (2.3.7)
