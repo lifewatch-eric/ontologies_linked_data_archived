@@ -225,8 +225,7 @@ eos
 
     #test roots to ack parsing went well
     n_roots = sub.roots.length
-    assert n_roots == 15
-
+    assert_equal 14, n_roots
   end
 
   def test_submission_parse
