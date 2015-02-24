@@ -103,13 +103,14 @@ module LinkedData
             @logger.error("OWLAPI java process was kill due to timeout")
             @logger.error("cmd process: #{command_call}")
           end
-        end
-        if not File.exist?(File.join([@output_repo, "owlapi.xrdf"]))
-          raise Parser::OWLAPIParserException, "OWLAPI java command exited with #{status.exitstatus}. " +\
-          "Output file #{File.join([@output_repo, "owlapi.xrdf"])} cannot be found."
-        else
-          @file_triples_path = File.join([@output_repo, "owlapi.xrdf"])
-          @logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
+          if not File.exist?(File.join([@output_repo, "owlapi.xrdf"]))
+            raise Parser::OWLAPIParserException, "OWLAPI java command exited with"+
+            "  #{w.value.exitstatus}. " +\
+            "Output file #{File.join([@output_repo, "owlapi.xrdf"])} cannot be found."
+          else
+            @file_triples_path = File.join([@output_repo, "owlapi.xrdf"])
+            @logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
+          end
         end
         @missing_imports = []
         if File.exist? errors_log
