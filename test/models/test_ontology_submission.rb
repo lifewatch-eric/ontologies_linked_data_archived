@@ -829,7 +829,7 @@ eos
 
     assert metrics.classes == 143
     assert metrics.properties == 78
-    assert metrics.individuals == 27
+    assert metrics.individuals == 26
     assert metrics.classesWithOneChild == 11
     assert metrics.classesWithNoDefinition == 133
     assert metrics.classesWithMoreThan25Children == 0
