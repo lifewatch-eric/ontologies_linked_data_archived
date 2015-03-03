@@ -73,23 +73,44 @@ module LinkedData
         end
         command_call = "java -DentityExpansionLimit=1500000 -Xmx10240M -jar #{@owlapi_wrapper_jar_path} #{options}"
         @logger.info("Java call [#{command_call}]")
-        stdout,stderr,status = Open3.capture3(command_call)
-        if not status.success?
-          @logger.error("OWLAPI java error in parse")
-          @logger.error(stderr)
-          @logger.error(stdout)
-          raise Parser::OWLAPIParserException, "OWLAPI java command exited with #{status.exitstatus}. Check parser logs."
-        else
-          @logger.info("OWLAPI java parse finished OK.")
-          @logger.info(stderr)
-          @logger.info(stdout)
-        end
-        if not File.exist?(File.join([@output_repo, "owlapi.xrdf"]))
-          raise Parser::OWLAPIParserException, "OWLAPI java command exited with #{status.exitstatus}. " +\
-          "Output file #{File.join([@output_repo, "owlapi.xrdf"])} cannot be found."
-        else
-          @file_triples_path = File.join([@output_repo, "owlapi.xrdf"])
-          @logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
+        Open3.popen3(command_call) do |i,o,e,w|
+          begin
+            Timeout.timeout(60 * 60 * 2) do #2 hours
+              buffer = []
+              o.each_line do |line|
+                buffer << line
+              end
+              stdout = buffer.join "\n"
+              e.each_line do |line|
+                buffer << line
+              end
+              stderr = buffer.join "\n"
+              if not w.value.success?
+                @logger.error("OWLAPI java error in parse")
+                @logger.error(stderr)
+                @logger.error(stdout)
+                raise Parser::OWLAPIParserException,
+                  "OWLAPI java command exited with #{status.exitstatus}." +
+                  " Check parser logs."
+              else
+                @logger.info("OWLAPI java parse finished OK.")
+                @logger.info(stderr)
+                @logger.info(stdout)
+              end
+            end
+          rescue Timeout::Error
+            Process.kill("KILL", w.pid)
+            @logger.error("OWLAPI java process was kill due to timeout")
+            @logger.error("cmd process: #{command_call}")
+          end
+          if not File.exist?(File.join([@output_repo, "owlapi.xrdf"]))
+            raise Parser::OWLAPIParserException, "OWLAPI java command exited with"+
+            "  #{w.value.exitstatus}. " +\
+            "Output file #{File.join([@output_repo, "owlapi.xrdf"])} cannot be found."
+          else
+            @file_triples_path = File.join([@output_repo, "owlapi.xrdf"])
+            @logger.info("Output size #{File.stat(@file_triples_path).size} in `#{@file_triples_path}`")
+          end
         end
         @missing_imports = []
         if File.exist? errors_log
