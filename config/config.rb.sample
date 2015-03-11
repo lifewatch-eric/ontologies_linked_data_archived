@@ -14,6 +14,10 @@ LinkedData.config do |config|
   config.purl_password          = ""
   config.purl_maintainers       = ""
   config.purl_target_url_prefix = "http://bioportal.bioontology.org"
+
+  #Ontology Analytics Redis
+  config.ontology_analytics_redis_host = "localhost"
+  config.ontology_analytics_redis_port = 6379
 end
 
 #sometimes tmp by default cannot allocate large files
