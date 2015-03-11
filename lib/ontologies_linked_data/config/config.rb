@@ -15,59 +15,63 @@ module LinkedData
     overide_connect_goo = false
 
     # Set defaults
-    @settings.goo_port               ||= 9000
-    @settings.goo_host               ||= "localhost"
-    @settings.search_server_url      ||= "http://localhost:8983/solr"
-    @settings.repository_folder      ||= "./test/data/ontology_files/repo"
-    @settings.rest_url_prefix        ||= "http://data.bioontology.org/"
-    @settings.enable_security        ||= false
-    @settings.enable_slices          ||= false
+    @settings.goo_port                      ||= 9000
+    @settings.goo_host                      ||= "localhost"
+    @settings.search_server_url             ||= "http://localhost:8983/solr"
+    @settings.repository_folder             ||= "./test/data/ontology_files/repo"
+    @settings.rest_url_prefix               ||= "http://data.bioontology.org/"
+    @settings.enable_security               ||= false
+    @settings.enable_slices                 ||= false
 
     ### these params should be not ussed any more
     # removed so that dependencies shout
     #
-    # @settings.redis_host             ||= "localhost"
-    # @settings.redis_port             ||= 6379
+    # @settings.redis_host                    ||= "localhost"
+    # @settings.redis_port                    ||= 6379
     # ###
 
-    @settings.ui_host                ||= "bioportal.bioontology.org"
-    @settings.replace_url_prefix     ||= false
-    @settings.id_url_prefix          ||= "http://data.bioontology.org/"
-    @settings.queries_debug          ||= false
-    @settings.enable_monitoring      ||= false
-    @settings.cube_host              ||= "localhost"
-    @settings.cube_port              ||= 1180
+    @settings.ui_host                       ||= "bioportal.bioontology.org"
+    @settings.replace_url_prefix            ||= false
+    @settings.id_url_prefix                 ||= "http://data.bioontology.org/"
+    @settings.queries_debug                 ||= false
+    @settings.enable_monitoring             ||= false
+    @settings.cube_host                     ||= "localhost"
+    @settings.cube_port                     ||= 1180
 
     # Caching http
-    @settings.enable_http_cache      ||= false
-    @settings.http_redis_host        ||= "localhost"
-    @settings.http_redis_port        ||= 6379
+    @settings.enable_http_cache             ||= false
+    @settings.http_redis_host               ||= "localhost"
+    @settings.http_redis_port               ||= 6379
 
     #Caching goo
-    @settings.goo_redis_host         ||= "localhost"
-    @settings.goo_redis_port         ||= 6379
+    @settings.goo_redis_host                ||= "localhost"
+    @settings.goo_redis_port                ||= 6379
+
+    #Ontology Analytics Redis
+    @settings.ontology_analytics_redis_host ||= "localhost"
+    @settings.ontology_analytics_redis_port ||= 6379
 
     # PURL server config parameters
-    @settings.enable_purl            ||= false
-    @settings.purl_host              ||= "purl.bioontology.org"
-    @settings.purl_port              ||= 80
-    @settings.purl_username          ||= ""
-    @settings.purl_password          ||= ""
-    @settings.purl_maintainers       ||= ""
-    @settings.purl_target_url_prefix ||= "http://bioportal.bioontology.org"
+    @settings.enable_purl                   ||= false
+    @settings.purl_host                     ||= "purl.bioontology.org"
+    @settings.purl_port                     ||= 80
+    @settings.purl_username                 ||= ""
+    @settings.purl_password                 ||= ""
+    @settings.purl_maintainers              ||= ""
+    @settings.purl_target_url_prefix        ||= "http://bioportal.bioontology.org"
 
     # Email settings
-    @settings.enable_notifications   ||= false
-    @settings.email_sender           ||= "admin@example.org" # Default sender for emails
-    @settings.email_override         ||= "test.email@example.org" # By default, all email gets sent here. Disable with email_override_disable.
-    @settings.email_disable_override ||= false
-    @settings.smtp_host              ||= "localhost"
-    @settings.smtp_port              ||= 25
-    @settings.smtp_user              ||= "user"
-    @settings.smtp_password          ||= "password"
-    @settings.smtp_auth_type         ||= :none # :none, :plain, :login, :cram_md5
-    @settings.smtp_domain            ||= "localhost.localhost"
-    @settings.enable_starttls_auto   ||= false # set to true for use with gmail
+    @settings.enable_notifications          ||= false
+    @settings.email_sender                  ||= "admin@example.org" # Default sender for emails
+    @settings.email_override                ||= "test.email@example.org" # By default, all email gets sent here. Disable with email_override_disable.
+    @settings.email_disable_override        ||= false
+    @settings.smtp_host                     ||= "localhost"
+    @settings.smtp_port                     ||= 25
+    @settings.smtp_user                     ||= "user"
+    @settings.smtp_password                 ||= "password"
+    @settings.smtp_auth_type                ||= :none # :none, :plain, :login, :cram_md5
+    @settings.smtp_domain                   ||= "localhost.localhost"
+    @settings.enable_starttls_auto          ||= false # set to true for use with gmail
 
     # Override defaults
     yield @settings, overide_connect_goo if block_given?
