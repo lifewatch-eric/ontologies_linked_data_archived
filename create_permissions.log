@@ -3711,3 +3711,14 @@ D, [2015-02-23T16:16:22.966367 #59043] DEBUG -- : Dir created ./test/data/ontolo
 D, [2015-02-23T16:16:22.968721 #59043] DEBUG -- : File created ./test/data/ontology_files/repo/MAPPING_TEST3/33/aero.owl | 100644 | umask: 18
 D, [2015-02-23T16:16:36.936983 #59043] DEBUG -- : Dir created ./test/data/ontology_files/repo/MAPPING_TEST4/44 | 40755 | umask: 18
 D, [2015-02-23T16:16:36.938830 #59043] DEBUG -- : File created ./test/data/ontology_files/repo/MAPPING_TEST4/44/fake_for_mappings.owl | 100644 | umask: 18
+D, [2015-03-17T11:50:49.579550 #3865] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T11:53:03.706697 #4006] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T11:53:39.740569 #4126] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T11:54:07.595941 #4231] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T11:54:41.798108 #4345] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T16:41:16.973523 #5693] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T16:42:14.831473 #5811] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T16:43:06.241024 #5920] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T17:29:46.423961 #6956] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T17:36:57.669886 #7153] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18
+D, [2015-03-17T17:47:11.866527 #7405] DEBUG -- : File created ./test/data/ontology_files/repo/CSTPROPS/1/custom_properties.owl | 100644 | umask: 18

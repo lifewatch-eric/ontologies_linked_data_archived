@@ -99,6 +99,18 @@ class TestClassModel < LinkedData::TestOntologyCommon
     assert page.next_page == nil
     assert page.aggregate == 3
     assert page[0].id.to_s == data_descendants[2]
+
+    cls = LinkedData::Models::Class.find(class_id).in(os)
+                .to_a[0]
+    cls.load_has_children
+    has_c = cls.hasChildren
+    assert_equal(has_c,true)
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_7"
+    cls = LinkedData::Models::Class.find(class_id).in(os)
+                .to_a[0]
+    cls.load_has_children
+    has_c = cls.hasChildren
+    assert_equal(has_c,false)
   end
 
   def test_path_to_root
