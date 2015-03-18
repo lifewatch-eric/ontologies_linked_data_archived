@@ -787,8 +787,8 @@ eos
         assert c.definition == ["Anatomical system that consists of the integumental system plus all mucosae and submucosae."]
       end
       if c.id.to_s == "http://purl.obolibrary.org/obo/IAO_0000578"
-        assert c.prefLabel == "CRID"
-        assert c.synonym[0] == "Centrally Registered IDentifier"
+        assert c.prefLabel == "Centrally Registered IDentifier"
+        assert c.synonym[0] == "CRID"
       end
     end
 
