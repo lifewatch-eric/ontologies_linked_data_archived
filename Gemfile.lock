@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: f8f559eca8c6b9831a1d97779889083c1142be06
+  revision: accd0f2b186aa1cf286ee10c497fec78fb2d17ce
   branch: staging
   specs:
     goo (0.0.2)
@@ -52,6 +52,8 @@ GEM
     coderay (1.1.0)
     cube-ruby (0.0.3)
     docile (1.1.5)
+    domain_name (0.5.23)
+      unf (>= 0.0.5, < 1.0.0)
     elasticsearch (1.0.8)
       elasticsearch-api (= 1.0.7)
       elasticsearch-transport (= 1.0.7)
@@ -68,6 +70,8 @@ GEM
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.8)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
     i18n (0.7.0)
     json_pure (1.8.2)
     launchy (2.4.3)
@@ -100,7 +104,8 @@ GEM
       addressable (>= 2.2)
     redis (3.2.1)
     ref (1.0.5)
-    rest-client (1.7.3)
+    rest-client (1.8.0)
+      http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
     rsolr (1.0.12)
@@ -114,11 +119,14 @@ GEM
       simplecov-html (~> 0.9.0)
     simplecov-html (0.9.0)
     slop (3.6.0)
-    systemu (2.6.4)
+    systemu (2.6.5)
     thread_safe (0.3.5)
     typhoeus (0.7.1)
       ethon (>= 0.7.1)
     tzinfo (0.3.43)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.6)
     uuid (2.3.7)
       macaddr (~> 1.0)
 
