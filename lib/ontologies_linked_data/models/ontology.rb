@@ -140,6 +140,9 @@ module LinkedData
         LinkedData::Models::Ontology.where.models([self])
                     .include(submissions: [:submissionId, :submissionStatus])
                     .to_a
+
+        return 0 if self.submissions.nil? || self.submissions.empty?
+
         self.submissions.each do |s|
           if !s.loaded_attributes.include?(:submissionId)
             s.bring(:submissionId)
@@ -148,8 +151,6 @@ module LinkedData
             s.bring(:submissionStatus)
           end
         end
-
-        return 0 if self.submissions.nil? || self.submissions.empty?
 
         # Try to get a new one based on the old
         submission_ids = []
@@ -218,9 +219,7 @@ module LinkedData
                               :port => LinkedData.settings.ontology_analytics_redis_port,
                               :timeout => 30)
         raw_analytics = @@redis.get(ONTOLOGY_ANALYTICS_REDIS_FIELD)
-        raise OntologyAnalyticsError, "The ontology analytics data is currently unavailable" if raw_analytics.nil?
-        analytics = Marshal.load(raw_analytics)
-        return analytics
+        return raw_analytics.nil?? Hash.new : Marshal.load(raw_analytics)
       end
 
       ##
