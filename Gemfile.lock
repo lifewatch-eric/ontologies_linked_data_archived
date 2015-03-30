@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: f8f559eca8c6b9831a1d97779889083c1142be06
+  revision: 2ef65beab58a3dac68fc19d5ea32412b92e014b3
   branch: master
   specs:
     goo (0.0.2)
@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: a3735ff490c10a1092d346cc6382c9542112d1cb
+  revision: b39a3ab6673c73c7f725799fc258386995c4cbdc
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -89,7 +89,7 @@ GEM
     mysql2 (0.3.18)
     net-http-persistent (2.9.4)
     netrc (0.10.3)
-    oj (2.12.0)
+    oj (2.12.1)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
