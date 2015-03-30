@@ -192,9 +192,10 @@ module LinkedData
       # retrieve Analytics for this ontology
       def analytics
         analytics = self.class.load_analytics_data
-        self.bring(:acronym) if self.bring?(:acronym)
-        analytics.delete_if { |key, _| key != self.acronym }
-
+        unless analytics.empty?
+          self.bring(:acronym) if self.bring?(:acronym)
+          analytics.delete_if { |key, _| key != self.acronym }
+        end
         return analytics
       end
 
@@ -202,7 +203,7 @@ module LinkedData
       def self.analytics(year, month)
         analytics = self.load_analytics_data
 
-        if year && month
+        if year && month && !analytics.empty?
           analytics.values.each do |ont_analytics|
             ont_analytics.delete_if { |key, _| key != year }
             ont_analytics.each { |_, val| val.delete_if { |key, __| key != month } }
