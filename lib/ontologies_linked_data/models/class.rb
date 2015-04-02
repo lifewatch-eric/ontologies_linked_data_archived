@@ -83,7 +83,7 @@ module LinkedData
       # Hypermedia settings
       embed :children, :ancestors, :descendants, :parents
       serialize_default :prefLabel, :synonym, :definition, :cui, :semanticType, :obsolete, :matchType # an attribute used in Search (not shown out of context)
-      serialize_methods :properties, :childrenCount
+      serialize_methods :properties, :childrenCount, :hasChildren
       serialize_never :submissionAcronym, :submissionId, :submission, :descendants
       aggregates childrenCount: [:count, :children]
       links_load submission: [ontology: [:acronym]]
@@ -225,16 +225,14 @@ module LinkedData
         return paths
       end
 
-      def self.partially_load_children(models,threshold,submission,only_children_count=false)
+      def self.partially_load_children(models,threshold,
+                                       submission)
 
         ld = [:prefLabel, :definition, :synonym]
 
         single_load = []
         query = self.in(submission)
               .models(models)
-        if only_children_count
-            query = query.include(ld)
-        end
         query.aggregate(:count, :children).all
 
         models.each do |cls|
@@ -267,7 +265,7 @@ module LinkedData
         return self if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true)
-        roots = self.submission.roots
+        roots = self.submission.roots(extra_include=[:hasChildren])
         threshhold = 99
 
         #select one path that gets to root
@@ -306,7 +304,8 @@ module LinkedData
         end
 
        LinkedData::Models::Class.
-         partially_load_children(childrens_hash.values,threshhold,self.submission,only_children_count=true)
+         partially_load_children(childrens_hash.values,threshhold,
+                                 self.submission)
 
         #build the tree
         root_node = path.first
@@ -317,12 +316,16 @@ module LinkedData
               tree_node.children.length > 0 and path.length > 0 do
 
           next_tree_node = nil
+          tree_node.load_has_children
           tree_node.children.each_index do |i|
             if tree_node.children[i].id.to_s == path.first.id.to_s
               next_tree_node = path.first
               children = tree_node.children.dup
               children[i] = path.first
               tree_node.instance_variable_set("@children",children)
+              children.each do |c|
+                  c.load_has_children
+              end
             else
               tree_node.children[i].instance_variable_set("@children",[])
             end
@@ -369,6 +372,28 @@ module LinkedData
         return models
       end
 
+      def hasChildren
+        if instance_variable_get("@intlHasChildren").nil?
+          raise ArgumentError, "HasChildren not loaded for #{self.id.to_ntriples}"
+        end
+        return @intlHasChildren
+     end
+
+     def load_has_children
+        if !instance_variable_get("@intlHasChildren").nil?
+          return
+        end
+        graphs = [self.submission.id.to_s]
+        query = has_children_query(self.id.to_s,graphs.first)
+        has_c = false
+        Goo.sparql_query_client.query(query,
+                      query_options: {rules: :NONE }, graphs: graphs)
+                          .each do |sol|
+          has_c = true
+        end
+        @intlHasChildren = has_c
+      end
+
       private
 
       def retrieve_hierarchy_ids(direction=:ancestors)
@@ -412,6 +437,20 @@ module LinkedData
           level_ids = next_level
         end
         return all_ids
+      end
+
+      def has_children_query(class_id,submission_id)
+        property_tree = self.class.tree_view_property(self.submission)
+        pattern = "?c <#{property_tree.to_s}> <#{class_id.to_s}> . "
+        query = <<eos
+SELECT ?c WHERE {
+GRAPH <#{submission_id}> {
+  #{pattern}
+}
+}
+LIMIT 1
+eos
+         return query
       end
 
       def hierarchy_query(direction,class_ids)
