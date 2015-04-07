@@ -58,6 +58,17 @@ module LinkedData
         return extracted_files
       end
 
+      def self.automaster?(path, format)
+        self.automaster_for_zip(path, format) != nil
+      end
+
+      def self.automaster(path, format)
+        files = self.files_from_zip(path)
+        basename = File.basename(path, ".zip")
+        basename = File.basename(basename, format)
+        files.select {|f| File.basename(f, format).downcase.eql?(basename.downcase)}.first
+      end
+
       def self.repeated_names_in_file_list(file_list)
         return file_list.group_by {|x| x.split("/")[-1]}.select { |k,v| v.length > 1}
       end
