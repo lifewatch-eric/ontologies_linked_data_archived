@@ -39,7 +39,7 @@ module LinkedData
 
       ##
       # This is a convenience method that will provide Goo with
-      # a list of attributes and nested values to load
+      # a list of attributes and nested values to load for this request
       def self.goo_attrs_to_load(attributes = [], level = 0)
         raise ArgumentError, "`attributes` should be an array" unless attributes.is_a?(Array)
 
@@ -126,6 +126,8 @@ module LinkedData
         return default_attrs
       end
 
+      ##
+      # Compiles a list of aggregate-type attributes that need to be loaded for this request
       def self.goo_aggregates_to_load(attributes = [])
         included_aggregates = []
         return included_aggregates if attributes.empty?
@@ -137,6 +139,9 @@ module LinkedData
 
       private
 
+      ##
+      # Looks for an object 'owner' and looks in Thread.current[:remote_user]
+      # to see if the user for this request matches the owner
       def write_permission_check(*args)
         # Don't prevent writes if creating a new object (anyone should be able to do this)
         return unless self.exist?
