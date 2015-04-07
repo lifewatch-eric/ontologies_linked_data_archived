@@ -23,6 +23,16 @@ module LinkedData
         return id.to_s.end_with? "SKOS"
       end
 
+      EXTENSIONS = {
+        owl: ".owl",
+        obo: ".obo",
+        umls: ".ttl",
+        skos: ".skos"
+      }.freeze
+      def file_extension
+        EXTENSIONS[self.acronym.downcase.to_sym]
+      end
+
       def tree_property
         if obo?
           return Goo.vocabulary(:metadata)[:treeView]
