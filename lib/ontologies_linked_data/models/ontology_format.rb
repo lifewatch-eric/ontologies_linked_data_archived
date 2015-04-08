@@ -30,6 +30,7 @@ module LinkedData
         skos: ".skos"
       }.freeze
       def file_extension
+        self.bring.acronym if self.bring?(:acronym)
         EXTENSIONS[self.acronym.downcase.to_sym]
       end
 
