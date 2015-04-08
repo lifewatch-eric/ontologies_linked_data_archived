@@ -59,7 +59,7 @@ module LinkedData
       end
 
       def self.automaster?(path, format)
-        self.automaster_for_zip(path, format) != nil
+        self.automaster(path, format) != nil
       end
 
       def self.automaster(path, format)
