@@ -71,6 +71,16 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     LinkedData::TestCase.backend_4s_delete
   end
 
+  def test_automaster_from_zip
+    zipfile = "./test/data/ontology_files/SDO.zip"
+    assert LinkedData::Utils::FileHelpers.automaster?(zipfile, ".owl")
+    assert_equal "SDO.owl", LinkedData::Utils::FileHelpers.automaster(zipfile, ".owl")
+
+    zipfile = "./test/data/ontology_files/evoc_v2.9.zip"
+    assert !LinkedData::Utils::FileHelpers.automaster?(zipfile, ".obo")
+    assert_equal nil, LinkedData::Utils::FileHelpers.automaster(zipfile, ".owl")
+  end
+
   def test_duplicated_file_names
 
     acronym = "DUPTEST"
