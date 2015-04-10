@@ -38,9 +38,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
   def test_sanity_check_zip
 
-    acronym = "SDOTEST"
-    name = "SDOTEST Bla"
-    ontologyFile = "./test/data/ontology_files/SDO.zip"
+    acronym = "ADARTEST"
+    name = "ADARTEST Bla"
+    ontologyFile = "./test/data/ontology_files/zip_missing_master_file.zip"
     id = 10
 
     owl, rad, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
@@ -69,6 +69,16 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert ont_submision.valid?
     assert_equal 0, ont_submision.errors.length
     LinkedData::TestCase.backend_4s_delete
+  end
+
+  def test_automaster_from_zip
+    zipfile = "./test/data/ontology_files/SDO.zip"
+    assert LinkedData::Utils::FileHelpers.automaster?(zipfile, ".owl")
+    assert_equal "SDO.owl", LinkedData::Utils::FileHelpers.automaster(zipfile, ".owl")
+
+    zipfile = "./test/data/ontology_files/evoc_v2.9.zip"
+    assert !LinkedData::Utils::FileHelpers.automaster?(zipfile, ".obo")
+    assert_equal nil, LinkedData::Utils::FileHelpers.automaster(zipfile, ".obo")
   end
 
   def test_duplicated_file_names
