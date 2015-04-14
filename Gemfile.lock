@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 2ef65beab58a3dac68fc19d5ea32412b92e014b3
+  revision: a7217cd8b6992dc5c14639b751be7fe935321e51
   branch: master
   specs:
     goo (0.0.2)
@@ -89,7 +89,7 @@ GEM
     mysql2 (0.3.18)
     net-http-persistent (2.9.4)
     netrc (0.10.3)
-    oj (2.12.1)
+    oj (2.12.2)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
