@@ -225,10 +225,11 @@ eos
 
     #test roots to ack parsing went well
     n_roots = sub.roots.length
-    assert_equal 14, n_roots
+    assert_equal 15, n_roots
   end
 
   def test_submission_parse
+
     #This one has some nasty looking IRIS with slashes in the anchor
     unless ENV["BP_SKIP_HEAVY_TESTS"] == "1"
       submission_parse("MCCLTEST", "MCCLS TEST",
