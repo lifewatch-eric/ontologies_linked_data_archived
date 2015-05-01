@@ -38,9 +38,9 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
 
   def test_sanity_check_zip
 
-    acronym = "SDOTEST"
-    name = "SDOTEST Bla"
-    ontologyFile = "./test/data/ontology_files/SDO.zip"
+    acronym = "ADARTEST"
+    name = "ADARTEST Bla"
+    ontologyFile = "./test/data/ontology_files/zip_missing_master_file.zip"
     id = 10
 
     owl, rad, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
@@ -69,6 +69,16 @@ class TestOntologySubmission < LinkedData::TestOntologyCommon
     assert ont_submision.valid?
     assert_equal 0, ont_submision.errors.length
     LinkedData::TestCase.backend_4s_delete
+  end
+
+  def test_automaster_from_zip
+    zipfile = "./test/data/ontology_files/SDO.zip"
+    assert LinkedData::Utils::FileHelpers.automaster?(zipfile, ".owl")
+    assert_equal "SDO.owl", LinkedData::Utils::FileHelpers.automaster(zipfile, ".owl")
+
+    zipfile = "./test/data/ontology_files/evoc_v2.9.zip"
+    assert !LinkedData::Utils::FileHelpers.automaster?(zipfile, ".obo")
+    assert_equal nil, LinkedData::Utils::FileHelpers.automaster(zipfile, ".obo")
   end
 
   def test_duplicated_file_names
@@ -775,23 +785,19 @@ eos
                                              .read_only
                                              .include(:prefLabel, :synonym, :definition).all
     page_classes.each do |c|
+      if c.id.to_s == "http://purl.obolibrary.org/obo/AERO_0000040"
+        assert c.prefLabel == "shaking finding"
+        assert c.synonym.sort == ["trembling", "tremor", "quivering", "shivering"].sort
+        assert !c.definition[0]["repetitive, cyclical movements of the body or"].nil?
+      end
       if c.id.to_s == "http://purl.obolibrary.org/obo/UBERON_0004535"
-        assert c.prefLabel == "cardiovascular system"
-        assert c.definition[0] == "Anatomical system that has as its parts the heart and blood vessels."
+        assert c.prefLabel == "UBERON_0004535"
       end
       if c.id.to_s == "http://purl.obolibrary.org/obo/ogms/OMRE_0000105"
-        assert c.prefLabel == "angioedema"
-      end
-      if c.id.to_s == "http://purl.obolibrary.org/obo/ogms/OMRE_0000104"
-        assert c.prefLabel == "generalized erythema"
+        assert c.prefLabel == "OMRE_0000105"
       end
       if c.id.to_s == "http://purl.obolibrary.org/obo/UBERON_0012125"
-        assert c.prefLabel == "dermatological-mucosal system"
-        assert c.definition == ["Anatomical system that consists of the integumental system plus all mucosae and submucosae."]
-      end
-      if c.id.to_s == "http://purl.obolibrary.org/obo/IAO_0000578"
-        assert c.prefLabel == "CRID"
-        assert c.synonym[0] == "Centrally Registered IDentifier"
+        assert c.prefLabel = "UBERON_0012125"
       end
     end
 
@@ -811,8 +817,8 @@ eos
       end
       paging.page(page.next_page) if page.next?
     end while(page.next?)
-    assert syns == 26
-    assert defs == 291
+    assert syns == 5
+    assert defs == 49
     LinkedData::TestCase.backend_4s_delete
   end
 

@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'redis'
 require 'ontologies_linked_data/models/ontology_submission'
 require 'ontologies_linked_data/models/review'
 require 'ontologies_linked_data/models/group'
@@ -12,6 +13,9 @@ module LinkedData
   module Models
     class Ontology < LinkedData::Models::Base
       class ParsedSubmissionError < StandardError; end
+      class OntologyAnalyticsError < StandardError; end
+
+      ONTOLOGY_ANALYTICS_REDIS_FIELD = "ontology_analytics"
 
       model :ontology, :name_with => :acronym
       attribute :acronym, namespace: :omv,
@@ -69,7 +73,7 @@ module LinkedData
       write_access :administeredBy
       access_control_load :administeredBy, :acl, :viewingRestriction
 
-      def self.validate_acronym(inst,attr)
+      def self.validate_acronym(inst, attr)
         inst.bring(attr) if inst.bring?(attr)
         acronym = inst.send(attr)
 
@@ -136,6 +140,9 @@ module LinkedData
         LinkedData::Models::Ontology.where.models([self])
                     .include(submissions: [:submissionId, :submissionStatus])
                     .to_a
+
+        return 0 if self.submissions.nil? || self.submissions.empty?
+
         self.submissions.each do |s|
           if !s.loaded_attributes.include?(:submissionId)
             s.bring(:submissionId)
@@ -144,8 +151,6 @@ module LinkedData
             s.bring(:submissionStatus)
           end
         end
-
-        return 0 if self.submissions.nil? || self.submissions.empty?
 
         # Try to get a new one based on the old
         submission_ids = []
@@ -182,6 +187,41 @@ module LinkedData
         LinkedData::Models::AnnotationProperty.in(latest).models(parents).include(:label, :definition).all()
 
         return datatype_props + object_props + annotation_props
+      end
+
+      # retrieve Analytics for this ontology
+      def analytics
+        analytics = self.class.load_analytics_data
+        unless analytics.empty?
+          self.bring(:acronym) if self.bring?(:acronym)
+          analytics.delete_if { |key, _| key != self.acronym }
+        end
+        return analytics
+      end
+
+      # A static method for retrieving Analytics for a combination of ontologies, year, month
+      def self.analytics(year=nil, month=nil, acronyms=nil)
+        analytics = self.load_analytics_data
+
+        unless analytics.empty?
+          analytics.delete_if { |acronym, _| !acronyms.include? acronym } unless acronyms.nil?
+          analytics.values.each do |ont_analytics|
+            ont_analytics.delete_if { |key, _| key != year } unless year.nil?
+            ont_analytics.each { |_, val| val.delete_if { |key, __| key != month } } unless month.nil?
+          end
+          # sort results by the highest traffic values
+          analytics = Hash[analytics.sort_by {|k, v| v[year][month]}.reverse] if year && month
+        end
+
+        return analytics
+      end
+
+      def self.load_analytics_data
+        @@redis ||= Redis.new(:host => LinkedData.settings.ontology_analytics_redis_host,
+                              :port => LinkedData.settings.ontology_analytics_redis_port,
+                              :timeout => 30)
+        raw_analytics = @@redis.get(ONTOLOGY_ANALYTICS_REDIS_FIELD)
+        return raw_analytics.nil?? Hash.new : Marshal.load(raw_analytics)
       end
 
       ##

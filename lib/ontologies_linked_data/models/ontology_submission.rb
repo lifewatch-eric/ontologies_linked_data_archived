@@ -149,6 +149,9 @@ module LinkedData
         elsif zip and files.length == 1
           self.masterFileName = files.first
           return true
+        elsif zip && self.masterFileName.nil? && LinkedData::Utils::FileHelpers.automaster?(self.uploadFilePath, self.hasOntologyLanguage.file_extension)
+          self.masterFileName = LinkedData::Utils::FileHelpers.automaster(self.uploadFilePath, self.hasOntologyLanguage.file_extension)
+          return true
         elsif zip and self.masterFileName.nil?
           #zip and masterFileName not set. The user has to choose.
           if self.errors[:uploadFilePath].nil?
@@ -207,7 +210,7 @@ module LinkedData
       end
 
       def parsing_log_path
-        return self.uploadFilePath.nil? ? nil : self.uploadFilePath + '_parsing.log'
+        return File.join(self.data_folder, 'parsing.log')
       end
 
       def unzip_submission(logger)
@@ -875,7 +878,7 @@ eos
         end
       end
 
-      def roots(extra_include=nil,aggregate_children=false)
+      def roots(extra_include=nil)
 
         unless self.loaded_attributes.include?(:hasOntologyLanguage)
           self.bring(:hasOntologyLanguage)
@@ -916,25 +919,31 @@ eos
             extra_include.delete x
           end
         end
-        load_children = false
+        load_children = []
         if extra_include
           load_children = extra_include.delete :children
-          if !load_children
-            load_children = extra_include.select { |x| x.instance_of?(Hash) && x.include?(:children) }
-            if load_children
-              extra_include = extra_include.select { |x| !(x.instance_of?(Hash) && x.include?(:children)) }
+          if load_children.nil?
+            load_children = extra_include.select {
+              |x| x.instance_of?(Hash) && x.include?(:children) }
+            if load_children.length > 0
+              extra_include = extra_include.select {
+                |x| !(x.instance_of?(Hash) && x.include?(:children)) }
             end
+          else
+            load_children = [:children]
           end
           if extra_include.length > 0
             where.include(extra_include)
           end
         end
-        where.aggregate(:count,:children) if aggregate_children
         where.all
-        if load_children
+        if load_children.length > 0
           LinkedData::Models::Class.partially_load_children(roots,99,self)
         end
         classes.each do |c|
+          if !extra_include.nil? and extra_include.include?:hasChildren
+            c.load_has_children
+          end
           roots << c if (c.obsolete.nil?) || (c.obsolete == false)
         end
         return roots
