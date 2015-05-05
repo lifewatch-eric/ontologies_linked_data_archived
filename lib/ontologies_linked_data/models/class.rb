@@ -236,6 +236,9 @@ module LinkedData
         query.aggregate(:count, :children).all
 
         models.each do |cls|
+          if cls.aggregates.nil?
+            next
+          end
           if cls.aggregates.first.value > threshold
             #too many load a page
             self.in(submission)
