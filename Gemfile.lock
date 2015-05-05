@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: a8b57e9627b6cb46d4126da1909cd8befeaaa1df
+  revision: af6f0de566f092664310b6a31a1b95502ab9a439
   branch: staging
   specs:
     goo (0.0.2)
@@ -113,7 +113,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.3.0)
     rubyzip (1.1.7)
-    sequel (4.21.0)
+    sequel (4.22.0)
     simplecov (0.10.0)
       docile (~> 1.1.0)
       json (~> 1.8)
