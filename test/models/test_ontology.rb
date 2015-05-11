@@ -218,7 +218,7 @@ class TestOntology < LinkedData::TestOntologyCommon
 
     review_params = {
         :creator => u,
-        :created => DateTime.new,
+        :created => DateTime.now,
         :body => "This is a test review.",
         :ontologyReviewed => o1,
         :usabilityRating => 0,

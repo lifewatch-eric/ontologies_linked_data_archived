@@ -21,7 +21,7 @@ class TestProject < LinkedData::TestCase
       :name => "Great Project",
       :acronym => "GP",
       :creator => [@user],
-      :created => DateTime.new,
+      :created => DateTime.now,
       :institution => "A university.",
       :contacts => "Anonymous Funk, Anonymous Miller.",
       :homePage => RDF::IRI.new("http://valid.uri.com"),
@@ -102,7 +102,7 @@ class TestProject < LinkedData::TestCase
     p.save
     p1 = LinkedData::Models::Project.where(creator: [username: 'Test User 0']).first
     p1.bring(creator: [:username])
-    assert_equal(3, p1.creator.length)  
+    assert_equal(3, p1.creator.length)
 
     # Proper list of users in creator attribute.
     creators = p1.creator.sort { |a,b| a.username <=> b.username }

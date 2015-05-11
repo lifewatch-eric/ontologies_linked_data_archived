@@ -4,8 +4,8 @@ module LinkedData
       model :project, :name_with => :acronym
       attribute :acronym, enforce: [:unique, :existence]
       attribute :creator, enforce: [:existence, :user, :list]
-      attribute :created, enforce: [:date_time], :default => lambda {|x| DateTime.new }
-      attribute :updated, enforce: [:date_time], :default => lambda {|x| DateTime.new }
+      attribute :created, enforce: [:date_time], :default => lambda {|x| DateTime.now }
+      attribute :updated, enforce: [:date_time], :default => lambda {|x| DateTime.now }
       attribute :name, enforce: [:existence]
       attribute :homePage, enforce: [:uri, :existence]
       attribute :description, enforce: [:existence]

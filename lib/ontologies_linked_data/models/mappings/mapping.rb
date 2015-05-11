@@ -51,7 +51,7 @@ module LinkedData
           attribute :source_name
           attribute :comment
           attribute :date, enforce: [:date_time],
-                      :default => lambda {|x| DateTime.new }
+                      :default => lambda {|x| DateTime.now }
 
           embedded true
 
