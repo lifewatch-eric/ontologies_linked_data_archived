@@ -63,7 +63,7 @@ module LinkedData
           best = LinkedData::Serializer.best_response_type(env, params)
         rescue LinkedData::Serializer::AcceptHeaderError; end
         if best == LinkedData::MediaTypes::HTML
-          Rack::Utils.set_cookie_header!(headers, "ncbo_apikey", {:value => apikey, :path => "/", :expires => Time.now+14*24*60*60})
+          Rack::Utils.set_cookie_header!(headers, "ncbo_apikey", {:value => apikey, :path => "/", :expires => Time.now+90*24*60*60})
         end
       end
 
