@@ -181,7 +181,7 @@ module LinkedData
       assert (not m.valid?)
       assert_equal(false, m.errors[:created].nil?, "#{m.errors}")
       # The value should be an XSD date time.
-      m.created = DateTime.new
+      m.created = DateTime.now
       assert m.valid?
       assert_instance_of(DateTime, m.created)
       assert_equal(true, m.errors[:created].nil?, "#{m.errors}")
@@ -198,7 +198,7 @@ module LinkedData
       m.delete
       assert_equal(false, m.exist?(reload=true), "Failed to delete model.")
     end
-   
+
     def self.count_pattern(pattern)
       q = "SELECT (count(DISTINCT ?s) as ?c) WHERE { #{pattern} }"
       rs = Goo.sparql_query_client.query(q)
