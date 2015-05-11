@@ -17,11 +17,6 @@ module LinkedData
       ])
 
       def call(env)
-        # Skip auth unless security is enabled or for routes we know should be allowed
-        return @app.call(env) unless LinkedData.settings.enable_security
-        return @app.call(env) if ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"])
-        return @app.call(env) if env["HTTP_REFERER"] && env["HTTP_REFERER"].start_with?(LinkedData.settings.rest_url_prefix)
-
         req = Rack::Request.new(env)
         params = req.params
         apikey = find_apikey(env, params)
@@ -44,13 +39,20 @@ module LinkedData
           }
         end
 
-        if status == 401
+        if status == 401 && !bypass?(env)
           LinkedData::Serializer.build_response(env, status: status, body: response)
         else
           status, headers, response = @app.call(env)
           apikey_cookie(env, headers, apikey, params)
           [status, headers, response]
         end
+      end
+
+      # Skip auth unless security is enabled or for routes we know should be allowed
+      def bypass?(env)
+        return !LinkedData.settings.enable_security \
+          || ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"]) \
+          || env["HTTP_REFERER"] && env["HTTP_REFERER"].start_with?(LinkedData.settings.rest_url_prefix)
       end
 
       ##
