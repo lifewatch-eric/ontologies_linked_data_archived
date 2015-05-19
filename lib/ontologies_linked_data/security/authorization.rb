@@ -17,11 +17,6 @@ module LinkedData
       ])
 
       def call(env)
-        # Skip auth unless security is enabled or for routes we know should be allowed
-        return @app.call(env) unless LinkedData.settings.enable_security
-        return @app.call(env) if ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"])
-        return @app.call(env) if env["HTTP_REFERER"] && env["HTTP_REFERER"].start_with?(LinkedData.settings.rest_url_prefix)
-
         req = Rack::Request.new(env)
         params = req.params
         apikey = find_apikey(env, params)
@@ -44,7 +39,7 @@ module LinkedData
           }
         end
 
-        if status == 401
+        if status == 401 && !bypass?(env)
           LinkedData::Serializer.build_response(env, status: status, body: response)
         else
           status, headers, response = @app.call(env)
@@ -53,13 +48,22 @@ module LinkedData
         end
       end
 
+      # Skip auth unless security is enabled or for routes we know should be allowed
+      def bypass?(env)
+        return !LinkedData.settings.enable_security \
+          || ROUTES_THAT_BYPASS_SECURITY.include?(env["REQUEST_PATH"]) \
+          || env["HTTP_REFERER"] && env["HTTP_REFERER"].start_with?(LinkedData.settings.rest_url_prefix)
+      end
+
       ##
       # Inject a cookie with the API Key if it is present and we're in HTML content type
       def apikey_cookie(env, headers, apikey, params)
-        # If we're using HTML, inject the apikey in a cookie
-        best = LinkedData::Serializer.best_response_type(env, params)
+        # If we're using HTML, inject the apikey in a cookie (ignores bad accept headers)
+        begin
+          best = LinkedData::Serializer.best_response_type(env, params)
+        rescue LinkedData::Serializer::AcceptHeaderError; end
         if best == LinkedData::MediaTypes::HTML
-          Rack::Utils.set_cookie_header!(headers, "ncbo_apikey", {:value => apikey, :path => "/", :expires => Time.now+14*24*60*60})
+          Rack::Utils.set_cookie_header!(headers, "ncbo_apikey", {:value => apikey, :path => "/", :expires => Time.now+90*24*60*60})
         end
       end
 

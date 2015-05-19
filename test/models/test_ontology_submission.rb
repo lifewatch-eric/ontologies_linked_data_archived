@@ -687,8 +687,6 @@ eos
       raise e
     end
     assert sub.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-    assert sub.missingImports.length == 1
-    assert sub.missingImports[0] == "http://purl.org/obo/owl/ro_bfo1-1_bridge"
 
     #make sure no errors in statuses
     sub.submissionStatus.select { |x| x.id.to_s["ERROR"] }.length == 0

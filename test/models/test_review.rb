@@ -18,7 +18,7 @@ class TestReview < LinkedData::TestCase
     @ont = LinkedData::Models::Ontology.find("TST").first
     @review_params = {
         :creator => @user,
-        :created => DateTime.new,
+        :created => DateTime.now,
         :body => "This is a test review.",
         :ontologyReviewed => @ont,
         :usabilityRating => 0,
