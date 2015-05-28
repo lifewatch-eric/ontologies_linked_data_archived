@@ -333,7 +333,7 @@ class TestClassModel < LinkedData::TestOntologyCommon
   end
 
   def test_xml_literal_serialization
-    comment = "<ncicp:ComplexDefinition><ncicp:def-definition>A form of cancer that begins in melanocytes (cells that make the pigment melanin). It may begin in a mole (skin melanoma), but can also begin in other pigmented tissues, such as in the eye or in the intestines.</ncicp:def-definition><ncicp:def-source>NCI-GLOSS</ncicp:def-source></ncicp:ComplexDefinition>"
+    comment = "A form of cancer that begins in melanocytes (cells that make the pigment melanin). It may begin in a mole (skin melanoma), but can also begin in other pigmented tissues, such as in the eye or in the intestines.NCI-GLOSS"
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
     os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ],
