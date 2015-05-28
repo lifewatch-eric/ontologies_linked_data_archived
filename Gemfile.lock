@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: b39a3ab6673c73c7f725799fc258386995c4cbdc
+  revision: a680c51507d68eb6f174e5c20b53c7637ab13d95
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -54,12 +54,12 @@ GEM
     docile (1.1.5)
     domain_name (0.5.24)
       unf (>= 0.0.5, < 1.0.0)
-    elasticsearch (1.0.8)
-      elasticsearch-api (= 1.0.7)
-      elasticsearch-transport (= 1.0.7)
-    elasticsearch-api (1.0.7)
+    elasticsearch (1.0.10)
+      elasticsearch-api (= 1.0.10)
+      elasticsearch-transport (= 1.0.10)
+    elasticsearch-api (1.0.10)
       multi_json
-    elasticsearch-transport (1.0.7)
+    elasticsearch-transport (1.0.10)
       faraday
       multi_json
     email_spec (1.6.0)
@@ -83,14 +83,14 @@ GEM
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
     method_source (0.8.2)
-    mime-types (2.5)
+    mime-types (2.6.1)
     minitest (4.7.5)
     multi_json (1.11.0)
     multipart-post (2.0.0)
     mysql2 (0.3.18)
     net-http-persistent (2.9.4)
     netrc (0.10.3)
-    oj (2.12.7)
+    oj (2.12.8)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
