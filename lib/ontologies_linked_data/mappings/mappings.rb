@@ -148,7 +148,26 @@ eos
     return count
   end
 
+  def empty_page(page,size)
+      p = Goo::Base::Page.new(page,size,nil,[])
+      p.aggregate = 0
+      return p
+  end
+
   def self.mappings_ontologies(sub1,sub2,page,size,classId=nil,reload_cache=false)
+    union_template = <<-eos
+{
+  GRAPH <#{sub1.id.to_s}> {
+      classId <predicate> ?o .
+  }
+  GRAPH graph {
+      ?s2 <predicate> ?o .
+  }
+  bind
+}
+eos
+    blocks = []
+    mappings = []
     persistent_count = 0
     acr1 = sub1.id.to_s.split("/")[-3]
     acr2 = nil
@@ -171,22 +190,8 @@ eos
       persistent_count = pcount.first.count
     end
     if persistent_count == 0
-        p = Goo::Base::Page.new(page,size,nil,[])
-        p.aggregate = 0
-        return p
+        return empty_page(page,size)
     end
-    mappings = []
-    union_template = <<-eos
-{
-  GRAPH <#{sub1.id.to_s}> {
-      classId <predicate> ?o .
-  }
-  GRAPH graph {
-      ?s2 <predicate> ?o .
-  }
-  bind
-}
-eos
 
     if classId.nil?
       union_template = union_template.sub("classId", "?s1")
@@ -194,7 +199,6 @@ eos
       union_template = union_template.sub("classId", "<#{classId.to_s}>")
     end
 
-    blocks = []
     mapping_predicates().each do |_source,mapping_predicate|
       union_block = union_template.gsub("predicate", mapping_predicate[0])
       union_block = union_block.sub("bind","BIND ('#{_source}' AS ?source)")
@@ -230,6 +234,7 @@ eos
       query = query.sub("graph","?g")
       ont_id = sub1.id.to_s.split("/")[0..-3].join("/")
       #STRSTARTS is used to not count older graphs
+      #no need since now we delete older graphs
       filter += "\nFILTER (!STRSTARTS(str(?g),'#{ont_id}'))"
       query = query.sub("filter",filter)
     else

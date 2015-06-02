@@ -566,6 +566,7 @@ eos
       # that would define the "ready" state of this
       # submission in this context
       def ready?(options={})
+        self.bring(:submissionStatus) if self.bring?(:submissionStatus)
         status = options[:status] || :ready
         status = status.is_a?(Array) ? status : [status]
         return true if status.include?(:any)
@@ -594,6 +595,7 @@ eos
       #   index_commit      = true
       #   run_metrics       = true
       #   reasoning         = true
+      #   diff              = true
       #   archive           = false
       #######################################
       def process_submission(logger, options={})
@@ -604,8 +606,8 @@ eos
           index_commit = options[:index_commit] == false ? false : true
           run_metrics = options[:run_metrics] == false ? false : true
           reasoning = options[:reasoning] == false ? false : true
+          diff = options[:diff] == false ? false : true
           archive = options[:archive] == true ? true : false
-          diff = options[:diff] == true ? true : false
 
           self.bring_remaining
           self.ontology.bring_remaining
@@ -615,7 +617,7 @@ eos
           LinkedData::Parser.logger = logger
           status = nil
 
-          if (archive)
+          if archive
             self.submissionStatus = nil
             status = LinkedData::Models::SubmissionStatus.find("ARCHIVED").first
             add_submission_status(status)
@@ -631,9 +633,8 @@ eos
                 delete_old_submission_files
               end
             end
-
           else
-            if (process_rdf)
+            if process_rdf
               # Remove processing status types before starting RDF parsing etc.
               self.submissionStatus = nil
               status = LinkedData::Models::SubmissionStatus.find("UPLOADED").first
@@ -698,7 +699,7 @@ eos
 
             parsed = ready?(status: [:rdf, :rdf_labels])
 
-            if (index_search)
+            if index_search
               raise Exception, "The submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
               status = LinkedData::Models::SubmissionStatus.find("INDEXED").first
               begin
@@ -715,7 +716,7 @@ eos
               self.save
             end
 
-            if (run_metrics)
+            if run_metrics
               raise Exception, "Metrics cannot be generated on the submission #{self.ontology.acronym}/submissions/#{self.submissionId} because it has not been successfully parsed" unless parsed
               status = LinkedData::Models::SubmissionStatus.find("METRICS").first
               begin
