@@ -261,13 +261,10 @@ module LinkedData
           )
           self.diffFilePath = bubastis.diff
           self.save
-          #
-          # TODO: Add submission status value for 'DIFF' or something?
-          #
-          logger.info("Bubastis diff processed")
+          logger.info("Bubastis diff generated successfully for #{self.id}")
           logger.flush
         rescue Exception => e
-          logger.error("Bubastis diff failed: " + e.message)
+          logger.error("Bubastis diff for #{self.id} failed - #{e.class}: #{e.message}")
           logger.flush
           raise e
         end
@@ -737,40 +734,42 @@ eos
               # Get previous submission from ontology.submissions
               self.ontology.bring(:submissions)
               submissions = self.ontology.submissions
+
               unless submissions.nil?
                 submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
                 # Sort submissions in descending order of submissionId, extract last two submissions
-                recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
+                recent_submissions = submissions.sort {|a, b| b.submissionId <=> a.submissionId}[0..1]
+
                 if recent_submissions.length > 1
                   # validate that the most recent submission is the current submission
                   if self.submissionId == recent_submissions.first.submissionId
                     prev = recent_submissions.last
+
                     # Ensure that prev is older than the current submission
                     if self.submissionId > prev.submissionId
                       # generate a diff
                       begin
                         self.diff(logger, prev)
                         add_submission_status(status)
-                        self.save
-                      rescue
-                        # self.diff logs errors
+                      rescue Exception => e
+                        logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+                        logger.flush
                         add_submission_status(status.get_error_status)
-                        self.save
                       end
+                      self.save
                     end
                   end
                 else
-                  logger.info("Bubastis diff: no older submissions available for diffs.")
+                  logger.info("Bubastis diff: no older submissions available for #{self.id}.")
                 end
               else
-                logger.info("Bubastis diff: no submissions available for diffs.")
+                logger.info("Bubastis diff: no submissions available for #{self.id}.")
               end
             end
-
           end
 
           self.save
-          logger.info("Submission processing completed successfully")
+          logger.info("Submission processing of #{self.id} completed successfully")
           logger.flush
         ensure
           # make sure results get emailed
@@ -826,7 +825,6 @@ eos
 
             LinkedData::Models::Class.indexBatch(page_classes)
             logger.info("Page #{page} of #{page_classes.total_pages} indexed solr in #{Time.now - t0} sec.")
-
             logger.info("Page #{page} of #{page_classes.total_pages} completed")
             logger.flush
 
