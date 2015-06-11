@@ -710,8 +710,9 @@ eos
                 if File.file?(self.csv_path)
                   FileUtils.delete(self.csv_path)
                 end
+              ensure
+                self.save
               end
-              self.save
             end
 
             if run_metrics
@@ -725,8 +726,9 @@ eos
                 logger.flush
                 self.metrics = nil
                 add_submission_status(status.get_error_status)
+              ensure
+                self.save
               end
-              self.save
             end
 
             if diff
@@ -755,8 +757,9 @@ eos
                         logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
                         logger.flush
                         add_submission_status(status.get_error_status)
+                      ensure
+                        self.save
                       end
-                      self.save
                     end
                   end
                 else
