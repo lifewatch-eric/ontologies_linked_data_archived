@@ -18,7 +18,7 @@ class TestInstances < LinkedData::TestOntologyCommon
     submission_id = LinkedData::Models::OntologySubmission.all.first.id
     class_id = RDF::URI.new(
       "http://www.owl-ontologies.com/OntologyXCT.owl#ClinicalManifestation")
-    instances = LinkedData::InstanceLoader.get_instances(submission_id,class_id)
+    instances = LinkedData::InstanceLoader.get_instances_by_class(submission_id,class_id)
     assert (instances.length == 385)
     instances.each do |inst|
       assert (not inst.label.nil?)
