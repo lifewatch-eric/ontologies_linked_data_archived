@@ -81,8 +81,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc2 = LinkedData::Models::ProvisionalClass.where(creator: [username: "Test User 2"]).all
     assert_equal pc1.first.id.to_s, pc2.first.id.to_s
 
-    pc1.first.delete
-    pc2.first.delete
     pc_array.each do |pc|
       pc.delete
     end
@@ -208,7 +206,6 @@ class TestProvisionalClass < LinkedData::TestCase
     resp = LinkedData::Models::Ontology.search(pc.label)
     assert_equal 1, resp["response"]["numFound"]
     assert_equal pc.label, resp["response"]["docs"][0]["prefLabel"]
-    pc.unindex
     pc.delete
   end
 

@@ -18,6 +18,7 @@ module LinkedData
 
 
       def index_id
+        self.bring(:ontology) if self.bring?(:ontology)
         return nil unless self.ontology
         latest = self.ontology.latest_submission(status: :any)
         return nil unless latest
@@ -67,11 +68,27 @@ module LinkedData
       end
 
       def unindex
-        if index_id
-          query = "id:#{solr_escape(index_id)}"
+        ind_id = index_id
+
+        if ind_id
+          query = "id:#{solr_escape(ind_id)}"
           LinkedData::Models::Ontology.unindexByQuery(query)
           LinkedData::Models::Ontology.indexCommit
         end
+      end
+
+      ##
+      # Override save to allow creation of a PURL server entry
+      def save(*args)
+        super(*args)
+        index
+        return self
+      end
+
+      def delete(*args)
+        # remove index entries
+        unindex
+        super(*args)
       end
 
       def solr_escape(text)
