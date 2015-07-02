@@ -53,7 +53,8 @@
     <field name="property"              type="text_general"       indexed="true"  stored="true"  multiValued="true" />
     <field name="propertyRaw"           type="text_general"       indexed="false" stored="true"  multiValued="false" />
 
-    <field name="obsolete"              type="boolean"            indexed="true"  stored="true"  multiValued="false" />
+    <field name="obsolete"              type="boolean"            indexed="true"  stored="true"  multiValued="false" default="false"/>
+    <field name="provisional"           type="boolean"            indexed="true"  stored="true"  multiValued="false" default="false"/>
 
     <dynamicField name="*"              type="string"             indexed="false" stored="true"  multiValued="true" />
   </fields>
