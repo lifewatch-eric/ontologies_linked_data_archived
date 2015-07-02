@@ -45,6 +45,26 @@ module LinkedData
     end
   end
   module InstanceLoader
+    def self.count_instances_by_class(submission_id,class_id)
+      query = <<-eos
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+SELECT (count(DISTINCT ?s) as ?c) WHERE
+  {
+    GRAPH <#{submission_id.to_s}> {
+        ?s a owl:NamedIndividual .
+        ?s a <#{class_id.to_s}> .
+    }
+  }
+eos
+      epr = Goo.sparql_query_client(:main)
+      graphs = [submission_id]
+      resultset = epr.query(query, graphs: graphs)
+      resultset.each do |r|
+        return r[:c].object
+      end
+      return 0
+    end
+
     def self.get_instances_by_class(submission_id,class_id)
       query = <<-eos
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -125,7 +145,6 @@ eos
           index[s.to_s].add_property_value(p,o)
         end
       end
-
     end
   end
 end

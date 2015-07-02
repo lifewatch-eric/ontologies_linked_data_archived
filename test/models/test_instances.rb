@@ -24,6 +24,8 @@ class TestInstances < LinkedData::TestOntologyCommon
       assert (not inst.label.nil?)
       assert (not inst.id.nil?)
     end
+    c = LinkedData::InstanceLoader.count_instances_by_class(submission_id,class_id)
+    assert ( c == 385 )
   end
 
 
