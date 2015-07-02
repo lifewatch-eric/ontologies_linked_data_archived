@@ -67,6 +67,7 @@ module LinkedData
               LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/download"}, self.type_uri)
 
       # HTTP Cache settings
+      cache_timeout 3600
       cache_segment_instance lambda {|sub| segment_instance(sub)}
       cache_segment_keys [:ontology_submission]
       cache_load ontology: [:acronym]

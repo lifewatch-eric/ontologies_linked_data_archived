@@ -33,6 +33,9 @@ module LinkedData
       serialize_never :passwordHash, :show_apikey, :resetToken
       serialize_filter lambda {|inst| show_apikey?(inst)}
 
+      # Cache
+      cache_timeout 3600
+
       # Access control
       write_access :dup
 

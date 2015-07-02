@@ -73,6 +73,9 @@ module LinkedData
       write_access :administeredBy
       access_control_load :administeredBy, :acl, :viewingRestriction
 
+      # Cache
+      cache_timeout 3600
+
       def self.validate_acronym(inst, attr)
         inst.bring(attr) if inst.bring?(attr)
         acronym = inst.send(attr)
