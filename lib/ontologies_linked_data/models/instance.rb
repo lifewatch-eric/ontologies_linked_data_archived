@@ -98,8 +98,8 @@ SELECT ?s ?label WHERE
     GRAPH <#{submission_id.to_s}> {
         ?s a owl:NamedIndividual .
     }
-    OFFSET #{offset} LIMIT #{limit}
   }
+  OFFSET #{offset} LIMIT #{limit}
 eos
       epr = Goo.sparql_query_client(:main)
       graphs = [submission_id]
