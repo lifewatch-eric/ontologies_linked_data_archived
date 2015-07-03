@@ -12,7 +12,7 @@ class TestInstances < LinkedData::TestOntologyCommon
     LinkedData::TestCase.backend_4s_delete
   end
 
-  def test_instance_counts_by_class
+  def test_instance_counts_class
     submission_parse("TESTINST", "Testing instances",
                      "test/data/ontology_files/XCTontologyvtemp2_vvtemp2.zip",
                      12,
@@ -27,6 +27,18 @@ class TestInstances < LinkedData::TestOntologyCommon
 
     count = LinkedData::InstanceLoader.count_instances_by_class(submission_id, class_id)
     assert_equal 385, count
+  end
+
+  def test_instance_counts_ontology
+    submission_parse("TESTINST", "Testing instances",
+                     "test/data/ontology_files/XCTontologyvtemp2_vvtemp2.zip",
+                     12,
+                     masterFileName: "XCTontologyvtemp2/XCTontologyvtemp2.owl",
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: true)
+    submission_id = LinkedData::Models::OntologySubmission.all.first.id
+    instances = LinkedData::InstanceLoader.get_instances_by_ontology(submission_id, 1, 800)
+    assert_equal 714, instances.length
   end
 
   def test_instance_labels
