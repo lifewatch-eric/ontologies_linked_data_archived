@@ -702,6 +702,8 @@ eos
 
   #multiple preflables
   def test_submission_parse_aero
+    skip "Re-enable when NCBO-851 is resolved"
+
     acronym = "AERO-TST"
     name = "aero Bla"
     ontologyFile = "./test/data/ontology_files/aero.owl"
