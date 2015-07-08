@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 4ee570d0bd67844c5e86fed83fdbe825f88057d9
-  branch: staging
+  revision: 5ffce826af3f11981676a80de86452ac88190b4e
+  branch: master
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -29,8 +29,8 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/sparql-client.git
-  revision: ead7d226ff679969cbbb789c33d5660b45d5a521
-  branch: staging
+  revision: 962e5af6615045a437d79fe27a7301df69d31012
+  branch: master
   specs:
     sparql-client (1.0.4.1)
       json_pure (>= 1.4)
@@ -85,7 +85,7 @@ GEM
     method_source (0.8.2)
     mime-types (2.6.1)
     minitest (4.7.5)
-    multi_json (1.11.1)
+    multi_json (1.11.2)
     multipart-post (2.0.0)
     mysql2 (0.3.18)
     net-http-persistent (2.9.4)

@@ -65,3 +65,16 @@ namespace :test do
     end
   end
 end
+
+require_relative 'test/docker_infrastructure'
+namespace :docker do
+  desc "Run tests with a docker environment"
+  task :test do
+    docker_tests
+  end
+
+  desc "Run tests with parallel docker environments"
+  task :test_parallel do
+    docker_tests_parallel
+  end
+end
