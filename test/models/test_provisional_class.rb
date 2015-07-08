@@ -9,9 +9,11 @@ class TestProvisionalClass < LinkedData::TestCase
     assert @user.valid?, "Invalid User object #{@user.errors}"
     @user.save
 
-    @ontology = LinkedData::Models::Ontology.new({acronym: "TEST_ONT", name: "Test Ontology", administeredBy: [@user]})
-    assert @ontology.valid?, "Invalid Ontology object #{@ontology.errors}"
-    @ontology.save
+    ont_count, ont_names, ont_models = create_ontologies_and_submissions(ont_count: 1, submission_count: 1)
+    @ontology = ont_models.first
+    @ontology.bring(:name)
+    @ontology.bring(:acronym)
+    @submission = @ontology.bring(:submissions).submissions.first
 
     @provisional_class = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Class", creator: @user})
     assert @provisional_class.valid?, "Invalid ProvisionalClass object #{@provisional_class.errors}"
@@ -19,11 +21,9 @@ class TestProvisionalClass < LinkedData::TestCase
   end
 
   def _delete
+    delete_ontologies_and_submissions
     user = LinkedData::Models::User.find("Test User").first
     user.delete unless user.nil?
-    
-    ontology = LinkedData::Models::Ontology.find("TEST_ONT").first
-    ontology.delete unless ontology.nil?
   end
 
   def test_provisional_class_lifecycle
@@ -81,8 +81,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc2 = LinkedData::Models::ProvisionalClass.where(creator: [username: "Test User 2"]).all
     assert_equal pc1.first.id.to_s, pc2.first.id.to_s
 
-    pc1.first.delete
-    pc2.first.delete
     pc_array.each do |pc|
       pc.delete
     end
@@ -194,12 +192,20 @@ class TestProvisionalClass < LinkedData::TestCase
 
   def test_provisional_class_ontology
     pc = @provisional_class
-    pc.ontology = [@ontology]
+    pc.ontology = @ontology
     assert pc.valid?, "#{pc.errors}"
-    assert pc.ontology.length == 1
-    assert_equal(true, pc.ontology.first.acronym == "TEST_ONT")
-    assert_equal(true, pc.ontology.first.name == "Test Ontology")
-    assert_equal(true, pc.ontology.first.administeredBy.first == @user)
+    assert_equal(true, pc.ontology.acronym == "TEST-ONT-0")
+    assert_equal(true, pc.ontology.name == "TEST-ONT-0 Ontology")
+    pc.delete
+  end
+
+  def test_provisional_class_search_indexing
+    pc = @provisional_class
+    pc.ontology = @ontology
+    pc.index
+    resp = LinkedData::Models::Ontology.search(pc.label)
+    assert_equal 1, resp["response"]["numFound"]
+    assert_equal pc.label, resp["response"]["docs"][0]["prefLabel"]
     pc.delete
   end
 

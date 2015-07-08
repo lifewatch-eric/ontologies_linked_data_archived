@@ -1,6 +1,7 @@
 require 'net/http'
 require 'uri'
 require 'zip'
+require 'tmpdir'
 
 module LinkedData
   module Utils
@@ -140,12 +141,11 @@ module LinkedData
         ftp.passive = true
         ftp.login
         filename = LinkedData::Utils::Triples.last_iri_fragment(url.path)
-        tmp = Tempfile.new(filename)
-        ftp.getbinaryfile(url.path) do |chunk|
-          tmp << chunk
-        end
-        tmp.close
-        return tmp, filename
+        temp_dir = Dir.tmpdir
+        temp_file_path = File.join(temp_dir, filename)
+        ftp.getbinaryfile(url.path, temp_file_path)
+        file = File.new(temp_file_path)
+        return file, filename
       end
 
     end
