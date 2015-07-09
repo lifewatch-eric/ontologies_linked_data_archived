@@ -203,7 +203,8 @@ class TestProvisionalClass < LinkedData::TestCase
     pc = @provisional_class
     pc.ontology = @ontology
     pc.index
-    resp = LinkedData::Models::Ontology.search(pc.label)
+    params = {"fq" => "provisional:true"}
+    resp = LinkedData::Models::Ontology.search(pc.label, params)
     assert_equal 1, resp["response"]["numFound"]
     assert_equal pc.label, resp["response"]["docs"][0]["prefLabel"]
     pc.delete
