@@ -84,6 +84,11 @@ eos
         inst = LinkedData::Models::Instance.new(r[:s],nil,{})
         instances << inst
       end
+      
+      if instances.empty? 
+        return []
+      end
+      
       include_instance_properties(submission_id,instances)
       return instances
     end
@@ -109,7 +114,11 @@ eos
         inst = LinkedData::Models::Instance.new(r[:s],r[:label],{})
         instances << inst
       end
-      include_instance_properties(submission_id,instances)
+      
+      if instances.size > 0
+        include_instance_properties(submission_id,instances)
+      end
+      
       page = Goo::Base::Page.new(page_no,size,nil,instances)
       return page
     end
