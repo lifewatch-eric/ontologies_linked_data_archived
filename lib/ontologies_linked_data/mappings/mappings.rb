@@ -148,7 +148,7 @@ eos
     return count
   end
 
-  def empty_page(page,size)
+  def self.empty_page(page,size)
       p = Goo::Base::Page.new(page,size,nil,[])
       p.aggregate = 0
       return p
@@ -170,27 +170,29 @@ eos
     mappings = []
     persistent_count = 0
     acr1 = sub1.id.to_s.split("/")[-3]
-    acr2 = nil
-    if not sub2.nil?
-      acr2 = sub2.id.to_s.split("/")[-3]
-    end
-    pcount = LinkedData::Models::MappingCount.where(
-        ontologies: acr1
-    )
-    if not acr2 == nil
-      pcount = pcount.and(ontologies: acr2)
-    end
-    f = Goo::Filter.new(:pair_count) == (not acr2.nil?)
-    pcount = pcount.filter(f)
-    pcount = pcount.include(:count)
-    pcount = pcount.all
-    if pcount.length == 0
-      persistent_count = 0
-    else
-      persistent_count = pcount.first.count
-    end
-    if persistent_count == 0
-        return empty_page(page,size)
+    if classId.nil?
+      acr2 = nil
+      if not sub2.nil?
+        acr2 = sub2.id.to_s.split("/")[-3]
+      end
+      pcount = LinkedData::Models::MappingCount.where(
+          ontologies: acr1
+      )
+      if not acr2 == nil
+        pcount = pcount.and(ontologies: acr2)
+      end
+      f = Goo::Filter.new(:pair_count) == (not acr2.nil?)
+      pcount = pcount.filter(f)
+      pcount = pcount.include(:count)
+      pcount = pcount.all
+      if pcount.length == 0
+        persistent_count = 0
+      else
+        persistent_count = pcount.first.count
+      end
+      if persistent_count == 0
+        return LinkedData::Mappings.empty_page(page,size)
+      end
     end
 
     if classId.nil?
