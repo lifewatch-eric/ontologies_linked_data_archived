@@ -94,8 +94,6 @@ eos
     end
 
     def self.get_instances_by_ontology(submission_id,page_no,size)
-      offset = (page_no-1) * size
-      limit = size
       query = <<-eos
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 SELECT ?s ?label WHERE
@@ -104,11 +102,16 @@ SELECT ?s ?label WHERE
         ?s a owl:NamedIndividual .
     }
   }
-  OFFSET #{offset} LIMIT #{limit}
 eos
       epr = Goo.sparql_query_client(:main)
       graphs = [submission_id]
       resultset = epr.query(query, graphs: graphs)
+
+      total_size = resultset.size
+      range_start = (page_no - 1) * size
+      range_end = (page_no * size) - 1
+      resultset = resultset[range_start..range_end]
+
       instances = []
       resultset.each do |r|
         inst = LinkedData::Models::Instance.new(r[:s],r[:label],{})
@@ -119,7 +122,7 @@ eos
         include_instance_properties(submission_id,instances)
       end
       
-      page = Goo::Base::Page.new(page_no,size,nil,instances)
+      page = Goo::Base::Page.new(page_no,size,total_size,instances)
       return page
     end
 
