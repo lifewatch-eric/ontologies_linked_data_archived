@@ -116,7 +116,7 @@ eos
       resultset.each do |r|
         inst = LinkedData::Models::Instance.new(r[:s],r[:label],{})
         instances << inst
-      end
+      end unless resultset.nil?
       
       if instances.size > 0
         include_instance_properties(submission_id,instances)
