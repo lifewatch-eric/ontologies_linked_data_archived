@@ -64,6 +64,9 @@ module LinkedData
                   property: lambda {|x| self.tree_view_property(x) },
                   inverse: { on: :class , :attribute => :parents }
 
+      attribute :subClassOf, namespace: :rdfs,
+                 enforce: [:list, :uri]
+
       attribute :ancestors, namespace: :rdfs, property: :subClassOf, handler: :retrieve_ancestors
 
       attribute :descendants, namespace: :rdfs, property: :subClassOf,
@@ -514,6 +517,13 @@ eos
           next if p.id.to_s["umls/OrphanClass"]
           if p.bring?(:parents)
             p.bring(parents: [:prefLabel,:synonym, :definition] )
+          end
+          #only for obo
+          if self.submission.hasOntologyLanguage.obo?
+            if p.bring?(:subClassOf)
+              p.bring(:subClassOf)
+              binding.pry
+            end
           end
 
           if !p.loaded_attributes.include?(:parents)
