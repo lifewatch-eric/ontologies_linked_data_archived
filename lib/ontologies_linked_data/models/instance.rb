@@ -4,6 +4,8 @@ module LinkedData
     class Instance
       include LinkedData::Hypermedia::Resource
 
+      attr_reader :id, :properties
+      attr_accessor :label
       serialize_default :id, :label, :properties
 
       def initialize(id,label,properties)
@@ -17,18 +19,6 @@ module LinkedData
         end
         @label = label
         @properties = properties
-      end
-
-      def id
-        return @id
-      end
-
-      def label
-        return @label
-      end
-
-      def properties
-        return @properties
       end
 
       def add_property_value(p,o)
