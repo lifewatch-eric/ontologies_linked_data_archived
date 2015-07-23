@@ -75,7 +75,7 @@ module LinkedData
         @logger.info("Java call [#{command_call}]")
         Open3.popen3(command_call) do |i,o,e,w|
           begin
-            Timeout.timeout(60 * 20) do #20 minutes
+            Timeout.timeout(60 * 40) do #20 minutes
               buffer = []
               o.each_line do |line|
                 buffer << line
