@@ -96,6 +96,8 @@ require 'time'
 # httpcache:last_modified:segment:SNOMEDCT:ontology_submission
 
 module LinkedData::HTTPCache
+  class CacheableResourceRequirementsError < StandardError; end
+
   def self.invalidate_all
     key_set = LinkedData::HTTPCache::CacheableResource::KEY_SET
     keys = keys_for_invalidate_all()
@@ -186,8 +188,12 @@ module LinkedData::HTTPCache
     # The object's current segment
     def cache_segment
       segment = self.class.cache_settings[:cache_segment_keys] || []
-      instance_prefix = self.class.cache_settings[:cache_segment_instance].first
-      segment_prefix = instance_prefix.call(self) if instance_prefix.is_a?(Proc)
+      instance_prefix = (self.class.cache_settings[:cache_segment_instance] || []).first
+      if instance_prefix.is_a?(Proc)
+        segment_prefix = instance_prefix.call(self)
+      elsif !segment.empty? && !instance_prefix.is_a?(Proc)
+        raise CacheableResourceRequirementsError.new("You need to provide a `cache_segment_instance` lambda/proc when using cache segments")
+      end
       segment = (segment_prefix || []) + segment
       return "" if segment.nil? || segment.empty?
       ":#{segment.join(':')}"
