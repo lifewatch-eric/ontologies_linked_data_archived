@@ -3,8 +3,15 @@ module LinkedData
   module Models
     class Instance
       include LinkedData::Hypermedia::Resource
+      include LinkedData::HTTPCache::CacheableResource
 
+      attr_reader :id, :properties
+      attr_accessor :label
       serialize_default :id, :label, :properties
+
+      # HTTP cache settings
+      cache_timeout 86400
+      cache_segment_keys [:instance]
 
       def initialize(id,label,properties)
         @id = id
@@ -17,18 +24,6 @@ module LinkedData
         end
         @label = label
         @properties = properties
-      end
-
-      def id
-        return @id
-      end
-
-      def label
-        return @label
-      end
-
-      def properties
-        return @properties
       end
 
       def add_property_value(p,o)
