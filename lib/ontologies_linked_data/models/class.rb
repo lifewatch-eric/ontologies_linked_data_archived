@@ -231,9 +231,8 @@ module LinkedData
 
       def self.partially_load_children(models,threshold,
                                        submission)
-
         ld = [:prefLabel, :definition, :synonym]
-
+        ld << :subClassOf if submission.hasOntologyLanguage.obo?
         single_load = []
         query = self.in(submission)
               .models(models)
@@ -263,7 +262,7 @@ module LinkedData
         if single_load.length > 0
           self.in(submission)
                 .models(single_load)
-                .include(children: [:prefLabel]).all
+                .include(ld << {children: [:prefLabel]}).all
         end
       end
 
@@ -293,9 +292,11 @@ module LinkedData
           items_hash[t.id.to_s] = t
         end
 
+        attrs_to_load = [:prefLabel,:synonym,:obsolete]
+        attrs_to_load << :subClassOf if submission.hasOntologyLanguage.obo?
         self.class.in(submission)
               .models(items_hash.values)
-              .include(:prefLabel,:synonym,:obsolete).all
+              .include(attrs_to_load).all
 
         LinkedData::Models::Class
           .partially_load_children(items_hash.values,threshhold,self.submission)
@@ -517,13 +518,6 @@ eos
           next if p.id.to_s["umls/OrphanClass"]
           if p.bring?(:parents)
             p.bring(parents: [:prefLabel,:synonym, :definition] )
-          end
-          #only for obo
-          if self.submission.hasOntologyLanguage.obo?
-            if p.bring?(:subClassOf)
-              p.bring(:subClassOf)
-              binding.pry
-            end
           end
 
           if !p.loaded_attributes.include?(:parents)
