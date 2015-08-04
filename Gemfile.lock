@@ -90,7 +90,7 @@ GEM
     mysql2 (0.3.19)
     net-http-persistent (2.9.4)
     netrc (0.10.3)
-    oj (2.12.10)
+    oj (2.12.11)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.1)
@@ -113,7 +113,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.1.7)
-    sequel (4.24.0)
+    sequel (4.25.0)
     simplecov (0.10.0)
       docile (~> 1.1.0)
       json (~> 1.8)
@@ -155,6 +155,3 @@ DEPENDENCIES
   rubyzip (~> 1.0)
   simplecov
   sparql-client!
-
-BUNDLED WITH
-   1.10.5
