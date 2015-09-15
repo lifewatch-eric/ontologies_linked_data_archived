@@ -46,7 +46,7 @@ module LinkedData
 
       attribute :viewOf, enforce: [:ontology]
       attribute :views, :inverse => { on: :ontology, attribute: :viewOf }
-      attribute :ontologyType, enforce: [:ontology_type], default: lambda { |record| [LinkedData::Models::OntologyType.find("ONTOLOGY").first] }
+      attribute :ontologyType, enforce: [:ontology_type], default: lambda { |record| LinkedData::Models::OntologyType.find("ONTOLOGY").first }
 
       # Hypermedia settings
       serialize_default :administeredBy, :acronym, :name, :summaryOnly, :ontologyType
