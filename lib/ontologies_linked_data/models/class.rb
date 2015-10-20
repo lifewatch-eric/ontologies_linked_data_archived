@@ -136,7 +136,7 @@ module LinkedData
             :ontologyId => self.submission.id.to_s,
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
-            :ontologyType => self.submission.ontology.ontologyType,
+            :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
             :obsolete => self.obsolete.to_s
         }
 
