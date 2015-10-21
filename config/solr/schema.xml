@@ -39,6 +39,7 @@
 
     <field name="definition"            type="string"             indexed="true"  stored="true"  multiValued="true" />
     <field name="submissionAcronym"     type="string"             indexed="true"  stored="true"  multiValued="false" />
+    <field name="ontologyType"          type="ontologyType"       indexed="true"  stored="true"  multiValued="false" />
     <field name="submissionId"          type="int"                indexed="true"  stored="true"  multiValued="false" />
     <field name="_version_"             type="long"               indexed="true"  stored="true"/>
 
@@ -84,6 +85,8 @@
          Class names starting with "solr" refer to java classes in a
        standard package such as org.apache.solr.analysis
     -->
+
+    <fieldType name="ontologyType" class="solr.EnumField" enumsConfig="enumsconfig.xml" enumName="ontologyType"/>
 
     <!-- The StrField type is not analyzed, but indexed/stored verbatim. -->
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
