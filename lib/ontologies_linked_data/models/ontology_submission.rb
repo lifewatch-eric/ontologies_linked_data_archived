@@ -824,6 +824,9 @@ eos
             page_classes.each do |c|
               LinkedData::Models::Class.map_attributes(c,paging.equivalent_predicates)
               writer.write_class(c)
+              if c.id.to_s == "http://purl.obolibrary.org/obo/HP_0000006"
+                binding.pry
+              end
             end
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
@@ -904,6 +907,7 @@ eos
           classes = LinkedData::Models::Class.where(parents: owlThing).in(self)
                                              .disable_rules
                                              .all
+          binding.pry
         else
           root_skos = <<eos
 SELECT DISTINCT ?root WHERE {
