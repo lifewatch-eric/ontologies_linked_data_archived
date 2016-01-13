@@ -21,13 +21,13 @@ class TestProvisionalRelation < LinkedData::TestCase
 
     @relation_type = RDF::IRI.new "http://www.w3.org/2004/02/skos/core#exactMatch"
 
-    target_class_uri1 = RDF::IRI.new "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image_Algorithm"
-    target_class_uri2 = RDF::IRI.new "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Integration_and_Interoperability_Tools"
+    @target_class_uri1 = RDF::IRI.new "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image_Algorithm"
+    @target_class_uri2 = RDF::IRI.new "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Integration_and_Interoperability_Tools"
 
-    @provisional_rel1 = LinkedData::Models::ProvisionalRelation.new({source: @provisional_class, relationType: @relation_type, targetClassId: target_class_uri1, targetClassOntology: @ontology})
+    @provisional_rel1 = LinkedData::Models::ProvisionalRelation.new({source: @provisional_class, relationType: @relation_type, targetClassId: @target_class_uri1, targetClassOntology: @ontology})
     assert @provisional_rel1.valid?, "Invalid ProvisionalRelation object #{@provisional_rel1.errors}"
     @provisional_rel1.save
-    @provisional_rel2 = LinkedData::Models::ProvisionalRelation.new({source: @provisional_class, relationType: @relation_type, targetClassId: target_class_uri2, targetClassOntology: @ontology})
+    @provisional_rel2 = LinkedData::Models::ProvisionalRelation.new({source: @provisional_class, relationType: @relation_type, targetClassId: @target_class_uri2, targetClassOntology: @ontology})
     assert @provisional_rel2.valid?, "Invalid ProvisionalRelation object #{@provisional_rel2.errors}"
     @provisional_rel2.save
   end
@@ -58,15 +58,21 @@ class TestProvisionalRelation < LinkedData::TestCase
   end
 
   def test_find_unique_provisional_relation
-    target_class_uri1 = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image_Algorithm"
-    rel = LinkedData::Models::ProvisionalRelation.find_unique(@provisional_class.id, @relation_type, target_class_uri1, @ontology.id)
+    rel = LinkedData::Models::ProvisionalRelation.find_unique(@provisional_class.id, @relation_type, @target_class_uri1, @ontology.id)
     assert_equal @provisional_rel1.id, rel.id
   end
 
   def test_equals
-    target_class_uri1 = "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#Image_Algorithm"
-    rel = LinkedData::Models::ProvisionalRelation.find_unique(@provisional_class.id, @relation_type, target_class_uri1, @ontology.id)
+    rel = LinkedData::Models::ProvisionalRelation.find_unique(@provisional_class.id, @relation_type, @target_class_uri1, @ontology.id)
     assert @provisional_rel1 == rel
+  end
+
+  def test_target_class
+    target_class = @provisional_rel1.target_class
+    assert_equal @target_class_uri1, target_class.id
+    target_class.bring(:submission) if target_class.bring?(:submission)
+    target_class.submission.bring(ontology: [:acronym]) if target_class.submission.bring?(:ontology)
+    assert_equal @ontology.acronym, target_class.submission.ontology.acronym
   end
 
   def teardown

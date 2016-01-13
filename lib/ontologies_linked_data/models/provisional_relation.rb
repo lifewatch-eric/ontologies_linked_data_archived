@@ -18,6 +18,13 @@ module LinkedData
             targetClassOntology: target_ont_id_or_acronym).first
       end
 
+      def target_class
+        self.bring(:targetClassId) if self.bring?(:targetClassId)
+        self.bring(targetClassOntology: [:acronym]) if self.bring?(:targetClassOntology)
+        sub = self.targetClassOntology.latest_submission
+        LinkedData::Models::Class.find(self.targetClassId).in(sub).first
+      end
+
       def ==(that)
         self.bring(:source) if self.bring?(:source)
         that.bring(:source) if that.bring?(:source)
