@@ -5,19 +5,17 @@ module LinkedData
 
       attribute :source, enforce: [:existence, :provisional_class]
       attribute :relationType, enforce: [:existence, :uri]
-      attribute :target, enforce: [:existence, :class]
+      attribute :targetClassId, enforce: [:existence, :uri]
+      attribute :targetClassOntology, enforce: [:existence, :ontology]
       attribute :created, enforce: [:date_time], :default => lambda { |record| DateTime.now }
 
-      def self.find_unique(source_id, relation_type, target_id, target_ont_id_or_acronym)
+      def self.find_unique(source_id, relation_type, target_class_id, target_ont_id_or_acronym)
         source_id = RDF::URI.new(source_id) unless source_id.is_a?(RDF::URI)
         relation_type = RDF::URI.new(relation_type) unless relation_type.is_a?(RDF::URI)
-        target_id = RDF::URI.new(target_id) unless target_id.is_a?(RDF::URI)
-        source = LinkedData::Models::ProvisionalClass.find(source_id).first
-        ont = LinkedData::Models::Ontology.find(target_ont_id_or_acronym).first
-        sub = ont.latest_submission
-        target = LinkedData::Models::Class.find(target_id).in(sub).include(:submission).first
-        rel = LinkedData::Models::ProvisionalRelation.where(source: source, relationType: relation_type, target: target).first
-        rel
+        target_class_id = RDF::URI.new(target_class_id) unless target_class_id.is_a?(RDF::URI)
+        LinkedData::Models::ProvisionalRelation.where(
+            source: source_id, relationType: relation_type, targetClassId: target_class_id,
+            targetClassOntology: target_ont_id_or_acronym).first
       end
 
       def ==(that)
@@ -25,17 +23,15 @@ module LinkedData
         that.bring(:source) if that.bring?(:source)
         self.bring(:relationType) if self.bring?(:relationType)
         that.bring(:relationType) if that.bring?(:relationType)
-        self.bring(:target) if self.bring?(:target)
-        that.bring(:target) if that.bring?(:target)
-        self.target.bring(:submission) if self.target.bring?(:submission)
-        that.target.bring(:submission) if that.target.bring?(:submission)
-        self.target.submission.bring(:ontology) if self.target.submission.bring?(:ontology)
-        that.target.submission.bring(:ontology) if that.target.submission.bring?(:ontology)
+        self.bring(:targetClassId) if self.bring?(:targetClassId)
+        that.bring(:targetClassId) if that.bring?(:targetClassId)
+        self.bring(targetClassOntology: [:acronym]) if self.bring?(:targetClassOntology)
+        that.bring(targetClassOntology: [:acronym]) if that.bring?(:targetClassOntology)
 
         self.source.id == that.source.id &&
             self.relationType == that.relationType &&
-            self.target.id == that.target.id &&
-            self.target.submission.ontology.id == that.target.submission.ontology.id
+            self.targetClassId == that.targetClassId &&
+            self.targetClassOntology.acronym == that.targetClassOntology.acronym
       end
 
     end
