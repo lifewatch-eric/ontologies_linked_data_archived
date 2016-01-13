@@ -15,22 +15,28 @@ module LinkedData
         source = LinkedData::Models::ProvisionalClass.find(source_id).first
         ont = LinkedData::Models::Ontology.find(target_ont_id_or_acronym).first
         sub = ont.latest_submission
-        target = LinkedData::Models::Class.find(target_id).in(sub).first
-        rel = LinkedData::Models::ProvisionalRelation.where(source: source, relationType: relation_type, target: target).include(LinkedData::Models::ProvisionalRelation.attributes).first
+        target = LinkedData::Models::Class.find(target_id).in(sub).include(:submission).first
+        rel = LinkedData::Models::ProvisionalRelation.where(source: source, relationType: relation_type, target: target).first
         rel
       end
 
-
-
-
-
-
       def ==(that)
+        self.bring(:source) if self.bring?(:source)
+        that.bring(:source) if that.bring?(:source)
+        self.bring(:relationType) if self.bring?(:relationType)
+        that.bring(:relationType) if that.bring?(:relationType)
+        self.bring(:target) if self.bring?(:target)
+        that.bring(:target) if that.bring?(:target)
+        self.target.bring(:submission) if self.target.bring?(:submission)
+        that.target.bring(:submission) if that.target.bring?(:submission)
+        self.target.submission.bring(:ontology) if self.target.submission.bring?(:ontology)
+        that.target.submission.bring(:ontology) if that.target.submission.bring?(:ontology)
 
-
-
+        self.source.id == that.source.id &&
+            self.relationType == that.relationType &&
+            self.target.id == that.target.id &&
+            self.target.submission.ontology.id == that.target.submission.ontology.id
       end
-
 
     end
   end
