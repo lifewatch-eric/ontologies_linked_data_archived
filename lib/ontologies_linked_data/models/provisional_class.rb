@@ -20,6 +20,16 @@ module LinkedData
                      :document => lambda { |t| t.index_doc }
 
 
+
+
+
+      # embed_values :relations => [:id, :source, :relationType]
+
+
+
+
+
+
       def index_id
         self.bring(:ontology) if self.bring?(:ontology)
         return nil unless self.ontology
