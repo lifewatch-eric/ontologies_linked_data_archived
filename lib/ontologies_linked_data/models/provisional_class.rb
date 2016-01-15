@@ -19,6 +19,7 @@ module LinkedData
       search_options :index_id => lambda { |t| t.index_id },
                      :document => lambda { |t| t.index_doc }
 
+      # display relations by default
       serialize_default *(self.attributes << :relations)
       embed :relations
 
