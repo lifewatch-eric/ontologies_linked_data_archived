@@ -19,16 +19,8 @@ module LinkedData
       search_options :index_id => lambda { |t| t.index_id },
                      :document => lambda { |t| t.index_doc }
 
-
-
-
-
-      # embed_values :relations => [:id, :source, :relationType]
-
-
-
-
-
+      serialize_default *(self.attributes << :relations)
+      embed :relations
 
       def index_id
         self.bring(:ontology) if self.bring?(:ontology)
