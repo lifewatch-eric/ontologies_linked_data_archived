@@ -41,6 +41,7 @@ module LinkedData
           :prefLabel => self.label,
           :obsolete => false,
           :provisional => true,
+          :ontologyId => latest.id.to_s,
           :submissionAcronym => self.ontology.acronym,
           :submissionId => latest.submissionId
         }
@@ -100,6 +101,12 @@ module LinkedData
       def solr_escape(text)
         RSolr.solr_escape(text).gsub(/\s+/,"\\ ")
       end
+
+      def self.children(source_uri)
+        source_uri = RDF::URI.new(source_uri) unless source_uri.is_a?(RDF::URI)
+        LinkedData::Models::ProvisionalClass.where(subclassOf: source_uri).include(LinkedData::Models::ProvisionalClass.attributes).all
+      end
+
     end
   end
 end
