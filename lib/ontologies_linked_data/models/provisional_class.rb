@@ -85,7 +85,7 @@ module LinkedData
       end
 
       ##
-      # Override save to allow creation of a PURL server entry
+      # Override save to allow indexing
       def save(*args)
         super(*args)
         index
