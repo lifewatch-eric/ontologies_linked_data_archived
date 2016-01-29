@@ -39,6 +39,8 @@ module LinkedData
         return {} unless self.ontology
         latest = self.ontology.latest_submission(status: :any)
         return {} unless latest
+        self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
+        self.ontology.bring(:ontologyType) if self.ontology.bring?(:ontologyType)
 
         doc = {
           :resource_id => self.id.to_s,
@@ -47,7 +49,8 @@ module LinkedData
           :provisional => true,
           :ontologyId => latest.id.to_s,
           :submissionAcronym => self.ontology.acronym,
-          :submissionId => latest.submissionId
+          :submissionId => latest.submissionId,
+          :ontologyType => self.ontology.ontologyType.get_code_from_id
         }
 
         all_attrs = self.to_hash
