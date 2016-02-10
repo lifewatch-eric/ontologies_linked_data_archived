@@ -841,7 +841,7 @@ eos
 
           # index provisional classes
           self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
-          self.ontology.ont.provisionalClasses.each { |pc| pc.index }
+          self.ontology.provisionalClasses.each { |pc| pc.index }
 
           if (commit)
             t0 = Time.now
