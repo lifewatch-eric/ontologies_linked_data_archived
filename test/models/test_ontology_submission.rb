@@ -270,13 +270,6 @@ eos
     sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "CTXTEST"]).first
 
     #test roots to ack parsing went well
-
-    roots = sub.roots
-    roots.sort! { |a,b| a.prefLabel <=> b.prefLabel }
-    roots.each do |root|
-      puts root.prefLabel
-    end
-
     n_roots = sub.roots.length
     assert_equal 16, n_roots
   end
