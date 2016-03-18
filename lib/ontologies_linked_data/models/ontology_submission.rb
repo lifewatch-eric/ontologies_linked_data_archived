@@ -805,6 +805,7 @@ eos
         count_classes = 0
         time = Benchmark.realtime do
           self.bring(:ontology) if self.bring?(:ontology)
+          self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
           t0 = Time.now
           self.ontology.unindex(commit)
@@ -839,9 +840,14 @@ eos
 
           writer.close
 
-          # index provisional classes
-          self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
-          self.ontology.provisionalClasses.each { |pc| pc.index }
+          begin
+            # index provisional classes
+            self.ontology.provisionalClasses.each { |pc| pc.index }
+          rescue Exception => e
+            logger.error("Error while indexing provisional classes for ontology #{self.ontology.acronym}:")
+            logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+            logger.flush
+          end
 
           if (commit)
             t0 = Time.now
