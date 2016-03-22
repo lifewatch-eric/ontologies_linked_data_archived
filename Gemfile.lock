@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 0d85088ada3c045546715fde17eb61e130f6cbd2
-  branch: master
+  revision: 12b3ef4c0d36044092423819afcc29d28bd8c9fd
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -52,7 +52,7 @@ GEM
     coderay (1.1.1)
     cube-ruby (0.0.3)
     docile (1.1.5)
-    domain_name (0.5.20160309)
+    domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
     elasticsearch (1.0.15)
       elasticsearch-api (= 1.0.15)
