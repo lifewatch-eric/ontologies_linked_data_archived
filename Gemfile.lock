@@ -121,7 +121,7 @@ GEM
     thread_safe (0.3.5)
     typhoeus (1.0.1)
       ethon (>= 0.8.0)
-    tzinfo (0.3.47)
+    tzinfo (0.3.48)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
