@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 12b3ef4c0d36044092423819afcc29d28bd8c9fd
+  revision: 5683b4e8e246d4af862b0510e56cdf774d9da077
   branch: staging
   specs:
     goo (0.0.2)
@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 2f69bdf6ee1e91aa974fe844b5097e465a2fe596
+  revision: f6fab1c3b993a2ea521af22086a34ba1feeffd02
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -89,7 +89,7 @@ GEM
     multipart-post (2.0.0)
     mysql2 (0.4.3)
     net-http-persistent (2.9.4)
-    oj (2.14.6)
+    oj (2.15.0)
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.3)
@@ -110,7 +110,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.0)
-    sequel (4.32.0)
+    sequel (4.33.0)
     simplecov (0.11.2)
       docile (~> 1.1.0)
       json (~> 1.8)
