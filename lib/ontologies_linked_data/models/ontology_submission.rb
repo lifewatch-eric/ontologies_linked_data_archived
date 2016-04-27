@@ -4,6 +4,7 @@ require 'uri'
 require 'open-uri'
 require 'cgi'
 require 'benchmark'
+require 'csv'
 
 module LinkedData
   module Models
@@ -273,6 +274,23 @@ module LinkedData
         end
       end
 
+      def generate_umls_metrics_file(triples_file_path)
+        class_count = 0
+        prop_count = 0
+
+        File.foreach(triples_file_path) do |line|
+          class_count += 1 if line =~ /owl:Class/
+          prop_count += 1 if line =~ /owl:ObjectProperty/
+          prop_count += 1 if line =~ /owl:DatatypeProperty/
+        end
+        metrics_filename = File.join(File.dirname(triples_file_path), "metrics.csv")
+
+        CSV.open(metrics_filename, "wb") do |csv|
+          csv << ["Class Count", "Individual Count", "Property Count"]
+          csv << [class_count, 0, prop_count]
+        end
+      end
+
       def generate_rdf(logger, file_path,reasoning=true)
         mime_type = nil
 
@@ -281,14 +299,17 @@ module LinkedData
           file_name = zip ?
               File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
           triples_file_path = File.expand_path(file_name)
-          logger.info("Using UMLS turtle file, skipping OWLAPI parse")
+          logger.info("Using UMLS turtle file found, skipping OWLAPI parse")
           logger.flush
           mime_type = LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE)
+          generate_umls_metrics_file(triples_file_path)
         else
           output_rdf = File.join(File.dirname(file_path), "owlapi.xrdf")
+
           if File.exist?(output_rdf)
             logger.info("deleting old owlapi.xrdf ..")
             deleted = FileUtils.rm(output_rdf)
+
             if deleted.length > 0
               logger.info("deleted")
             else
@@ -299,6 +320,7 @@ module LinkedData
               File.expand_path(file_path),
               File.expand_path(self.data_folder.to_s),
               master_file: self.masterFileName)
+
           if !reasoning
             owlapi.disable_reasoner
           end
@@ -306,6 +328,7 @@ module LinkedData
 
           if missing_imports && missing_imports.length > 0
             self.missingImports = missing_imports
+
             missing_imports.each do |imp|
               logger.info("OWL_IMPORT_MISSING: #{imp}")
             end
@@ -316,6 +339,7 @@ module LinkedData
         end
         delete_and_append(triples_file_path, logger, mime_type)
         version_info = extract_version()
+
         if version_info
           self.version = version_info
         end

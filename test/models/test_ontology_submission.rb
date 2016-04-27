@@ -506,6 +506,21 @@ eos
     end
   end
 
+  def test_umls_metrics_file
+    acronym = 'UMLS-TST'
+    filename = "./test/data/ontology_files/umls_semantictypes.ttl"
+    submission_parse(acronym, "Test UMLS Ontologory", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: true)
+    sub = LinkedData::Models::Ontology.find(acronym).first.latest_submission(status: [:rdf])
+    metrics = CSV.read(File.join(sub.data_folder.to_s, "metrics.csv"))
+    assert !metrics.nil?, "Metrics is nil: #{metrics}"
+    assert !metrics.empty?, "Metrics is empty: #{metrics}"
+    metrics.each { |m| assert_equal 3, m.length }
+    assert_equal "Individual Count", metrics[0][1]
+    assert_equal 133, metrics[1][0].to_i
+  end
+
   def test_discover_obo_in_owl_obsolete
     acr = "OBSPROPSDISCOVER"
     init_test_ontology_msotest acr
