@@ -210,6 +210,10 @@ module LinkedData
         return File.join(self.data_folder, self.ontology.acronym.to_s + ".csv.gz")
       end
 
+      def metrics_path
+        return File.join(self.data_folder, "metrics.csv")
+      end
+
       def rdf_path
         return File.join(self.data_folder, "owlapi.xrdf")
       end
@@ -283,15 +287,14 @@ module LinkedData
           prop_count += 1 if line =~ /owl:ObjectProperty/
           prop_count += 1 if line =~ /owl:DatatypeProperty/
         end
-        metrics_filename = File.join(File.dirname(triples_file_path), "metrics.csv")
 
-        CSV.open(metrics_filename, "wb") do |csv|
+        CSV.open(self.metrics_path, "wb") do |csv|
           csv << ["Class Count", "Individual Count", "Property Count"]
           csv << [class_count, 0, prop_count]
         end
       end
 
-      def generate_rdf(logger, file_path,reasoning=true)
+      def generate_rdf(logger, file_path, reasoning=true)
         mime_type = nil
 
         if self.hasOntologyLanguage.umls?
@@ -304,7 +307,7 @@ module LinkedData
           mime_type = LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE)
           generate_umls_metrics_file(triples_file_path)
         else
-          output_rdf = File.join(File.dirname(file_path), "owlapi.xrdf")
+          output_rdf = self.rdf_path
 
           if File.exist?(output_rdf)
             logger.info("deleting old owlapi.xrdf ..")

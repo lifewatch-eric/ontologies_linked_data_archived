@@ -513,7 +513,7 @@ eos
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     sub = LinkedData::Models::Ontology.find(acronym).first.latest_submission(status: [:rdf])
-    metrics = CSV.read(File.join(sub.data_folder.to_s, "metrics.csv"))
+    metrics = CSV.read(sub.metrics_path)
     assert !metrics.nil?, "Metrics is nil: #{metrics}"
     assert !metrics.empty?, "Metrics is empty: #{metrics}"
     metrics.each { |m| assert_equal 3, m.length }
