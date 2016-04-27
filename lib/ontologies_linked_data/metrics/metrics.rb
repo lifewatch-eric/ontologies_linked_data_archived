@@ -1,6 +1,8 @@
+require 'csv'
+
 module LinkedData
   module Metrics
-    def self.metrics_for_submission(submission,logger)
+    def self.metrics_for_submission(submission, logger)
       logger.info("metrics_for_submission start")
       logger.flush
       begin
@@ -23,10 +25,10 @@ module LinkedData
           end
           metrics.send("#{k}=",v)
         end
-        metrics.individuals = number_individuals(submission)
+        metrics.individuals = number_individuals(logger, submission)
         logger.info("individuals finished")
         logger.flush
-        metrics.properties = number_properties(submission)
+        metrics.properties = number_properties(logger, submission)
         logger.info("properties finished")
         logger.flush
         return metrics
@@ -108,7 +110,7 @@ module LinkedData
         end
       end
       t0 = Time.now
-      count_classes = query_count_classes(submission.id)
+      count_classes = number_classes(logger, submission)
       cls_metrics[:classes] = count_classes
       logger.info("Metrics count_classes retrieved #{count_classes}"+
                   " in #{Time.now - t0} sec.")
@@ -147,14 +149,41 @@ module LinkedData
       return branch_depts.max
     end
 
-    def self.number_individuals(submission)
-      return count_owl_type(submission.id,"NamedIndividual")
+    def self.number_classes(logger, submission)
+      class_count = 0
+      m_from_file = submission.metrics_from_file(logger)
+
+      if m_from_file && m_from_file.length == 2
+        class_count = m_from_file[1][0].to_i
+      else
+        class_count = query_count_classes(submission.id)
+      end
+      class_count
     end
 
-    def self.number_properties(submission)
-      props = count_owl_type(submission.id,"DatatypeProperty")
-      props += count_owl_type(submission.id,"ObjectProperty")
-      return props
+    def self.number_individuals(logger, submission)
+      indiv_count = 0
+      m_from_file = submission.metrics_from_file(logger)
+
+      if m_from_file && m_from_file.length == 2
+        indiv_count = m_from_file[1][1].to_i
+      else
+        indiv_count = count_owl_type(submission.id, "NamedIndividual")
+      end
+      indiv_count
+    end
+
+    def self.number_properties(logger, submission)
+      prop_count = 0
+      m_from_file = submission.metrics_from_file(logger)
+
+      if m_from_file && m_from_file.length == 2
+        prop_count = m_from_file[1][2].to_i
+      else
+        prop_count = count_owl_type(submission.id, "DatatypeProperty")
+        prop_count += count_owl_type(submission.id, "ObjectProperty")
+      end
+      prop_count
     end
 
     def self.hierarchy_depth?(graph,root,n,treeProp)

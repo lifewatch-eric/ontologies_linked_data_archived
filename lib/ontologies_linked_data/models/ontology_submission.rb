@@ -278,19 +278,34 @@ module LinkedData
         end
       end
 
+      def metrics_from_file(logger)
+        metrics = []
+        m_path = self.metrics_path
+
+        begin
+          metrics = CSV.read(m_path)
+        rescue Exception => e
+          logger.error("Unable to find metrics file: #{m_path}")
+          logger.flush
+        end
+        metrics
+      end
+
       def generate_umls_metrics_file(triples_file_path)
         class_count = 0
+        indiv_count = 0
         prop_count = 0
 
         File.foreach(triples_file_path) do |line|
           class_count += 1 if line =~ /owl:Class/
+          indiv_count += 1 if line =~ /owl:NamedIndividual/
           prop_count += 1 if line =~ /owl:ObjectProperty/
           prop_count += 1 if line =~ /owl:DatatypeProperty/
         end
 
         CSV.open(self.metrics_path, "wb") do |csv|
           csv << ["Class Count", "Individual Count", "Property Count"]
-          csv << [class_count, 0, prop_count]
+          csv << [class_count, indiv_count, prop_count]
         end
       end
 

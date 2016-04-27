@@ -238,7 +238,6 @@ eos
         end
     end
 
-
     # This is testing that treeView is used to traverse the hierarchy
     sub.bring(:hasOntologyLanguage)
     assert sub.hasOntologyLanguage.tree_property == Goo.vocabulary(:metadata)[:treeView]
@@ -508,12 +507,11 @@ eos
 
   def test_umls_metrics_file
     acronym = 'UMLS-TST'
-    filename = "./test/data/ontology_files/umls_semantictypes.ttl"
     submission_parse(acronym, "Test UMLS Ontologory", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     sub = LinkedData::Models::Ontology.find(acronym).first.latest_submission(status: [:rdf])
-    metrics = CSV.read(sub.metrics_path)
+    metrics = sub.metrics_from_file(Logger.new(sub.parsing_log_path))
     assert !metrics.nil?, "Metrics is nil: #{metrics}"
     assert !metrics.empty?, "Metrics is empty: #{metrics}"
     metrics.each { |m| assert_equal 3, m.length }
@@ -947,6 +945,17 @@ eos
     assert_equal 0, metrics.maxChildCount
     assert_equal 0, metrics.averageChildCount
     assert_equal 0, metrics.maxDepth
+
+    #test UMLS metrics
+    acronym = 'UMLS-TST'
+    submission_parse(acronym, "Test UMLS Ontologory", "./test/data/ontology_files/umls_semantictypes.ttl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: true, reasoning: true)
+    sub = LinkedData::Models::Ontology.find(acronym).first.latest_submission(status: [:rdf, :metrics])
+    sub.bring(:metrics)
+    metrics = sub.metrics
+    metrics.bring_remaining
+    assert_equal 133, metrics.classes
   end
 
 end
