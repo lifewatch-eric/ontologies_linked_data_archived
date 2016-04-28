@@ -278,7 +278,35 @@ module LinkedData
         end
       end
 
-      def metrics_from_file(logger)
+      def class_count(logger=nil)
+        logger ||= LinkedData::Parser.logger || Logger.new($stderr)
+        count = -1
+        count_set = false
+        self.bring(:metrics) if self.bring?(:metrics)
+        mx = self.metrics
+
+        if mx
+          mx.bring(:classes)
+          count = mx.classes
+          count_set = true
+        else
+          mx = metrics_from_file(logger)
+
+          unless mx.empty?
+            count = mx[1][0].to_i
+            count_set = true
+          end
+        end
+
+        unless count_set
+          logger.error("No calculated metrics or metrics file was found for #{self.id.to_s}. Unable to return total class count.")
+          logger.flush
+        end
+        count
+      end
+
+      def metrics_from_file(logger=nil)
+        logger ||= LinkedData::Parser.logger || Logger.new($stderr)
         metrics = []
         m_path = self.metrics_path
 
@@ -289,6 +317,13 @@ module LinkedData
           logger.flush
         end
         metrics
+      end
+
+      def generate_metrics_file(class_count, indiv_count, prop_count)
+        CSV.open(self.metrics_path, "wb") do |csv|
+          csv << ["Class Count", "Individual Count", "Property Count"]
+          csv << [class_count, indiv_count, prop_count]
+        end
       end
 
       def generate_umls_metrics_file(triples_file_path)
@@ -302,11 +337,7 @@ module LinkedData
           prop_count += 1 if line =~ /owl:ObjectProperty/
           prop_count += 1 if line =~ /owl:DatatypeProperty/
         end
-
-        CSV.open(self.metrics_path, "wb") do |csv|
-          csv << ["Class Count", "Individual Count", "Property Count"]
-          csv << [class_count, indiv_count, prop_count]
-        end
+        self.generate_metrics_file(class_count, indiv_count, prop_count)
       end
 
       def generate_rdf(logger, file_path, reasoning=true)
@@ -407,12 +438,25 @@ eos
       def loop_classes(logger, callbacks)
         page = 1
         size = 2500
-        count_classes = 0
         paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label, :unmapped).page(page, size)
-        # init artifacts hash if not explicitly passed in the callback
-        callbacks.each { |_, callback| callback[:artifacts] ||= {} }
+        cls_count_set = false
+        cls_count = class_count(logger)
+
+        if cls_count > -1
+          # prevent a COUNT SPARQL query if possible
+          paging.page_count_set(cls_count)
+          cls_count_set = true
+        else
+          cls_count = 0
+        end
+
+        iterate_classes = false
+        # 1. init artifacts hash if not explicitly passed in the callback
+        # 2. determine if class iteration is required
+        callbacks.each { |_, callback| callback[:artifacts] ||= {}; iterate_classes = true if callback[:caller_on_each] }
+
         process_callbacks(logger, callbacks, :caller_on_pre) {
-            |callable, callback| callable.call(callback[:artifacts], logger) }
+            |callable, callback| callable.call(callback[:artifacts], logger, paging) }
 
         begin
           t0 = Time.now
@@ -424,23 +468,23 @@ eos
           logger.flush
 
           process_callbacks(logger, callbacks, :caller_on_pre_page) {
-              |callable, callback| callable.call(callback[:artifacts], logger, page_classes, page) }
+              |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page) }
 
-          page_classes.each do |c|
+          page_classes.each { |c|
             process_callbacks(logger, callbacks, :caller_on_each) {
-                |callable, callback| callable.call(callback[:artifacts], logger, page_classes, page, c) }
-            count_classes += 1
-          end
+                |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page, c) }
+          } if iterate_classes
 
           process_callbacks(logger, callbacks, :caller_on_post_page) {
-              |callable, callback| callable.call(callback[:artifacts], logger, page_classes, page) }
+              |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page) }
+          cls_count += page_classes.length unless cls_count_set
 
           page = page_classes.next? ? page + 1 : nil
         end while !page.nil?
 
-        callbacks.each { |_, callback| callback[:artifacts][:count_classes] = count_classes }
+        callbacks.each { |_, callback| callback[:artifacts][:count_classes] = cls_count }
         process_callbacks(logger, callbacks, :caller_on_post) {
-            |callable, callback| callable.call(callback[:artifacts], logger) }
+            |callable, callback| callable.call(callback[:artifacts], logger, paging) }
         # set the status on actions that have completed successfully
         callbacks.each do |_, callback|
           if callback[:status]
@@ -450,7 +494,7 @@ eos
         end
       end
 
-      def generate_missing_labels_pre(artifacts={}, logger)
+      def generate_missing_labels_pre(artifacts={}, logger, paging)
         file_path = artifacts[:file_path]
         artifacts[:save_in_file] = File.join(File.dirname(file_path), "labels.ttl")
         artifacts[:save_in_file_mappings] = File.join(File.dirname(file_path), "mappings.ttl")
@@ -462,12 +506,12 @@ eos
         artifacts
       end
 
-      def generate_missing_labels_pre_page(artifacts={}, logger, page_classes, page)
+      def generate_missing_labels_pre_page(artifacts={}, logger, paging, page_classes, page)
         artifacts[:label_triples] = []
         artifacts[:mapping_triples] = []
       end
 
-      def generate_missing_labels_each(artifacts={}, logger, page_classes, page, c)
+      def generate_missing_labels_each(artifacts={}, logger, paging, page_classes, page, c)
         prefLabel = nil
 
         if c.prefLabel.nil?
@@ -510,7 +554,7 @@ eos
         end
       end
 
-      def generate_missing_labels_post_page(artifacts={}, logger, page_classes, page)
+      def generate_missing_labels_post_page(artifacts={}, logger, paging, page_classes, page)
         rest_mappings = LinkedData::Mappings.migrate_rest_mappings(self.ontology.acronym)
         artifacts[:mapping_triples].concat(rest_mappings)
 
@@ -546,7 +590,7 @@ eos
         end
       end
 
-      def generate_missing_labels_post(artifacts={}, logger)
+      def generate_missing_labels_post(artifacts={}, logger, paging)
         logger.info("end generate_missing_labels traversed #{artifacts[:count_classes]} classes")
         logger.info("Saved generated labels in #{artifacts[:save_in_file]}")
         artifacts[:fsave].close()
@@ -901,7 +945,7 @@ eos
         exist_metrics.delete if exist_metrics
         metrics.save
         self.metrics = metrics
-        return self
+        self
       end
 
       def index(logger, commit = true, optimize = true)
@@ -918,9 +962,18 @@ eos
           logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
+          cls_count = class_count(logger)
+          paging.page_count_set(cls_count) unless cls_count < 0
 
-          writer = LinkedData::Utils::OntologyCSVWriter.new
-          writer.open(self.ontology, self.csv_path)
+
+
+
+          # TODO: this needs to us its own parameter and moved into a callback
+          csv_writer = LinkedData::Utils::OntologyCSVWriter.new
+          csv_writer.open(self.ontology, self.csv_path)
+
+
+
 
           begin #per page
             t0 = Time.now
@@ -929,10 +982,17 @@ eos
             t0 = Time.now
 
 
+
+
+
+            # TODO: CSV writing needs to be moved to its own callback
             page_classes.each do |c|
+              # this cal is needed for indexing of properties
               LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
-              writer.write_class(c)
+              csv_writer.write_class(c)
             end
+
+
 
 
 
@@ -948,7 +1008,12 @@ eos
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
 
-          writer.close
+
+
+          # TODO: move this into its own callback
+          csv_writer.close
+
+
 
           begin
             # index provisional classes
