@@ -326,12 +326,13 @@ module LinkedData
         end
       end
 
-      def generate_umls_metrics_file(triples_file_path)
+      def generate_umls_metrics_file(data_path=nil)
+        data_path ||= self.data_folder
         class_count = 0
         indiv_count = 0
         prop_count = 0
 
-        File.foreach(triples_file_path) do |line|
+        File.foreach(data_path) do |line|
           class_count += 1 if line =~ /owl:Class/
           indiv_count += 1 if line =~ /owl:NamedIndividual/
           prop_count += 1 if line =~ /owl:ObjectProperty/
@@ -452,7 +453,7 @@ eos
 
         iterate_classes = false
         # 1. init artifacts hash if not explicitly passed in the callback
-        # 2. determine if class iteration is required
+        # 2. determine if class-level iteration is required
         callbacks.each { |_, callback| callback[:artifacts] ||= {}; iterate_classes = true if callback[:caller_on_each] }
 
         process_callbacks(logger, callbacks, :caller_on_pre) {
