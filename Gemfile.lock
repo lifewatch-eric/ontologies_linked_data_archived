@@ -52,6 +52,8 @@ GEM
     coderay (1.1.1)
     cube-ruby (0.0.3)
     docile (1.1.5)
+    domain_name (0.5.20160310)
+      unf (>= 0.0.5, < 1.0.0)
     elasticsearch (1.0.17)
       elasticsearch-api (= 1.0.17)
       elasticsearch-transport (= 1.0.17)
@@ -70,6 +72,8 @@ GEM
       multipart-post (>= 1.2, < 3)
     ffi (1.9.10)
     htmlentities (4.3.4)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
     i18n (0.7.0)
     json (1.8.3)
     json_pure (1.8.3)
@@ -81,14 +85,13 @@ GEM
     mail (2.6.4)
       mime-types (>= 1.16, < 4)
     method_source (0.8.2)
-    mime-types (3.0)
-      mime-types-data (~> 3.2015)
-    mime-types-data (3.2016.0221)
+    mime-types (2.99.1)
     minitest (4.7.5)
     multi_json (1.11.3)
     multipart-post (2.0.0)
     mysql2 (0.4.4)
     net-http-persistent (2.9.4)
+    netrc (0.11.0)
     oj (2.15.0)
     pony (1.11)
       mail (>= 2.0)
@@ -104,8 +107,10 @@ GEM
       addressable (>= 2.2)
     redis (3.3.0)
     ref (2.0.0)
-    rest-client (1.6.7)
-      mime-types (>= 1.16)
+    rest-client (1.8.0)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 3.0)
+      netrc (~> 0.7)
     rsolr (1.1.1)
       builder (>= 2.1.2)
     ruby-xxHash (0.4.0.1)
@@ -122,6 +127,9 @@ GEM
     typhoeus (1.0.2)
       ethon (>= 0.9.0)
     tzinfo (0.3.49)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.2)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
@@ -149,3 +157,6 @@ DEPENDENCIES
   rubyzip (~> 1.0)
   simplecov
   sparql-client!
+
+BUNDLED WITH
+   1.11.2
