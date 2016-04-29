@@ -881,11 +881,11 @@ eos
     metrics.bring_remaining
     assert_instance_of LinkedData::Models::Metric, metrics
 
-    assert metrics.classes == 143
+    assert metrics.classes == 144
     assert metrics.properties == 78
     assert metrics.individuals == 26
     assert metrics.classesWithOneChild == 11
-    assert metrics.classesWithNoDefinition == 133
+    assert metrics.classesWithNoDefinition == 134
     assert metrics.classesWithMoreThan25Children == 0
     assert metrics.maxChildCount == 19
     assert metrics.averageChildCount == 3
