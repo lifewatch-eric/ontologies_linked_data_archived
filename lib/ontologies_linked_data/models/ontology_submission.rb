@@ -222,6 +222,17 @@ module LinkedData
         return File.join(self.data_folder, 'parsing.log')
       end
 
+      def triples_file_path
+        self.bring(:uploadFilePath) if self.bring?(:uploadFilePath)
+        self.bring(:masterFileName) if self.bring?(:masterFileName)
+        triples_file_name = File.basename(self.uploadFilePath.to_s)
+        full_file_path = File.join(File.expand_path(self.data_folder.to_s), triples_file_name)
+        zip = LinkedData::Utils::FileHelpers.zip?(full_file_path)
+        triples_file_name = File.basename(self.masterFileName.to_s) if zip && self.masterFileName
+        file_name = File.join(File.expand_path(self.data_folder.to_s), triples_file_name)
+        File.expand_path(file_name)
+      end
+
       def unzip_submission(logger)
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         zip_dst = nil
@@ -326,13 +337,13 @@ module LinkedData
         end
       end
 
-      def generate_umls_metrics_file(data_path=nil)
-        data_path ||= self.data_folder
+      def generate_umls_metrics_file(tr_file_path=nil)
+        tr_file_path ||= self.triples_file_path
         class_count = 0
         indiv_count = 0
         prop_count = 0
 
-        File.foreach(data_path) do |line|
+        File.foreach(tr_file_path) do |line|
           class_count += 1 if line =~ /owl:Class/
           indiv_count += 1 if line =~ /owl:NamedIndividual/
           prop_count += 1 if line =~ /owl:ObjectProperty/
@@ -345,10 +356,7 @@ module LinkedData
         mime_type = nil
 
         if self.hasOntologyLanguage.umls?
-          zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
-          file_name = zip ?
-              File.join(File.expand_path(self.data_folder.to_s), self.masterFileName) : self.uploadFilePath.to_s
-          triples_file_path = File.expand_path(file_name)
+          triples_file_path = self.triples_file_path
           logger.info("Using UMLS turtle file found, skipping OWLAPI parse")
           logger.flush
           mime_type = LinkedData::MediaTypes.media_type_from_base(LinkedData::MediaTypes::TURTLE)
