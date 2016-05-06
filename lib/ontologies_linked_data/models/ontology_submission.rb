@@ -294,7 +294,14 @@ module LinkedData
         count = -1
         count_set = false
         self.bring(:metrics) if self.bring?(:metrics)
-        mx = self.metrics
+
+        begin
+          mx = self.metrics
+        rescue Exception => e
+          logger.error("Unable to retrieve metrics in class_count for #{self.id.to_s} - #{e.class}: #{e.message}")
+          logger.flush
+          mx = nil
+        end
 
         if mx
           mx.bring(:classes) if mx.bring?(:classes)
