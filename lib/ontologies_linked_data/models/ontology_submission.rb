@@ -297,7 +297,7 @@ module LinkedData
         mx = self.metrics
 
         if mx
-          mx.bring(:classes)
+          mx.bring(:classes) if mx.bring?(:classes)
           count = mx.classes
           count_set = true
         else
@@ -512,7 +512,6 @@ eos
         fsave = File.open(artifacts[:save_in_file], "w")
         fsave.write(property_triples)
         artifacts[:fsave] = fsave
-        artifacts
       end
 
       def generate_missing_labels_pre_page(artifacts={}, logger, paging, page_classes, page)
@@ -956,6 +955,51 @@ eos
         self.metrics = metrics
         self
       end
+
+      # callbacks = {
+      #     index: {
+      #         required: false,
+      #         status: LinkedData::Models::SubmissionStatus.find("INDEXED").first,
+      #         artifacts: {
+      #             commit: index_commit,
+      #             optimize: false
+      #         },
+      #         caller_on_pre: :index_pre,
+      #         caller_on_pre_page: :index_pre_page,
+      #         caller_on_each: :index_each,
+      #         caller_on_post_page: :index_post_page,
+      #         caller_on_post: :index_post
+      #     }
+      # }
+      #
+      #
+      #
+      # def index_pre(artifacts={}, logger, paging)
+      #   self.bring(:ontology) if self.bring?(:ontology)
+      #   self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
+      #   logger.info("Indexing ontology: #{self.ontology.acronym}...")
+      #   t0 = Time.now
+      #   self.ontology.unindex(artifacts[:commit])
+      #   logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
+      # end
+      #
+      #
+      #
+      # def index_pre_page(artifacts={}, logger, paging, page_classes, page)
+      #
+      # end
+      #
+      # def index_each(artifacts={}, logger, paging, page_classes, page, c)
+      #
+      # end
+      #
+      # def index_post_page(artifacts={}, logger, paging, page_classes, page)
+      #
+      # end
+      #
+      # def index_post(artifacts={}, logger, paging)
+      #
+      # end
 
       def index(logger, commit = true, optimize = true)
         page = 1
