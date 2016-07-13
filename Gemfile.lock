@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 5d4401d7e31ed6c60e681babe863cddfbb2149bf
+  revision: 520e700d4c26a43547d76e908d03f59f8cd21c94
   branch: staging
   specs:
     goo (0.0.2)
@@ -159,6 +159,3 @@ DEPENDENCIES
   rubyzip (~> 1.0)
   simplecov
   sparql-client!
-
-BUNDLED WITH
-   1.12.5
