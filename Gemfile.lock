@@ -162,6 +162,3 @@ DEPENDENCIES
   simplecov
   sparql-client!
   test-unit-minitest
-
-BUNDLED WITH
-   1.12.5
