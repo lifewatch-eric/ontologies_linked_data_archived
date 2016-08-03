@@ -74,17 +74,36 @@ module LinkedData
         command_call = "java -DentityExpansionLimit=2500000 -Xmx10240M -jar #{@owlapi_wrapper_jar_path} #{options}"
         @logger.info("Java call [#{command_call}]")
         Open3.popen3(command_call) do |i,o,e,w|
+          i.close
+
           begin
             Timeout.timeout(60 * 40) do #20 minutes
               buffer = []
-              o.each_line do |line|
-                buffer << line
+              stdout = ""
+              stderr = ""
+
+              read_array = [o, e]
+              loop do
+                ready_to_read = IO.select(read_array)
+
+                if ready_to_read[0].include? o
+                  o.each_line do |line|
+                    buffer << line
+                  end
+                  stdout = buffer.join "\n"
+                  read_array.delete(o)
+                end
+
+                if ready_to_read[0].include? e
+                  e.each_line do |line|
+                    buffer << line
+                  end
+                  stderr = buffer.join "\n"
+                  read_array.delete(e)
+                end
+
+                break if read_array.empty?
               end
-              stdout = buffer.join "\n"
-              e.each_line do |line|
-                buffer << line
-              end
-              stderr = buffer.join "\n"
               
               if not w.value.success?
                 @logger.error("OWLAPI Java command: parsing error occurred.")
@@ -92,9 +111,8 @@ module LinkedData
                 @logger.error("stdout: " + stdout)
                 raise Parser::OWLAPIParserException, "OWLAPI Java command exited with status #{w.value.exitstatus}. Check parser log for details."
               else
-                @logger.info("OWLAPI Java command: parsing finished successfully.")
-                @logger.info(stderr)
                 @logger.info(stdout)
+                @logger.info("OWLAPI Java command: parsing finished successfully.")
               end
 
             end

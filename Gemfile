@@ -16,9 +16,12 @@ gem 'pony'
 gem 'addressable', '= 2.3.5'
 
 # Testing
-gem 'simplecov', :group => :test
-gem 'pry', :group => :test
-gem 'email_spec', :group => :test
+group :test do
+	gem 'simplecov'
+	gem 'pry'
+	gem 'email_spec'
+	gem 'test-unit-minitest'
+end
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
 gem 'goo', github: 'ncbo/goo', branch: 'master'
