@@ -111,9 +111,8 @@ module LinkedData
                 @logger.error("stdout: " + stdout)
                 raise Parser::OWLAPIParserException, "OWLAPI Java command exited with status #{w.value.exitstatus}. Check parser log for details."
               else
-                @logger.info("OWLAPI Java command: parsing finished successfully.")
-                @logger.info(stderr)
                 @logger.info(stdout)
+                @logger.info("OWLAPI Java command: parsing finished successfully.")
               end
 
             end
