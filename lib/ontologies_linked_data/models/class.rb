@@ -296,7 +296,17 @@ module LinkedData
         end
 
         if path.nil?
-          return self
+          # do one more check for root classes that don't get returned by the submission.roots call
+          paths.each do |p|
+            root_node = p.last
+            root_parents = root_node.parents
+
+            if root_parents.empty?
+              path = p
+              break
+            end
+          end
+          return self if path.nil?
         end
 
         items_hash = {}
