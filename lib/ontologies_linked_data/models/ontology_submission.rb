@@ -5,6 +5,7 @@ require 'open-uri'
 require 'cgi'
 require 'benchmark'
 require 'csv'
+require 'fileutils'
 
 module LinkedData
   module Models
@@ -876,7 +877,7 @@ eos
                 logger.flush
                 add_submission_status(status.get_error_status)
                 if File.file?(self.csv_path)
-                  FileUtils.delete(self.csv_path)
+                  FileUtils.rm(self.csv_path)
                 end
               ensure
                 self.save
