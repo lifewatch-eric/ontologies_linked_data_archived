@@ -148,8 +148,9 @@ module LinkedData
           return true
         end
 
-        zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
-        files =  LinkedData::Utils::FileHelpers.files_from_zip(self.uploadFilePath) if zip
+        zip = LinkedData::Utils::FileHelpers.zip?(self.triples_file_path)
+        files =  LinkedData::Utils::FileHelpers.files_from_zip(self.triples_file_path) if zip
+
         if not zip and self.masterFileName.nil?
           return true
         elsif zip and files.length == 1
