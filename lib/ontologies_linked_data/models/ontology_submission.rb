@@ -5,6 +5,7 @@ require 'open-uri'
 require 'cgi'
 require 'benchmark'
 require 'csv'
+require 'fileutils'
 
 module LinkedData
   module Models
@@ -149,6 +150,7 @@ module LinkedData
 
         zip = LinkedData::Utils::FileHelpers.zip?(self.uploadFilePath)
         files =  LinkedData::Utils::FileHelpers.files_from_zip(self.uploadFilePath) if zip
+
         if not zip and self.masterFileName.nil?
           return true
         elsif zip and files.length == 1
@@ -876,7 +878,7 @@ eos
                 logger.flush
                 add_submission_status(status.get_error_status)
                 if File.file?(self.csv_path)
-                  FileUtils.delete(self.csv_path)
+                  FileUtils.rm(self.csv_path)
                 end
               ensure
                 self.save
