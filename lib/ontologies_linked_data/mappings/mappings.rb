@@ -63,7 +63,13 @@ module Mappings
             "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
         logger.flush
       end
-      sleep(5)
+
+
+
+      sleep(2)
+
+
+
     end
     if enable_debug
       logger.info("Total time #{Time.now - t} sec.")
@@ -71,6 +77,22 @@ module Mappings
     end
     return counts
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   def self.mapping_ontologies_count(sub1,sub2,reload_cache=false)
     template = <<-eos
@@ -128,6 +150,16 @@ eos
       if sub2.nil?
         solutions = epr.query(query,
                               graphs: graphs, reload_cache: reload_cache)
+
+
+
+
+        # binding.pry
+
+
+
+
+
         solutions.each do |sol|
           acr = sol[:g].to_s.split("/")[-3]
           if group_count[acr].nil?
@@ -144,11 +176,23 @@ eos
       end
     end #per predicate query
 
+
+
+
     if sub2.nil?
       return group_count
     end
     return count
   end
+
+
+
+
+
+
+
+
+
 
   def self.empty_page(page,size)
       p = Goo::Base::Page.new(page,size,nil,[])
@@ -174,12 +218,17 @@ eos
     acr1 = sub1.id.to_s.split("/")[-3]
     if classId.nil?
       acr2 = nil
+
       if not sub2.nil?
         acr2 = sub2.id.to_s.split("/")[-3]
       end
-      pcount = LinkedData::Models::MappingCount.where(
-          ontologies: acr1
-      )
+      pcount = LinkedData::Models::MappingCount.where(ontologies: acr1)
+
+
+
+      # binding.pry
+
+
       if not acr2 == nil
         pcount = pcount.and(ontologies: acr2)
       end
@@ -187,11 +236,17 @@ eos
       pcount = pcount.filter(f)
       pcount = pcount.include(:count)
       pcount = pcount.all
+
       if pcount.length == 0
         persistent_count = 0
       else
         persistent_count = pcount.first.count
       end
+
+
+      # binding.pry
+
+
       if persistent_count == 0
         return LinkedData::Mappings.empty_page(page,size)
       end
@@ -259,6 +314,10 @@ eos
     unless sub2.nil?
       graphs << sub2.id
     end
+
+
+
+
     solutions = epr.query(query,
                           graphs: graphs, reload_cache: reload_cache)
     s1 = nil
@@ -420,6 +479,19 @@ eos
     return mapping
   end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   def self.create_rest_mapping(classes,process)
     unless process.instance_of? LinkedData::Models::MappingProcess
       raise ArgumentError, "Process should be instance of MappingProcess"
@@ -452,9 +524,7 @@ eos
       sub = c.submission
       unless sub.id.to_s["latest"].nil?
         #the submission in the class might point to latest
-        sub = LinkedData::Models::Ontology.find(c.submission.ontology.id)
-                .first
-                .latest_submission
+        sub = LinkedData::Models::Ontology.find(c.submission.ontology.id).first.latest_submission
       end
       graph_insert = RDF::Graph.new
       graph_insert << [c.id, RDF::URI.new(rest_predicate), backup_mapping.id]
@@ -463,6 +533,15 @@ eos
     mapping = LinkedData::Models::Mapping.new(classes,"REST",process)
     return mapping
   end
+
+
+
+
+
+
+
+
+
 
   def self.mappings_for_classids(class_ids,sources=["REST","CUI"])
     class_ids = class_ids.uniq
@@ -586,10 +665,21 @@ eos
     return latest_submissions
   end
 
+
+
+
+
+
   def self.create_mapping_counts(logger)
     new_counts = LinkedData::Mappings.mapping_counts(
                                         enable_debug=true,logger=logger,
                                         reload_cache=true)
+
+
+    puts new_counts
+
+
+
     persistent_counts = {}
     f = Goo::Filter.new(:pair_count) == false
     LinkedData::Models::MappingCount.where.filter(f)
@@ -662,6 +752,22 @@ eos
       end
     end
   end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end
 end

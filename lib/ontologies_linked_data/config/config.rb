@@ -17,6 +17,9 @@ module LinkedData
     # Set defaults
     @settings.goo_port                      ||= 9000
     @settings.goo_host                      ||= "localhost"
+    @settings.goo_path_query                ||= "/sparql/"
+    @settings.goo_path_data                 ||= "/data/"
+    @settings.goo_path_update               ||= "/update/"
     @settings.search_server_url             ||= "http://localhost:8983/solr"
     @settings.repository_folder             ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix               ||= "http://data.bioontology.org/"
@@ -100,13 +103,16 @@ module LinkedData
   def connect_goo
     port              ||= @settings.goo_port
     host              ||= @settings.goo_host
+    path_query        ||= @settings.goo_path_query
+    path_data         ||= @settings.goo_path_data
+    path_update       ||= @settings.goo_path_update
 
     begin
       Goo.configure do |conf|
         conf.queries_debug(@settings.queries_debug)
-        conf.add_sparql_backend(:main, query: "http://#{host}:#{port}/sparql/",
-                                data: "http://#{host}:#{port}/data/",
-                                update: "http://#{host}:#{port}/update/",
+        conf.add_sparql_backend(:main, query: "http://#{host}:#{port}#{path_query}",
+                                data: "http://#{host}:#{port}#{path_data}",
+                                update: "http://#{host}:#{port}#{path_update}",
                                 options: { rules: :NONE })
 
         conf.add_search_backend(:main, service: @settings.search_server_url)

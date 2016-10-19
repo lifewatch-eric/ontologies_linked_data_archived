@@ -19,22 +19,22 @@ class TestMapping < LinkedData::TestOntologyCommon
     helper = LinkedData::TestOntologyCommon.new(self)
     helper.submission_parse(ONT_ACR1,
                      "MappingOntTest1",
-                     "./test/data/ontology_files/BRO_v3.3.owl", 11,
+                     "/Users/mdorf/dev/ncbo/ontologies_linked_data/test/data/ontology_files/BRO_v3.3.owl", 11,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     helper.submission_parse(ONT_ACR2,
                      "MappingOntTest2",
-                     "./test/data/ontology_files/CNO_05.owl", 22,
+                     "/Users/mdorf/dev/ncbo/ontologies_linked_data/test/data/ontology_files/CNO_05.owl", 22,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     helper.submission_parse(ONT_ACR3,
                      "MappingOntTest3",
-                     "./test/data/ontology_files/aero.owl", 33,
+                     "/Users/mdorf/dev/ncbo/ontologies_linked_data/test/data/ontology_files/aero.owl", 33,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     helper.submission_parse(ONT_ACR4,
                      "MappingOntTest4",
-                     "./test/data/ontology_files/fake_for_mappings.owl", 44,
+                     "/Users/mdorf/dev/ncbo/ontologies_linked_data/test/data/ontology_files/fake_for_mappings.owl", 44,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
@@ -173,7 +173,8 @@ class TestMapping < LinkedData::TestOntologyCommon
 
   def test_mappings_two_ontologies
     LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
-    assert LinkedData::Models::MappingCount.where.all.length > 2
+    map_ct = LinkedData::Models::MappingCount.where.all.length
+    assert map_ct > 2, "Mapping count should exceed the value of 2"
     #bro
     ont1 = LinkedData::Models::Ontology.where({ :acronym => ONT_ACR1 }).to_a[0]
     #fake ont
@@ -217,10 +218,10 @@ class TestMapping < LinkedData::TestOntologyCommon
     count = LinkedData::Mappings.mapping_ontologies_count(latest_sub1,
                                                           latest_sub2)
 
-    assert_equal(mappings.length, count)
-    assert_equal(same_uri,5)
-    assert_equal(cui, 1)
-    assert_equal(loom,2)
+    assert_equal(count, mappings.length)
+    assert_equal(5, same_uri)
+    assert_equal(1, cui)
+    assert_equal(2, loom)
   end
 
   def test_mappings_rest
@@ -261,10 +262,7 @@ class TestMapping < LinkedData::TestOntologyCommon
       LinkedData::Mappings.create_rest_mapping(classes,process)
     end
     ont_id = submissions_a.first.split("/")[0..-3].join("/")
-    latest_sub = LinkedData::Models::Ontology
-                    .find(RDF::URI.new(ont_id))
-                    .first
-                    .latest_submission
+    latest_sub = LinkedData::Models::Ontology.find(RDF::URI.new(ont_id)).first.latest_submission
     LinkedData::Mappings.create_mapping_counts(Logger.new(TestLogFile.new))
     assert LinkedData::Models::MappingCount.where.all.length > 2
     mappings = LinkedData::Mappings.mappings_ontology(latest_sub,1,1000)
@@ -294,7 +292,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     helper = LinkedData::TestOntologyCommon.new(self)
     helper.submission_parse(ONT_ACR1,
                      "MappingOntTest1",
-                     "./test/data/ontology_files/BRO_v3.3.owl", 12,
+                     "/Users/mdorf/dev/ncbo/ontologies_linked_data/test/data/ontology_files/BRO_v3.3.owl", 12,
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
     latest_sub = LinkedData::Models::Ontology
@@ -310,7 +308,7 @@ class TestMapping < LinkedData::TestOntologyCommon
         rest_mapping_count += 1
       end
     end
-    assert rest_mapping_count == 3
+    assert_equal 3, rest_mapping_count
   end
 
 end
