@@ -110,7 +110,10 @@ module LinkedData
     begin
       Goo.configure do |conf|
         conf.queries_debug(@settings.queries_debug)
-        conf.add_sparql_backend(:main, query: "http://#{host}:#{port}#{path_query}",
+        conf.add_sparql_backend(:main,
+
+
+                                query: "http://#{host}:#{port}#{path_query}",
                                 data: "http://#{host}:#{port}#{path_data}",
                                 update: "http://#{host}:#{port}#{path_update}",
                                 options: { rules: :NONE })

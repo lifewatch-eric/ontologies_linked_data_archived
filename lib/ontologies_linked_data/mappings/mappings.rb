@@ -200,6 +200,17 @@ eos
       return p
   end
 
+
+
+
+
+
+
+
+
+
+
+
   def self.mappings_ontologies(sub1,sub2,page,size,classId=nil,reload_cache=false)
     union_template = <<-eos
 {
@@ -235,12 +246,12 @@ eos
       f = Goo::Filter.new(:pair_count) == (not acr2.nil?)
       pcount = pcount.filter(f)
       pcount = pcount.include(:count)
-      pcount = pcount.all
+      pcount_arr = pcount.all
 
-      if pcount.length == 0
+      if pcount_arr.length == 0
         persistent_count = 0
       else
-        persistent_count = pcount.first.count
+        persistent_count = pcount_arr.first.count
       end
 
 
@@ -361,6 +372,15 @@ eos
     page.aggregate = persistent_count
     return page
   end
+
+
+
+
+
+
+
+
+
 
   def self.mappings_ontology(sub,page,size,classId=nil,reload_cache=false)
     return self.mappings_ontologies(sub,nil,page,size,classId=classId,
@@ -676,7 +696,10 @@ eos
                                         reload_cache=true)
 
 
-    puts new_counts
+
+
+
+
 
 
 

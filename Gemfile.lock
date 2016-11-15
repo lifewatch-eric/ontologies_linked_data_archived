@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: c2213f7ae4545bab1ba8d0af8b9b5a346dfdcfd9
+  revision: 0d18e471f7910265f8a6b65295030a7952dc3f8b
   branch: allegrograph_testing
   specs:
     goo (0.0.2)
@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: git://github.com/ncbo/resource_index.git
-  revision: 4d3020aa4aad63f45b384359b47f4b17194c3092
+  revision: d0d5f3592307bd21b17c48ff4311abdff710ea2d
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch
@@ -89,7 +89,7 @@ GEM
     minitest (4.7.5)
     multi_json (1.12.1)
     multipart-post (2.0.0)
-    mysql2 (0.4.4)
+    mysql2 (0.4.5)
     net-http-persistent (2.9.4)
     netrc (0.11.0)
     oj (2.17.4)

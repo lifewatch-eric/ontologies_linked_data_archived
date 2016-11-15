@@ -1015,7 +1015,7 @@ eos
         size = 500
 
         count_classes = 0
-        time = Benchmark.realtime do
+        # time = Benchmark.realtime do
           self.bring(:ontology) if self.bring?(:ontology)
           self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
           logger.info("Indexing ontology: #{self.ontology.acronym}...")
@@ -1023,8 +1023,23 @@ eos
           self.ontology.unindex(commit)
           logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
 
-          paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
-          cls_count = class_count(logger)
+
+
+
+
+
+        inn = LinkedData::Models::Class.in(self)
+
+        inc = inn.include(:unmapped)
+
+        paging = inc.page(page, size)
+
+
+        paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
+
+
+
+        cls_count = class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
 
@@ -1091,9 +1106,13 @@ eos
             LinkedData::Models::Class.indexCommit()
             logger.info("Solr index commit in #{Time.now - t0} sec.")
           end
-        end
-        logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
-        logger.flush
+        # end
+        # logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
+        # logger.flush
+
+
+
+
 
         if optimize
           logger.info("Optimizing index...")
