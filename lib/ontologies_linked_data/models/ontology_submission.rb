@@ -455,7 +455,15 @@ eos
 
       def loop_classes(logger, callbacks)
         page = 1
-        size = 2500
+
+
+
+        # size = 2500
+        size = 50
+
+
+
+
         paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label, :unmapped).page(page, size)
         cls_count_set = false
         cls_count = class_count(logger)
@@ -1012,7 +1020,20 @@ eos
 
       def index(logger, commit = true, optimize = true)
         page = 1
-        size = 500
+
+
+
+
+        # size = 500
+        size = 50
+
+
+
+
+
+
+
+
 
         count_classes = 0
         # time = Benchmark.realtime do

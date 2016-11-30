@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 0d18e471f7910265f8a6b65295030a7952dc3f8b
+  revision: 856a84c279600bbda75c03afa77eab9443003cfa
   branch: allegrograph_testing
   specs:
     goo (0.0.2)

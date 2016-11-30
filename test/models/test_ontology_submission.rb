@@ -276,18 +276,18 @@ eos
   def test_submission_parse
 
     # This one has some nasty looking IRIS with slashes in the anchor
-    # unless ENV["BP_SKIP_HEAVY_TESTS"] == "1"
-    #   submission_parse("MCCLTEST", "MCCLS TEST",
-    #              "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
-    #                    process_rdf: true, index_search: true,
-    #                    run_metrics: false, reasoning: true)
-    #
-    #   sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
-    #                                                      submissionId: 11)
-    #                                                    .include(:version)
-    #                                                    .first
-    #   assert sub.version == "3.0"
-    # end
+    unless ENV["BP_SKIP_HEAVY_TESTS"] == "1"
+      submission_parse("MCCLTEST", "MCCLS TEST",
+                 "./test/data/ontology_files/CellLine_OWL_BioPortal_v1.0.owl", 11,
+                       process_rdf: true, index_search: true,
+                       run_metrics: false, reasoning: true)
+
+      sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "MCCLTEST"],
+                                                         submissionId: 11)
+                                                       .include(:version)
+                                                       .first
+      assert sub.version == "3.0"
+    end
 
     #This one has resources wih accents.
     submission_parse("ONTOMATEST",
@@ -304,158 +304,158 @@ eos
     assert sub.version["Date: 11-2011"]
   end
 
-#   def test_process_submission_diff
-#     #submission_parse( acronym, name, ontologyFile, id, parse_options={})
-#     acronym = 'BRO'
-#     # Create a 1st version for BRO
-#     submission_parse(acronym, "BRO",
-#                      "./test/data/ontology_files/BRO_v3.4.owl", 1,
-#                      process_rdf: true, index_search: false,
-#                      run_metrics: false, reasoning: false,
-#                      diff: true, delete: false)
-#     # Create a later version for BRO
-#     submission_parse(acronym, "BRO",
-#                      "./test/data/ontology_files/BRO_v3.5.owl", 2,
-#                      process_rdf: true, index_search: false,
-#                      run_metrics: false, reasoning: false,
-#                      diff: true, delete: false)
-#     onts = LinkedData::Models::Ontology.find(acronym)
-#     bro = onts.first
-#     bro.bring(:submissions)
-#     submissions = bro.submissions
-#     submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
-#     # Sort submissions in descending order of submissionId, extract last two submissions
-#     recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
-#     sub1 = recent_submissions.last  # descending order, so last is older submission
-#     sub2 = recent_submissions.first # descending order, so first is latest submission
-#     assert(sub1.submissionId < sub2.submissionId, 'submissionId is in the wrong order')
-#     assert(sub1.diffFilePath == nil, 'Should not create diff for older submission.')
-#     assert(sub2.diffFilePath != nil, 'Failed to create diff for the latest submission.')
-#     # Cleanup
-#     LinkedData::TestCase.backend_4s_delete
-#   end
-#
-#   def test_process_submission_archive
-#     parse_options = { process_rdf: false, index_search: false, index_commit: false,
-#                       run_metrics: false, reasoning: false, archive: true }
-#
-#     ont_count, ont_acronyms, ontologies =
-#       create_ontologies_and_submissions(ont_count: 1, submission_count: 2,
-#                                         process_submission: true, acronym: 'NCBO-545')
-#     # Sanity check.
-#     assert_equal 1, ontologies.count
-#     assert_equal 2, ontologies.first.submissions.count
-#
-#     # Sort submissions in descending order.
-#     sorted_submissions = ontologies.first.submissions.sort { |a,b| b.submissionId <=> a.submissionId }
-#
-#     # Process latest submission.  No files should be deleted.
-#     latest_sub = sorted_submissions.first
-#     latest_sub.process_submission(Logger.new(latest_sub.parsing_log_path), parse_options)
-#     assert latest_sub.archived?
-#
-#     assert File.file?(File.join(latest_sub.data_folder, 'labels.ttl')),
-#       %-Missing ontology submission file: 'labels.ttl'-
-#
-#     assert File.file?(File.join(latest_sub.data_folder, 'owlapi.xrdf')),
-#       %-Missing ontology submission file: 'owlapi.xrdf'-
-#
-#     assert File.file?(latest_sub.csv_path),
-#       %-Missing ontology submission file: '#{latest_sub.csv_path}'-
-#
-#     assert File.file?(latest_sub.parsing_log_path),
-#       %-Missing ontology submission file: '#{latest_sub.parsing_log_path}'-
-#
-#     # Process one prior to latest submission.  Some files should be deleted.
-#     old_sub = sorted_submissions.last
-#     old_sub.process_submission(Logger.new(old_sub.parsing_log_path), parse_options)
-#     assert old_sub.archived?
-#
-#     assert_equal false, File.file?(File.join(old_sub.data_folder, 'labels.ttl')),
-#       %-File deletion failed for 'labels.ttl'-
-#
-#     assert_equal false, File.file?(File.join(old_sub.data_folder, 'mappings.ttl')),
-#       %-File deletion failed for 'mappings.ttl'-
-#
-#     assert_equal false, File.file?(File.join(old_sub.data_folder, 'obsolete.ttl')),
-#       %-File deletion failed for 'obsolete.ttl'-
-#
-#     assert_equal false, File.file?(File.join(old_sub.data_folder, 'owlapi.xrdf')),
-#       %-File deletion failed for 'owlapi.xrdf'-
-#
-#     assert_equal false, File.file?(old_sub.csv_path),
-#       %-File deletion failed for '#{old_sub.csv_path}'-
-#
-#     assert_equal false, File.file?(old_sub.parsing_log_path),
-#       %-File deletion failed for '#{old_sub.parsing_log_path}'-
-#   end
-#
-#   def test_submission_diff_across_ontologies
-#     #submission_parse( acronym, name, ontologyFile, id, parse_options={})
-#     # Create a 1st version for BRO
-#     submission_parse("BRO34", "BRO3.4",
-#                      "./test/data/ontology_files/BRO_v3.4.owl", 1,
-#                      process_rdf: true, index_search: false,
-#                      run_metrics: false, reasoning: false)
-#     onts = LinkedData::Models::Ontology.find('BRO34')
-#     bro34 = onts.first
-#     bro34.bring(:submissions)
-#     sub34 = bro34.submissions.first
-#     # Create a later version for BRO
-#     submission_parse("BRO35", "BRO3.5",
-#                      "./test/data/ontology_files/BRO_v3.5.owl", 1,
-#                      process_rdf: true, index_search: false,
-#                      run_metrics: false, reasoning: false)
-#     onts = LinkedData::Models::Ontology.find('BRO35')
-#     bro35 = onts.first
-#     bro35.bring(:submissions)
-#     sub35 = bro35.submissions.first
-#     # Calculate the ontology diff: bro35 - bro34
-#     tmp_log = Logger.new(TestLogFile.new)
-#     sub35.diff(tmp_log, sub34)
-#     assert(sub35.diffFilePath != nil, 'Failed to create submission diff file.')
-#   end
-#
-#   def test_submission_parse_zip
-#     skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
-#
-#     acronym = "RADTEST"
-#     name = "RADTEST Bla"
-#     ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1.zip"
-#     id = 10
-#
-#     LinkedData::TestCase.backend_4s_delete
-#
-#     ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
-#     assert (not ont_submision.valid?)
-#     assert_equal 4, ont_submision.errors.length
-#     uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
-#     ont_submision.uploadFilePath = uploadFilePath
-#     owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
-#     ont_submision.released = DateTime.now - 4
-#     ont_submision.hasOntologyLanguage = owl
-#     ont_submision.prefLabelProperty = RDF::URI.new("http://bioontology.org/projects/ontologies/radlex/radlexOwl#Preferred_name")
-#     ont_submision.ontology = bro
-#     ont_submision.contact = [contact]
-#     assert (ont_submision.valid?)
-#     ont_submision.save
-#     parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
-#     begin
-#       tmp_log = Logger.new(TestLogFile.new)
-#       ont_submision.process_submission(tmp_log, parse_options)
-#     rescue Exception => e
-#       puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
-#       raise e
-#     end
-#
-#     assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-#
-#     LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
-#       assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
-#       assert_instance_of String, cls.prefLabel
-#     end
-#   end
-#
+  def test_process_submission_diff
+    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    acronym = 'BRO'
+    # Create a 1st version for BRO
+    submission_parse(acronym, "BRO",
+                     "./test/data/ontology_files/BRO_v3.4.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false,
+                     diff: true, delete: false)
+    # Create a later version for BRO
+    submission_parse(acronym, "BRO",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 2,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false,
+                     diff: true, delete: false)
+    onts = LinkedData::Models::Ontology.find(acronym)
+    bro = onts.first
+    bro.bring(:submissions)
+    submissions = bro.submissions
+    submissions.each {|s| s.bring(:submissionId, :diffFilePath)}
+    # Sort submissions in descending order of submissionId, extract last two submissions
+    recent_submissions = submissions.sort {|a,b| b.submissionId <=> a.submissionId}[0..1]
+    sub1 = recent_submissions.last  # descending order, so last is older submission
+    sub2 = recent_submissions.first # descending order, so first is latest submission
+    assert(sub1.submissionId < sub2.submissionId, 'submissionId is in the wrong order')
+    assert(sub1.diffFilePath == nil, 'Should not create diff for older submission.')
+    assert(sub2.diffFilePath != nil, 'Failed to create diff for the latest submission.')
+    # Cleanup
+    LinkedData::TestCase.backend_4s_delete
+  end
+
+  def test_process_submission_archive
+    parse_options = { process_rdf: false, index_search: false, index_commit: false,
+                      run_metrics: false, reasoning: false, archive: true }
+
+    ont_count, ont_acronyms, ontologies =
+      create_ontologies_and_submissions(ont_count: 1, submission_count: 2,
+                                        process_submission: true, acronym: 'NCBO-545')
+    # Sanity check.
+    assert_equal 1, ontologies.count
+    assert_equal 2, ontologies.first.submissions.count
+
+    # Sort submissions in descending order.
+    sorted_submissions = ontologies.first.submissions.sort { |a,b| b.submissionId <=> a.submissionId }
+
+    # Process latest submission.  No files should be deleted.
+    latest_sub = sorted_submissions.first
+    latest_sub.process_submission(Logger.new(latest_sub.parsing_log_path), parse_options)
+    assert latest_sub.archived?
+
+    assert File.file?(File.join(latest_sub.data_folder, 'labels.ttl')),
+      %-Missing ontology submission file: 'labels.ttl'-
+
+    assert File.file?(File.join(latest_sub.data_folder, 'owlapi.xrdf')),
+      %-Missing ontology submission file: 'owlapi.xrdf'-
+
+    assert File.file?(latest_sub.csv_path),
+      %-Missing ontology submission file: '#{latest_sub.csv_path}'-
+
+    assert File.file?(latest_sub.parsing_log_path),
+      %-Missing ontology submission file: '#{latest_sub.parsing_log_path}'-
+
+    # Process one prior to latest submission.  Some files should be deleted.
+    old_sub = sorted_submissions.last
+    old_sub.process_submission(Logger.new(old_sub.parsing_log_path), parse_options)
+    assert old_sub.archived?
+
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'labels.ttl')),
+      %-File deletion failed for 'labels.ttl'-
+
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'mappings.ttl')),
+      %-File deletion failed for 'mappings.ttl'-
+
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'obsolete.ttl')),
+      %-File deletion failed for 'obsolete.ttl'-
+
+    assert_equal false, File.file?(File.join(old_sub.data_folder, 'owlapi.xrdf')),
+      %-File deletion failed for 'owlapi.xrdf'-
+
+    assert_equal false, File.file?(old_sub.csv_path),
+      %-File deletion failed for '#{old_sub.csv_path}'-
+
+    assert_equal false, File.file?(old_sub.parsing_log_path),
+      %-File deletion failed for '#{old_sub.parsing_log_path}'-
+  end
+
+  def test_submission_diff_across_ontologies
+    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    # Create a 1st version for BRO
+    submission_parse("BRO34", "BRO3.4",
+                     "./test/data/ontology_files/BRO_v3.4.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    onts = LinkedData::Models::Ontology.find('BRO34')
+    bro34 = onts.first
+    bro34.bring(:submissions)
+    sub34 = bro34.submissions.first
+    # Create a later version for BRO
+    submission_parse("BRO35", "BRO3.5",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 1,
+                     process_rdf: true, index_search: false,
+                     run_metrics: false, reasoning: false)
+    onts = LinkedData::Models::Ontology.find('BRO35')
+    bro35 = onts.first
+    bro35.bring(:submissions)
+    sub35 = bro35.submissions.first
+    # Calculate the ontology diff: bro35 - bro34
+    tmp_log = Logger.new(TestLogFile.new)
+    sub35.diff(tmp_log, sub34)
+    assert(sub35.diffFilePath != nil, 'Failed to create submission diff file.')
+  end
+
+  def test_submission_parse_zip
+    skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
+
+    acronym = "RADTEST"
+    name = "RADTEST Bla"
+    ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1.zip"
+    id = 10
+
+    LinkedData::TestCase.backend_4s_delete
+
+    ont_submision =  LinkedData::Models::OntologySubmission.new({ :submissionId => id,})
+    assert (not ont_submision.valid?)
+    assert_equal 4, ont_submision.errors.length
+    uploadFilePath = LinkedData::Models::OntologySubmission.copy_file_repository(acronym, id,ontologyFile)
+    ont_submision.uploadFilePath = uploadFilePath
+    owl, bro, user, contact = submission_dependent_objects("OWL", acronym, "test_linked_models", name)
+    ont_submision.released = DateTime.now - 4
+    ont_submision.hasOntologyLanguage = owl
+    ont_submision.prefLabelProperty = RDF::URI.new("http://bioontology.org/projects/ontologies/radlex/radlexOwl#Preferred_name")
+    ont_submision.ontology = bro
+    ont_submision.contact = [contact]
+    assert (ont_submision.valid?)
+    ont_submision.save
+    parse_options = {process_rdf: true, index_search: false, run_metrics: false, reasoning: true}
+    begin
+      tmp_log = Logger.new(TestLogFile.new)
+      ont_submision.process_submission(tmp_log, parse_options)
+    rescue Exception => e
+      puts "Error, logged in #{tmp_log.instance_variable_get("@logdev").dev.path}"
+      raise e
+    end
+
+    assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
+
+    LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only.each do |cls|
+      assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
+      assert_instance_of String, cls.prefLabel
+    end
+  end
+
 #   def test_download_ontology_file
 #     begin
 #       server_port = Random.rand(55000..65535) # http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic.2C_private_or_ephemeral_ports
