@@ -34,8 +34,9 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
 
 
-    size = 50
-    # size = 2500
+    # size = 50
+    size = 2500
+
 
 
     @@num_classes = 0
