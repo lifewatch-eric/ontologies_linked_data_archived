@@ -656,29 +656,56 @@ eos
         result = Goo.sparql_data_client.append_triples(self.id, property_triples, mime_type="application/x-turtle")
         count_classes = 0
         page = 1
-        size = 2500
+        # size = 2500
+        size = 25000
         fsave = File.open(save_in_file, "w")
         fsave.write(property_triples)
         fsave_mappings = File.open(save_in_file_mappings, "w")
-        paging = LinkedData::Models::Class.in(self).order_by(label: :asc).include(:prefLabel, :synonym, :label).page(page, size)
 
-        begin #per page
+
+
+
+        # paging = LinkedData::Models::Class.in(self).order_by(label: :asc).include(:prefLabel, :synonym, :label).page(page, size)
+
+        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).read_only
+
+
+
+        # begin #per page
+
+
+
+
           prefLabel = nil
           label_triples = []
           mapping_triples = []
           t0 = Time.now
 
 
-          page_classes = paging.page(page,size).read_only.all
 
 
 
-          t1 = Time.now
-          puts "#{page_classes.length} on page #{page} classes for "+
-                  "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
-                  " Total pages #{page_classes.total_pages}."
 
-          page_classes.each do |c|
+
+          # page_classes = paging.page(page,size).read_only.all
+
+
+
+
+
+
+          # t1 = Time.now
+          # puts "#{page_classes.length} on page #{page} classes for "+
+          #         "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
+          #         " Total pages #{page_classes.total_pages}."
+
+
+
+          # page_classes.each do |c|
+          paging.each do |c|
+
+
+
             if c.prefLabel.nil?
               rdfs_labels = c.label
 
@@ -698,12 +725,25 @@ eos
               else
                 label = LinkedData::Utils::Triples.last_iri_fragment c.id.to_s
               end
+
+
               label_triples << LinkedData::Utils::Triples.label_for_class_triple(
                   c.id, Goo.vocabulary(:metadata_def)[:prefLabel],label)
+
+
+
               prefLabel = label
             else
               prefLabel = c.prefLabel
             end
+
+
+
+
+
+
+
+
 
             if self.ontology.viewOf.nil?
               loomLabel = OntologySubmission.loom_transform_literal(prefLabel.to_s)
@@ -745,7 +785,11 @@ eos
             label_triples = label_triples.join "\n"
             fsave.write(label_triples)
             t0 = Time.now
+
+
             result = Goo.sparql_data_client.append_triples(self.id, label_triples, mime_type="application/x-turtle")
+
+
             t1 = Time.now
             puts "#{num_labels} labels asserted on page #{page} in #{t1 - t0} sec."
           else
@@ -800,8 +844,14 @@ eos
 
 
 
-          page = page_classes.next? ? page + 1 : nil
-        end while !page.nil?
+        #   page = page_classes.next? ? page + 1 : nil
+        # end while !page.nil?
+
+
+
+
+
+
 
         puts "end generate_missing_labels traversed #{count_classes} classes"
         puts "Saved generated labels in #{save_in_file}"
