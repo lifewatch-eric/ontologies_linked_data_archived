@@ -656,8 +656,12 @@ eos
         result = Goo.sparql_data_client.append_triples(self.id, property_triples, mime_type="application/x-turtle")
         count_classes = 0
         page = 1
-        # size = 2500
-        size = 25000
+
+
+        # size = 23
+        size = 2500
+
+
         fsave = File.open(save_in_file, "w")
         fsave.write(property_triples)
         fsave_mappings = File.open(save_in_file_mappings, "w")
@@ -666,12 +670,14 @@ eos
 
 
         # paging = LinkedData::Models::Class.in(self).order_by(label: :asc).include(:prefLabel, :synonym, :label).page(page, size)
+        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).page(page, size)
+        # paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).all
 
-        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).read_only
 
 
 
-        # begin #per page
+        begin #per page
+
 
 
 
@@ -687,22 +693,20 @@ eos
 
 
 
-          # page_classes = paging.page(page,size).read_only.all
+          page_classes = paging.page(page,size).read_only.all
+          t1 = Time.now
 
-
-
-
-
-
-          # t1 = Time.now
           # puts "#{page_classes.length} on page #{page} classes for "+
           #         "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
           #         " Total pages #{page_classes.total_pages}."
 
 
 
-          # page_classes.each do |c|
-          paging.each do |c|
+
+
+
+          page_classes.each do |c|
+          # paging.each do |c|
 
 
 
@@ -777,9 +781,10 @@ eos
 
           if (label_triples.length > 0)
             num_labels = label_triples.length
-            puts "Asserting #{num_labels} labels on page #{page}"
-            puts "Labels asserted: #{label_triples}"
-            puts
+
+            # puts "Asserting #{num_labels} labels on page #{page}"
+            # puts "Labels asserted: #{label_triples}"
+            # puts
 
 
             label_triples = label_triples.join "\n"
@@ -791,9 +796,11 @@ eos
 
 
             t1 = Time.now
-            puts "#{num_labels} labels asserted on page #{page} in #{t1 - t0} sec."
+
+            # puts "#{num_labels} labels asserted on page #{page} in #{t1 - t0} sec."
+
           else
-            puts "No labels generated on page #{page}."
+            # puts "No labels generated on page #{page}."
           end
 
 
@@ -804,7 +811,7 @@ eos
 
 
           if (mapping_triples.length > 0)
-            puts "Asserting #{mapping_triples.length} mapping labels on page #{page}"
+            # puts "Asserting #{mapping_triples.length} mapping labels on page #{page}"
 
 
             # puts "Mapping labels asserted: #{mapping_triples}"
@@ -825,9 +832,9 @@ eos
 
 
             t1 = Time.now
-            puts "Mapping labels asserted in #{t1 - t0} sec."
+            # puts "Mapping labels asserted in #{t1 - t0} sec."
           else
-            puts "No mapping labels generated on page #{page}."
+            # puts "No mapping labels generated on page #{page}."
           end
 
 
@@ -835,8 +842,8 @@ eos
 
 
 
-          puts
-          puts
+          # puts
+          # puts
 
 
 
@@ -844,8 +851,8 @@ eos
 
 
 
-        #   page = page_classes.next? ? page + 1 : nil
-        # end while !page.nil?
+          page = page_classes.next? ? page + 1 : nil
+        end while !page.nil?
 
 
 
@@ -853,9 +860,10 @@ eos
 
 
 
-        puts "end generate_missing_labels traversed #{count_classes} classes"
-        puts "Saved generated labels in #{save_in_file}"
-        puts "Saved generated mapping labels in #{save_in_file_mappings}"
+        # puts "end generate_missing_labels traversed #{count_classes} classes"
+        # puts "Saved generated labels in #{save_in_file}"
+        # puts "Saved generated mapping labels in #{save_in_file_mappings}"
+
         fsave.close()
         fsave_mappings.close()
       end

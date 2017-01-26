@@ -427,9 +427,14 @@ eos
   def test_submission_parse_zip
     skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"
 
-    acronym = "RADTEST"
-    name = "RADTEST Bla"
-    ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1a.zip"
+    # acronym = "RADTEST"
+    # name = "RADTEST Bla"
+    # ontologyFile = "./test/data/ontology_files/radlex_owl_v3.0.1a.zip"
+
+    acronym = "PIZZA"
+    name = "PIZZA Ontology"
+
+    ontologyFile = "./test/data/ontology_files/pizza.owl.zip"
     id = 10
 
     LinkedData::TestCase.backend_4s_delete
