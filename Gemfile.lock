@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 2b79435bff06f2e321f389681648b8ced0af506c
+  revision: 443ad7347e99300663072cc526a4dd41c95a0d46
   branch: staging
   specs:
     goo (0.0.2)
@@ -54,12 +54,12 @@ GEM
     docile (1.1.5)
     domain_name (0.5.20161129)
       unf (>= 0.0.5, < 1.0.0)
-    elasticsearch (5.0.0)
-      elasticsearch-api (= 5.0.0)
-      elasticsearch-transport (= 5.0.0)
-    elasticsearch-api (5.0.0)
+    elasticsearch (5.0.1)
+      elasticsearch-api (= 5.0.1)
+      elasticsearch-transport (= 5.0.1)
+    elasticsearch-api (5.0.1)
       multi_json
-    elasticsearch-transport (5.0.0)
+    elasticsearch-transport (5.0.1)
       faraday
       multi_json
     email_spec (2.1.0)
@@ -74,7 +74,7 @@ GEM
     htmlentities (4.3.4)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    i18n (0.7.0)
+    i18n (0.8.0)
     json (2.0.3)
     json_pure (2.0.3)
     launchy (2.4.3)
@@ -107,7 +107,7 @@ GEM
     rake (10.5.0)
     rdf (1.0.8)
       addressable (>= 2.2)
-    redis (3.3.2)
+    redis (3.3.3)
     ref (2.0.0)
     rest-client (2.0.0)
       http-cookie (>= 1.0.2, < 2.0)
@@ -117,8 +117,8 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.0)
-    sequel (4.42.1)
-    simplecov (0.12.0)
+    sequel (4.43.0)
+    simplecov (0.13.0)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
       simplecov-html (~> 0.10.0)
