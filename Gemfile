@@ -24,8 +24,8 @@ group :test do
 end
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
-gem 'goo', git: 'https://github.com/ncbo/goo.git', branch: 'staging'
-gem 'sparql-client', git: 'https://github.com/ncbo/sparql-client.git', branch: 'staging'
+gem 'goo', github: 'ncbo/goo', branch: 'master'
+gem 'sparql-client', github: 'ncbo/sparql-client', branch: 'master'
 
 # ResourceIndex dependencies (managed per-platform)
-gem 'ncbo_resource_index', git: 'https://github.com/ncbo/resource_index.git'
+gem 'ncbo_resource_index', github: 'ncbo/resource_index'
