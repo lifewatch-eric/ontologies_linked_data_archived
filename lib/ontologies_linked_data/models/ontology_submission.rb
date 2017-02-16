@@ -897,7 +897,7 @@ FROM #{self.id.to_ntriples}
 WHERE { ?class_id #{predicate_obsolete.to_ntriples} ?deprecated . }
 eos
           Goo.sparql_query_client.query(query_obsolete_predicate).each_solution do |sol|
-            unless sol[:deprecated].to_s == "false"
+            unless ["0", "false"].include? sol[:deprecated].to_s
               classes_deprecated << sol[:class_id].to_s
             end
           end
