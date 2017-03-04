@@ -17,6 +17,46 @@ module LinkedData
       # attribute :range
       # this command allows the parents to be serialized in the output
       # embed :parents
+
+      search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
+                     :document => lambda { |t| t.get_index_doc }
+
+      def get_index_doc
+        self.bring(:submission) if self.bring?(:submission)
+        self.submission.bring(:submissionId) if self.submission.bring?(:submissionId)
+        self.submission.bring(:ontology) if self.submission.bring?(:ontology)
+        self.submission.ontology.bring(:acronym) if self.submission.ontology.bring?(:acronym)
+        self.submission.ontology.bring(:ontologyType) if self.submission.ontology.bring?(:ontologyType)
+
+        doc = {
+            :resource_id => self.id.to_s,
+            :ontologyId => self.submission.id.to_s,
+            :submissionAcronym => self.submission.ontology.acronym,
+            :submissionId => self.submission.submissionId,
+            :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
+            :propertyType => "OBJECT"
+        }
+
+        all_attrs = self.to_hash
+        std = [:id, :label, :definition, :parents]
+
+        std.each do |att|
+          cur_val = all_attrs[att]
+          # don't store empty values
+          next if cur_val.nil? || cur_val.empty?
+
+          if (cur_val.is_a?(Array))
+            doc[att] = []
+            cur_val = cur_val.uniq
+            cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
+          else
+            doc[att] = cur_val.to_s.strip
+          end
+        end
+
+        doc
+      end
+
     end
 
   end

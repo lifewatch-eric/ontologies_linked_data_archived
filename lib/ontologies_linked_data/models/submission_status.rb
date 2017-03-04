@@ -7,6 +7,7 @@ module LinkedData
         "RDF_LABELS", "ERROR_RDF_LABELS",
         "OBSOLETE", "ERROR_OBSOLETE",
         "INDEXED", "ERROR_INDEXED",
+        "INDEXED_PROPERTIES", "ERROR_INDEXED_PROPERTIES",
         "METRICS",  "ERROR_METRICS",
         "ANNOTATOR", "ERROR_ANNOTATOR",
         "ARCHIVED", "ERROR_ARCHIVED",
@@ -14,16 +15,18 @@ module LinkedData
       ]
 
       USER_READABLE = {
-        "RDF"             => "Parsed successfully",
-        "RDF_ERROR"       => "Error parsing",
-        "INDEXED"         => "Indexed for search",
-        "ERROR_INDEXED"   => "Error indexing for search",
-        "METRICS"         => "Class metrics calculated",
-        "ERROR_METRICS"   => "Error calculating class metrics",
-        "ANNOTATOR"       => "Processed for use in Annotator",
-        "ERROR_ANNOTATOR" => "Error processing for use in Annotator",
-        "DIFF"            => "Created submission version diff successfully",
-        "ERROR_DIFF"      => "Error creating submission version diff"
+        "RDF"                      => "Parsed successfully",
+        "RDF_ERROR"                => "Error parsing",
+        "INDEXED"                  => "Indexed terms for search",
+        "ERROR_INDEXED"            => "Error indexing terms for search",
+        "INDEXED_PROPERTIES"       => "Indexed properties for search",
+        "ERROR_INDEXED_PROPERTIES" => "Error indexing properties for search",
+        "METRICS"                  => "Class metrics calculated",
+        "ERROR_METRICS"            => "Error calculating class metrics",
+        "ANNOTATOR"                => "Processed for use in Annotator",
+        "ERROR_ANNOTATOR"          => "Error processing for use in Annotator",
+        "DIFF"                     => "Created submission version diff successfully",
+        "ERROR_DIFF"               => "Error creating submission version diff"
       }
 
       USER_IGNORE = [

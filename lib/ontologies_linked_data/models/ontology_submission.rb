@@ -753,26 +753,61 @@ eos
         return ready?(status: [:archived])
       end
 
-      ########################################
+      ################################################################
       # Possible options with their defaults:
-      #   process_rdf       = true
-      #   index_search      = true
-      #   index_commit      = true
-      #   run_metrics       = true
-      #   reasoning         = true
-      #   diff              = true
+      #   process_rdf       = false
+      #   index_search      = false
+      #   index_properties  = false
+      #   index_commit      = false
+      #   run_metrics       = false
+      #   reasoning         = false
+      #   diff              = false
       #   archive           = false
-      #######################################
+      #   if no options passed, ALL actions, except for archive = true
+      ################################################################
       def process_submission(logger, options={})
         # Wrap the whole process so we can email results
         begin
-          process_rdf = options[:process_rdf] == false ? false : true
-          index_search = options[:index_search] == false ? false : true
-          index_commit = options[:index_commit] == false ? false : true
-          run_metrics = options[:run_metrics] == false ? false : true
-          reasoning = options[:reasoning] == false ? false : true
-          diff = options[:diff] == false ? false : true
-          archive = options[:archive] == true ? true : false
+          process_rdf = false
+          index_search = false
+          index_properties = false
+          index_commit = false
+          run_metrics = false
+          reasoning = false
+          diff = false
+          archive = false
+
+          if options.empty?
+            process_rdf = true
+            index_search = true
+            index_properties = true
+            index_commit = true
+            run_metrics = true
+            reasoning = true
+            diff = true
+            archive = false
+          else
+            process_rdf = options[:process_rdf] == true ? true : false
+            index_search = options[:index_search] == true ? true : false
+            index_properties = options[:index_properties] == true ? true : false
+            index_commit = options[:index_commit] == true ? true : false
+            run_metrics = options[:run_metrics] == true ? true : false
+
+            if !process_rdf || options[:reasoning] == false
+              reasoning = false
+            else
+              reasoning = true
+            end
+
+            if (!index_search && !index_properties) || options[:index_commit] == false
+              index_commit = false
+            else
+              index_commit = true
+            end
+
+            diff = options[:diff] == true ? true : false
+            archive = options[:archive] == true ? true : false
+          end
 
           self.bring_remaining
           self.ontology.bring_remaining
@@ -880,6 +915,21 @@ eos
                 if File.file?(self.csv_path)
                   FileUtils.rm(self.csv_path)
                 end
+              ensure
+                self.save
+              end
+            end
+
+            if index_properties
+              raise Exception, "The properties for the submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
+              status = LinkedData::Models::SubmissionStatus.find("INDEXED_PROPERTIES").first
+              begin
+                index_properties(logger, index_commit, false)
+                add_submission_status(status)
+              rescue Exception => e
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+                logger.flush
+                add_submission_status(status.get_error_status)
               ensure
                 self.save
               end
@@ -1017,11 +1067,12 @@ eos
         count_classes = 0
         time = Benchmark.realtime do
           self.bring(:ontology) if self.bring?(:ontology)
+          self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
           self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
-          logger.info("Indexing ontology: #{self.ontology.acronym}...")
+          logger.info("Indexing ontology terms: #{self.ontology.acronym}...")
           t0 = Time.now
           self.ontology.unindex(commit)
-          logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
+          logger.info("Removed ontology terms index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
           # a hacky fix for NLMVS, see https://github.com/ncbo/ontologies_api/issues/20)
@@ -1041,7 +1092,7 @@ eos
           begin #per page
             t0 = Time.now
             page_classes = paging.page(page, size).all
-            logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved in #{Time.now - t0} sec.")
+            logger.info("Page #{page} of #{page_classes.total_pages} of ontology terms retrieved in #{Time.now - t0} sec.")
             t0 = Time.now
 
 
@@ -1064,8 +1115,7 @@ eos
             t0 = Time.now
 
             LinkedData::Models::Class.indexBatch(page_classes)
-            logger.info("Page #{page} of #{page_classes.total_pages} indexed solr in #{Time.now - t0} sec.")
-            logger.info("Page #{page} of #{page_classes.total_pages} completed")
+            logger.info("Page #{page} of #{page_classes.total_pages} ontology terms indexed in #{Time.now - t0} sec.")
             logger.flush
 
             page = page_classes.next? ? page + 1 : nil
@@ -1090,18 +1140,61 @@ eos
           if (commit)
             t0 = Time.now
             LinkedData::Models::Class.indexCommit()
-            logger.info("Solr index commit in #{Time.now - t0} sec.")
+            logger.info("Ontology terms index commit in #{Time.now - t0} sec.")
           end
         end
-        logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
+        logger.info("Completed indexing ontology terms: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
         logger.flush
 
         if optimize
-          logger.info("Optimizing index...")
+          logger.info("Optimizing ontology terms index...")
           time = Benchmark.realtime do
             LinkedData::Models::Class.indexOptimize()
           end
-          logger.info("Completed optimizing index in #{time} sec.")
+          logger.info("Completed optimizing ontology terms index in #{time} sec.")
+        end
+      end
+
+      def index_properties(logger, commit = true, optimize = true)
+        page = 1
+        size = 500
+        count_props = 0
+
+        time = Benchmark.realtime do
+          self.bring(:ontology) if self.bring?(:ontology)
+          self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
+          logger.info("Indexing ontology properties: #{self.ontology.acronym}...")
+          t0 = Time.now
+          self.ontology.unindex_properties(commit)
+          logger.info("Removed ontology properties index in #{Time.now - t0} seconds."); logger.flush
+
+          props = self.ontology.properties
+          count_props = props.length
+          total_pages = (count_props/size.to_f).ceil
+          logger.info("Indexing a total of #{total_pages} pages of #{size} properties each.")
+
+          props.each_slice(size) do |prop_batch|
+            t = Time.now
+            LinkedData::Models::Class.indexBatch(prop_batch, :property)
+            logger.info("Page #{page} of ontology properties indexed in #{Time.now - t} seconds."); logger.flush
+            page += 1
+          end
+
+          if commit
+            t0 = Time.now
+            LinkedData::Models::Class.indexCommit(nil, :property)
+            logger.info("Ontology properties index commit in #{Time.now - t0} seconds.")
+          end
+        end
+        logger.info("Completed indexing ontology properties of #{self.ontology.acronym} in #{time} sec. Total of #{count_props} properties indexed.")
+        logger.flush
+
+        if optimize
+          logger.info("Optimizing ontology properties index...")
+          time = Benchmark.realtime do
+            LinkedData::Models::Class.indexOptimize(nil, :property)
+          end
+          logger.info("Completed optimizing ontology properties index in #{time} seconds.")
         end
       end
 
@@ -1115,6 +1208,7 @@ eos
 
         super(*args)
         self.ontology.unindex(index_commit)
+        self.ontology.unindex_properties(index_commit)
 
         self.bring(:metrics) if self.bring?(:metrics)
         self.metrics.delete if self.metrics
@@ -1127,6 +1221,7 @@ eos
 
             if prev_sub
               prev_sub.index(LinkedData::Parser.logger || Logger.new($stderr))
+              prev_sub.index_properties(LinkedData::Parser.logger || Logger.new($stderr))
             end
           end
         end

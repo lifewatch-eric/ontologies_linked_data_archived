@@ -318,6 +318,7 @@ module LinkedData
 
         # remove index entries
         unindex(index_commit)
+        unindex_properties(index_commit)
 
         # delete all files
         ontology_dir = File.join(LinkedData.settings.repository_folder, self.acronym.to_s)
@@ -336,14 +337,22 @@ module LinkedData
           purl_client = LinkedData::Purl::Client.new
           purl_client.create_purl(acronym)
         end
-        return self
+        self
       end
 
       def unindex(commit=true)
+        unindex_by_acronym(commit)
+      end
+
+      def unindex_properties(commit=true)
+        unindex_by_acronym(commit, :property)
+      end
+
+      def unindex_by_acronym(commit=true, connection_name=:main)
         self.bring(:acronym) if self.bring?(:acronym)
         query = "submissionAcronym:#{acronym}"
-        Ontology.unindexByQuery(query)
-        Ontology.indexCommit() if commit
+        Ontology.unindexByQuery(query, connection_name)
+        Ontology.indexCommit(nil, connection_name) if commit
       end
 
       def restricted?
