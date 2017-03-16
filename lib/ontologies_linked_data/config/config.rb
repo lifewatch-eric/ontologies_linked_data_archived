@@ -17,18 +17,8 @@ module LinkedData
     # Set defaults
     @settings.goo_port                      ||= 9000
     @settings.goo_host                      ||= "localhost"
-
-
-
-
     @settings.search_server_url             ||= "http://localhost:8983/solr/core1"
-
-    @settings.property_search_server_url    ||= "http://localhost:8983/solr/core3"
-
-
-
-
-
+    @settings.property_search_server_url    ||= "http://localhost:8983/solr/prop_core1"
     @settings.repository_folder             ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix               ||= "http://data.bioontology.org/"
     @settings.enable_security               ||= false

@@ -129,13 +129,44 @@ module LinkedData
         self.bring(:masterFileName) if self.bring?(:masterFileName)
         self.bring(:submissionStatus) if self.bring?(:submissionStatus)
 
-        if (self.submissionStatus)
+        if self.submissionStatus
           self.submissionStatus.each do |st|
             st.bring(:code) if st.bring?(:code)
           end
         end
 
-        if self.ontology.summaryOnly || self.archived?
+        # TODO: this code was added to deal with intermittent issues with 4store, where the error:
+        # Attribute `summaryOnly` is not loaded for http://data.bioontology.org/ontologies/GPI
+        # was thrown for no apparent reason!!!
+        sum_only = nil
+
+        begin
+          sum_only = self.ontology.summaryOnly
+        rescue Exception => e
+          i = 0
+          num_calls = 3
+          sum_only = nil
+
+          while sum_only.nil? && i < num_calls do
+            i += 1
+            puts "Exception while getting summaryOnly for #{self.id.to_s}. Retrying #{i} times..."
+            sleep(1)
+
+            begin
+              self.ontology.bring(:summaryOnly)
+              sum_only = self.ontology.summaryOnly
+              puts "Success getting summaryOnly for #{self.id.to_s} after retrying #{i} times..."
+            rescue Exception => e1
+              sum_only = nil
+
+              if i == num_calls
+                raise $!, "#{$!} after retrying #{i} times...", $!.backtrace
+              end
+            end
+          end
+        end
+
+        if sum_only == true || self.archived?
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
@@ -520,7 +551,9 @@ eos
         Goo.sparql_data_client.append_triples(self.id, property_triples, mime_type="application/x-turtle")
         fsave = File.open(artifacts[:save_in_file], "w")
         fsave.write(property_triples)
+        fsave_mappings = File.open(artifacts[:save_in_file_mappings], "w")
         artifacts[:fsave] = fsave
+        artifacts[:fsave_mappings] = fsave_mappings
       end
 
       def generate_missing_labels_pre_page(artifacts={}, logger, paging, page_classes, page)
@@ -592,13 +625,12 @@ eos
         end
 
         if artifacts[:mapping_triples].length > 0
-          fsave_mappings = File.open(artifacts[:save_in_file_mappings], "w")
           logger.info("Asserting #{artifacts[:mapping_triples].length} mappings in " +
                           "#{self.id.to_ntriples}")
           logger.flush
           artifacts[:mapping_triples] = artifacts[:mapping_triples].join("\n")
-          fsave_mappings.write(artifacts[:mapping_triples])
-          fsave_mappings.close()
+          artifacts[:fsave_mappings].write(artifacts[:mapping_triples])
+
           t0 = Time.now
           Goo.sparql_data_client.append_triples(self.id, artifacts[:mapping_triples], mime_type="application/x-turtle")
           t1 = Time.now
@@ -611,6 +643,7 @@ eos
         logger.info("end generate_missing_labels traversed #{artifacts[:count_classes]} classes")
         logger.info("Saved generated labels in #{artifacts[:save_in_file]}")
         artifacts[:fsave].close()
+        artifacts[:fsave_mappings].close()
         logger.flush
       end
 
@@ -628,7 +661,7 @@ FROM #{self.id.to_ntriples}
 WHERE { ?class_id #{predicate_obsolete.to_ntriples} ?deprecated . }
 eos
           Goo.sparql_query_client.query(query_obsolete_predicate).each_solution do |sol|
-            unless sol[:deprecated].to_s == "false"
+            unless ["0", "false"].include? sol[:deprecated].to_s
               classes_deprecated << sol[:class_id].to_s
             end
           end
@@ -999,7 +1032,7 @@ eos
           begin
             LinkedData::Utils::Notifications.submission_processed(self)
           rescue Exception => e
-            logger.info("Email sending failed: #{e.message}\n#{e.backtrace.join("\n\t")}"); logger.flush
+            logger.error("Email sending failed: #{e.message}\n#{e.backtrace.join("\n\t")}"); logger.flush
           end
         end
         self
@@ -1062,7 +1095,7 @@ eos
 
       def index(logger, commit = true, optimize = true)
         page = 1
-        size = 500
+        size = 1000
 
         count_classes = 0
         time = Benchmark.realtime do
@@ -1092,23 +1125,60 @@ eos
           begin #per page
             t0 = Time.now
             page_classes = paging.page(page, size).all
-            logger.info("Page #{page} of #{page_classes.total_pages} of ontology terms retrieved in #{Time.now - t0} sec.")
+
+            if page_classes.empty?
+              j = 0
+              num_calls = 3
+
+              while page_classes.empty? && j < num_calls do
+                j += 1
+                logger.error("Empty page encountered. Retrying #{j} times...")
+                sleep(1)
+
+                page_classes = paging.page(page, size).all
+                logger.info("Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
+              end
+
+              if page_classes.empty?
+                logger.error("Empty page persisted after retrying #{j} times...")
+              end
+            end
+
+            logger.info("Page #{page} of #{page_classes.total_pages} - #{page_classes.length} ontology terms retrieved in #{Time.now - t0} sec.")
             t0 = Time.now
-
-
-
-
 
             # TODO: CSV writing needs to be moved to its own callback
             page_classes.each do |c|
-              # this cal is needed for indexing of properties
-              LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+              begin
+                # this cal is needed for indexing of properties
+                LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+              rescue Exception => e
+                i = 0
+                num_calls = 3
+                success = nil
+
+                while success.nil? && i < num_calls do
+                  i += 1
+                  logger.error("Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
+                  sleep(1)
+
+                  begin
+                    LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+                    logger.info("Success mapping attributes for #{c.id.to_s} after retrying #{i} times...")
+                    success = true
+                  rescue Exception => e1
+                    success = nil
+
+                    if i == num_calls
+                      logger.error("Error mapping attributes for #{c.id.to_s}:")
+                      logger.error("#{e1.class}: #{e1.message} after retrying #{i} times...\n#{e1.backtrace.join("\n\t")}")
+                      logger.flush
+                    end
+                  end
+                end
+              end
               csv_writer.write_class(c)
             end
-
-
-
-
 
             logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
@@ -1157,7 +1227,7 @@ eos
 
       def index_properties(logger, commit = true, optimize = true)
         page = 1
-        size = 500
+        size = 2500
         count_props = 0
 
         time = Benchmark.realtime do
