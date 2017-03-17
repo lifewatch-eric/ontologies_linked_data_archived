@@ -1112,39 +1112,50 @@ eos
           cls_count = (self.ontology.acronym === "NLMVS") ? -1 : class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
-
-
-
           # TODO: this needs to us its own parameter and moved into a callback
           csv_writer = LinkedData::Utils::OntologyCSVWriter.new
           csv_writer.open(self.ontology, self.csv_path)
-
-
-
+          page_len = -1
+          prev_page_len = -1
 
           begin #per page
             t0 = Time.now
             page_classes = paging.page(page, size).all
+            total_pages = page_classes.total_pages
+            page_len = page_classes.length
 
-            if page_classes.empty?
+            # nothing retrieved even though we're expecting more records
+            if total_pages > 0 && page_classes.empty? && (prev_page_len == -1 || prev_page_len == size)
               j = 0
               num_calls = 3
 
               while page_classes.empty? && j < num_calls do
                 j += 1
                 logger.error("Empty page encountered. Retrying #{j} times...")
-                sleep(1)
-
+                sleep(2)
                 page_classes = paging.page(page, size).all
                 logger.info("Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
               end
 
               if page_classes.empty?
-                logger.error("Empty page persisted after retrying #{j} times...")
+                msg = "Empty page #{page} of #{total_pages} persisted after retrying #{j} times. Indexing of #{self.id.to_s} aborted..."
+                logger.error(msg)
+                raise msg
               end
             end
 
-            logger.info("Page #{page} of #{page_classes.total_pages} - #{page_classes.length} ontology terms retrieved in #{Time.now - t0} sec.")
+            if page_classes.empty?
+              if total_pages > 0
+                logger.info("The number of pages reported for #{self.id.to_s} - #{total_pages} is higher than expected #{page - 1}. Completing indexing...")
+              else
+                logger.info("Ontology #{self.id.to_s} contains #{total_pages} pages...")
+              end
+
+              break
+            end
+
+            prev_page_len = page_len
+            logger.info("Page #{page} of #{total_pages} - #{page_len} ontology terms retrieved in #{Time.now - t0} sec.")
             t0 = Time.now
 
             # TODO: CSV writing needs to be moved to its own callback
@@ -1180,23 +1191,18 @@ eos
               csv_writer.write_class(c)
             end
 
-            logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
+            logger.info("Page #{page} of #{total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
             t0 = Time.now
 
             LinkedData::Models::Class.indexBatch(page_classes)
-            logger.info("Page #{page} of #{page_classes.total_pages} ontology terms indexed in #{Time.now - t0} sec.")
+            logger.info("Page #{page} of #{total_pages} ontology terms indexed in #{Time.now - t0} sec.")
             logger.flush
-
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
 
-
-
           # TODO: move this into its own callback
           csv_writer.close
-
-
 
           begin
             # index provisional classes
@@ -1207,7 +1213,7 @@ eos
             logger.flush
           end
 
-          if (commit)
+          if commit
             t0 = Time.now
             LinkedData::Models::Class.indexCommit()
             logger.info("Ontology terms index commit in #{Time.now - t0} sec.")
