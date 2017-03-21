@@ -28,6 +28,8 @@
 
 <solr persistent="true" sharedLib="lib">
   <cores adminPath="/admin/cores" host="${host:}" hostPort="${jetty.port:8983}" hostContext="${hostContext:solr}">
+    <core name="core1" config="solrconfig.xml" instanceDir="core1" schema="schema.xml" dataDir="data/solr/core1"/>
+    <core name="core2" config="solrconfig.xml" instanceDir="core2" schema="schema.xml" dataDir="data/solr/core2"/>
     <core name="term_search_core1" config="solrconfig.xml" instanceDir="term_search_core1" schema="schema.xml" dataDir="data/solr/term_search_core1"/>
     <core name="term_search_core2" config="solrconfig.xml" instanceDir="term_search_core2" schema="schema.xml" dataDir="data/solr/term_search_core2"/>
     <core name="prop_search_core1" config="solrconfig.xml" instanceDir="prop_search_core1" schema="schema.xml" dataDir="data/solr/prop_search_core1"/>
