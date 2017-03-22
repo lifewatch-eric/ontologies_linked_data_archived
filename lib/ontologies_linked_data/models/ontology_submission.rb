@@ -1171,7 +1171,7 @@ eos
                 while success.nil? && i < num_calls do
                   i += 1
                   logger.error("Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
-                  sleep(1)
+                  sleep(2)
 
                   begin
                     LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
