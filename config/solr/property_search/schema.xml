@@ -31,7 +31,7 @@
 
     <field name="definition"        type="string"             indexed="true"  stored="true"  multiValued="true" />
     <field name="submissionAcronym" type="string"             indexed="true"  stored="true"  multiValued="false" />
-    <field name="parent"            type="string"             indexed="true"  stored="true"  multiValued="true" />
+    <field name="parents"           type="string"             indexed="true"  stored="true"  multiValued="true" />
     <field name="ontologyType"      type="ontologyType"       indexed="true"  stored="true"  multiValued="false" />
     <field name="propertyType"      type="propertyType"       indexed="true"  stored="true"  multiValued="false" />
     <field name="ontologyId"        type="string"             indexed="true"  stored="true"  multiValued="false" />
