@@ -87,7 +87,8 @@ module LinkedData
     @settings.rest_url_prefix = @settings.rest_url_prefix + "/" unless @settings.rest_url_prefix[-1].eql?("/")
 
     puts "(LD) >> Using rdf store #{@settings.goo_host}:#{@settings.goo_port}"
-    puts "(LD) >> Using search server at #{@settings.search_server_url}"
+    puts "(LD) >> Using term search server at #{@settings.search_server_url}"
+    puts "(LD) >> Using property search server at #{@settings.property_search_server_url}"
     puts "(LD) >> Using HTTP Redis instance at "+
             "#{@settings.http_redis_host}:#{@settings.http_redis_port}"
     puts "(LD) >> Using Goo Redis instance at "+

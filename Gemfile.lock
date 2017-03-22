@@ -80,6 +80,7 @@ GEM
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.9.0)
+    logger (1.2.8)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
     mail (2.6.4)
@@ -94,7 +95,9 @@ GEM
     mysql2 (0.4.5)
     net-http-persistent (2.9.4)
     netrc (0.11.0)
-    oj (2.18.3)
+    oj (2.18.5)
+    omni_logger (0.1.4)
+      logger
     pony (1.11)
       mail (>= 2.0)
     pry (0.10.4)
@@ -118,7 +121,7 @@ GEM
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.1)
     sequel (4.44.0)
-    simplecov (0.14.0)
+    simplecov (0.14.1)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
       simplecov-html (~> 0.10.0)
@@ -152,6 +155,7 @@ DEPENDENCIES
   multi_json (~> 1.0)
   ncbo_resource_index!
   oj (~> 2.0)
+  omni_logger
   pony
   pry
   rack (~> 1.0)

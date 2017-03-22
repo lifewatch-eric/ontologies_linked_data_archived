@@ -14,6 +14,7 @@ gem 'minitest', '~> 4.0'
 gem 'cube-ruby', require: "cube"
 gem 'pony'
 gem 'addressable', '= 2.3.5'
+gem 'omni_logger'
 
 # Testing
 group :test do
