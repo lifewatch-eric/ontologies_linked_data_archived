@@ -75,7 +75,7 @@ module LinkedData
       def self.generated_label(class_id)
         last_frag = last_iri_fragment(class_id.to_s)
         last_frag_words = last_frag.titleize
-        [last_frag, last_frag_words].uniq
+        [last_frag, last_frag_words].uniq { |elem| elem.downcase }
       end
 
       def self.obselete_class_triple(class_id)
