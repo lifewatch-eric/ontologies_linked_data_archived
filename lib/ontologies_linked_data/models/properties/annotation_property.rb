@@ -34,7 +34,8 @@ module LinkedData
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
             :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
-            :propertyType => "ANNOTATION"
+            :propertyType => "ANNOTATION",
+            :labelGenerated => LinkedData::Utils::Triples.generated_label(self.id)
         }
 
         all_attrs = self.to_hash
@@ -45,7 +46,7 @@ module LinkedData
           # don't store empty values
           next if cur_val.nil? || cur_val.empty?
 
-          if (cur_val.is_a?(Array))
+          if cur_val.is_a?(Array)
             doc[att] = []
             cur_val = cur_val.uniq
             cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }

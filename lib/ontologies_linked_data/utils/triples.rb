@@ -72,6 +72,12 @@ module LinkedData
         return triple(class_id,property,RDF::Literal.new(label, :datatype => RDF::XSD.string))
       end
 
+      def self.generated_label(class_id)
+        last_frag = last_iri_fragment(class_id.to_s)
+        last_frag_words = last_frag.titleize
+        [last_frag, last_frag_words].uniq
+      end
+
       def self.obselete_class_triple(class_id)
         return triple(RDF::URI.new(class_id.to_s),
                       RDF::URI.new("http://www.w3.org/2002/07/owl#deprecated"),
@@ -90,6 +96,7 @@ module LinkedData
       def self.uri_mapping_triple(class_id,property,uri_class)
         return triple(class_id,property,uri_class)
       end
+
       def self.obo_definition_standard
         return RDF::URI.new("http://purl.obolibrary.org/obo/IAO_0000115")
       end
