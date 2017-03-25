@@ -905,9 +905,9 @@ eos
     assert metrics.classesWithOneChild == 11
     assert metrics.classesWithNoDefinition == 134
     assert metrics.classesWithMoreThan25Children == 0
-    assert metrics.maxChildCount == 19
+    assert metrics.maxChildCount == 18
     assert metrics.averageChildCount == 3
-    assert metrics.maxDepth == 4
+    assert metrics.maxDepth == 3
 
     submission_parse("BROTEST-METRICS", "BRO testing metrics",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,
