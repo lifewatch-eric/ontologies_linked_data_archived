@@ -36,7 +36,7 @@ module LinkedData
             :submissionId => self.submission.submissionId,
             :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
             :propertyType => "OBJECT",
-            :labelGenerated => LinkedData::Utils::Triples.generated_label(self.id)
+            :labelGenerated => LinkedData::Utils::Triples.generated_label(self.id, self.label)
         }
 
         all_attrs = self.to_hash

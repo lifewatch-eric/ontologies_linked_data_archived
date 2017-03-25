@@ -22,6 +22,7 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       def get_index_doc
+        self.bring(:label) if self.bring?(:label)
         self.bring(:submission) if self.bring?(:submission)
         self.submission.bring(:submissionId) if self.submission.bring?(:submissionId)
         self.submission.bring(:ontology) if self.submission.bring?(:ontology)
@@ -35,7 +36,7 @@ module LinkedData
             :submissionId => self.submission.submissionId,
             :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
             :propertyType => "ANNOTATION",
-            :labelGenerated => LinkedData::Utils::Triples.generated_label(self.id)
+            :labelGenerated => LinkedData::Utils::Triples.generated_label(self.id, self.label)
         }
 
         all_attrs = self.to_hash

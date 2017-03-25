@@ -72,10 +72,13 @@ module LinkedData
         return triple(class_id,property,RDF::Literal.new(label, :datatype => RDF::XSD.string))
       end
 
-      def self.generated_label(class_id)
+      def self.generated_label(class_id, existing_label)
+        existing_label ||= []
         last_frag = last_iri_fragment(class_id.to_s)
         last_frag_words = last_frag.titleize
-        [last_frag, last_frag_words].uniq { |elem| elem.downcase }
+        generated_label = [last_frag, last_frag_words].uniq { |l| l.downcase }.map(&:downcase) - existing_label.map(&:downcase)
+        existing_label_words = existing_label.map { |l| l.titleize.downcase }
+        (generated_label + existing_label_words).uniq - existing_label
       end
 
       def self.obselete_class_triple(class_id)
