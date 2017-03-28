@@ -7,10 +7,10 @@ module LinkedData
             namespace: :owl, :schemaless => :true,
             rdf_type: lambda { |*x| RDF::OWL[:DatatypeProperty] }
 
+      PROPERTY_TYPE = "DATATYPE"
+
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
       attribute :label, namespace: :rdfs, enforce: [:list]
-      # attribute :prefLabel, namespace: :skos, alias: true
-      # attribute :synonym, namespace: :skos, enforce: [:list], property: :altLabel, alias: true
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
       attribute :parents, namespace: :rdfs, enforce: [:list, :datatype_property], property: :subPropertyOf
       # attribute :domain
@@ -20,6 +20,11 @@ module LinkedData
 
       search_options :index_id => lambda { |t| "#{t.id.to_s}_#{t.submission.ontology.acronym}_#{t.submission.submissionId}" },
                      :document => lambda { |t| t.get_index_doc }
+
+      serialize_default :label, :labelGenerated, :definition, :matchType, :ontologyType, :propertyType, :parents # an attribute used in Search (not shown out of context)
+
+      link_to LinkedData::Hypermedia::Link.new("ontology", lambda {|m| self.ontology_link(m)}, Goo.vocabulary["Ontology"]),
+              LinkedData::Hypermedia::Link.new("submission", lambda {|m| "#{self.ontology_link(m)}/submissions/#{m.submission.id.to_s.split("/")[-1]}"}, Goo.vocabulary["OntologySubmission"])
 
       def get_index_doc
         self.bring(:label) if self.bring?(:label)
@@ -35,7 +40,7 @@ module LinkedData
             :submissionAcronym => self.submission.ontology.acronym,
             :submissionId => self.submission.submissionId,
             :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
-            :propertyType => "DATATYPE",
+            :propertyType => PROPERTY_TYPE,
             :labelGenerated => LinkedData::Utils::Triples.generated_label(self.id, self.label)
         }
 
@@ -57,6 +62,15 @@ module LinkedData
         end
 
         doc
+      end
+
+      def self.ontology_link(m)
+        if m.class == self
+          m.bring(:submission) if m.bring?(:submission)
+          m.submission.bring(:ontology) if m.submission.bring?(:ontology)
+          m.submission.ontology.bring(:acronym) if m.submission.ontology.bring?(:acronym)
+        end
+        "ontologies/#{m.submission.ontology.acronym}"
       end
 
     end
