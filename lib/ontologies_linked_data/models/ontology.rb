@@ -226,6 +226,25 @@ module LinkedData
         datatype_props + object_props + annotation_props
       end
 
+      def property(prop_id, sub=nil)
+        p = nil
+        sub ||= latest_submission(status: [:rdf])
+        self.bring(:acronym) if self.bring?(:acronym)
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::AnnotationProperty, LinkedData::Models::DatatypeProperty]
+
+        prop_classes.each do |c|
+          p = c.find(prop_id).in(sub).include(:label, :definition, :parents).first
+
+          unless p.nil?
+            parents = p.parents.nil? ? [] : p.parents.dup
+            c.in(sub).models(parents).include(:label, :definition).all()
+            break
+          end
+        end
+        p
+      end
+
       # retrieve Analytics for this ontology
       def analytics(year=nil, month=nil)
         self.bring(:acronym) if self.bring?(:acronym)
