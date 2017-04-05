@@ -211,7 +211,8 @@ module LinkedData
       end
 
       def childrenCount
-        raise ArgumentError, "No aggregates included in #{self.id.to_ntriples}" if !self.aggregates
+        self.bring(:submission) if self.bring?(:submission)
+        raise ArgumentError, "No aggregates included in #{self.id.to_ntriples}. Submission: #{self.submission.id.to_s}" unless self.aggregates
         cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
         raise ArgumentError, "No aggregate for attribute children and count found in #{self.id.to_ntriples}" if !cc
         return cc.value

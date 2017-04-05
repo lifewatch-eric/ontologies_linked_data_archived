@@ -17,22 +17,27 @@
 -->
 
 <!--
-   This is an example of a simple "solr.xml" file for configuring one or 
-   more Solr Cores, as well as allowing Cores to be added, removed, and 
+   This is an example of a simple "solr.xml" file for configuring one or
+   more Solr Cores, as well as allowing Cores to be added, removed, and
    reloaded via HTTP requests.
 
-   More information about options available in this configuration file, 
+   More information about options available in this configuration file,
    and Solr Core administration can be found online:
    http://wiki.apache.org/solr/CoreAdmin
 -->
 
 <solr persistent="true" sharedLib="lib">
   <cores adminPath="/admin/cores" host="${host:}" hostPort="${jetty.port:8983}" hostContext="${hostContext:solr}">
-    <core name="NCBO1" config="solrconfig.xml" instanceDir="core1" schema="schema.xml" dataDir="data"/>
-    <core name="NCBO2" config="solrconfig.xml" instanceDir="core2" schema="schema.xml" dataDir="data"/>
+    <core name="core1" config="solrconfig.xml" instanceDir="core1" schema="schema.xml" dataDir="data/solr/core1"/>
+    <core name="core2" config="solrconfig.xml" instanceDir="core2" schema="schema.xml" dataDir="data/solr/core2"/>
+    <core name="term_search_core1" config="solrconfig.xml" instanceDir="term_search_core1" schema="schema.xml" dataDir="data/solr/term_search_core1"/>
+    <core name="term_search_core2" config="solrconfig.xml" instanceDir="term_search_core2" schema="schema.xml" dataDir="data/solr/term_search_core2"/>
+    <core name="prop_search_core1" config="solrconfig.xml" instanceDir="prop_search_core1" schema="schema.xml" dataDir="data/solr/prop_search_core1"/>
+    <core name="prop_search_core2" config="solrconfig.xml" instanceDir="prop_search_core2" schema="schema.xml" dataDir="data/solr/prop_search_core2"/>
     <shardHandlerFactory name="shardHandlerFactory" class="HttpShardHandlerFactory">
       <str name="urlScheme">${urlScheme:}</str>
       <int name="socketTimeout">${socketTimeout:0}</int>
       <int name="connTimeout">${connTimeout:0}</int>
-    </shardHandlerFactory></cores>
+    </shardHandlerFactory>
+  </cores>
 </solr>

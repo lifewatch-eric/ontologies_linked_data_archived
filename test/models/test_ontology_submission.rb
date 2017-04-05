@@ -391,7 +391,6 @@ eos
   end
 
   def test_submission_diff_across_ontologies
-    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
     # Create a 1st version for BRO
     submission_parse("BRO34", "BRO3.4",
                      "./test/data/ontology_files/BRO_v3.4.owl", 1,
@@ -414,6 +413,25 @@ eos
     tmp_log = Logger.new(TestLogFile.new)
     sub35.diff(tmp_log, sub34)
     assert(sub35.diffFilePath != nil, 'Failed to create submission diff file.')
+  end
+
+  def test_index_properties
+    submission_parse("BRO", "BRO Ontology",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 1,
+                     process_rdf: true, reasoning: false, index_properties: true)
+    res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\""}, :property)
+
+    assert_equal 80, res["response"]["numFound"]
+    assert_equal "ONTOLOGY", res["response"]["docs"][0]["ontologyType"]
+    assert_equal "DATATYPE", res["response"]["docs"][0]["propertyType"]
+    assert_equal "BRO", res["response"]["docs"][0]["submissionAcronym"]
+    assert_equal 1, res["response"]["docs"][0]["submissionId"]
+
+    ont = LinkedData::Models::Ontology.find('BRO').first
+    ont.unindex_properties(true)
+
+    res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\""}, :property)
+    assert_equal 0, res["response"]["numFound"]
   end
 
   def test_submission_parse_zip
@@ -887,9 +905,9 @@ eos
     assert metrics.classesWithOneChild == 11
     assert metrics.classesWithNoDefinition == 134
     assert metrics.classesWithMoreThan25Children == 0
-    assert metrics.maxChildCount == 19
+    assert metrics.maxChildCount == 18
     assert metrics.averageChildCount == 3
-    assert metrics.maxDepth == 4
+    assert metrics.maxDepth == 3
 
     submission_parse("BROTEST-METRICS", "BRO testing metrics",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,

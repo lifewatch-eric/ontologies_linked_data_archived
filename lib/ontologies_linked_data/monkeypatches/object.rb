@@ -206,6 +206,7 @@ class Object
     page = {
       page: self.page_number,
       pageCount: self.total_pages,
+      totalCount: self.aggregate,
       prevPage: self.prev_page,
       nextPage: self.next_page,
       links: generate_page_links(options, self.page_number, self.total_pages),

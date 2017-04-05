@@ -111,7 +111,7 @@ module LinkedData
       def latest_submission(options = {})
         self.bring(:acronym) if self.bring?(:acronym)
         submission_id = highest_submission_id(options)
-        return nil if submission_id.nil?
+        return nil if submission_id.nil? || submission_id == 0
 
         self.submissions.each do |s|
           return s if s.submissionId == submission_id
@@ -149,9 +149,39 @@ module LinkedData
                     .include(submissions: [:submissionId, :submissionStatus])
                     .to_a
 
-        return 0 if self.submissions.nil? || self.submissions.empty?
+        # TODO: this code was added to deal with intermittent issues with 4store, where
+        # self.submissions was being reported as not loaded for no apparent reason
+        subs = nil
 
-        self.submissions.each do |s|
+        begin
+          subs = self.submissions
+        rescue Exception => e
+          i = 0
+          num_calls = 3
+          subs = nil
+
+          while subs.nil? && i < num_calls do
+            i += 1
+            puts "Exception while getting submissions for #{self.id.to_s}. Retrying #{i} times..."
+            sleep(1)
+
+            begin
+              self.bring(:submissions)
+              subs = self.submissions
+              puts "Success getting submissions for #{self.id.to_s} after retrying #{i} times..."
+            rescue Exception => e1
+              subs = nil
+
+              if i == num_calls
+                puts "Exception while getting submissions for #{self.id.to_s} after retrying #{i} times: #{e1.class}: #{e1.message}\n#{e1.backtrace.join("\n")}"
+              end
+            end
+          end
+        end
+
+        return 0 if subs.nil? || subs.empty?
+
+        subs.each do |s|
           if !s.loaded_attributes.include?(:submissionId)
             s.bring(:submissionId)
           end
@@ -163,12 +193,12 @@ module LinkedData
         # Try to get a new one based on the old
         submission_ids = []
 
-        self.submissions.each do |s|
+        subs.each do |s|
           next if !s.ready?({status: status})
           submission_ids << s.submissionId.to_i
         end
 
-        return submission_ids.max
+        submission_ids.max
       end
 
       def properties
@@ -194,6 +224,25 @@ module LinkedData
         annotation_props.each {|prop| prop.parents.each {|parent| parents << parent}}
         LinkedData::Models::AnnotationProperty.in(latest).models(parents).include(:label, :definition).all()
         datatype_props + object_props + annotation_props
+      end
+
+      def property(prop_id, sub=nil)
+        p = nil
+        sub ||= latest_submission(status: [:rdf])
+        self.bring(:acronym) if self.bring?(:acronym)
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::AnnotationProperty, LinkedData::Models::DatatypeProperty]
+
+        prop_classes.each do |c|
+          p = c.find(prop_id).in(sub).include(:label, :definition, :parents).first
+
+          unless p.nil?
+            parents = p.parents.nil? ? [] : p.parents.dup
+            c.in(sub).models(parents).include(:label, :definition).all()
+            break
+          end
+        end
+        p
       end
 
       # retrieve Analytics for this ontology
@@ -318,6 +367,7 @@ module LinkedData
 
         # remove index entries
         unindex(index_commit)
+        unindex_properties(index_commit)
 
         # delete all files
         ontology_dir = File.join(LinkedData.settings.repository_folder, self.acronym.to_s)
@@ -336,14 +386,22 @@ module LinkedData
           purl_client = LinkedData::Purl::Client.new
           purl_client.create_purl(acronym)
         end
-        return self
+        self
       end
 
       def unindex(commit=true)
+        unindex_by_acronym(commit)
+      end
+
+      def unindex_properties(commit=true)
+        unindex_by_acronym(commit, :property)
+      end
+
+      def unindex_by_acronym(commit=true, connection_name=:main)
         self.bring(:acronym) if self.bring?(:acronym)
         query = "submissionAcronym:#{acronym}"
-        Ontology.unindexByQuery(query)
-        Ontology.indexCommit() if commit
+        Ontology.unindexByQuery(query, connection_name)
+        Ontology.indexCommit(nil, connection_name) if commit
       end
 
       def restricted?
