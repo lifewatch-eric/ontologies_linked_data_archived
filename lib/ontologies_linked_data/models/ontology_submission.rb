@@ -1104,7 +1104,7 @@ eos
           self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
           logger.info("Indexing ontology terms: #{self.ontology.acronym}...")
           t0 = Time.now
-          self.ontology.unindex(commit)
+          self.ontology.unindex(false)
           logger.info("Removed ontology terms index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
