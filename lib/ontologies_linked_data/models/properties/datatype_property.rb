@@ -23,7 +23,8 @@ module LinkedData
 
       serialize_default :label, :labelGenerated, :definition, :matchType, :ontologyType, :propertyType, :parents # an attribute used in Search (not shown out of context)
 
-      link_to LinkedData::Hypermedia::Link.new("ontology", lambda {|m| self.ontology_link(m)}, Goo.vocabulary["Ontology"]),
+      link_to LinkedData::Hypermedia::Link.new("self", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}"}, self.type_uri),
+              LinkedData::Hypermedia::Link.new("ontology", lambda {|m| self.ontology_link(m)}, Goo.vocabulary["Ontology"]),
               LinkedData::Hypermedia::Link.new("submission", lambda {|m| "#{self.ontology_link(m)}/submissions/#{m.submission.id.to_s.split("/")[-1]}"}, Goo.vocabulary["OntologySubmission"])
 
       def get_index_doc
@@ -50,7 +51,7 @@ module LinkedData
         std.each do |att|
           cur_val = all_attrs[att]
           # don't store empty values
-          next if cur_val.nil? || cur_val.empty?
+          next if cur_val.nil? || (cur_val.respond_to?('empty?') && cur_val.empty?)
 
           if cur_val.is_a?(Array)
             doc[att] = []

@@ -157,9 +157,9 @@ module LinkedData
         std.each do |att|
           cur_val = all_attrs[att]
           # don't store empty values
-          next if cur_val.nil? || cur_val.empty?
+          next if cur_val.nil? || (cur_val.respond_to?('empty?') && cur_val.empty?)
 
-          if (cur_val.is_a?(Array))
+          if cur_val.is_a?(Array)
             doc[att] = []
             cur_val = cur_val.uniq
             cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
@@ -178,8 +178,8 @@ module LinkedData
         prop_vals = []
 
         self.properties.each do |attr_key, attr_val|
-          if (!doc.include?(attr_key))
-            if (attr_val.is_a?(Array))
+          if !doc.include?(attr_key)
+            if attr_val.is_a?(Array)
               props[attr_key] = []
               attr_val = attr_val.uniq
 
@@ -207,7 +207,7 @@ module LinkedData
           puts "#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}"
         end
 
-        return doc
+        doc
       end
 
       def childrenCount

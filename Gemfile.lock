@@ -51,15 +51,16 @@ GEM
     builder (3.2.3)
     coderay (1.1.1)
     cube-ruby (0.0.3)
+    daemons (1.2.4)
     docile (1.1.5)
-    domain_name (0.5.20170223)
+    domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
-    elasticsearch (5.0.3)
-      elasticsearch-api (= 5.0.3)
-      elasticsearch-transport (= 5.0.3)
-    elasticsearch-api (5.0.3)
+    elasticsearch (5.0.4)
+      elasticsearch-api (= 5.0.4)
+      elasticsearch-transport (= 5.0.4)
+    elasticsearch-api (5.0.4)
       multi_json
-    elasticsearch-transport (5.0.3)
+    elasticsearch-transport (5.0.4)
       faraday
       multi_json
     email_spec (2.1.0)
@@ -68,6 +69,7 @@ GEM
       mail (~> 2.6.3)
     ethon (0.10.1)
       ffi (>= 1.3.0)
+    eventmachine (1.2.3)
     faraday (0.12.0.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.18)
@@ -75,8 +77,8 @@ GEM
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (0.8.1)
-    json (2.0.3)
-    json_pure (2.0.3)
+    json (2.0.4)
+    json_pure (2.0.4)
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.9.0)
@@ -130,13 +132,17 @@ GEM
     systemu (2.6.5)
     test-unit-minitest (0.9.1)
       minitest (~> 4.7)
+    thin (1.7.0)
+      daemons (~> 1.0, >= 1.0.9)
+      eventmachine (~> 1.0, >= 1.0.4)
+      rack (>= 1, < 3)
     thread_safe (0.3.6)
     typhoeus (1.1.2)
       ethon (>= 0.9.0)
     tzinfo (0.3.53)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.2)
+    unf_ext (0.0.7.3)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
@@ -166,6 +172,7 @@ DEPENDENCIES
   simplecov
   sparql-client!
   test-unit-minitest
+  thin
 
 BUNDLED WITH
    1.13.7
