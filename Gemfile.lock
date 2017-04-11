@@ -77,8 +77,8 @@ GEM
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (0.8.1)
-    json (2.0.3)
-    json_pure (2.0.3)
+    json (2.0.4)
+    json_pure (2.0.4)
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.9.0)
@@ -142,7 +142,7 @@ GEM
     tzinfo (0.3.53)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.2)
+    unf_ext (0.0.7.3)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
