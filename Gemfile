@@ -15,6 +15,7 @@ gem 'cube-ruby', require: "cube"
 gem 'pony'
 gem 'addressable', '= 2.3.5'
 gem 'omni_logger'
+gem 'thin'
 
 # Testing
 group :test do
