@@ -207,19 +207,19 @@ module LinkedData
         raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
 
         # datatype props
-        datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents).all()
+        datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents, :children).all()
         parents = []
         datatype_props.each {|prop| prop.parents.each {|parent| parents << parent}}
         LinkedData::Models::DatatypeProperty.in(latest).models(parents).include(:label, :definition).all()
 
         # object props
-        object_props = LinkedData::Models::ObjectProperty.in(latest).include(:label, :definition, :parents).all()
+        object_props = LinkedData::Models::ObjectProperty.in(latest).include(:label, :definition, :parents, :children).all()
         parents = []
         object_props.each {|prop| prop.parents.each {|parent| parents << parent}}
         LinkedData::Models::ObjectProperty.in(latest).models(parents).include(:label, :definition).all()
 
         # annotation props
-        annotation_props = LinkedData::Models::AnnotationProperty.in(latest).include(:label, :definition, :parents).all()
+        annotation_props = LinkedData::Models::AnnotationProperty.in(latest).include(:label, :definition, :parents, :children).all()
         parents = []
         annotation_props.each {|prop| prop.parents.each {|parent| parents << parent}}
         LinkedData::Models::AnnotationProperty.in(latest).models(parents).include(:label, :definition).all()
@@ -234,7 +234,7 @@ module LinkedData
         prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::AnnotationProperty, LinkedData::Models::DatatypeProperty]
 
         prop_classes.each do |c|
-          p = c.find(prop_id).in(sub).include(:label, :definition, :parents).first
+          p = c.find(prop_id).in(sub).include(:label, :definition, :parents, :children).first
 
           unless p.nil?
             parents = p.parents.nil? ? [] : p.parents.dup

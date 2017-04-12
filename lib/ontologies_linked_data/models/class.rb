@@ -369,7 +369,7 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
-        return root_node
+        root_node
       end
 
       def retrieve_ancestors
