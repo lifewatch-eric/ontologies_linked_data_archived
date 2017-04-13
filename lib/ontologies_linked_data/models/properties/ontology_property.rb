@@ -5,15 +5,78 @@ module LinkedData
     class OntologyProperty < LinkedData::Models::Base
 
 
-
-
-
       def hasChildren
         if instance_variable_get("@intlHasChildren").nil?
           raise ArgumentError, "HasChildren not loaded for #{self.id.to_ntriples}"
         end
 
         @intlHasChildren
+      end
+
+      def tree
+        self.bring(parents: [:label]) if self.bring?(:parents)
+        threshhold = 99
+        return self if self.parents.nil? or self.parents.length == 0
+        paths = [[self]]
+
+        traverse_path_to_root(self.parents.dup, paths, 0, tree=true, top_property=self.class::TOP_PROPERTY)
+
+        items_hash = {}
+        path = paths[0]
+
+        path.each do |t|
+          items_hash[t.id.to_s] = t
+        end
+
+        self.class.partially_load_children(items_hash.values, threshhold, self.submission)
+
+        path.reverse!
+        path.last.instance_variable_set("@children",[])
+        childrens_hash = {}
+
+        path.each do |m|
+          next if self.class::TOP_PROPERTY && m.id.to_s[self.class::TOP_PROPERTY]
+
+          m.children.each do |c|
+            childrens_hash[c.id.to_s] = c
+          end
+        end
+
+        self.class.partially_load_children(childrens_hash.values, threshhold, self.submission)
+
+        #build the tree
+        root_node = path.first
+        tree_node = path.first
+        path.delete_at(0)
+
+        while tree_node && (self.class::TOP_PROPERTY.nil? || !tree_node.id.to_s[self.class::TOP_PROPERTY]) && tree_node.children.length > 0 and path.length > 0 do
+          next_tree_node = nil
+          tree_node.load_has_children
+
+          tree_node.children.each_index do |i|
+            if tree_node.children[i].id.to_s == path.first.id.to_s
+              next_tree_node = path.first
+              children = tree_node.children.dup
+              children[i] = path.first
+              tree_node.instance_variable_set("@children", children)
+
+              children.each do |c|
+                c.load_has_children
+              end
+            else
+              tree_node.children[i].instance_variable_set("@children", [])
+            end
+          end
+
+          if path.length > 0 && next_tree_node.nil?
+            tree_node.children << path.shift
+          end
+
+          tree_node = next_tree_node
+          path.delete_at(0)
+        end
+
+        root_node
       end
 
       def load_has_children
@@ -93,8 +156,8 @@ eos
         doc
       end
 
-      def append_if_not_there_already(path,r, top_property=nil)
-        return nil if top_property.nil? || r.id.to_s[top_property]
+      def append_if_not_there_already(path, r, top_property=nil)
+        return nil if top_property && r.id.to_s[top_property]
         return nil if (path.select { |x| x.id.to_s == r.id.to_s }).length > 0
         path << r
       end
@@ -137,7 +200,7 @@ eos
             return
           end
 
-          if (top_property && !p.id.to_s[top_property]) && (recurse_on_path[i] && p.parents && p.parents.length > 0)
+          if (!top_property || !p.id.to_s[top_property]) && recurse_on_path[i] && p.parents && p.parents.length > 0
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree, top_property=top_property)
           end
         end

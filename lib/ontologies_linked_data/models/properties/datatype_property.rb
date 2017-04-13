@@ -9,6 +9,7 @@ module LinkedData
             rdf_type: lambda { |*x| RDF::OWL[:DatatypeProperty] }
 
       PROPERTY_TYPE = "DATATYPE"
+      TOP_PROPERTY = "#topDataProperty"
 
       attribute :submission, :collection => lambda { |s| s.resource_id }, :namespace => :metadata
       attribute :label, namespace: :rdfs, enforce: [:list]
@@ -23,10 +24,8 @@ module LinkedData
 
       serialize_default :label, :labelGenerated, :definition, :matchType, :ontologyType, :propertyType, :parents, :children, :hasChildren # some of these attributes are used in Search (not shown out of context)
 
-
       # this command allows the parents and children to be serialized in the output
       embed :children
-
 
       link_to LinkedData::Hypermedia::Link.new("self", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}"}, self.type_uri),
               LinkedData::Hypermedia::Link.new("ontology", lambda {|m| self.ontology_link(m)}, Goo.vocabulary["Ontology"]),
