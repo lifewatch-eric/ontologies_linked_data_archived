@@ -3,7 +3,7 @@ module LinkedData
   module Models
 
     class OntologyProperty < LinkedData::Models::Base
-      
+
       def hasChildren
         if instance_variable_get("@intlHasChildren").nil?
           raise ArgumentError, "HasChildren not loaded for #{self.id.to_ntriples}"

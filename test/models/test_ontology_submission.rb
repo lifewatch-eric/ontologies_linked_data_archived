@@ -420,13 +420,21 @@ eos
                      "./test/data/ontology_files/BRO_v3.5.owl", 1,
                      process_rdf: true, reasoning: false, index_properties: true)
     res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\""}, :property)
-
     assert_equal 80, res["response"]["numFound"]
-    assert_equal "ONTOLOGY", res["response"]["docs"][0]["ontologyType"]
-    assert_equal "DATATYPE", res["response"]["docs"][0]["propertyType"]
-    assert_equal "BRO", res["response"]["docs"][0]["submissionAcronym"]
-    assert_equal 1, res["response"]["docs"][0]["submissionId"]
+    found = false
 
+    res["response"]["docs"].each do |doc|
+      if doc["resource_id"] == "http://www.w3.org/2004/02/skos/core#broaderTransitive"
+        assert_equal "ONTOLOGY", doc["ontologyType"]
+        assert_equal "OBJECT", doc["propertyType"]
+        assert_equal "BRO", doc["submissionAcronym"]
+        assert_equal 1, doc["submissionId"]
+        found = true
+        break
+      end
+    end
+
+    assert found
     ont = LinkedData::Models::Ontology.find('BRO').first
     ont.unindex_properties(true)
 
