@@ -305,7 +305,8 @@ eos
   end
 
   def test_process_submission_diff
-    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    # Cleanup
+    LinkedData::TestCase.backend_4s_delete
     acronym = 'BRO'
     # Create a 1st version for BRO
     submission_parse(acronym, "BRO",
