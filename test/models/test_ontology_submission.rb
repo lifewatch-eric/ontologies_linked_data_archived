@@ -428,6 +428,8 @@ eos
         assert_equal "ONTOLOGY", doc["ontologyType"]
         assert_equal "OBJECT", doc["propertyType"]
         assert_equal "BRO", doc["submissionAcronym"]
+        assert_equal ["has broader transitive"], doc["label"]
+        assert_equal ["broadertransitive", "broader transitive"], doc["labelGenerated"]
         assert_equal 1, doc["submissionId"]
         found = true
         break
