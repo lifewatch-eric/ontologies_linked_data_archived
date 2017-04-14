@@ -15,7 +15,7 @@ module LinkedData
 
       def tree
         self.bring(parents: [:label]) if self.bring?(:parents)
-        threshhold = 99
+        threshold = 99
         return self if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
 
@@ -23,26 +23,27 @@ module LinkedData
 
         items_hash = {}
         path = paths[0]
+        path.each { |t| items_hash[t.id.to_s] = t }
 
-        path.each do |t|
-          items_hash[t.id.to_s] = t
-        end
-
-        self.class.partially_load_children(items_hash.values, threshhold, self.submission)
+        self.class.partially_load_children(items_hash.values, threshold, self.submission)
 
         path.reverse!
-        path.last.instance_variable_set("@children",[])
+        path.last.instance_variable_set("@children", [])
         childrens_hash = {}
 
-        path.each do |m|
+        path.delete_if do |m|
           next if self.class::TOP_PROPERTY && m.id.to_s[self.class::TOP_PROPERTY]
 
-          m.children.each do |c|
-            childrens_hash[c.id.to_s] = c
+          # handle https://github.com/ncbo/ontologies_linked_data/issues/71
+          begin
+            m.children.each { |c| childrens_hash[c.id.to_s] = c }
+            false
+          rescue Goo::Base::AttributeNotLoaded => e
+            true
           end
         end
 
-        self.class.partially_load_children(childrens_hash.values, threshhold, self.submission)
+        self.class.partially_load_children(childrens_hash.values, threshold, self.submission)
 
         #build the tree
         root_node = path.first
@@ -96,15 +97,7 @@ module LinkedData
       end
 
       def has_children_query(class_id, submission_id)
-
-
-        # property_tree = self.class.tree_view_property(self.submission)
-
-
         property_tree = RDF::RDFS[:subPropertyOf]
-
-
-
 
         pattern = "?c <#{property_tree.to_s}> <#{class_id.to_s}> . "
         query = <<eos
@@ -189,14 +182,11 @@ eos
           rec_i = recursions[i]
           path = paths[rec_i]
           p = path.last
-
-          if p.bring?(:parents)
-            p.bring(parents: [:label, :definition])
-          end
+          p.bring(parents: [:label, :definition]) if p.bring?(:parents)
 
           unless p.loaded_attributes.include?(:parents)
             # fail safely
-            LOGGER.error("Property #{p.id.to_s} from #{p.submission.id} cannot load parents")
+            LOGGER.error("Property #{p.id.to_s} from #{p.submission.id.to_s} cannot load parents")
             return
           end
 

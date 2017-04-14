@@ -201,29 +201,22 @@ module LinkedData
         submission_ids.max
       end
 
-      def properties
-        latest = latest_submission(status: [:rdf])
+      def properties(sub=nil)
+        sub ||= latest_submission(status: [:rdf])
         self.bring(:acronym) if self.bring?(:acronym)
-        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
+        all_props = []
 
-        # datatype props
-        datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents, :children).all()
-        parents = []
-        datatype_props.each {|prop| prop.parents.each {|parent| parents << parent}}
-        LinkedData::Models::DatatypeProperty.in(latest).models(parents).include(:label, :definition).all()
+        prop_classes.each do |c|
+          props = c.in(sub).include(:label, :definition, :parents, :children).all()
+          parents = []
+          props.each { |prop| prop.parents.each {|parent| parents << parent} }
+          c.in(sub).models(parents).include(:label, :definition).all()
+          all_props.concat(props)
+        end
 
-        # object props
-        object_props = LinkedData::Models::ObjectProperty.in(latest).include(:label, :definition, :parents, :children).all()
-        parents = []
-        object_props.each {|prop| prop.parents.each {|parent| parents << parent}}
-        LinkedData::Models::ObjectProperty.in(latest).models(parents).include(:label, :definition).all()
-
-        # annotation props
-        annotation_props = LinkedData::Models::AnnotationProperty.in(latest).include(:label, :definition, :parents, :children).all()
-        parents = []
-        annotation_props.each {|prop| prop.parents.each {|parent| parents << parent}}
-        LinkedData::Models::AnnotationProperty.in(latest).models(parents).include(:label, :definition).all()
-        datatype_props + object_props + annotation_props
+        all_props
       end
 
       def property(prop_id, sub=nil)
@@ -231,7 +224,7 @@ module LinkedData
         sub ||= latest_submission(status: [:rdf])
         self.bring(:acronym) if self.bring?(:acronym)
         raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
-        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::AnnotationProperty, LinkedData::Models::DatatypeProperty]
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
 
         prop_classes.each do |c|
           p = c.find(prop_id).in(sub).include(:label, :definition, :parents, :children).first
@@ -242,7 +235,28 @@ module LinkedData
             break
           end
         end
+
         p
+      end
+
+      def property_roots(sub=nil, extra_include=[])
+        sub ||= latest_submission(status: [:rdf])
+        threshold = 99
+        incl = [:label, :definition, :parents]
+        incl.each { |x| extra_include.delete x }
+        all_roots = []
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
+
+        prop_classes.each do |c|
+          where = c.in(sub).include(incl)
+          where.include(extra_include) unless extra_include.empty?
+          roots = where.all
+          roots.select! { |prop| prop.load_has_children if extra_include.include?(:hasChildren); !prop.respond_to?(:parents) || prop.parents.nil? || prop.parents.empty? }
+          c.partially_load_children(roots, threshold, sub) if extra_include.include?(:children)
+          all_roots.concat(roots)
+        end
+
+        all_roots
       end
 
       # retrieve Analytics for this ontology
