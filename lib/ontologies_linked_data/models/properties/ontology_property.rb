@@ -6,7 +6,7 @@ module LinkedData
 
       def hasChildren
         if instance_variable_get("@intlHasChildren").nil?
-          raise ArgumentError, "HasChildren not loaded for #{self.id.to_ntriples}"
+          raise ArgumentError, "hasChildren not loaded for #{self.id.to_ntriples}"
         end
 
         @intlHasChildren
@@ -28,21 +28,21 @@ module LinkedData
 
         path.reverse!
         path.last.instance_variable_set("@children", [])
-        childrens_hash = {}
+        children_hash = {}
 
         path.delete_if do |m|
           next if self.class::TOP_PROPERTY && m.id.to_s[self.class::TOP_PROPERTY]
 
           # handle https://github.com/ncbo/ontologies_linked_data/issues/71
           begin
-            m.children.each { |c| childrens_hash[c.id.to_s] = c }
+            m.children.each { |c| children_hash[c.id.to_s] = c }
             false
           rescue Goo::Base::AttributeNotLoaded => e
             true
           end
         end
 
-        self.class.partially_load_children(childrens_hash.values, threshold, self.submission)
+        self.class.partially_load_children(children_hash.values, threshold, self.submission)
 
         #build the tree
         root_node = path.first
@@ -59,10 +59,7 @@ module LinkedData
               children = tree_node.children.dup
               children[i] = path.first
               tree_node.instance_variable_set("@children", children)
-
-              children.each do |c|
-                c.load_has_children
-              end
+              children.each { |c| c.load_has_children }
             else
               tree_node.children[i].instance_variable_set("@children", [])
             end

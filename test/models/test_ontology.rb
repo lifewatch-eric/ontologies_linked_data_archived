@@ -190,6 +190,53 @@ class TestOntology < LinkedData::TestOntologyCommon
     history_note_prop = LinkedData::Models::AnnotationProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#historyNote")).in(sub).include(:label, :definition, :parents).first()
     assert_equal 1, history_note_prop.parents.length
     assert_equal "A note about the past state/use/meaning of a concept.", history_note_prop.definition[0]
+
+    # test property roots
+    pr = ont.property_roots(sub, extra_include=[:hasChildren, :children])
+    assert_equal 61, pr.length
+    # count object properties
+    opr = pr.select { |p| p.class == LinkedData::Models::ObjectProperty }
+    assert_equal 18, opr.length
+    # count datatype properties
+    dpr = pr.select { |p| p.class == LinkedData::Models::DatatypeProperty }
+    assert_equal 33, dpr.length
+    # count annotation properties
+    apr = pr.select { |p| p.class == LinkedData::Models::AnnotationProperty }
+    assert_equal 10, apr.length
+    # check for non-root properties
+    assert_empty pr.select { |p| ["http://www.w3.org/2004/02/skos/core#broaderTransitive",
+                  "http://www.w3.org/2004/02/skos/core#topConceptOf",
+                  "http://www.w3.org/2004/02/skos/core#relatedMatch",
+                  "http://www.w3.org/2004/02/skos/core#exactMatch",
+                  "http://www.w3.org/2004/02/skos/core#narrowMatch"].include?(p.id.to_s) },
+                 "Non-root nodes found where roots are expected"
+
+    # test property trees
+    has_narrower_match_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#narrowMatch")).in(sub).include(:parents).first()
+    tree = has_narrower_match_prop.tree
+    assert_equal "http://www.w3.org/2004/02/skos/core#semanticRelation", tree.id.to_s
+    assert_equal 4, tree.children.length
+    both_found = 0
+
+    tree.children.each do |node|
+      if node.id.to_s == "http://www.w3.org/2004/02/skos/core#broaderTransitive"
+        both_found += 1
+        assert node.hasChildren
+        assert_empty node.children
+      end
+
+      if node.id.to_s == "http://www.w3.org/2004/02/skos/core#mappingRelation"
+        both_found += 1
+        assert node.hasChildren
+        assert_equal 4, node.children.length
+        has_source_child = node.children.select { |ch| ch.id.to_s == has_narrower_match_prop.id.to_s }
+        assert has_source_child.length == 1
+      end
+
+      break if both_found == 2
+    end
+
+    assert_equal 2, both_found
   end
 
   def test_valid_ontology
