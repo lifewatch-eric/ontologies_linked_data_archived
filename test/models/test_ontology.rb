@@ -237,6 +237,18 @@ class TestOntology < LinkedData::TestOntologyCommon
     end
 
     assert_equal 2, both_found
+
+    # test ancestors
+    has_exact_match_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#exactMatch")).in(sub).first()
+    ancestors = has_exact_match_prop.ancestors
+    assert_equal 3, ancestors.length
+    assert_equal ["http://www.w3.org/2004/02/skos/core#closeMatch",
+                  "http://www.w3.org/2004/02/skos/core#mappingRelation",
+                  "http://www.w3.org/2004/02/skos/core#semanticRelation"], ancestors.map { |a| a.id.to_s }
+
+    # test descendants
+
+
   end
 
   def test_valid_ontology

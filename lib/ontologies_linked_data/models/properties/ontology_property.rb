@@ -4,6 +4,18 @@ module LinkedData
 
     class OntologyProperty < LinkedData::Models::Base
 
+      def retrieve_ancestors
+        ids = retrieve_hierarchy_ids(:ancestors)
+
+        if ids.length == 0
+          return []
+        end
+
+        ids.select! { |x| !x["owl#{self.class::TOP_PROPERTY}"] }
+        ids.map! { |x| RDF::URI.new(x) }
+        self.class.in(self.submission).ids(ids).all
+      end
+
       def hasChildren
         if instance_variable_get("@intlHasChildren").nil?
           raise ArgumentError, "hasChildren not loaded for #{self.id.to_ntriples}"
@@ -103,6 +115,76 @@ GRAPH <#{submission_id}> {
 }
 }
 LIMIT 1
+eos
+        query
+      end
+
+      def retrieve_hierarchy_ids(direction=:ancestors)
+        current_level = 1
+        max_levels = 40
+        level_ids = Set.new([self.id.to_s])
+        all_ids = Set.new()
+        graphs = [self.submission.id.to_s]
+        submission_id_string = self.submission.id.to_s
+
+        while current_level <= max_levels do
+          next_level = Set.new
+          slices = level_ids.to_a.sort.each_slice(750).to_a
+          threads = []
+
+          slices.each_index do |i|
+            ids_slice = slices[i]
+
+            threads[i] = Thread.new {
+              next_level_thread = Set.new
+              query = hierarchy_query(direction, ids_slice)
+
+              Goo.sparql_query_client.query(query, query_options: {rules: :NONE }, graphs: graphs)
+                  .each do |sol|
+                parent = sol[:node].to_s
+                next unless parent.start_with?("http")
+                ontology = sol[:graph].to_s
+                next_level_thread << parent if submission_id_string == ontology && !all_ids.include?(parent)
+              end
+
+              Thread.current["next_level_thread"] = next_level_thread
+            }
+          end
+
+          threads.each {|t| t.join; next_level.merge(t["next_level_thread"]) }
+          current_level += 1
+          pre_size = all_ids.length
+          all_ids.merge(next_level)
+
+          if all_ids.length == pre_size
+            #nothing new
+            return all_ids
+          end
+
+          level_ids = next_level
+        end
+
+        all_ids
+      end
+
+      def hierarchy_query(direction, prop_ids)
+        filter_ids = prop_ids.map { |id| "?id = <#{id}>" }.join " || "
+        directional_pattern = nil
+        property_tree = RDF::RDFS[:subPropertyOf]
+
+        if direction == :ancestors
+          directional_pattern = "?id <#{property_tree.to_s}> ?node . "
+        else
+          directional_pattern = "?node <#{property_tree.to_s}> ?id . "
+        end
+
+        query = <<eos
+SELECT DISTINCT ?id ?node ?graph WHERE {
+GRAPH ?graph {
+  #{directional_pattern}
+}
+FILTER (#{filter_ids})
+}
 eos
         query
       end

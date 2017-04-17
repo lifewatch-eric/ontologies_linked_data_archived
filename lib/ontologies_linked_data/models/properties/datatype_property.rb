@@ -16,6 +16,7 @@ module LinkedData
       attribute :definition, namespace: :skos, enforce: [:list], alias: true
       attribute :parents, namespace: :rdfs, enforce: [:list, :datatype_property], property: :subPropertyOf
       attribute :children, namespace: :rdfs, inverse: { on: :datatype_property, :attribute => :parents }
+      attribute :ancestors, namespace: :rdfs, property: :subPropertyOf, handler: :retrieve_ancestors
       # attribute :domain
       # attribute :range
 
