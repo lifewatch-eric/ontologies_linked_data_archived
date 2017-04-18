@@ -251,7 +251,14 @@ module LinkedData
           where = c.in(sub).include(incl)
           where.include(extra_include) unless extra_include.empty?
           roots = where.all
-          roots.select! { |prop| prop.load_has_children if extra_include.include?(:hasChildren); !prop.respond_to?(:parents) || prop.parents.nil? || prop.parents.empty? }
+
+          roots.select! { |prop|
+            prop.load_has_children if extra_include.include?(:hasChildren)
+            is_root = !prop.respond_to?(:parents) || prop.parents.nil? || prop.parents.empty?
+            prop.loaded_attributes.delete?(:parents)
+            is_root
+          }
+
           c.partially_load_children(roots, threshold, sub) if extra_include.include?(:children)
           all_roots.concat(roots)
         end
