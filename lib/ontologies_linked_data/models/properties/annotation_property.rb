@@ -17,6 +17,7 @@ module LinkedData
       attribute :parents, namespace: :rdfs, enforce: [:list, :annotation_property], property: :subPropertyOf
       attribute :children, namespace: :rdfs, inverse: { on: :annotation_property, :attribute => :parents }
       attribute :ancestors, namespace: :rdfs, property: :subPropertyOf, handler: :retrieve_ancestors
+      attribute :descendants, namespace: :rdfs, property: :subPropertyOf, handler: :retrieve_descendants
       # attribute :domain
       # attribute :range
 

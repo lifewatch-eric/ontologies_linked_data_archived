@@ -5,7 +5,15 @@ module LinkedData
     class OntologyProperty < LinkedData::Models::Base
 
       def retrieve_ancestors
-        ids = retrieve_hierarchy_ids(:ancestors)
+        retrieve_ancestors_descendants(:ancestors)
+      end
+
+      def retrieve_descendants
+        retrieve_ancestors_descendants(:descendants)
+      end
+
+      def retrieve_ancestors_descendants(which)
+        ids = retrieve_hierarchy_ids(which)
 
         if ids.length == 0
           return []
