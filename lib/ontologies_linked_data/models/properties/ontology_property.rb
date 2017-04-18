@@ -27,7 +27,13 @@ module LinkedData
       def tree
         self.bring(parents: [:label]) if self.bring?(:parents)
         threshold = 99
-        return self if self.parents.nil? or self.parents.length == 0
+
+        if self.parents.nil? || self.parents.length == 0
+          self.load_has_children
+          self.instance_variable_set("@children", [])
+          return self
+        end
+
         paths = [[self]]
 
         traverse_path_to_root(self.parents.dup, paths, 0, tree=true, top_property=self.class::TOP_PROPERTY)
