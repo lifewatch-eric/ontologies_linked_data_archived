@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: c1e08824a85605419d3980bbfb22bbc3e56216b4
+  revision: de90d22ec992dd8dea3ec97f6c9c69906de1ecc0
   branch: staging
   specs:
     goo (0.0.2)
@@ -77,8 +77,8 @@ GEM
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (0.8.1)
-    json (2.0.4)
-    json_pure (2.0.4)
+    json (2.1.0)
+    json_pure (2.1.0)
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.9.0)
@@ -142,7 +142,7 @@ GEM
     tzinfo (0.3.53)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.3)
+    unf_ext (0.0.7.4)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
