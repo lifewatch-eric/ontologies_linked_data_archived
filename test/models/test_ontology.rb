@@ -165,11 +165,11 @@ class TestOntology < LinkedData::TestOntologyCommon
     annotation_props = []
 
     props.each do |prop|
-      if (prop.class == LinkedData::Models::DatatypeProperty)
+      if prop.class == LinkedData::Models::DatatypeProperty
         datatype_props << prop
-      elsif (prop.class == LinkedData::Models::ObjectProperty)
+      elsif prop.class == LinkedData::Models::ObjectProperty
         object_props << prop
-      elsif (prop.class == LinkedData::Models::AnnotationProperty)
+      elsif prop.class == LinkedData::Models::AnnotationProperty
         annotation_props << prop
       end
     end
@@ -244,11 +244,27 @@ class TestOntology < LinkedData::TestOntologyCommon
     assert_equal 3, ancestors.length
     assert_equal ["http://www.w3.org/2004/02/skos/core#closeMatch",
                   "http://www.w3.org/2004/02/skos/core#mappingRelation",
-                  "http://www.w3.org/2004/02/skos/core#semanticRelation"], ancestors.map { |a| a.id.to_s }
+                  "http://www.w3.org/2004/02/skos/core#semanticRelation"].sort, ancestors.map { |a| a.id.to_s }.sort
 
     # test descendants
+    lang_prop = LinkedData::Models::DatatypeProperty.find(RDF::URI.new("http://bioontology.org/ontologies/biositemap.owl#language")).in(sub).first()
+    descendants = lang_prop.descendants
+    assert_empty descendants
 
-
+    sem_rel_prop = LinkedData::Models::ObjectProperty.find(RDF::URI.new("http://www.w3.org/2004/02/skos/core#semanticRelation")).in(sub).first()
+    descendants = sem_rel_prop.descendants
+    assert_equal 11, descendants.length
+    assert_equal ["http://www.w3.org/2004/02/skos/core#broaderTransitive",
+                  "http://www.w3.org/2004/02/skos/core#narrowerTransitive",
+                  "http://www.w3.org/2004/02/skos/core#related",
+                  "http://www.w3.org/2004/02/skos/core#mappingRelation",
+                  "http://www.w3.org/2004/02/skos/core#broader",
+                  "http://www.w3.org/2004/02/skos/core#narrower",
+                  "http://www.w3.org/2004/02/skos/core#relatedMatch",
+                  "http://www.w3.org/2004/02/skos/core#narrowMatch",
+                  "http://www.w3.org/2004/02/skos/core#broadMatch",
+                  "http://www.w3.org/2004/02/skos/core#closeMatch",
+                  "http://www.w3.org/2004/02/skos/core#exactMatch"].sort, descendants.map { |d| d.id.to_s }.sort
   end
 
   def test_valid_ontology
