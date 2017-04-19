@@ -21,7 +21,9 @@ module LinkedData
 
         ids.select! { |x| !x["owl#{self.class::TOP_PROPERTY}"] }
         ids.map! { |x| RDF::URI.new(x) }
-        self.class.in(self.submission).ids(ids).all
+        models = self.class.in(self.submission).ids(ids).all
+        models.each { |m| m.load_has_children } if which == :descendants
+        self.class.sort_properties(models)
       end
 
       def hasChildren
@@ -84,8 +86,8 @@ module LinkedData
               next_tree_node = path.first
               children = tree_node.children.dup
               children[i] = path.first
-              tree_node.instance_variable_set("@children", children)
               children.each { |c| c.load_has_children }
+              tree_node.instance_variable_set("@children", children)
             else
               tree_node.children[i].instance_variable_set("@children", [])
             end
@@ -98,6 +100,8 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
+
+        self.class.sort_tree_children(root_node)
 
         root_node
       end
@@ -324,6 +328,38 @@ eos
         end
       end
 
+      def self.sort_tree_children(root_node)
+        self.sort_properties!(root_node.children)
+        root_node.children.each { |ch| self.sort_tree_children(ch) }
+      end
+
+      def self.sort_properties(props)
+        props.sort { |prop_a, prop_b| self.compare_properties(prop_a, prop_b) }
+      end
+
+      def self.sort_properties!(props)
+        props.sort! { |prop_a, prop_b| self.compare_properties(prop_a, prop_b) }
+        props
+      end
+
+      def self.compare_properties(prop_a, prop_b)
+        prop_a.bring(:label) if prop_a.bring?(:label)
+        prop_b.bring(:label) if prop_b.bring?(:label)
+        label_a = prop_a.label.nil? || prop_a.label.empty? ? "" : prop_a.label[0]
+        label_b = prop_b.label.nil? || prop_b.label.empty? ? "" : prop_b.label[0]
+
+        if label_a.empty?
+          gen_lbl_arr_a = LinkedData::Utils::Triples.generated_label(prop_a.id, prop_a.label)
+          label_a = gen_lbl_arr_a[0] || ""
+        end
+
+        if label_b.empty?
+          gen_lbl_arr_b = LinkedData::Utils::Triples.generated_label(prop_b.id, prop_b.label)
+          label_b = gen_lbl_arr_b[0] || ""
+        end
+
+        [label_a.downcase] <=> [label_b.downcase]
+      end
 
     end
 

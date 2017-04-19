@@ -116,7 +116,7 @@ module LinkedData
         self.submissions.each do |s|
           return s if s.submissionId == submission_id
         end
-        return nil
+        nil
       end
 
       def submission(submission_id)
@@ -209,34 +209,14 @@ module LinkedData
         all_props = []
 
         prop_classes.each do |c|
-          props = c.in(sub).include(:label, :definition, :parents, :children).all()
+          props = c.in(sub).include(:label, :definition, :parents).all()
           parents = []
-          props.each { |prop| prop.parents.each {|parent| parents << parent} }
+          props.each { |p| p.load_has_children; p.parents.each {|parent| parents << parent} }
           c.in(sub).models(parents).include(:label, :definition).all()
           all_props.concat(props)
         end
 
-        all_props
-      end
-
-      def property(prop_id, sub=nil)
-        p = nil
-        sub ||= latest_submission(status: [:rdf])
-        self.bring(:acronym) if self.bring?(:acronym)
-        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
-        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
-
-        prop_classes.each do |c|
-          p = c.find(prop_id).in(sub).include(:label, :definition, :parents, :children).first
-
-          unless p.nil?
-            parents = p.parents.nil? ? [] : p.parents.dup
-            c.in(sub).models(parents).include(:label, :definition).all()
-            break
-          end
-        end
-
-        p
+        LinkedData::Models::OntologyProperty.sort_properties(all_props)
       end
 
       def property_roots(sub=nil, extra_include=[])
@@ -263,7 +243,28 @@ module LinkedData
           all_roots.concat(roots)
         end
 
-        all_roots
+        LinkedData::Models::OntologyProperty.sort_properties(all_roots)
+      end
+
+      def property(prop_id, sub=nil)
+        p = nil
+        sub ||= latest_submission(status: [:rdf])
+        self.bring(:acronym) if self.bring?(:acronym)
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
+
+        prop_classes.each do |c|
+          p = c.find(prop_id).in(sub).include(:label, :definition, :parents).first
+
+          unless p.nil?
+            p.load_has_children
+            parents = p.parents.nil? ? [] : p.parents.dup
+            c.in(sub).models(parents).include(:label, :definition).all()
+            break
+          end
+        end
+
+        p
       end
 
       # retrieve Analytics for this ontology
@@ -438,7 +439,7 @@ module LinkedData
         else
           return true if self.acl.map {|u| u.id.to_s}.include?(user.id.to_s) || self.administeredBy.map {|u| u.id.to_s}.include?(user.id.to_s)
         end
-        return false
+        false
       end
     end
   end

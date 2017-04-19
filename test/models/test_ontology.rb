@@ -160,6 +160,10 @@ class TestOntology < LinkedData::TestOntologyCommon
     props = ont.properties()
     assert_equal 82, props.length
 
+    # verify sorting
+    assert_equal "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#AlgorithmPurpose", props[0].id.to_s
+    assert_equal "http://www.w3.org/2004/02/skos/core#altLabel", props[1].id.to_s
+
     datatype_props = []
     object_props = []
     annotation_props = []
@@ -194,6 +198,11 @@ class TestOntology < LinkedData::TestOntologyCommon
     # test property roots
     pr = ont.property_roots(sub, extra_include=[:hasChildren, :children])
     assert_equal 61, pr.length
+
+    # verify sorting
+    assert_equal "http://bioontology.org/ontologies/BiomedicalResourceOntology.owl#AlgorithmPurpose", pr[0].id.to_s
+    assert_equal "http://bioontology.org/ontologies/biositemap.owl#biositemap_author", pr[1].id.to_s
+
     # count object properties
     opr = pr.select { |p| p.class == LinkedData::Models::ObjectProperty }
     assert_equal 18, opr.length
@@ -246,6 +255,11 @@ class TestOntology < LinkedData::TestOntologyCommon
                   "http://www.w3.org/2004/02/skos/core#mappingRelation",
                   "http://www.w3.org/2004/02/skos/core#semanticRelation"].sort, ancestors.map { |a| a.id.to_s }.sort
 
+
+    # verify sorting
+    assert_equal "http://www.w3.org/2004/02/skos/core#closeMatch", ancestors[0].id.to_s
+    assert_equal "http://www.w3.org/2004/02/skos/core#mappingRelation", ancestors[1].id.to_s
+
     # test descendants
     lang_prop = LinkedData::Models::DatatypeProperty.find(RDF::URI.new("http://bioontology.org/ontologies/biositemap.owl#language")).in(sub).first()
     descendants = lang_prop.descendants
@@ -265,6 +279,10 @@ class TestOntology < LinkedData::TestOntologyCommon
                   "http://www.w3.org/2004/02/skos/core#broadMatch",
                   "http://www.w3.org/2004/02/skos/core#closeMatch",
                   "http://www.w3.org/2004/02/skos/core#exactMatch"].sort, descendants.map { |d| d.id.to_s }.sort
+
+    # verify sorting
+    assert_equal "http://www.w3.org/2004/02/skos/core#broader", descendants[0].id.to_s
+    assert_equal "http://www.w3.org/2004/02/skos/core#broadMatch", descendants[1].id.to_s
   end
 
   def test_valid_ontology
