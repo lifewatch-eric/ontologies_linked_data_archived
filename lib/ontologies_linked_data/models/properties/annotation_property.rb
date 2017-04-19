@@ -29,9 +29,14 @@ module LinkedData
       # this command allows the parents and children to be serialized in the output
       embed :children
 
-      link_to LinkedData::Hypermedia::Link.new("self", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}"}, self.type_uri),
+      link_to LinkedData::Hypermedia::Link.new("self", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}"}, self.uri_type),
               LinkedData::Hypermedia::Link.new("ontology", lambda {|m| self.ontology_link(m)}, Goo.vocabulary["Ontology"]),
-              LinkedData::Hypermedia::Link.new("submission", lambda {|m| "#{self.ontology_link(m)}/submissions/#{m.submission.id.to_s.split("/")[-1]}"}, Goo.vocabulary["OntologySubmission"])
+              LinkedData::Hypermedia::Link.new("submission", lambda {|m| "#{self.ontology_link(m)}/submissions/#{m.submission.id.to_s.split("/")[-1]}"}, Goo.vocabulary["OntologySubmission"]),
+              LinkedData::Hypermedia::Link.new("parents", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}/parents"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("children", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}/children"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("ancestors", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}/ancestors"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("descendants", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}/descendants"}, self.uri_type),
+              LinkedData::Hypermedia::Link.new("tree", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}/tree"}, self.uri_type)
     end
 
   end
