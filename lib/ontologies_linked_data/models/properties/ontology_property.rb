@@ -343,19 +343,42 @@ eos
       end
 
       def self.compare_properties(prop_a, prop_b)
+        label_a = ""
+        label_b = ""
+        label_a_full = []
+        label_b_full = []
+
         prop_a.bring(:label) if prop_a.bring?(:label)
         prop_b.bring(:label) if prop_b.bring?(:label)
-        label_a = prop_a.label.nil? || prop_a.label.empty? ? "" : prop_a.label[0]
-        label_b = prop_b.label.nil? || prop_b.label.empty? ? "" : prop_b.label[0]
+
+        begin
+          if !prop_a.label.nil? && !prop_a.label.empty?
+            label_a = prop_a.label[0]
+            label_a_full = prop_a.label
+          end
+        rescue Goo::Base::AttributeNotLoaded => e
+          label_a = ""
+          label_a_full = []
+        end
+
+        begin
+          if !prop_b.label.nil? && !prop_b.label.empty?
+            label_b = prop_b.label[0]
+            label_b_full = prop_b.label
+          end
+        rescue Goo::Base::AttributeNotLoaded => e
+          label_b = ""
+          label_b_full = []
+        end
 
         if label_a.empty?
-          gen_lbl_arr_a = LinkedData::Utils::Triples.generated_label(prop_a.id, prop_a.label)
-          label_a = gen_lbl_arr_a[0] || ""
+          gen_lbl_arr_a = LinkedData::Utils::Triples.generated_label(prop_a.id, label_a_full)
+          label_a = gen_lbl_arr_a.empty? ? "" : gen_lbl_arr_a[0]
         end
 
         if label_b.empty?
-          gen_lbl_arr_b = LinkedData::Utils::Triples.generated_label(prop_b.id, prop_b.label)
-          label_b = gen_lbl_arr_b[0] || ""
+          gen_lbl_arr_b = LinkedData::Utils::Triples.generated_label(prop_b.id, label_b_full)
+          label_b = gen_lbl_arr_b.empty? ? "" : gen_lbl_arr_b[0]
         end
 
         [label_a.downcase] <=> [label_b.downcase]
