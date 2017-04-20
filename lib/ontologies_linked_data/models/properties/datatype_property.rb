@@ -25,8 +25,8 @@ module LinkedData
                      :document => lambda { |t| t.get_index_doc }
 
       serialize_default :label, :labelGenerated, :definition, :matchType, :ontologyType, :propertyType, :parents, :children, :hasChildren # some of these attributes are used in Search (not shown out of context)
-
-      # this command allows the parents and children to be serialized in the output
+      aggregates childrenCount: [:count, :children]
+      # this command allows the children to be serialized in the output
       embed :children
 
       link_to LinkedData::Hypermedia::Link.new("self", lambda {|m| "#{self.ontology_link(m)}/properties/#{CGI.escape(m.id.to_s)}"}, self.uri_type),

@@ -34,6 +34,16 @@ module LinkedData
         @intlHasChildren
       end
 
+      # this call must be preceded by:
+      # self.class.in(self.submission).models([self]).aggregate(:count, :children).all
+      def childrenCount
+        self.bring(:submission) if self.bring?(:submission)
+        raise ArgumentError, "No aggregates included in #{self.id.to_ntriples}. Submission: #{self.submission.id.to_s}" unless self.aggregates
+        cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
+        raise ArgumentError, "No aggregate for attribute children and count found in #{self.id.to_ntriples}" unless cc
+        cc.value
+      end
+
       def tree
         self.bring(parents: [:label]) if self.bring?(:parents)
         threshold = 99
@@ -65,7 +75,7 @@ module LinkedData
           begin
             m.children.each { |c| children_hash[c.id.to_s] = c }
             false
-          rescue Goo::Base::AttributeNotLoaded => e
+          rescue Goo::Base::AttributeNotLoaded
             true
           end
         end
@@ -77,7 +87,7 @@ module LinkedData
         tree_node = path.first
         path.delete_at(0)
 
-        while tree_node && (self.class::TOP_PROPERTY.nil? || !tree_node.id.to_s[self.class::TOP_PROPERTY]) && tree_node.children.length > 0 and path.length > 0 do
+        while tree_node && (self.class::TOP_PROPERTY.nil? || !tree_node.id.to_s[self.class::TOP_PROPERTY]) && tree_node.children.length > 0 && path.length > 0 do
           next_tree_node = nil
           tree_node.load_has_children
 
@@ -93,10 +103,7 @@ module LinkedData
             end
           end
 
-          if path.length > 0 && next_tree_node.nil?
-            tree_node.children << path.shift
-          end
-
+          tree_node.children << path.shift if path.length > 0 && next_tree_node.nil?
           tree_node = next_tree_node
           path.delete_at(0)
         end
@@ -114,11 +121,7 @@ module LinkedData
         graphs = [self.submission.id.to_s]
         query = has_children_query(self.id.to_s, graphs.first)
         has_c = false
-
-        Goo.sparql_query_client.query(query, query_options: {rules: :NONE }, graphs: graphs).each do |sol|
-          has_c = true
-        end
-
+        Goo.sparql_query_client.query(query, query_options: {rules: :NONE }, graphs: graphs).each { |sol| has_c = true }
         @intlHasChildren = has_c
       end
 
@@ -157,8 +160,7 @@ eos
               next_level_thread = Set.new
               query = hierarchy_query(direction, ids_slice)
 
-              Goo.sparql_query_client.query(query, query_options: {rules: :NONE }, graphs: graphs)
-                  .each do |sol|
+              Goo.sparql_query_client.query(query, query_options: {rules: :NONE }, graphs: graphs).each do |sol|
                 parent = sol[:node].to_s
                 next unless parent.start_with?("http")
                 ontology = sol[:graph].to_s
@@ -174,11 +176,8 @@ eos
           pre_size = all_ids.length
           all_ids.merge(next_level)
 
-          if all_ids.length == pre_size
-            #nothing new
-            return all_ids
-          end
-
+          #nothing new
+          return all_ids if all_ids.length == pre_size
           level_ids = next_level
         end
 
@@ -257,7 +256,7 @@ eos
         recurse_on_path = [false]
 
         # multiple paths
-        if parents.length > 1 and not tree
+        if parents.length > 1 && !tree
           (parents.length - 1).times do
             paths << paths[path_i].clone
             recursions << (paths.length - 1)
@@ -356,7 +355,7 @@ eos
             label_a = prop_a.label[0]
             label_a_full = prop_a.label
           end
-        rescue Goo::Base::AttributeNotLoaded => e
+        rescue Goo::Base::AttributeNotLoaded
           label_a = ""
           label_a_full = []
         end
@@ -366,7 +365,7 @@ eos
             label_b = prop_b.label[0]
             label_b_full = prop_b.label
           end
-        rescue Goo::Base::AttributeNotLoaded => e
+        rescue Goo::Base::AttributeNotLoaded
           label_b = ""
           label_b_full = []
         end
