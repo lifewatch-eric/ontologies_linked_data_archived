@@ -233,6 +233,8 @@ eos
           next if cur_val.nil? || (cur_val.respond_to?('empty?') && cur_val.empty?)
 
           if cur_val.is_a?(Array)
+            # don't store empty values
+            cur_val = cur_val.reject { |c| c.respond_to?('empty?') && c.empty? }
             doc[att] = []
             cur_val = cur_val.uniq
             cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
