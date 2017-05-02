@@ -305,7 +305,8 @@ eos
   end
 
   def test_process_submission_diff
-    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    # Cleanup
+    LinkedData::TestCase.backend_4s_delete
     acronym = 'BRO'
     # Create a 1st version for BRO
     submission_parse(acronym, "BRO",
@@ -419,14 +420,32 @@ eos
     submission_parse("BRO", "BRO Ontology",
                      "./test/data/ontology_files/BRO_v3.5.owl", 1,
                      process_rdf: true, reasoning: false, index_properties: true)
-    res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\""}, :property)
-
+    res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\"", :start => 0, :rows => 80}, :property)
     assert_equal 80, res["response"]["numFound"]
-    assert_equal "ONTOLOGY", res["response"]["docs"][0]["ontologyType"]
-    assert_equal "DATATYPE", res["response"]["docs"][0]["propertyType"]
-    assert_equal "BRO", res["response"]["docs"][0]["submissionAcronym"]
-    assert_equal 1, res["response"]["docs"][0]["submissionId"]
+    found = 0
 
+    res["response"]["docs"].each do |doc|
+      if doc["resource_id"] == "http://www.w3.org/2004/02/skos/core#broaderTransitive"
+        found +=1
+        assert_equal "ONTOLOGY", doc["ontologyType"]
+        assert_equal "OBJECT", doc["propertyType"]
+        assert_equal "BRO", doc["submissionAcronym"]
+        assert_equal ["has broader transitive"], doc["label"]
+        assert_equal ["broadertransitive", "broader transitive"], doc["labelGenerated"]
+        assert_equal 1, doc["submissionId"]
+      elsif doc["resource_id"] == "http://bioontology.org/ontologies/biositemap.owl#contact_person_email"
+        found +=1
+        assert_equal "DATATYPE", doc["propertyType"]
+        assert_equal "BRO", doc["submissionAcronym"]
+        assert_nil doc["label"]
+        assert_equal ["contact_person_email", "contact person email"], doc["labelGenerated"]
+        assert_equal "http://data.bioontology.org/ontologies/BRO/submissions/1", doc["ontologyId"]
+      end
+
+      break if found == 2
+    end
+
+    assert_equal 2, found
     ont = LinkedData::Models::Ontology.find('BRO').first
     ont.unindex_properties(true)
 

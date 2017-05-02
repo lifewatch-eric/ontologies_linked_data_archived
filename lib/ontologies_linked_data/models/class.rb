@@ -156,10 +156,13 @@ module LinkedData
 
         std.each do |att|
           cur_val = all_attrs[att]
+
           # don't store empty values
           next if cur_val.nil? || (cur_val.respond_to?('empty?') && cur_val.empty?)
 
           if cur_val.is_a?(Array)
+            # don't store empty values
+            cur_val = cur_val.reject { |c| c.respond_to?('empty?') && c.empty? }
             doc[att] = []
             cur_val = cur_val.uniq
             cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
@@ -185,13 +188,21 @@ module LinkedData
 
               attr_val.map { |val|
                 real_val = val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip
-                prop_vals << real_val
-                props[attr_key] << real_val
+
+                # don't store empty values
+                unless real_val.respond_to?('empty?') && real_val.empty?
+                  prop_vals << real_val
+                  props[attr_key] << real_val
+                end
               }
             else
               real_val = attr_val.to_s.strip
-              prop_vals << real_val
-              props[attr_key] = real_val
+
+              # don't store empty values
+              unless real_val.respond_to?('empty?') && real_val.empty?
+                prop_vals << real_val
+                props[attr_key] = real_val
+              end
             end
           end
         end
@@ -369,7 +380,7 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
-        return root_node
+        root_node
       end
 
       def retrieve_ancestors

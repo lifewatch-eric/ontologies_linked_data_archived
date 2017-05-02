@@ -116,7 +116,7 @@ module LinkedData
         self.submissions.each do |s|
           return s if s.submissionId == submission_id
         end
-        return nil
+        nil
       end
 
       def submission(submission_id)
@@ -201,29 +201,49 @@ module LinkedData
         submission_ids.max
       end
 
-      def properties
-        latest = latest_submission(status: [:rdf])
+      def properties(sub=nil)
+        sub ||= latest_submission(status: [:rdf])
         self.bring(:acronym) if self.bring?(:acronym)
-        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless latest
+        raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
+        all_props = []
 
-        # datatype props
-        datatype_props = LinkedData::Models::DatatypeProperty.in(latest).include(:label, :definition, :parents).all()
-        parents = []
-        datatype_props.each {|prop| prop.parents.each {|parent| parents << parent}}
-        LinkedData::Models::DatatypeProperty.in(latest).models(parents).include(:label, :definition).all()
+        prop_classes.each do |c|
+          props = c.in(sub).include(:label, :definition, :parents).all()
+          parents = []
+          props.each { |p| p.load_has_children; p.parents.each {|parent| parents << parent} }
+          c.in(sub).models(parents).include(:label, :definition).all()
+          all_props.concat(props)
+        end
 
-        # object props
-        object_props = LinkedData::Models::ObjectProperty.in(latest).include(:label, :definition, :parents).all()
-        parents = []
-        object_props.each {|prop| prop.parents.each {|parent| parents << parent}}
-        LinkedData::Models::ObjectProperty.in(latest).models(parents).include(:label, :definition).all()
+        LinkedData::Models::OntologyProperty.sort_properties(all_props)
+      end
 
-        # annotation props
-        annotation_props = LinkedData::Models::AnnotationProperty.in(latest).include(:label, :definition, :parents).all()
-        parents = []
-        annotation_props.each {|prop| prop.parents.each {|parent| parents << parent}}
-        LinkedData::Models::AnnotationProperty.in(latest).models(parents).include(:label, :definition).all()
-        datatype_props + object_props + annotation_props
+      def property_roots(sub=nil, extra_include=[])
+        sub ||= latest_submission(status: [:rdf])
+        threshold = 99
+        incl = [:label, :definition, :parents]
+        incl.each { |x| extra_include.delete x }
+        all_roots = []
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
+
+        prop_classes.each do |c|
+          where = c.in(sub).include(incl)
+          where.include(extra_include) unless extra_include.empty?
+          roots = where.all
+
+          roots.select! { |prop|
+            prop.load_has_children if extra_include.include?(:hasChildren)
+            is_root = !prop.respond_to?(:parents) || prop.parents.nil? || prop.parents.empty?
+            prop.loaded_attributes.delete?(:parents)
+            is_root
+          }
+
+          c.partially_load_children(roots, threshold, sub) if extra_include.include?(:children)
+          all_roots.concat(roots)
+        end
+
+        LinkedData::Models::OntologyProperty.sort_properties(all_roots)
       end
 
       def property(prop_id, sub=nil)
@@ -231,17 +251,19 @@ module LinkedData
         sub ||= latest_submission(status: [:rdf])
         self.bring(:acronym) if self.bring?(:acronym)
         raise ParsedSubmissionError, "The properties of ontology #{self.acronym} cannot be retrieved because it has not been successfully parsed" unless sub
-        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::AnnotationProperty, LinkedData::Models::DatatypeProperty]
+        prop_classes = [LinkedData::Models::ObjectProperty, LinkedData::Models::DatatypeProperty, LinkedData::Models::AnnotationProperty]
 
         prop_classes.each do |c|
           p = c.find(prop_id).in(sub).include(:label, :definition, :parents).first
 
           unless p.nil?
+            p.load_has_children
             parents = p.parents.nil? ? [] : p.parents.dup
             c.in(sub).models(parents).include(:label, :definition).all()
             break
           end
         end
+
         p
       end
 
@@ -417,7 +439,7 @@ module LinkedData
         else
           return true if self.acl.map {|u| u.id.to_s}.include?(user.id.to_s) || self.administeredBy.map {|u| u.id.to_s}.include?(user.id.to_s)
         end
-        return false
+        false
       end
     end
   end

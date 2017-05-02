@@ -1314,6 +1314,7 @@ eos
         end
 
         classes = []
+
         if !isSkos
           owlThing = Goo.vocabulary(:owl)["Thing"]
           classes = LinkedData::Models::Class.where(parents: owlThing).in(self)
@@ -1335,6 +1336,8 @@ eos
             classes << LinkedData::Models::Class.find(id).in(self).disable_rules.first
           end
         end
+
+
         roots = []
         where = LinkedData::Models::Class.in(self)
                      .models(classes)
@@ -1371,7 +1374,7 @@ eos
           end
           roots << c if (c.obsolete.nil?) || (c.obsolete == false)
         end
-        return roots
+        roots
       end
 
       def download_and_store_ontology_file
