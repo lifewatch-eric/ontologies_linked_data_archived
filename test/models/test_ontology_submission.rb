@@ -167,11 +167,8 @@ eos
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
 
-    #test for version info
-    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"],
-                                                       submissionId: 55)
-                                                     .include(:version)
-                                                     .first
+    # Test for version info
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"], submissionId: 55).include(:version).first
     assert sub.version == "2012-08-10"
 
     qthing = <<-eos
@@ -210,14 +207,12 @@ eos
     end
     assert count == 1
 
-    sub = LinkedData::Models::OntologySubmission
-        .where(ontology: [acronym: "TAO-TEST"]).first
-    n_roots = sub.roots.length
-    assert n_roots == 4
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
+    assert_equal(3, sub.roots.length, "Incorrect number of root classes")
+
     #strict comparison to be sure the merge with the tree_view branch goes fine
 
-    LinkedData::Models::Class.where.in(sub)
-      .include(:prefLabel,:synonym,:notation).each do |cls|
+    LinkedData::Models::Class.where.in(sub).include(:prefLabel,:synonym,:notation).each do |cls|
         assert_instance_of String,cls.prefLabel
         if cls.notation.nil?
           assert false,"notation empty"
@@ -250,10 +245,8 @@ eos
     assert bm.children.first.id == RDF::URI.new("http://purl.obolibrary.org/obo/GO_0043931")
     assert bm.parents.first.id == RDF::URI.new("http://purl.obolibrary.org/obo/GO_0060348")
     roots = sub.roots
-    assert roots.length == 4
     assert roots.map { |x| x.id.to_s }.sort ==
       ["http://purl.obolibrary.org/obo/PATO_0000001",
-      "http://purl.obolibrary.org/obo/PATO_0000014",
       "http://purl.obolibrary.org/obo/CARO_0000000",
       "http://purl.obolibrary.org/obo/GO_0008150"].sort
   end
