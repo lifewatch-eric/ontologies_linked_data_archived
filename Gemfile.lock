@@ -76,7 +76,7 @@ GEM
     htmlentities (4.3.4)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    i18n (0.8.1)
+    i18n (0.8.3)
     json (2.1.0)
     json_pure (2.1.0)
     launchy (2.4.3)
