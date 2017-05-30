@@ -925,15 +925,15 @@ eos
     metrics.bring_remaining
     assert_instance_of LinkedData::Models::Metric, metrics
 
-    assert metrics.classes == 144
-    assert metrics.properties == 78
-    assert metrics.individuals == 26
-    assert metrics.classesWithOneChild == 11
-    assert metrics.classesWithNoDefinition == 134
-    assert metrics.classesWithMoreThan25Children == 0
-    assert metrics.maxChildCount == 19
-    assert metrics.averageChildCount == 3
-    assert metrics.maxDepth == 4
+    assert_equal 144, metrics.classes
+    assert_equal 78, metrics.properties
+    assert_equal 26, metrics.individuals
+    assert_equal 11, metrics.classesWithOneChild
+    assert_equal 134, metrics.classesWithNoDefinition
+    assert_equal 0, metrics.classesWithMoreThan25Children
+    assert_equal 19, metrics.maxChildCount
+    assert_equal 3, metrics.averageChildCount
+    assert_equal 4, metrics.maxDepth
 
     submission_parse("BROTEST-METRICS", "BRO testing metrics",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,
