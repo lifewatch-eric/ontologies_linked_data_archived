@@ -288,6 +288,7 @@ class TestMapping < LinkedData::TestOntologyCommon
     #some other test is leaving mappings persisted
     assert rest_mapping_count > 1 || rest_mapping_count < 4
     #in a new submission we should have moved the rest mappings
+    helper = LinkedData::TestOntologyCommon.new(self)
     helper.submission_parse(ONT_ACR1,
                      "MappingOntTest1",
                      "./test/data/ontology_files/BRO_v3.3.owl", 12,

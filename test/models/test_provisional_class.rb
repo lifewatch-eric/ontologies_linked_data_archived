@@ -20,6 +20,13 @@ class TestProvisionalClass < LinkedData::TestCase
     @provisional_class.save
   end
 
+  def teardown
+    super
+    @provisional_class.delete
+    pc = LinkedData::Models::ProvisionalClass.find(@provisional_class.id).first
+    assert_nil pc
+  end
+
   def _delete
     delete_ontologies_and_submissions
     user = LinkedData::Models::User.find("Test User").first
@@ -48,8 +55,6 @@ class TestProvisionalClass < LinkedData::TestCase
   end
 
   def test_provisional_class_valid
-    _delete
-
     pc = LinkedData::Models::ProvisionalClass.new
     assert (not pc.valid?)
 
@@ -120,7 +125,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc.save
     assert pc.synonym.length == 3
     assert_equal(pc.synonym.first, syns.first)
-    pc.delete
   end
 
   def test_provisional_class_description
@@ -131,7 +135,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc.save
     assert pc.definition.length == 2
     assert_equal(pc.definition.first, defs.first)
-    pc.delete
   end
 
   def test_provisional_class_subclass_of
@@ -146,7 +149,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc.subclassOf = RDF::IRI.new("http://valid.uri.com")
     assert pc.valid?
     assert_equal(true, pc.errors[:subclassOf].nil?)
-    pc.delete
   end
 
   def test_provisional_class_created
@@ -157,7 +159,6 @@ class TestProvisionalClass < LinkedData::TestCase
     assert pc.valid?, "#{pc.errors}"
     pc.save
     assert pc.created.instance_of?(DateTime)
-    pc.delete
   end
 
   def test_provisional_class_permanent_id
@@ -172,7 +173,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc.permanentId = RDF::IRI.new("http://valid.uri.com")
     assert pc.valid?
     assert_equal(true, pc.errors[:permanentId].nil?)
-    pc.delete
   end
 
   def test_provisional_class_note_id
@@ -187,7 +187,6 @@ class TestProvisionalClass < LinkedData::TestCase
     pc.noteId = RDF::IRI.new("http://valid.uri.com")
     assert pc.valid?
     assert_equal(true, pc.errors[:noteId].nil?)
-    pc.delete
   end
 
   def test_provisional_class_ontology
@@ -196,18 +195,19 @@ class TestProvisionalClass < LinkedData::TestCase
     assert pc.valid?, "#{pc.errors}"
     assert_equal(true, pc.ontology.acronym == "TEST-ONT-0")
     assert_equal(true, pc.ontology.name == "TEST-ONT-0 Ontology")
-    pc.delete
   end
 
   def test_provisional_class_search_indexing
+    params = {"fq" => "provisional:true"}
     pc = @provisional_class
     pc.ontology = @ontology
+    pc.unindex
+    resp = LinkedData::Models::Ontology.search(pc.label, params)
+    assert_equal 0, resp["response"]["numFound"]
     pc.index
-    params = {"fq" => "provisional:true"}
     resp = LinkedData::Models::Ontology.search(pc.label, params)
     assert_equal 1, resp["response"]["numFound"]
     assert_equal pc.label, resp["response"]["docs"][0]["prefLabel"]
-    pc.delete
   end
 
 end

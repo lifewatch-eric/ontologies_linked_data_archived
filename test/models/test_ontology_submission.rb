@@ -931,9 +931,9 @@ eos
     assert_equal 11, metrics.classesWithOneChild
     assert_equal 134, metrics.classesWithNoDefinition
     assert_equal 0, metrics.classesWithMoreThan25Children
-    assert_equal 19, metrics.maxChildCount
+    assert_equal 18, metrics.maxChildCount
     assert_equal 3, metrics.averageChildCount
-    assert_equal 4, metrics.maxDepth
+    assert_equal 3, metrics.maxDepth
 
     submission_parse("BROTEST-METRICS", "BRO testing metrics",
                      "./test/data/ontology_files/BRO_v3.2.owl", 33,

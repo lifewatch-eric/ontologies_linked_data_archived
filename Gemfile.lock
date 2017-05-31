@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/ncbo/goo.git
-  revision: 856a84c279600bbda75c03afa77eab9443003cfa
+  revision: 9a3de1a33483fa7f103dee5331a5d80b86469101
   branch: allegrograph_testing
   specs:
     goo (0.0.2)
@@ -50,7 +50,7 @@ GEM
     coderay (1.1.1)
     cube-ruby (0.0.3)
     docile (1.1.5)
-    domain_name (0.5.20161129)
+    domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
     elasticsearch (5.0.0)
       elasticsearch-api (= 5.0.0)
@@ -105,9 +105,9 @@ GEM
     rake (10.5.0)
     rdf (1.0.8)
       addressable (>= 2.2)
-    redis (3.3.2)
+    redis (3.3.3)
     ref (2.0.0)
-    rest-client (2.0.0)
+    rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
@@ -131,7 +131,7 @@ GEM
     tzinfo (0.3.52)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.2)
+    unf_ext (0.0.7.4)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
