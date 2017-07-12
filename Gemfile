@@ -14,6 +14,8 @@ gem 'minitest', '~> 4.0'
 gem 'cube-ruby', require: "cube"
 gem 'pony'
 gem 'addressable', '= 2.3.5'
+gem 'omni_logger'
+gem 'thin'
 
 # Testing
 group :test do
@@ -28,4 +30,4 @@ gem 'goo', github: 'ncbo/goo', branch: 'allegrograph_testing'
 gem 'sparql-client', path: '/Users/mdorf/dev/ncbo/sparql-client', branch: 'allegrograph_testing'
 
 # ResourceIndex dependencies (managed per-platform)
-gem 'ncbo_resource_index', github: 'ncbo/resource_index'
+gem 'ncbo_resource_index', git: 'https://github.com/ncbo/resource_index.git'

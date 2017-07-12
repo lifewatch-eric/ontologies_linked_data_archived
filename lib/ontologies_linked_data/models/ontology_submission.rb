@@ -66,7 +66,7 @@ module LinkedData
       # Links
       links_load :submissionId, ontology: [:acronym]
       link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
-              LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/download"}, self.type_uri)
+      LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/download"}, self.type_uri)
 
       # HTTP Cache settings
       cache_timeout 3600
@@ -92,7 +92,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::URI.new(
-          "#{(Goo.id_prefix)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
+            "#{(Goo.id_prefix)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
         )
       end
 
@@ -129,13 +129,44 @@ module LinkedData
         self.bring(:masterFileName) if self.bring?(:masterFileName)
         self.bring(:submissionStatus) if self.bring?(:submissionStatus)
 
-        if (self.submissionStatus)
+        if self.submissionStatus
           self.submissionStatus.each do |st|
             st.bring(:code) if st.bring?(:code)
           end
         end
 
-        if self.ontology.summaryOnly || self.archived?
+        # TODO: this code was added to deal with intermittent issues with 4store, where the error:
+        # Attribute `summaryOnly` is not loaded for http://data.bioontology.org/ontologies/GPI
+        # was thrown for no apparent reason!!!
+        sum_only = nil
+
+        begin
+          sum_only = self.ontology.summaryOnly
+        rescue Exception => e
+          i = 0
+          num_calls = 3
+          sum_only = nil
+
+          while sum_only.nil? && i < num_calls do
+            i += 1
+            puts "Exception while getting summaryOnly for #{self.id.to_s}. Retrying #{i} times..."
+            sleep(1)
+
+            begin
+              self.ontology.bring(:summaryOnly)
+              sum_only = self.ontology.summaryOnly
+              puts "Success getting summaryOnly for #{self.id.to_s} after retrying #{i} times..."
+            rescue Exception => e1
+              sum_only = nil
+
+              if i == num_calls
+                raise $!, "#{$!} after retrying #{i} times...", $!.backtrace
+              end
+            end
+          end
+        end
+
+        if sum_only == true || self.archived?
           return true
         elsif self.uploadFilePath.nil? && self.pullLocation.nil?
           self.errors[:uploadFilePath] = ["In non-summary only submissions a data file or url must be provided."]
@@ -170,13 +201,13 @@ module LinkedData
           if repeated_names.length > 0
             names = repeated_names.keys.to_s
             self.errors[:uploadFilePath] <<
-            "Zip file contains file names (#{names}) in more than one folder."
+                "Zip file contains file names (#{names}) in more than one folder."
             return false
           end
 
           #error message with options to choose from.
           self.errors[:uploadFilePath] << {
-            :message => "Zip file detected, choose the master file.", :options => files }
+              :message => "Zip file detected, choose the master file.", :options => files }
           return false
 
         elsif zip and not self.masterFileName.nil?
@@ -186,9 +217,9 @@ module LinkedData
             if self.errors[:uploadFilePath].nil?
               self.errors[:uploadFilePath] = []
               self.errors[:uploadFilePath] << {
-                :message =>
-              "The selected file `#{self.masterFileName}` is not included in the zip file",
-                :options => files }
+                  :message =>
+                      "The selected file `#{self.masterFileName}` is not included in the zip file",
+                  :options => files }
             end
           end
         end
@@ -455,38 +486,18 @@ eos
 
       def loop_classes(logger, callbacks)
         page = 1
-
-
-
-
-
-
-
-        size = 10
-        # size = 50
-
-
-
-
-
-
-
-
-
-
+        size = 2500
         paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label, :unmapped).page(page, size)
         cls_count_set = false
-       
-        # cls_count = class_count(logger)
-        cls_count = 0
+        cls_count = class_count(logger)
 
-        # if cls_count > -1
-        #   # prevent a COUNT SPARQL query if possible
-        #   paging.page_count_set(cls_count)
-        #   cls_count_set = true
-        # else
-        #   cls_count = 0
-        # end
+        if cls_count > -1
+          # prevent a COUNT SPARQL query if possible
+          paging.page_count_set(cls_count)
+          cls_count_set = true
+        else
+          cls_count = 0
+        end
 
         iterate_classes = false
         # 1. init artifacts hash if not explicitly passed in the callback
@@ -501,8 +512,8 @@ eos
           page_classes = paging.page(page, size).all
           t1 = Time.now
           logger.info("#{page_classes.length} in page #{page} classes for " +
-                  "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
-                  " Total pages #{page_classes.total_pages}.")
+                          "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
+                          " Total pages #{page_classes.total_pages}.")
           logger.flush
 
           process_callbacks(logger, callbacks, :caller_on_pre_page) {
@@ -540,7 +551,9 @@ eos
         Goo.sparql_data_client.append_triples(self.id, property_triples, mime_type="application/x-turtle")
         fsave = File.open(artifacts[:save_in_file], "w")
         fsave.write(property_triples)
+        fsave_mappings = File.open(artifacts[:save_in_file_mappings], "w")
         artifacts[:fsave] = fsave
+        artifacts[:fsave_mappings] = fsave_mappings
       end
 
       def generate_missing_labels_pre_page(artifacts={}, logger, paging, page_classes, page)
@@ -550,10 +563,6 @@ eos
 
       def generate_missing_labels_each(artifacts={}, logger, paging, page_classes, page, c)
         prefLabel = nil
-
-
-
-
 
         if c.prefLabel.nil?
           rdfs_labels = c.label
@@ -616,13 +625,12 @@ eos
         end
 
         if artifacts[:mapping_triples].length > 0
-          fsave_mappings = File.open(artifacts[:save_in_file_mappings], "w")
           logger.info("Asserting #{artifacts[:mapping_triples].length} mappings in " +
                           "#{self.id.to_ntriples}")
           logger.flush
           artifacts[:mapping_triples] = artifacts[:mapping_triples].join("\n")
-          fsave_mappings.write(artifacts[:mapping_triples])
-          fsave_mappings.close()
+          artifacts[:fsave_mappings].write(artifacts[:mapping_triples])
+
           t0 = Time.now
           Goo.sparql_data_client.append_triples(self.id, artifacts[:mapping_triples], mime_type="application/x-turtle")
           t1 = Time.now
@@ -635,260 +643,16 @@ eos
         logger.info("end generate_missing_labels traversed #{artifacts[:count_classes]} classes")
         logger.info("Saved generated labels in #{artifacts[:save_in_file]}")
         artifacts[:fsave].close()
+        artifacts[:fsave_mappings].close()
         logger.flush
       end
-
-
-
-
-
-
-
-
-
-
-
-
-      def generate_missing_labels(logger, file_path)
-        save_in_file = File.join(File.dirname(file_path), "labels.ttl")
-        save_in_file_mappings = File.join(File.dirname(file_path), "mappings.ttl")
-        property_triples = LinkedData::Utils::Triples.rdf_for_custom_properties(self)
-        result = Goo.sparql_data_client.append_triples(self.id, property_triples, mime_type="application/x-turtle")
-        count_classes = 0
-        page = 1
-
-
-        # size = 23
-        size = 2500
-
-
-        fsave = File.open(save_in_file, "w")
-        fsave.write(property_triples)
-        fsave_mappings = File.open(save_in_file_mappings, "w")
-
-
-
-
-        # paging = LinkedData::Models::Class.in(self).order_by(label: :asc).include(:prefLabel, :synonym, :label).page(page, size)
-        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).page(page, size)
-        # paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label).all
-
-
-
-
-        begin #per page
-
-
-
-
-
-          prefLabel = nil
-          label_triples = []
-          mapping_triples = []
-          t0 = Time.now
-
-
-
-
-
-
-
-          page_classes = paging.page(page,size).read_only.all
-          t1 = Time.now
-
-          # puts "#{page_classes.length} on page #{page} classes for "+
-          #         "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
-          #         " Total pages #{page_classes.total_pages}."
-
-
-
-
-
-
-          page_classes.each do |c|
-          # paging.each do |c|
-
-
-
-            if c.prefLabel.nil?
-              rdfs_labels = c.label
-
-              if rdfs_labels && rdfs_labels.length > 1 && c.synonym.length > 0
-                rdfs_labels = (Set.new(c.label) -  Set.new(c.synonym)).to_a.first
-                if rdfs_labels.nil? || rdfs_labels.length == 0
-                  rdfs_labels = c.label
-                end
-              end
-              if rdfs_labels and not (rdfs_labels.instance_of?Array)
-                rdfs_labels = [rdfs_labels]
-              end
-              label = nil
-
-              if rdfs_labels && rdfs_labels.length > 0
-                label = rdfs_labels[0]
-              else
-                label = LinkedData::Utils::Triples.last_iri_fragment c.id.to_s
-              end
-
-
-              label_triples << LinkedData::Utils::Triples.label_for_class_triple(
-                  c.id, Goo.vocabulary(:metadata_def)[:prefLabel],label)
-
-
-
-              prefLabel = label
-            else
-              prefLabel = c.prefLabel
-            end
-
-
-
-
-
-
-
-
-
-            if self.ontology.viewOf.nil?
-              loomLabel = OntologySubmission.loom_transform_literal(prefLabel.to_s)
-              if loomLabel.length > 2
-                mapping_triples << LinkedData::Utils::Triples.loom_mapping_triple(
-                    c.id, Goo.vocabulary(:metadata_def)[:mappingLoom], loomLabel)
-              end
-              mapping_triples << LinkedData::Utils::Triples.uri_mapping_triple(
-                  c.id, Goo.vocabulary(:metadata_def)[:mappingSameURI], c.id)
-            end
-
-            count_classes += 1
-          end
-
-
-
-          rest_mappings = LinkedData::Mappings
-                              .migrate_rest_mappings(self.ontology.acronym)
-          mapping_triples.concat rest_mappings
-
-
-
-
-
-
-
-
-
-
-
-
-          if (label_triples.length > 0)
-            num_labels = label_triples.length
-
-            # puts "Asserting #{num_labels} labels on page #{page}"
-            # puts "Labels asserted: #{label_triples}"
-            # puts
-
-
-            label_triples = label_triples.join "\n"
-            fsave.write(label_triples)
-            t0 = Time.now
-
-
-            result = Goo.sparql_data_client.append_triples(self.id, label_triples, mime_type="application/x-turtle")
-
-
-            t1 = Time.now
-
-            # puts "#{num_labels} labels asserted on page #{page} in #{t1 - t0} sec."
-
-          else
-            # puts "No labels generated on page #{page}."
-          end
-
-
-
-
-
-
-
-
-          if (mapping_triples.length > 0)
-            # puts "Asserting #{mapping_triples.length} mapping labels on page #{page}"
-
-
-            # puts "Mapping labels asserted: #{mapping_triples}"
-
-
-            mapping_triples = mapping_triples.join "\n"
-            fsave_mappings.write(mapping_triples)
-            t0 = Time.now
-
-
-
-
-            # The line below causes random test failures in AllegroGraph
-            result = Goo.sparql_data_client.append_triples(self.id, mapping_triples, mime_type="application/x-turtle")
-
-
-
-
-
-            t1 = Time.now
-            # puts "Mapping labels asserted in #{t1 - t0} sec."
-          else
-            # puts "No mapping labels generated on page #{page}."
-          end
-
-
-
-
-
-
-          # puts
-          # puts
-
-
-
-
-
-
-
-          page = page_classes.next? ? page + 1 : nil
-        end while !page.nil?
-
-
-
-
-
-
-
-        # puts "end generate_missing_labels traversed #{count_classes} classes"
-        # puts "Saved generated labels in #{save_in_file}"
-        # puts "Saved generated mapping labels in #{save_in_file_mappings}"
-
-        fsave.close()
-        fsave_mappings.close()
-      end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       def generate_obsolete_classes(logger, file_path)
         self.bring(:obsoleteProperty) if self.bring?(:obsoleteProperty)
         self.bring(:obsoleteParent) if self.bring?(:obsoleteParent)
         classes_deprecated = []
         if self.obsoleteProperty &&
-          self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
+            self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
 
           predicate_obsolete = RDF::URI.new(self.obsoleteProperty.to_s)
           query_obsolete_predicate = <<eos
@@ -906,16 +670,16 @@ eos
         if self.obsoleteParent.nil?
           #try to find oboInOWL obsolete.
           obo_in_owl_obsolete_class = LinkedData::Models::Class
-                                  .find(LinkedData::Utils::Triples.obo_in_owl_obsolete_uri)
-                                  .in(self).first
+                                          .find(LinkedData::Utils::Triples.obo_in_owl_obsolete_uri)
+                                          .in(self).first
           if obo_in_owl_obsolete_class
             self.obsoleteParent = LinkedData::Utils::Triples.obo_in_owl_obsolete_uri
           end
         end
         if self.obsoleteParent
           class_obsolete_parent = LinkedData::Models::Class
-                                  .find(self.obsoleteParent)
-                                  .in(self).first
+                                      .find(self.obsoleteParent)
+                                      .in(self).first
           if class_obsolete_parent
             descendents_obsolete = class_obsolete_parent.descendants
             logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
@@ -936,9 +700,9 @@ eos
           end
           fsave.close()
           result = Goo.sparql_data_client.append_triples_from_file(
-                          self.id,
-                          save_in_file,
-                          mime_type="application/x-turtle")
+              self.id,
+              save_in_file,
+              mime_type="application/x-turtle")
         end
       end
 
@@ -1022,26 +786,61 @@ eos
         return ready?(status: [:archived])
       end
 
-      ########################################
+      ################################################################
       # Possible options with their defaults:
-      #   process_rdf       = true
-      #   index_search      = true
-      #   index_commit      = true
-      #   run_metrics       = true
-      #   reasoning         = true
-      #   diff              = true
+      #   process_rdf       = false
+      #   index_search      = false
+      #   index_properties  = false
+      #   index_commit      = false
+      #   run_metrics       = false
+      #   reasoning         = false
+      #   diff              = false
       #   archive           = false
-      #######################################
+      #   if no options passed, ALL actions, except for archive = true
+      ################################################################
       def process_submission(logger, options={})
         # Wrap the whole process so we can email results
         begin
-          process_rdf = options[:process_rdf] == false ? false : true
-          index_search = options[:index_search] == false ? false : true
-          index_commit = options[:index_commit] == false ? false : true
-          run_metrics = options[:run_metrics] == false ? false : true
-          reasoning = options[:reasoning] == false ? false : true
-          diff = options[:diff] == false ? false : true
-          archive = options[:archive] == true ? true : false
+          process_rdf = false
+          index_search = false
+          index_properties = false
+          index_commit = false
+          run_metrics = false
+          reasoning = false
+          diff = false
+          archive = false
+
+          if options.empty?
+            process_rdf = true
+            index_search = true
+            index_properties = true
+            index_commit = true
+            run_metrics = true
+            reasoning = true
+            diff = true
+            archive = false
+          else
+            process_rdf = options[:process_rdf] == true ? true : false
+            index_search = options[:index_search] == true ? true : false
+            index_properties = options[:index_properties] == true ? true : false
+            index_commit = options[:index_commit] == true ? true : false
+            run_metrics = options[:run_metrics] == true ? true : false
+
+            if !process_rdf || options[:reasoning] == false
+              reasoning = false
+            else
+              reasoning = true
+            end
+
+            if (!index_search && !index_properties) || options[:index_commit] == false
+              index_commit = false
+            else
+              index_commit = true
+            end
+
+            diff = options[:diff] == true ? true : false
+            archive = options[:archive] == true ? true : false
+          end
 
           self.bring_remaining
           self.ontology.bring_remaining
@@ -1102,44 +901,22 @@ eos
                 raise e
               end
 
-              # callbacks = {
-              #     missing_labels: {
-              #         required: true,
-              #         status: LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first,
-              #         artifacts: {
-              #             file_path: file_path
-              #         },
-              #         caller_on_pre: :generate_missing_labels_pre,
-              #         caller_on_pre_page: :generate_missing_labels_pre_page,
-              #         caller_on_each: :generate_missing_labels_each,
-              #         caller_on_post_page: :generate_missing_labels_post_page,
-              #         caller_on_post: :generate_missing_labels_post
-              #     }
-              # }
-              #
-              # loop_classes(logger, callbacks)
+              callbacks = {
+                  missing_labels: {
+                      required: true,
+                      status: LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first,
+                      artifacts: {
+                          file_path: file_path
+                      },
+                      caller_on_pre: :generate_missing_labels_pre,
+                      caller_on_pre_page: :generate_missing_labels_pre_page,
+                      caller_on_each: :generate_missing_labels_each,
+                      caller_on_post_page: :generate_missing_labels_post_page,
+                      caller_on_post: :generate_missing_labels_post
+                  }
+              }
 
-
-
-              status = LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first
-              begin
-                generate_missing_labels(logger, file_path)
-                add_submission_status(status)
-                self.save
-              rescue Exception => e
-                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
-                logger.flush
-                add_submission_status(status.get_error_status)
-                self.save
-                # if rdf label generation fails, no point of continuing
-                raise e
-              end
-
-
-
-
-
-
+              loop_classes(logger, callbacks)
 
               status = LinkedData::Models::SubmissionStatus.find("OBSOLETE").first
               begin
@@ -1171,6 +948,21 @@ eos
                 if File.file?(self.csv_path)
                   FileUtils.rm(self.csv_path)
                 end
+              ensure
+                self.save
+              end
+            end
+
+            if index_properties
+              raise Exception, "The properties for the submission #{self.ontology.acronym}/submissions/#{self.submissionId} cannot be indexed because it has not been successfully parsed" unless parsed
+              status = LinkedData::Models::SubmissionStatus.find("INDEXED_PROPERTIES").first
+              begin
+                index_properties(logger, index_commit, false)
+                add_submission_status(status)
+              rescue Exception => e
+                logger.error("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+                logger.flush
+                add_submission_status(status.get_error_status)
               ensure
                 self.save
               end
@@ -1240,7 +1032,7 @@ eos
           begin
             LinkedData::Utils::Notifications.submission_processed(self)
           rescue Exception => e
-            logger.info("Email sending failed: #{e.message}\n#{e.backtrace.join("\n\t")}"); logger.flush
+            logger.error("Email sending failed: #{e.message}\n#{e.backtrace.join("\n\t")}"); logger.flush
           end
         end
         self
@@ -1303,108 +1095,115 @@ eos
 
       def index(logger, commit = true, optimize = true)
         page = 1
-
-
-
-
-
-
-
-
-
-
-
-        size = 500
-        # size = 50
-
-
-
-
-
-
-
-
-
-
-
+        size = 1000
 
         count_classes = 0
-        # time = Benchmark.realtime do
+        time = Benchmark.realtime do
           self.bring(:ontology) if self.bring?(:ontology)
+          self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
           self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
-          logger.info("Indexing ontology: #{self.ontology.acronym}...")
+          logger.info("Indexing ontology terms: #{self.ontology.acronym}...")
           t0 = Time.now
-          self.ontology.unindex(commit)
-          logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
+          self.ontology.unindex(false)
+          logger.info("Removed ontology terms index (#{Time.now - t0}s)"); logger.flush
 
-
-
-
-
-
-        inn = LinkedData::Models::Class.in(self)
-
-        inc = inn.include(:unmapped)
-
-        paging = inc.page(page, size)
-
-
-        paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
-
-
-
-        cls_count = class_count(logger)
+          paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
+          # a fix for SKOS ontologies, see https://github.com/ncbo/ontologies_api/issues/20)
+          self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
+          cls_count = self.hasOntologyLanguage.skos? ? -1 : class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
-
-
-
 
           # TODO: this needs to us its own parameter and moved into a callback
           csv_writer = LinkedData::Utils::OntologyCSVWriter.new
           csv_writer.open(self.ontology, self.csv_path)
-
-
-
+          page_len = -1
+          prev_page_len = -1
 
           begin #per page
             t0 = Time.now
             page_classes = paging.page(page, size).all
-            logger.info("Page #{page} of #{page_classes.total_pages} classes retrieved in #{Time.now - t0} sec.")
+            total_pages = page_classes.total_pages
+            page_len = page_classes.length
+
+            # nothing retrieved even though we're expecting more records
+            if total_pages > 0 && page_classes.empty? && (prev_page_len == -1 || prev_page_len == size)
+              j = 0
+              num_calls = 3
+
+              while page_classes.empty? && j < num_calls do
+                j += 1
+                logger.error("Empty page encountered. Retrying #{j} times...")
+                sleep(2)
+                page_classes = paging.page(page, size).all
+                logger.info("Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
+              end
+
+              if page_classes.empty?
+                msg = "Empty page #{page} of #{total_pages} persisted after retrying #{j} times. Indexing of #{self.id.to_s} aborted..."
+                logger.error(msg)
+                raise msg
+              end
+            end
+
+            if page_classes.empty?
+              if total_pages > 0
+                logger.info("The number of pages reported for #{self.id.to_s} - #{total_pages} is higher than expected #{page - 1}. Completing indexing...")
+              else
+                logger.info("Ontology #{self.id.to_s} contains #{total_pages} pages...")
+              end
+
+              break
+            end
+
+            prev_page_len = page_len
+            logger.info("Page #{page} of #{total_pages} - #{page_len} ontology terms retrieved in #{Time.now - t0} sec.")
             t0 = Time.now
-
-
-
-
 
             # TODO: CSV writing needs to be moved to its own callback
             page_classes.each do |c|
-              # this cal is needed for indexing of properties
-              LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+              begin
+                # this cal is needed for indexing of properties
+                LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+              rescue Exception => e
+                i = 0
+                num_calls = 3
+                success = nil
+
+                while success.nil? && i < num_calls do
+                  i += 1
+                  logger.error("Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
+                  sleep(2)
+
+                  begin
+                    LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+                    logger.info("Success mapping attributes for #{c.id.to_s} after retrying #{i} times...")
+                    success = true
+                  rescue Exception => e1
+                    success = nil
+
+                    if i == num_calls
+                      logger.error("Error mapping attributes for #{c.id.to_s}:")
+                      logger.error("#{e1.class}: #{e1.message} after retrying #{i} times...\n#{e1.backtrace.join("\n\t")}")
+                      logger.flush
+                    end
+                  end
+                end
+              end
               csv_writer.write_class(c)
             end
 
-
-
-
-
-            logger.info("Page #{page} of #{page_classes.total_pages} attributes mapped in #{Time.now - t0} sec.")
+            logger.info("Page #{page} of #{total_pages} attributes mapped in #{Time.now - t0} sec.")
             count_classes += page_classes.length
             t0 = Time.now
 
             LinkedData::Models::Class.indexBatch(page_classes)
-            logger.info("Page #{page} of #{page_classes.total_pages} indexed solr in #{Time.now - t0} sec.")
-            logger.info("Page #{page} of #{page_classes.total_pages} completed")
+            logger.info("Page #{page} of #{total_pages} ontology terms indexed in #{Time.now - t0} sec.")
             logger.flush
-
             page = page_classes.next? ? page + 1 : nil
           end while !page.nil?
 
-
-
           # TODO: move this into its own callback
           csv_writer.close
-
-
 
           begin
             # index provisional classes
@@ -1415,25 +1214,64 @@ eos
             logger.flush
           end
 
-          if (commit)
+          if commit
             t0 = Time.now
             LinkedData::Models::Class.indexCommit()
-            logger.info("Solr index commit in #{Time.now - t0} sec.")
+            logger.info("Ontology terms index commit in #{Time.now - t0} sec.")
           end
-        # end
-        # logger.info("Completed indexing ontology: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
-        # logger.flush
-
-
-
-
+        end
+        logger.info("Completed indexing ontology terms: #{self.ontology.acronym} in #{time} sec. #{count_classes} classes.")
+        logger.flush
 
         if optimize
-          logger.info("Optimizing index...")
+          logger.info("Optimizing ontology terms index...")
           time = Benchmark.realtime do
             LinkedData::Models::Class.indexOptimize()
           end
-          logger.info("Completed optimizing index in #{time} sec.")
+          logger.info("Completed optimizing ontology terms index in #{time} sec.")
+        end
+      end
+
+      def index_properties(logger, commit = true, optimize = true)
+        page = 1
+        size = 2500
+        count_props = 0
+
+        time = Benchmark.realtime do
+          self.bring(:ontology) if self.bring?(:ontology)
+          self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
+          logger.info("Indexing ontology properties: #{self.ontology.acronym}...")
+          t0 = Time.now
+          self.ontology.unindex_properties(commit)
+          logger.info("Removed ontology properties index in #{Time.now - t0} seconds."); logger.flush
+
+          props = self.ontology.properties
+          count_props = props.length
+          total_pages = (count_props/size.to_f).ceil
+          logger.info("Indexing a total of #{total_pages} pages of #{size} properties each.")
+
+          props.each_slice(size) do |prop_batch|
+            t = Time.now
+            LinkedData::Models::Class.indexBatch(prop_batch, :property)
+            logger.info("Page #{page} of ontology properties indexed in #{Time.now - t} seconds."); logger.flush
+            page += 1
+          end
+
+          if commit
+            t0 = Time.now
+            LinkedData::Models::Class.indexCommit(nil, :property)
+            logger.info("Ontology properties index commit in #{Time.now - t0} seconds.")
+          end
+        end
+        logger.info("Completed indexing ontology properties of #{self.ontology.acronym} in #{time} sec. Total of #{count_props} properties indexed.")
+        logger.flush
+
+        if optimize
+          logger.info("Optimizing ontology properties index...")
+          time = Benchmark.realtime do
+            LinkedData::Models::Class.indexOptimize(nil, :property)
+          end
+          logger.info("Completed optimizing ontology properties index in #{time} seconds.")
         end
       end
 
@@ -1447,6 +1285,7 @@ eos
 
         super(*args)
         self.ontology.unindex(index_commit)
+        self.ontology.unindex_properties(index_commit)
 
         self.bring(:metrics) if self.bring?(:metrics)
         self.metrics.delete if self.metrics
@@ -1459,6 +1298,7 @@ eos
 
             if prev_sub
               prev_sub.index(LinkedData::Parser.logger || Logger.new($stderr))
+              prev_sub.index_properties(LinkedData::Parser.logger || Logger.new($stderr))
             end
           end
         end
@@ -1475,11 +1315,12 @@ eos
         end
 
         classes = []
+
         if !isSkos
           owlThing = Goo.vocabulary(:owl)["Thing"]
           classes = LinkedData::Models::Class.where(parents: owlThing).in(self)
-                                             .disable_rules
-                                             .all
+                        .disable_rules
+                        .all
         else
           root_skos = <<eos
 SELECT DISTINCT ?root WHERE {
@@ -1496,10 +1337,12 @@ eos
             classes << LinkedData::Models::Class.find(id).in(self).disable_rules.first
           end
         end
+
+
         roots = []
         where = LinkedData::Models::Class.in(self)
-                     .models(classes)
-                     .include(:prefLabel, :definition, :synonym, :obsolete)
+                    .models(classes)
+                    .include(:prefLabel, :definition, :synonym, :obsolete)
         if extra_include
           [:prefLabel, :definition, :synonym, :obsolete, :childrenCount].each do |x|
             extra_include.delete x
@@ -1510,10 +1353,10 @@ eos
           load_children = extra_include.delete :children
           if load_children.nil?
             load_children = extra_include.select {
-              |x| x.instance_of?(Hash) && x.include?(:children) }
+                |x| x.instance_of?(Hash) && x.include?(:children) }
             if load_children.length > 0
               extra_include = extra_include.select {
-                |x| !(x.instance_of?(Hash) && x.include?(:children)) }
+                  |x| !(x.instance_of?(Hash) && x.include?(:children)) }
             end
           else
             load_children = [:children]
@@ -1532,7 +1375,7 @@ eos
           end
           roots << c if (c.obsolete.nil?) || (c.obsolete == false)
         end
-        return roots
+        roots
       end
 
       def download_and_store_ontology_file

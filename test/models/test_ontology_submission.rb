@@ -167,11 +167,8 @@ eos
                      process_rdf: true, index_search: false,
                      run_metrics: false, reasoning: true)
 
-    #test for version info
-    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"],
-                                                       submissionId: 55)
-                                                     .include(:version)
-                                                     .first
+    # Test for version info
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"], submissionId: 55).include(:version).first
     assert sub.version == "2012-08-10"
 
     qthing = <<-eos
@@ -210,14 +207,12 @@ eos
     end
     assert count == 1
 
-    sub = LinkedData::Models::OntologySubmission
-        .where(ontology: [acronym: "TAO-TEST"]).first
-    n_roots = sub.roots.length
-    assert n_roots == 4
+    sub = LinkedData::Models::OntologySubmission.where(ontology: [acronym: "TAO-TEST"]).first
+    assert_equal(3, sub.roots.length, "Incorrect number of root classes")
+
     #strict comparison to be sure the merge with the tree_view branch goes fine
 
-    LinkedData::Models::Class.where.in(sub)
-      .include(:prefLabel,:synonym,:notation).each do |cls|
+    LinkedData::Models::Class.where.in(sub).include(:prefLabel,:synonym,:notation).each do |cls|
         assert_instance_of String,cls.prefLabel
         if cls.notation.nil?
           assert false,"notation empty"
@@ -250,10 +245,8 @@ eos
     assert bm.children.first.id == RDF::URI.new("http://purl.obolibrary.org/obo/GO_0043931")
     assert_equal 2, bm.parents.length
     roots = sub.roots
-    assert roots.length == 4
     assert roots.map { |x| x.id.to_s }.sort ==
       ["http://purl.obolibrary.org/obo/PATO_0000001",
-      "http://purl.obolibrary.org/obo/PATO_0000014",
       "http://purl.obolibrary.org/obo/CARO_0000000",
       "http://purl.obolibrary.org/obo/GO_0008150"].sort
   end
@@ -305,7 +298,8 @@ eos
   end
 
   def test_process_submission_diff
-    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
+    # Cleanup
+    LinkedData::TestCase.backend_4s_delete
     acronym = 'BRO'
     # Create a 1st version for BRO
     submission_parse(acronym, "BRO",
@@ -391,7 +385,6 @@ eos
   end
 
   def test_submission_diff_across_ontologies
-    #submission_parse( acronym, name, ontologyFile, id, parse_options={})
     # Create a 1st version for BRO
     submission_parse("BRO34", "BRO3.4",
                      "./test/data/ontology_files/BRO_v3.4.owl", 1,
@@ -416,13 +409,42 @@ eos
     assert(sub35.diffFilePath != nil, 'Failed to create submission diff file.')
   end
 
+  def test_index_properties
+    submission_parse("BRO", "BRO Ontology",
+                     "./test/data/ontology_files/BRO_v3.5.owl", 1,
+                     process_rdf: true, reasoning: false, index_properties: true)
+    res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\"", :start => 0, :rows => 80}, :property)
+    assert_equal 80, res["response"]["numFound"]
+    found = 0
 
+    res["response"]["docs"].each do |doc|
+      if doc["resource_id"] == "http://www.w3.org/2004/02/skos/core#broaderTransitive"
+        found +=1
+        assert_equal "ONTOLOGY", doc["ontologyType"]
+        assert_equal "OBJECT", doc["propertyType"]
+        assert_equal "BRO", doc["submissionAcronym"]
+        assert_equal ["has broader transitive"], doc["label"]
+        assert_equal ["broadertransitive", "broader transitive"], doc["labelGenerated"]
+        assert_equal 1, doc["submissionId"]
+      elsif doc["resource_id"] == "http://bioontology.org/ontologies/biositemap.owl#contact_person_email"
+        found +=1
+        assert_equal "DATATYPE", doc["propertyType"]
+        assert_equal "BRO", doc["submissionAcronym"]
+        assert_nil doc["label"]
+        assert_equal ["contact_person_email", "contact person email"], doc["labelGenerated"]
+        assert_equal "http://data.bioontology.org/ontologies/BRO/submissions/1", doc["ontologyId"]
+      end
 
+      break if found == 2
+    end
 
+    assert_equal 2, found
+    ont = LinkedData::Models::Ontology.find('BRO').first
+    ont.unindex_properties(true)
 
-
-
-
+    res = LinkedData::Models::Class.search("*:*", {:fq => "submissionAcronym:\"BRO\""}, :property)
+    assert_equal 0, res["response"]["numFound"]
+  end
 
   def test_submission_parse_zip
     skip if ENV["BP_SKIP_HEAVY_TESTS"] == "1"

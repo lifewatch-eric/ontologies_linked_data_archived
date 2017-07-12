@@ -40,13 +40,13 @@ class TestProvisionalClass < LinkedData::TestCase
     # Before save
     assert_equal LinkedData::Models::ProvisionalClass.where(label: label).all.count, 0
     assert_equal false, pc.exist?(reload=true)
-    
+
     pc.save
 
     # After save
     assert_equal LinkedData::Models::ProvisionalClass.where(label: label).all.count, 1
     assert_equal true, pc.exist?(reload=true)
-    
+
     pc.delete
 
     # After delete
@@ -71,7 +71,7 @@ class TestProvisionalClass < LinkedData::TestCase
   def test_provisional_class_retrieval
     creators = ["Test User 0", "Test User 1", "Test User 2"]
     pc_array = Array.new(3) { LinkedData::Models::ProvisionalClass.new }
-    pc_array.each_with_index do |pc, i|      
+    pc_array.each_with_index do |pc, i|
       pc.label = "Test PC #{i}"
       pc.creator = LinkedData::Models::User.new({username: creators[i], email: "tester@example.org", password: "password"}).save
       pc.save
@@ -81,7 +81,7 @@ class TestProvisionalClass < LinkedData::TestCase
     # Retrieve a particular ProvisionalClass
     pc1 = LinkedData::Models::ProvisionalClass.where(label: "Test PC 2").all
     assert_equal pc1.length, 1
-    
+
     # Retrieve the same ProvisionalClass another way
     pc2 = LinkedData::Models::ProvisionalClass.where(creator: [username: "Test User 2"]).all
     assert_equal pc1.first.id.to_s, pc2.first.id.to_s
@@ -95,7 +95,7 @@ class TestProvisionalClass < LinkedData::TestCase
     username = "User Testing Filtering"
     user = LinkedData::Models::User.new({username: username, email: "tester@example.org", password: "password"})
     user.save
-    assert user.valid?, "#{user.errors}" 
+    assert user.valid?, "#{user.errors}"
 
     pc_array = Array.new(3) { LinkedData::Models::ProvisionalClass.new }
     pc_array.each_with_index do |pc, i|
@@ -139,7 +139,7 @@ class TestProvisionalClass < LinkedData::TestCase
 
   def test_provisional_class_subclass_of
     pc = @provisional_class
-    
+
     # Invalid URI
     pc.subclassOf = "Invalid subclassOf URI"
     assert (not pc.valid?)
@@ -163,7 +163,7 @@ class TestProvisionalClass < LinkedData::TestCase
 
   def test_provisional_class_permanent_id
     pc = @provisional_class
-    
+
     # Invalid URI
     pc.permanentId = "Invalid permanentId URI"
     assert (not pc.valid?)
@@ -177,7 +177,7 @@ class TestProvisionalClass < LinkedData::TestCase
 
   def test_provisional_class_note_id
     pc = @provisional_class
-    
+
     # Invalid URI
     pc.noteId = "Invalid noteId URI"
     assert (not pc.valid?)

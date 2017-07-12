@@ -63,13 +63,7 @@ module Mappings
             "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
         logger.flush
       end
-
-
-
       sleep(2)
-
-
-
     end
     if enable_debug
       logger.info("Total time #{Time.now - t} sec.")
@@ -77,22 +71,6 @@ module Mappings
     end
     return counts
   end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   def self.mapping_ontologies_count(sub1,sub2,reload_cache=false)
     template = <<-eos
@@ -264,18 +242,18 @@ eos
     end
 
     if classId.nil?
-      union_template = union_template.sub("classId", "?s1")
+      union_template = union_template.gsub("classId", "?s1")
     else
-      union_template = union_template.sub("classId", "<#{classId.to_s}>")
+      union_template = union_template.gsub("classId", "<#{classId.to_s}>")
     end
 
     mapping_predicates().each do |_source,mapping_predicate|
       union_block = union_template.gsub("predicate", mapping_predicate[0])
-      union_block = union_block.sub("bind","BIND ('#{_source}' AS ?source)")
+      union_block = union_block.gsub("bind","BIND ('#{_source}' AS ?source)")
       if sub2.nil?
-        union_block = union_block.sub("graph","?g")
+        union_block = union_block.gsub("graph","?g")
       else
-        union_block = union_block.sub("graph","<#{sub2.id.to_s}>")
+        union_block = union_block.gsub("graph","<#{sub2.id.to_s}>")
       end
       blocks << union_block
     end
@@ -288,12 +266,12 @@ unions
 filter
 } page_group
 eos
-    query = mappings_in_ontology.sub( "unions", unions)
+    query = mappings_in_ontology.gsub( "unions", unions)
     variables = "?s2 graph ?source ?o"
     if classId.nil?
       variables = "?s1 " + variables
     end
-    query = query.sub("variables", variables)
+    query = query.gsub("variables", variables)
     filter = ""
     if classId.nil?
       filter = "FILTER ((?s1 != ?s2) || (?source = 'SAME_URI'))"
@@ -301,24 +279,24 @@ eos
       filter = ""
     end
     if sub2.nil?
-      query = query.sub("graph","?g")
+      query = query.gsub("graph","?g")
       ont_id = sub1.id.to_s.split("/")[0..-3].join("/")
       #STRSTARTS is used to not count older graphs
       #no need since now we delete older graphs
       filter += "\nFILTER (!STRSTARTS(str(?g),'#{ont_id}'))"
-      query = query.sub("filter",filter)
+      query = query.gsub("filter",filter)
     else
-      query = query.sub("graph","")
-      query = query.sub("filter",filter)
+      query = query.gsub("graph","")
+      query = query.gsub("filter",filter)
     end
     if size > 0
       pagination = "OFFSET offset LIMIT limit"
-      query = query.sub("page_group",pagination)
+      query = query.gsub("page_group",pagination)
       limit = size
       offset = (page-1) * size
-      query = query.sub("limit", "#{limit}").sub("offset", "#{offset}")
+      query = query.gsub("limit", "#{limit}").gsub("offset", "#{offset}")
     else
-      query = query.sub("page_group","")
+      query = query.gsub("page_group","")
     end
     epr = Goo.sparql_query_client(:main)
     graphs = [sub1.id]
