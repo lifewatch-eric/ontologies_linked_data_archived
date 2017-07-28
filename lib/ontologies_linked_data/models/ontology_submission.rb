@@ -336,15 +336,26 @@ module LinkedData
           mx = nil
         end
 
+        self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
+
         if mx
           mx.bring(:classes) if mx.bring?(:classes)
           count = mx.classes
+
+          if self.hasOntologyLanguage.skos?
+            mx.bring(:individuals) if mx.bring?(:individuals)
+            count += mx.individuals
+          end
           count_set = true
         else
           mx = metrics_from_file(logger)
 
           unless mx.empty?
             count = mx[1][0].to_i
+
+            if self.hasOntologyLanguage.skos?
+              count += mx[1][1].to_i
+            end
             count_set = true
           end
         end

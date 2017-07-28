@@ -157,22 +157,14 @@ module LinkedData
 
     def self.number_classes(logger, submission)
       class_count = 0
+      m_from_file = submission.metrics_from_file(logger)
 
-      # a fix for SKOS ontologies, see https://github.com/ncbo/ontologies_linked_data/issues/75, https://github.com/ncbo/ontologies_api/issues/20)
-      submission.bring(:hasOntologyLanguage) if submission.bring?(:hasOntologyLanguage)
-
-      if submission.hasOntologyLanguage.skos?
-        class_count = query_count_classes(submission.id)
+      if m_from_file && m_from_file.length == 2
+        class_count = m_from_file[1][0].to_i
       else
-        m_from_file = submission.metrics_from_file(logger)
-
-        if m_from_file && m_from_file.length == 2
-          class_count = m_from_file[1][0].to_i
-        else
-          logger.info("Unable to find metrics in file for submission #{submission.id.to_s}. Performing a COUNT query to get the total class count...")
-          logger.flush
-          class_count = query_count_classes(submission.id)
-        end
+        logger.info("Unable to find metrics in file for submission #{submission.id.to_s}. Performing a COUNT query to get the total class count...")
+        logger.flush
+        class_count = query_count_classes(submission.id)
       end
       class_count
     end
