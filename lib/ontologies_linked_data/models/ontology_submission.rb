@@ -1122,7 +1122,7 @@ eos
           cls_count = class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
-          # TODO: this needs to us its own parameter and moved into a callback
+          # TODO: this needs to use its own parameter and moved into a callback
           csv_writer = LinkedData::Utils::OntologyCSVWriter.new
           csv_writer.open(self.ontology, self.csv_path)
           page_len = -1
