@@ -336,15 +336,26 @@ module LinkedData
           mx = nil
         end
 
+        self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
+
         if mx
           mx.bring(:classes) if mx.bring?(:classes)
           count = mx.classes
+
+          if self.hasOntologyLanguage.skos?
+            mx.bring(:individuals) if mx.bring?(:individuals)
+            count += mx.individuals
+          end
           count_set = true
         else
           mx = metrics_from_file(logger)
 
           unless mx.empty?
             count = mx[1][0].to_i
+
+            if self.hasOntologyLanguage.skos?
+              count += mx[1][1].to_i
+            end
             count_set = true
           end
         end
@@ -1108,12 +1119,10 @@ eos
           logger.info("Removed ontology terms index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
-          # a fix for SKOS ontologies, see https://github.com/ncbo/ontologies_api/issues/20)
-          self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
-          cls_count = self.hasOntologyLanguage.skos? ? -1 : class_count(logger)
+          cls_count = class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
-          # TODO: this needs to us its own parameter and moved into a callback
+          # TODO: this needs to use its own parameter and moved into a callback
           csv_writer = LinkedData::Utils::OntologyCSVWriter.new
           csv_writer.open(self.ontology, self.csv_path)
           page_len = -1

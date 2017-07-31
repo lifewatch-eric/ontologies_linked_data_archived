@@ -483,7 +483,7 @@
          be based on the last SolrCore to be initialized.
 
       -->
-    <maxBooleanClauses>50000</maxBooleanClauses>
+    <maxBooleanClauses>100000</maxBooleanClauses>
 
 
     <!-- Solr Internal Query Caches
@@ -720,7 +720,7 @@
          formdataUploadLimitInKB - specifies the max size (in KiB) of
          form data (application/x-www-form-urlencoded) sent via
          POST. You can use POST to pass request parameters not
-         fitting into the URL.
+         fitting into the URL. Default: 2048
 
          addHttpRequestToContext - if set to true, it will instruct
          the requestParsers to include the original HttpServletRequest
@@ -737,7 +737,7 @@
       -->
     <requestParsers enableRemoteStreaming="true"
                     multipartUploadLimitInKB="2048000"
-                    formdataUploadLimitInKB="2048"
+                    formdataUploadLimitInKB="102400"
                     addHttpRequestToContext="false"/>
 
     <!-- HTTP Caching
