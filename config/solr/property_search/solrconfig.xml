@@ -483,7 +483,7 @@
          be based on the last SolrCore to be initialized.
 
       -->
-    <maxBooleanClauses>50000</maxBooleanClauses>
+    <maxBooleanClauses>100000</maxBooleanClauses>
 
 
     <!-- Solr Internal Query Caches
@@ -737,7 +737,7 @@
       -->
     <requestParsers enableRemoteStreaming="true"
                     multipartUploadLimitInKB="2048000"
-                    formdataUploadLimitInKB="2048"
+                    formdataUploadLimitInKB="102400"
                     addHttpRequestToContext="false"/>
 
     <!-- HTTP Caching
