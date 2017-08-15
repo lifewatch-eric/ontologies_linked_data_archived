@@ -40,6 +40,7 @@
     <field name="definition"            type="string"             indexed="true"  stored="true"  multiValued="true" />
     <field name="submissionAcronym"     type="string"             indexed="true"  stored="true"  multiValued="false" />
     <field name="ontologyType"          type="ontologyType"       indexed="true"  stored="true"  multiValued="false" />
+    <field name="ontologyId"            type="string"             indexed="true"  stored="true"  multiValued="false" />
     <field name="submissionId"          type="int"                indexed="true"  stored="true"  multiValued="false" />
     <field name="childCount"            type="int"                indexed="true"  stored="true"  multiValued="false" />
     <field name="_version_"             type="long"               indexed="true"  stored="true"/>
