@@ -1,7 +1,7 @@
 GIT
-  remote: https://github.com/ncbo/goo.git
-  revision: 9e8a628b01d6007bbade37ceb9a7d38867287c90
-  branch: staging
+  remote: git://github.com/ncbo/goo.git
+  revision: e7fd1aca9d4d99f0789ce69fc074a804b346f774
+  branch: master
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -15,7 +15,7 @@ GIT
       uuid
 
 GIT
-  remote: https://github.com/ncbo/resource_index.git
+  remote: git://github.com/ncbo/resource_index.git
   revision: f1c3c0736ce4879444e1bcb432d8b8cb54904a65
   specs:
     ncbo_resource_index (0.0.1)
