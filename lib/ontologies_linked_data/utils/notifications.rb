@@ -118,6 +118,24 @@ BioPortal Team
       notify(options)
     end
 
+    def self.obofoundry_sync(missing_ontologies)
+      body = "There are no OBO Library ontologies missing from BioPortal."
+
+      if missing_ontologies.size > 0
+        body = "The following OBO Library ontologies are missing from BioPortal:<br/><br/>"
+        missing_ontologies.each do |ont|
+          body << "<a href='#{ont['homepage']}'>#{ont['id']}</a> (#{ont['title']})<br/><br/>"
+        end
+      end
+
+      options = {
+        subject: "[BioPortal] OBOFoundry synchronization report",
+        body: body,
+        recipients: LinkedData.settings.email_sender
+      }
+      notify(options)
+    end
+
     private
 
     ##
