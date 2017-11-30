@@ -1302,6 +1302,7 @@ eos
         if remove_index
           # need to re-index the previous submission (if exists)
           self.ontology.bring(:submissions)
+          
           if self.ontology.submissions.length > 0
             prev_sub = self.ontology.latest_submission()
 
