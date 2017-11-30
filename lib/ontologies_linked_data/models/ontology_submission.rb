@@ -1313,78 +1313,114 @@ eos
         end
       end
 
-      def roots(extra_include=nil)
+      def roots(extra_include=nil, page=nil, pagesize=nil)
+        self.bring(:ontology) unless self.loaded_attributes.include?(:ontology)
+        self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
+        paged = false
 
-        unless self.loaded_attributes.include?(:hasOntologyLanguage)
-          self.bring(:hasOntologyLanguage)
-        end
-        isSkos = false
-        if self.hasOntologyLanguage
-          isSkos = self.hasOntologyLanguage.skos?
+        if page || pagesize
+          page ||= 1
+          pagesize ||= 50
+          paged = true
         end
 
+        skos = self.hasOntologyLanguage&.skos?
         classes = []
 
-        if !isSkos
-          owlThing = Goo.vocabulary(:owl)["Thing"]
-          classes = LinkedData::Models::Class.where(parents: owlThing).in(self)
-                                             .disable_rules
-                                             .all
-        else
+        if skos
           root_skos = <<eos
 SELECT DISTINCT ?root WHERE {
 GRAPH #{self.id.to_ntriples} {
   ?x #{RDF::SKOS[:hasTopConcept].to_ntriples} ?root .
 }}
 eos
+          count = 0
+
+          if paged
+            query = <<eos
+SELECT (COUNT(?x) as ?count) WHERE {
+GRAPH #{self.id.to_ntriples} {
+  ?x #{RDF::SKOS[:hasTopConcept].to_ntriples} ?root .
+}}
+eos
+            rs = Goo.sparql_query_client.query(query)
+            rs.each do |sol|
+              count = sol[:count].object
+            end
+
+            offset = (page - 1) * pagesize
+            root_skos = "#{root_skos} LIMIT #{pagesize} OFFSET #{offset}"
+          end
+
           #needs to get cached
           class_ids = []
+
           Goo.sparql_query_client.query(root_skos, { :graphs => [self.id] }).each_solution do |s|
             class_ids << s[:root]
           end
+
           class_ids.each do |id|
             classes << LinkedData::Models::Class.find(id).in(self).disable_rules.first
           end
+
+          classes = Goo::Base::Page.new(page, pagesize, count, classes) if paged
+        else
+          self.ontology.bring(:flat)
+          data_query = nil
+
+          if self.ontology.flat
+            data_query = LinkedData::Models::Class.in(self)
+          else
+            owl_thing = Goo.vocabulary(:owl)["Thing"]
+            data_query = LinkedData::Models::Class.where(parents: owl_thing).in(self)
+          end
+
+          if paged
+            page_data_query = data_query.page(page, pagesize)
+            classes = page_data_query.page(page, pagesize).disable_rules.all
+          else
+            classes = data_query.disable_rules.all
+          end
         end
 
+        where = LinkedData::Models::Class.in(self).models(classes).include(:prefLabel, :definition, :synonym, :obsolete)
 
-        roots = []
-        where = LinkedData::Models::Class.in(self)
-                     .models(classes)
-                     .include(:prefLabel, :definition, :synonym, :obsolete)
         if extra_include
           [:prefLabel, :definition, :synonym, :obsolete, :childrenCount].each do |x|
             extra_include.delete x
           end
         end
+
         load_children = []
+
         if extra_include
           load_children = extra_include.delete :children
+
           if load_children.nil?
-            load_children = extra_include.select {
-              |x| x.instance_of?(Hash) && x.include?(:children) }
+            load_children = extra_include.select { |x| x.instance_of?(Hash) && x.include?(:children) }
+
             if load_children.length > 0
-              extra_include = extra_include.select {
-                |x| !(x.instance_of?(Hash) && x.include?(:children)) }
+              extra_include = extra_include.select { |x| !(x.instance_of?(Hash) && x.include?(:children)) }
             end
           else
             load_children = [:children]
           end
+
           if extra_include.length > 0
             where.include(extra_include)
           end
         end
         where.all
+
         if load_children.length > 0
-          LinkedData::Models::Class.partially_load_children(roots,99,self)
+          LinkedData::Models::Class.partially_load_children(classes, 99, self)
         end
-        classes.each do |c|
-          if !extra_include.nil? and extra_include.include?(:hasChildren)
-            c.load_has_children
-          end
-          roots << c if (c.obsolete.nil?) || (c.obsolete == false)
-        end
-        roots
+
+        classes.delete_if { |c|
+          obs = !c.obsolete.nil? && c.obsolete == true
+          c.load_has_children if extra_include&.include?(:hasChildren) && !obs
+          obs
+        }
       end
 
       def download_and_store_ontology_file
