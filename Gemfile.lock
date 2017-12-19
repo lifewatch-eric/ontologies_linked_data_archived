@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 9e8a628b01d6007bbade37ceb9a7d38867287c90
+  revision: e3216b5e5d71dd783a3effb410f78ecbfc61b81b
   branch: staging
   specs:
     goo (0.0.2)
@@ -29,7 +29,7 @@ GIT
 
 GIT
   remote: https://github.com/ncbo/sparql-client.git
-  revision: 657883c87cb64f4a8ecd04e72f3b1d2a97c92d96
+  revision: f7b6888b923f312a1190957c6f96a2ba0ffd2e1c
   branch: staging
   specs:
     sparql-client (1.0.1)
@@ -123,7 +123,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.1)
-    sequel (5.2.0)
+    sequel (5.3.0)
     simplecov (0.15.1)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
