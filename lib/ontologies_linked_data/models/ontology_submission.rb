@@ -1422,7 +1422,8 @@ eos
           c.load_has_children if extra_include&.include?(:hasChildren) && !obs
           obs
         }
-        LinkedData::Models::Class.sort_classes(classes) unless paged
+        return LinkedData::Models::Class.sort_classes(classes) unless paged
+        classes
       end
 
       def download_and_store_ontology_file

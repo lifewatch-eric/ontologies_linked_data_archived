@@ -681,7 +681,13 @@ eos
     # test paginated mode
     root_ids = root_ids_arr.dup
     roots = os.roots(nil, 1, 2)
+
+
+
     assert_instance_of(Goo::Base::Page, roots)
+
+
+
     assert_equal 2, roots.length
     assert_equal 3, roots.total_pages
 
