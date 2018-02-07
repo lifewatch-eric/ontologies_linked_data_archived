@@ -65,8 +65,8 @@ module LinkedData
 
       # Links
       links_load :submissionId, ontology: [:acronym]
-      link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
-              LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/download"}, self.type_uri)
+      link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "#{self.ontology_link(s)}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
+              LinkedData::Hypermedia::Link.new("download", lambda {|s| "#{self.ontology_link(s)}/submissions/#{s.submissionId}/download"}, self.type_uri)
 
       # HTTP Cache settings
       cache_timeout 3600
@@ -77,6 +77,22 @@ module LinkedData
       # Access control
       read_restriction_based_on lambda {|sub| sub.ontology}
       access_control_load ontology: [:administeredBy, :acl, :viewingRestriction]
+
+      def self.ontology_link(m)
+        ontology_link = ""
+
+        if m.class == self
+          m.bring(:ontology) if m.bring?(:ontology)
+
+          begin
+            m.ontology.bring(:acronym) if m.ontology.bring?(:acronym)
+            ontology_link = "ontologies/#{m.ontology.acronym}"
+          rescue Exception => e
+            ontology_link = ""
+          end
+        end
+        ontology_link
+      end
 
       def self.segment_instance(sub)
         sub.bring(:ontology) unless sub.loaded_attributes.include?(:ontology)
@@ -1422,14 +1438,8 @@ eos
           c.load_has_children if extra_include&.include?(:hasChildren) && !obs
           obs
         }
-
-
-
-          # LinkedData::Models::Class.sort_classes(classes)
-
-
-
-
+        return LinkedData::Models::Class.sort_classes(classes) unless paged
+        classes
       end
 
       def download_and_store_ontology_file

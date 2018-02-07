@@ -380,6 +380,9 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
+
+        self.class.sort_tree_children(root_node)
+
         root_node
       end
 

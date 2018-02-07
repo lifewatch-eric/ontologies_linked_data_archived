@@ -1,7 +1,7 @@
 GIT
-  remote: git://github.com/ncbo/goo.git
-  revision: 5e7c8f42ed2598bab36152d98a254657c6c0c311
-  branch: master
+  remote: https://github.com/ncbo/goo.git
+  revision: 377c200fa119c212cf90744385354d088179ea31
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -52,7 +52,7 @@ GEM
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
     cube-ruby (0.0.3)
-    daemons (1.2.5)
+    daemons (1.2.6)
     docile (1.1.5)
     domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
@@ -71,13 +71,13 @@ GEM
     ethon (0.11.0)
       ffi (>= 1.3.0)
     eventmachine (1.2.5)
-    faraday (0.13.1)
+    faraday (0.14.0)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.18)
+    ffi (1.9.21)
     htmlentities (4.3.4)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    i18n (0.9.1)
+    i18n (0.9.3)
       concurrent-ruby (~> 1.0)
     json (2.1.0)
     json_pure (2.1.0)
@@ -87,14 +87,15 @@ GEM
     logger (1.2.8)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
-    mail (2.6.6)
-      mime-types (>= 1.16, < 4)
+    mail (2.7.0)
+      mini_mime (>= 0.1.1)
     method_source (0.9.0)
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
+    mini_mime (1.0.0)
     minitest (4.7.5)
-    multi_json (1.12.2)
+    multi_json (1.13.1)
     multipart-post (2.0.0)
     mysql2 (0.4.10)
     net-http-persistent (2.9.4)
@@ -102,7 +103,7 @@ GEM
     oj (2.18.5)
     omni_logger (0.1.4)
       logger
-    pony (1.11)
+    pony (1.12)
       mail (>= 2.0)
     pry (0.11.3)
       coderay (~> 1.1.0)
@@ -123,7 +124,7 @@ GEM
       builder (>= 2.1.2)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.1)
-    sequel (5.3.0)
+    sequel (5.5.0)
     simplecov (0.15.1)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
@@ -142,7 +143,7 @@ GEM
     tzinfo (0.3.53)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.4)
+    unf_ext (0.0.7.5)
     uuid (2.3.8)
       macaddr (~> 1.0)
 
@@ -158,7 +159,6 @@ DEPENDENCIES
   email_spec
   goo!
   libxml-ruby (~> 2.0)
-  mail (= 2.6.6)
   minitest (~> 4.0)
   multi_json (~> 1.0)
   ncbo_resource_index!
@@ -177,4 +177,4 @@ DEPENDENCIES
   thin
 
 BUNDLED WITH
-   1.15.4
+   1.16.0
