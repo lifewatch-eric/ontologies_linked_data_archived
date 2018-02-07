@@ -16,7 +16,6 @@ gem 'pony'
 gem 'addressable', '= 2.3.5'
 gem 'omni_logger'
 gem 'thin'
-gem 'mail', '2.6.6'
 
 # Testing
 group :test do
