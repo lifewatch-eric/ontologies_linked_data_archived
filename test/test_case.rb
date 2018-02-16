@@ -122,8 +122,8 @@ module LinkedData
     ##
     # Creates a set of Ontology and OntologySubmission objects and stores them in the triplestore
     # @param [Hash] options the options to create ontologies with
-    # @option options [Fixnum] :ont_count Number of ontologies to create
-    # @option options [Fixnum] :submission_count How many submissions each ontology should have (acts as max number when random submission count is used)
+    # @option options [Integer] :ont_count Number of ontologies to create
+    # @option options [Integer] :submission_count How many submissions each ontology should have (acts as max number when random submission count is used)
     # @option options [TrueClass, FalseClass] :random_submission_count Use a random number of submissions between 1 and :submission_count
     # @option options [TrueClass, FalseClass] :process_submission Parse the test ontology file
     def create_ontologies_and_submissions(options = {})
