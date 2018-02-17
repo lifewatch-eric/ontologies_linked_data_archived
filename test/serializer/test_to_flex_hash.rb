@@ -120,10 +120,10 @@ class ToHashTest < MiniTest::Unit::TestCase
   end
 
   def test_do_not_convert
-    integer = 1.to_flex_hash
+    fixnum = 1.to_flex_hash
     string = "a".to_flex_hash
     hash = {test: 1}.to_flex_hash
-    assert integer.kind_of?(Integer)
+    assert fixnum.kind_of?(Fixnum)
     assert string.kind_of?(String)
     assert hash.kind_of?(Hash)
   end
