@@ -13,6 +13,7 @@ module LinkedData
     class OntologySubmission < LinkedData::Models::Base
 
       FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf', 'errors.log']
+      FLAT_ROOTS_LIMIT = 1000
 
       model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
@@ -1334,6 +1335,7 @@ eos
         self.bring(:ontology) unless self.loaded_attributes.include?(:ontology)
         self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
         paged = false
+        fake_paged = false
 
         if page || pagesize
           page ||= 1
@@ -1387,6 +1389,13 @@ eos
 
           if self.ontology.flat
             data_query = LinkedData::Models::Class.in(self)
+
+            unless paged
+              page = 1
+              pagesize = FLAT_ROOTS_LIMIT
+              paged = true
+              fake_paged = true
+            end
           else
             owl_thing = Goo.vocabulary(:owl)["Thing"]
             data_query = LinkedData::Models::Class.where(parents: owl_thing).in(self)
@@ -1395,6 +1404,9 @@ eos
           if paged
             page_data_query = data_query.page(page, pagesize)
             classes = page_data_query.page(page, pagesize).disable_rules.all
+            # simulate unpaged query for flat ontologies
+            # we use paging just to cap the return size
+            classes = classes.to_a if fake_paged
           else
             classes = data_query.disable_rules.all
           end
@@ -1438,8 +1450,13 @@ eos
           c.load_has_children if extra_include&.include?(:hasChildren) && !obs
           obs
         }
-        return LinkedData::Models::Class.sort_classes(classes) unless paged
+
         classes
+      end
+
+      def roots_sorted(extra_include=nil)
+        classes = roots(extra_include)
+        LinkedData::Models::Class.sort_classes(classes)
       end
 
       def download_and_store_ontology_file
