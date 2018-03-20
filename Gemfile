@@ -16,7 +16,7 @@ gem 'pony'
 gem 'addressable', '= 2.3.5'
 gem 'omni_logger'
 gem 'thin'
-gem 'mail', '2.6.6'
+gem 'rubocop', require: false
 
 # Testing
 group :test do
@@ -24,6 +24,7 @@ group :test do
 	gem 'pry'
 	gem 'email_spec'
 	gem 'test-unit-minitest'
+	gem 'minitest-reporters', '>= 0.5.0'
 end
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
