@@ -290,6 +290,31 @@ module LinkedData
         end
       end
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       def tree
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
         return self if self.parents.nil? or self.parents.length == 0
@@ -345,9 +370,7 @@ module LinkedData
           end
         end
 
-       LinkedData::Models::Class.
-         partially_load_children(childrens_hash.values,threshhold,
-                                 self.submission)
+        LinkedData::Models::Class.partially_load_children(childrens_hash.values,threshhold, self.submission)
 
         #build the tree
         root_node = path.first
@@ -381,9 +404,13 @@ module LinkedData
           path.delete_at(0)
         end
 
-        self.class.sort_tree_children(root_node)
-
         root_node
+      end
+
+      def tree_sorted
+        tr = tree
+        self.class.sort_tree_children(tr)
+        tr
       end
 
       def retrieve_ancestors
