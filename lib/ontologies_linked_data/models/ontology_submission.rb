@@ -161,7 +161,7 @@ module LinkedData
           sum_only = self.ontology.summaryOnly
         rescue Exception => e
           i = 0
-          num_calls = 3
+          num_calls = LinkedData.settings.num_retries_4store
           sum_only = nil
 
           while sum_only.nil? && i < num_calls do
@@ -1154,7 +1154,7 @@ eos
             # nothing retrieved even though we're expecting more records
             if total_pages > 0 && page_classes.empty? && (prev_page_len == -1 || prev_page_len == size)
               j = 0
-              num_calls = 3
+              num_calls = LinkedData.settings.num_retries_4store
 
               while page_classes.empty? && j < num_calls do
                 j += 1
@@ -1192,7 +1192,7 @@ eos
                 LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
               rescue Exception => e
                 i = 0
-                num_calls = 3
+                num_calls = LinkedData.settings.num_retries_4store
                 success = nil
 
                 while success.nil? && i < num_calls do
