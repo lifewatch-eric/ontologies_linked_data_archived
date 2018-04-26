@@ -157,7 +157,7 @@ module LinkedData
           subs = self.submissions
         rescue Exception => e
           i = 0
-          num_calls = 3
+          num_calls = LinkedData.settings.num_retries_4store
           subs = nil
 
           while subs.nil? && i < num_calls do

@@ -290,31 +290,6 @@ module LinkedData
         end
       end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       def tree
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
         return self if self.parents.nil? or self.parents.length == 0
