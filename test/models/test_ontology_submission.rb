@@ -686,31 +686,53 @@ eos
   end
 
   def test_submission_root_classes
-
     acr = "CSTPROPS"
     init_test_ontology_msotest acr
     os = LinkedData::Models::OntologySubmission.where(ontology: [ acronym: acr ], submissionId: 1)
-            .include(LinkedData::Models::OntologySubmission.attributes).all
+          .include(LinkedData::Models::OntologySubmission.attributes).all
     assert(os.length == 1)
     os = os[0]
+    roots = os.roots
 
-   roots = os.roots
     assert_instance_of(Array, roots)
     assert_equal(6, roots.length)
-    root_ids = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
-     "http://bioportal.bioontology.org/ontologies/msotes#class4",
-     "http://bioportal.bioontology.org/ontologies/msotes#class3",
-     "http://bioportal.bioontology.org/ontologies/msotes#class6",
-     "http://bioportal.bioontology.org/ontologies/msotes#class98",
-     "http://bioportal.bioontology.org/ontologies/msotes#class97"]
-     # class 3 is now subClass of some anonymous thing.
-     # "http://bioportal.bioontology.org/ontologies/msotes#class3"]
+    root_ids_arr = ["http://bioportal.bioontology.org/ontologies/msotes#class1",
+                    "http://bioportal.bioontology.org/ontologies/msotes#class4",
+                    "http://bioportal.bioontology.org/ontologies/msotes#class3",
+                    "http://bioportal.bioontology.org/ontologies/msotes#class6",
+                    "http://bioportal.bioontology.org/ontologies/msotes#class98",
+                    "http://bioportal.bioontology.org/ontologies/msotes#class97"]
+    root_ids = root_ids_arr.dup
+
+    # class 3 is now subClass of some anonymous thing.
+    # "http://bioportal.bioontology.org/ontologies/msotes#class3"]
     roots.each do |r|
       assert(root_ids.include? r.id.to_s)
       root_ids.delete_at(root_ids.index(r.id.to_s))
     end
-    #I have found them all
-    assert(root_ids.length == 0)
+
+    # all have been found
+    assert_empty root_ids
+
+    # test paginated mode
+    root_ids = root_ids_arr.dup
+    roots = os.roots(nil, 1, 2)
+    assert_instance_of(Goo::Base::Page, roots)
+    assert_equal 2, roots.length
+    assert_equal 3, roots.total_pages
+
+    roots.each do |r|
+      assert(root_ids.include? r.id.to_s)
+      root_ids.delete_at(root_ids.index(r.id.to_s))
+    end
+
+    assert_equal 4, root_ids.length
+
+    roots = os.roots(nil, 2, 3)
+    assert_equal 3, roots.length
+
+    roots = os.roots(nil, 1, 300)
+    assert_equal 6, roots.length
 
     LinkedData::TestCase.backend_4s_delete
   end

@@ -345,9 +345,7 @@ module LinkedData
           end
         end
 
-       LinkedData::Models::Class.
-         partially_load_children(childrens_hash.values,threshhold,
-                                 self.submission)
+        LinkedData::Models::Class.partially_load_children(childrens_hash.values,threshhold, self.submission)
 
         #build the tree
         root_node = path.first
@@ -380,7 +378,14 @@ module LinkedData
           tree_node = next_tree_node
           path.delete_at(0)
         end
+
         root_node
+      end
+
+      def tree_sorted
+        tr = tree
+        self.class.sort_tree_children(tr)
+        tr
       end
 
       def retrieve_ancestors
@@ -565,6 +570,44 @@ eos
             traverse_path_to_root(p.parents.dup, paths, rec_i, tree=tree)
           end
         end
+      end
+
+      def self.sort_tree_children(root_node)
+        self.sort_classes!(root_node.children)
+        root_node.children.each { |ch| self.sort_tree_children(ch) }
+      end
+
+      def self.sort_classes(classes)
+        classes.sort { |class_a, class_b| self.compare_classes(class_a, class_b) }
+      end
+
+      def self.sort_classes!(classes)
+        classes.sort! { |class_a, class_b| self.compare_classes(class_a, class_b) }
+        classes
+      end
+
+      def self.compare_classes(class_a, class_b)
+        label_a = ""
+        label_b = ""
+        class_a.bring(:prefLabel) if class_a.bring?(:prefLabel)
+        class_b.bring(:prefLabel) if class_b.bring?(:prefLabel)
+
+        begin
+          label_a = class_a.prefLabel unless (class_a.prefLabel.nil? || class_a.prefLabel.empty?)
+        rescue Goo::Base::AttributeNotLoaded
+          label_a = ""
+        end
+
+        begin
+          label_b = class_b.prefLabel unless (class_b.prefLabel.nil? || class_b.prefLabel.empty?)
+        rescue Goo::Base::AttributeNotLoaded
+          label_b = ""
+        end
+
+        label_a = class_a.id if label_a.empty?
+        label_b = class_b.id if label_b.empty?
+
+        [label_a.downcase] <=> [label_b.downcase]
       end
 
     end

@@ -77,6 +77,9 @@ module LinkedData
     @settings.smtp_domain                   ||= "localhost.localhost"
     @settings.enable_starttls_auto          ||= false # set to true for use with gmail
 
+    # number of times to retry a query when empty records are returned
+    @settings.num_retries_4store            ||= 10
+
     # Override defaults
     yield @settings, overide_connect_goo if block_given?
 

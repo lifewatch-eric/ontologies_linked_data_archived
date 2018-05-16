@@ -13,6 +13,7 @@ module LinkedData
     class OntologySubmission < LinkedData::Models::Base
 
       FILES_TO_DELETE = ['labels.ttl', 'mappings.ttl', 'obsolete.ttl', 'owlapi.xrdf', 'errors.log']
+      FLAT_ROOTS_LIMIT = 1000
 
       model :ontology_submission, name_with: lambda { |s| submission_id_generator(s) }
       attribute :submissionId, enforce: [:integer, :existence]
@@ -65,8 +66,8 @@ module LinkedData
 
       # Links
       links_load :submissionId, ontology: [:acronym]
-      link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
-      LinkedData::Hypermedia::Link.new("download", lambda {|s| "ontologies/#{s.ontology.acronym}/submissions/#{s.submissionId}/download"}, self.type_uri)
+      link_to LinkedData::Hypermedia::Link.new("metrics", lambda {|s| "#{self.ontology_link(s)}/submissions/#{s.submissionId}/metrics"}, self.type_uri)
+              LinkedData::Hypermedia::Link.new("download", lambda {|s| "#{self.ontology_link(s)}/submissions/#{s.submissionId}/download"}, self.type_uri)
 
       # HTTP Cache settings
       cache_timeout 3600
@@ -77,6 +78,22 @@ module LinkedData
       # Access control
       read_restriction_based_on lambda {|sub| sub.ontology}
       access_control_load ontology: [:administeredBy, :acl, :viewingRestriction]
+
+      def self.ontology_link(m)
+        ontology_link = ""
+
+        if m.class == self
+          m.bring(:ontology) if m.bring?(:ontology)
+
+          begin
+            m.ontology.bring(:acronym) if m.ontology.bring?(:acronym)
+            ontology_link = "ontologies/#{m.ontology.acronym}"
+          rescue Exception => e
+            ontology_link = ""
+          end
+        end
+        ontology_link
+      end
 
       def self.segment_instance(sub)
         sub.bring(:ontology) unless sub.loaded_attributes.include?(:ontology)
@@ -144,7 +161,7 @@ module LinkedData
           sum_only = self.ontology.summaryOnly
         rescue Exception => e
           i = 0
-          num_calls = 3
+          num_calls = LinkedData.settings.num_retries_4store
           sum_only = nil
 
           while sum_only.nil? && i < num_calls do
@@ -336,15 +353,26 @@ module LinkedData
           mx = nil
         end
 
+        self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
+
         if mx
           mx.bring(:classes) if mx.bring?(:classes)
           count = mx.classes
+
+          if self.hasOntologyLanguage.skos?
+            mx.bring(:individuals) if mx.bring?(:individuals)
+            count += mx.individuals
+          end
           count_set = true
         else
           mx = metrics_from_file(logger)
 
           unless mx.empty?
             count = mx[1][0].to_i
+
+            if self.hasOntologyLanguage.skos?
+              count += mx[1][1].to_i
+            end
             count_set = true
           end
         end
@@ -1108,12 +1136,10 @@ eos
           logger.info("Removed ontology terms index (#{Time.now - t0}s)"); logger.flush
 
           paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
-          # a fix for SKOS ontologies, see https://github.com/ncbo/ontologies_api/issues/20)
-          self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
-          cls_count = self.hasOntologyLanguage.skos? ? -1 : class_count(logger)
+          cls_count = class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
-          # TODO: this needs to us its own parameter and moved into a callback
+          # TODO: this needs to use its own parameter and moved into a callback
           csv_writer = LinkedData::Utils::OntologyCSVWriter.new
           csv_writer.open(self.ontology, self.csv_path)
           page_len = -1
@@ -1128,7 +1154,7 @@ eos
             # nothing retrieved even though we're expecting more records
             if total_pages > 0 && page_classes.empty? && (prev_page_len == -1 || prev_page_len == size)
               j = 0
-              num_calls = 3
+              num_calls = LinkedData.settings.num_retries_4store
 
               while page_classes.empty? && j < num_calls do
                 j += 1
@@ -1166,7 +1192,7 @@ eos
                 LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
               rescue Exception => e
                 i = 0
-                num_calls = 3
+                num_calls = LinkedData.settings.num_retries_4store
                 success = nil
 
                 while success.nil? && i < num_calls do
@@ -1293,6 +1319,7 @@ eos
         if remove_index
           # need to re-index the previous submission (if exists)
           self.ontology.bring(:submissions)
+
           if self.ontology.submissions.length > 0
             prev_sub = self.ontology.latest_submission()
 
@@ -1304,78 +1331,132 @@ eos
         end
       end
 
-      def roots(extra_include=nil)
+      def roots(extra_include=nil, page=nil, pagesize=nil)
+        self.bring(:ontology) unless self.loaded_attributes.include?(:ontology)
+        self.bring(:hasOntologyLanguage) unless self.loaded_attributes.include?(:hasOntologyLanguage)
+        paged = false
+        fake_paged = false
 
-        unless self.loaded_attributes.include?(:hasOntologyLanguage)
-          self.bring(:hasOntologyLanguage)
-        end
-        isSkos = false
-        if self.hasOntologyLanguage
-          isSkos = self.hasOntologyLanguage.skos?
+        if page || pagesize
+          page ||= 1
+          pagesize ||= 50
+          paged = true
         end
 
+        skos = self.hasOntologyLanguage&.skos?
         classes = []
 
-        if !isSkos
-          owlThing = Goo.vocabulary(:owl)["Thing"]
-          classes = LinkedData::Models::Class.where(parents: owlThing).in(self)
-                        .disable_rules
-                        .all
-        else
+        if skos
           root_skos = <<eos
 SELECT DISTINCT ?root WHERE {
 GRAPH #{self.id.to_ntriples} {
   ?x #{RDF::SKOS[:hasTopConcept].to_ntriples} ?root .
 }}
 eos
+          count = 0
+
+          if paged
+            query = <<eos
+SELECT (COUNT(?x) as ?count) WHERE {
+GRAPH #{self.id.to_ntriples} {
+  ?x #{RDF::SKOS[:hasTopConcept].to_ntriples} ?root .
+}}
+eos
+            rs = Goo.sparql_query_client.query(query)
+            rs.each do |sol|
+              count = sol[:count].object
+            end
+
+            offset = (page - 1) * pagesize
+            root_skos = "#{root_skos} LIMIT #{pagesize} OFFSET #{offset}"
+          end
+
           #needs to get cached
           class_ids = []
+
           Goo.sparql_query_client.query(root_skos, { :graphs => [self.id] }).each_solution do |s|
             class_ids << s[:root]
           end
+
           class_ids.each do |id|
             classes << LinkedData::Models::Class.find(id).in(self).disable_rules.first
           end
+
+          classes = Goo::Base::Page.new(page, pagesize, count, classes) if paged
+        else
+          self.ontology.bring(:flat)
+          data_query = nil
+
+          if self.ontology.flat
+            data_query = LinkedData::Models::Class.in(self)
+
+            unless paged
+              page = 1
+              pagesize = FLAT_ROOTS_LIMIT
+              paged = true
+              fake_paged = true
+            end
+          else
+            owl_thing = Goo.vocabulary(:owl)["Thing"]
+            data_query = LinkedData::Models::Class.where(parents: owl_thing).in(self)
+          end
+
+          if paged
+            page_data_query = data_query.page(page, pagesize)
+            classes = page_data_query.page(page, pagesize).disable_rules.all
+            # simulate unpaged query for flat ontologies
+            # we use paging just to cap the return size
+            classes = classes.to_a if fake_paged
+          else
+            classes = data_query.disable_rules.all
+          end
         end
 
+        where = LinkedData::Models::Class.in(self).models(classes).include(:prefLabel, :definition, :synonym, :obsolete)
 
-        roots = []
-        where = LinkedData::Models::Class.in(self)
-                    .models(classes)
-                    .include(:prefLabel, :definition, :synonym, :obsolete)
         if extra_include
           [:prefLabel, :definition, :synonym, :obsolete, :childrenCount].each do |x|
             extra_include.delete x
           end
         end
+
         load_children = []
+
         if extra_include
           load_children = extra_include.delete :children
+
           if load_children.nil?
-            load_children = extra_include.select {
-                |x| x.instance_of?(Hash) && x.include?(:children) }
+            load_children = extra_include.select { |x| x.instance_of?(Hash) && x.include?(:children) }
+
             if load_children.length > 0
-              extra_include = extra_include.select {
-                  |x| !(x.instance_of?(Hash) && x.include?(:children)) }
+              extra_include = extra_include.select { |x| !(x.instance_of?(Hash) && x.include?(:children)) }
             end
           else
             load_children = [:children]
           end
+
           if extra_include.length > 0
             where.include(extra_include)
           end
         end
         where.all
+
         if load_children.length > 0
-          LinkedData::Models::Class.partially_load_children(roots,99,self)
+          LinkedData::Models::Class.partially_load_children(classes, 99, self)
         end
-        classes.each do |c|
-          if !extra_include.nil? and extra_include.include?(:hasChildren)
-            c.load_has_children
-          end
-          roots << c if (c.obsolete.nil?) || (c.obsolete == false)
-        end
-        roots
+
+        classes.delete_if { |c|
+          obs = !c.obsolete.nil? && c.obsolete == true
+          c.load_has_children if extra_include&.include?(:hasChildren) && !obs
+          obs
+        }
+
+        classes
+      end
+
+      def roots_sorted(extra_include=nil)
+        classes = roots(extra_include)
+        LinkedData::Models::Class.sort_classes(classes)
       end
 
       def download_and_store_ontology_file
