@@ -1,5 +1,5 @@
 GIT
-  remote: git://github.com/ncbo/goo.git
+  remote: https://github.com/ncbo/goo.git
   revision: 06ab69cf1eb8e6b4a5f29816de730a36163c77b8
   branch: allegrograph_testing
   specs:
@@ -15,16 +15,6 @@ GIT
       uuid
 
 GIT
-  remote: git://github.com/ncbo/sparql-client.git
-  revision: 152799ce615fcc877f42a5b55e9e52c952b28fd3
-  branch: allegrograph_testing
-  specs:
-    sparql-client (1.0.1)
-      json_pure (>= 1.4)
-      net-http-persistent (= 2.9.4)
-      rdf (>= 1.0)
-
-GIT
   remote: https://github.com/ncbo/resource_index.git
   revision: 75e384e2563638cb91541082c9256f80b60b6ae9
   specs:
@@ -36,6 +26,16 @@ GIT
       ruby-xxHash
       sequel
       typhoeus
+
+GIT
+  remote: https://github.com/ncbo/sparql-client.git
+  revision: 152799ce615fcc877f42a5b55e9e52c952b28fd3
+  branch: allegrograph_testing
+  specs:
+    sparql-client (1.0.1)
+      json_pure (>= 1.4)
+      net-http-persistent (= 2.9.4)
+      rdf (>= 1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -82,7 +82,7 @@ GEM
       domain_name (~> 0.5)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
-    jaro_winkler (1.4.0)
+    jaro_winkler (1.5.1)
     json (2.1.0)
     json_pure (2.1.0)
     launchy (2.4.3)
@@ -138,8 +138,8 @@ GEM
       netrc (~> 0.8)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (0.57.0)
-      jaro_winkler (~> 1.4.0)
+    rubocop (0.57.1)
+      jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.5)
       powerpack (~> 0.1)
