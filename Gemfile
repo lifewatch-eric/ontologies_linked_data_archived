@@ -30,7 +30,8 @@ end
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
 gem 'goo', github: 'ncbo/goo', branch: 'allegrograph_testing'
-gem 'sparql-client', path: '/Users/mdorf/dev/ncbo/sparql-client', branch: 'allegrograph_testing'
+gem 'sparql-client', github: 'ncbo/sparql-client', branch: 'allegrograph_testing'
+# gem 'sparql-client', path: '/Users/mdorf/dev/ncbo/sparql-client', branch: 'allegrograph_testing'
 
 # ResourceIndex dependencies (managed per-platform)
 gem 'ncbo_resource_index', git: 'https://github.com/ncbo/resource_index.git'
