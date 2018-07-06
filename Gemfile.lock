@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 3c8ba64b9509ad72b08c8872418cc218ccec028e
+  revision: 675dbdb9661ecf3189e4a761507ea1f6cb8cd7d7
   branch: allegrograph_testing
   specs:
     goo (0.0.2)
@@ -83,6 +83,7 @@ GEM
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
     jaro_winkler (1.5.1)
+    jaro_winkler (1.5.1-x86_64-darwin-17)
     json (2.1.0)
     json_pure (2.1.0)
     launchy (2.4.3)
@@ -106,7 +107,7 @@ GEM
       powerbar
     multi_json (1.13.1)
     multipart-post (2.0.0)
-    mysql2 (0.5.1)
+    mysql2 (0.5.2)
     net-http-persistent (2.9.4)
     netrc (0.11.0)
     oj (2.18.5)
@@ -149,7 +150,7 @@ GEM
     ruby-progressbar (1.9.0)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.1)
-    sequel (5.9.0)
+    sequel (5.10.0)
     simplecov (0.16.1)
       docile (~> 1.1)
       json (>= 1.8, < 3)
@@ -207,4 +208,4 @@ DEPENDENCIES
   thin
 
 BUNDLED WITH
-   1.16.1
+   1.16.2
