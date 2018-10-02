@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: f551a6795262f10f516f5f29c707ab69d109e3da
+  revision: 2428f29d4cfa02895026ae2b78f89a2be259c74c
   branch: allegrograph_testing
   specs:
     goo (0.0.2)
@@ -29,7 +29,7 @@ GIT
 
 GIT
   remote: https://github.com/ncbo/sparql-client.git
-  revision: 614bf5752409a6604e53b184723fc6f9cff2eb15
+  revision: 523b58e676dae8d6517019ce3cc3784b06314b8d
   branch: allegrograph_testing
   specs:
     sparql-client (1.0.1)
@@ -150,7 +150,7 @@ GEM
     ruby-progressbar (1.10.0)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.2)
-    sequel (5.12.0)
+    sequel (5.13.0)
     simplecov (0.16.1)
       docile (~> 1.1)
       json (>= 1.8, < 3)
