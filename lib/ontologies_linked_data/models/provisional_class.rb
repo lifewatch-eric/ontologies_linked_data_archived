@@ -16,9 +16,6 @@ module LinkedData
       attribute :relations,
                 :inverse => { :on => :provisional_relation, :attribute => :source }
 
-      search_options :index_id => lambda { |t| t.index_id },
-                     :document => lambda { |t| t.index_doc }
-
       embed :relations
 
       # display relations and some search attributes by default
@@ -39,7 +36,7 @@ module LinkedData
                 end
               }, Goo.vocabulary["Ontology"])
 
-      def index_id
+      def index_id()
         self.bring(:ontology) if self.bring?(:ontology)
         return nil unless self.ontology
         latest = self.ontology.latest_submission(status: :any)
@@ -47,7 +44,7 @@ module LinkedData
         "#{self.id.to_s}_#{self.ontology.acronym}_#{latest.submissionId}"
       end
 
-      def index_doc
+      def index_doc()
         return {} unless self.ontology
         latest = self.ontology.latest_submission(status: :any)
         return {} unless latest
@@ -85,7 +82,7 @@ module LinkedData
         doc
       end
 
-      def index
+      def index()
         if index_id
           unindex
           super
@@ -93,7 +90,7 @@ module LinkedData
         end
       end
 
-      def unindex
+      def unindex()
         ind_id = index_id
 
         if ind_id
