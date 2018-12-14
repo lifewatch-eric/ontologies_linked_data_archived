@@ -1,6 +1,6 @@
-require_relative "../test_case"
+require_relative "./test_ontology_common"
 
-class TestProvisionalClass < LinkedData::TestCase
+class TestProvisionalClass < LinkedData::TestOntologyCommon
 
   def setup
     _delete
@@ -149,6 +149,69 @@ class TestProvisionalClass < LinkedData::TestCase
     pc.subclassOf = RDF::IRI.new("http://valid.uri.com")
     assert pc.valid?
     assert_equal(true, pc.errors[:subclassOf].nil?)
+  end
+
+  def test_provisional_class_hierarchy
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    o = LinkedData::Models::Ontology.find(acr).first
+    os = LinkedData::Models::OntologySubmission.where(ontology: o, submissionId: 1).all
+    assert(os.length == 1)
+    os = os[0]
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    pc1 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Root", creator: @user})
+    pc1.save
+    pc1 = LinkedData::Models::ProvisionalClass.find(pc1.id).include(:label).first
+
+    pc2 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Leaf Parent", subclassOf: pc1.id, creator: @user})
+    pc2.save
+    pc2 = LinkedData::Models::ProvisionalClass.find(pc2.id).include(:label).first
+
+    pc3 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Leaf", subclassOf: pc2.id, creator: @user})
+    pc3.save
+    pc3 = LinkedData::Models::ProvisionalClass.find(pc3.id).include(:label).first
+    path = pc3.paths_to_root
+    assert_equal 1, path.length
+    assert_equal 3, path[0].length
+
+    # test for a regular class as a parent
+    pc1.bring_remaining
+    pc1.ontology = o
+    pc1.subclassOf = class_id
+    pc1.save
+    path = pc3.paths_to_root
+    assert_equal 8, path.length
+    assert_equal 3, path[0].length
+    assert_equal 3, path[1].length
+    assert_equal 3, path[2].length
+    assert_equal 4, path[3].length
+    assert_equal 4, path[5].length
+    assert_equal 4, path[7].length
+
+    # test for non-existent class
+    pc1.subclassOf = RDF::IRI.new("http://www.yahoo.com")
+    pc1.save
+    path = pc3.paths_to_root
+    assert_equal 1, path.length
+    assert_equal 3, path[0].length
+
+    # test for circular recursion
+    pc1.subclassOf = pc3.id
+    pc1.save
+    path = pc3.paths_to_root
+    assert_equal 1, path.length
+    assert_equal 3, path[0].length
+
+    # cleanup
+    pc3.delete
+    pc3 = LinkedData::Models::ProvisionalClass.find(pc3.id).first
+    assert_nil pc3
+    pc2.delete
+    pc2 = LinkedData::Models::ProvisionalClass.find(pc2.id).first
+    assert_nil pc2
+    pc1.delete
+    pc1 = LinkedData::Models::ProvisionalClass.find(pc1.id).first
+    assert_nil pc1
   end
 
   def test_provisional_class_created

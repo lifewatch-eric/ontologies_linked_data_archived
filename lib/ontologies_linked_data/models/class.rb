@@ -72,30 +72,6 @@ module LinkedData
       attribute :descendants, namespace: :rdfs, property: :subClassOf,
           handler: :retrieve_descendants
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       attribute :semanticType, enforce: [:list], :namespace => :umls, :property => :hasSTY
       attribute :cui, enforce: [:list], :namespace => :umls, alias: true
       attribute :xref, :namespace => :oboinowl_gen, alias: true,
@@ -266,7 +242,7 @@ module LinkedData
         doc
       end
 
-      def childrenCount
+      def childrenCount()
         self.bring(:submission) if self.bring?(:submission)
         raise ArgumentError, "No aggregates included in #{self.id.to_ntriples}. Submission: #{self.submission.id.to_s}" unless self.aggregates
         cc = self.aggregates.select { |x| x.attribute == :children && x.aggregate == :count}.first
@@ -286,7 +262,7 @@ module LinkedData
         properties
       end
 
-      def paths_to_root
+      def paths_to_root()
         self.bring(parents: [:prefLabel, :synonym, :definition])
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
@@ -297,8 +273,7 @@ module LinkedData
         paths
       end
 
-      def self.partially_load_children(models,threshold,
-                                       submission)
+      def self.partially_load_children(models, threshold, submission)
         ld = [:prefLabel, :definition, :synonym]
         ld << :subClassOf if submission.hasOntologyLanguage.obo?
         single_load = []
@@ -334,7 +309,7 @@ module LinkedData
         end
       end
 
-      def tree
+      def tree()
         self.bring(parents: [:prefLabel]) if self.bring?(:parents)
         return self if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
@@ -426,13 +401,13 @@ module LinkedData
         root_node
       end
 
-      def tree_sorted
+      def tree_sorted()
         tr = tree
         self.class.sort_tree_children(tr)
         tr
       end
 
-      def retrieve_ancestors
+      def retrieve_ancestors()
         ids = retrieve_hierarchy_ids(:ancestors)
         if ids.length == 0
           return []
@@ -442,7 +417,7 @@ module LinkedData
         return LinkedData::Models::Class.in(self.submission).ids(ids).all
       end
 
-      def retrieve_descendants(page=nil,size=nil)
+      def retrieve_descendants(page=nil, size=nil)
         ids = retrieve_hierarchy_ids(:descendants)
         if ids.length == 0
           return []
@@ -463,14 +438,14 @@ module LinkedData
         return models
       end
 
-      def hasChildren
+      def hasChildren()
         if instance_variable_get("@intlHasChildren").nil?
           raise ArgumentError, "HasChildren not loaded for #{self.id.to_ntriples}"
         end
         return @intlHasChildren
      end
 
-     def load_has_children
+     def load_has_children()
         if !instance_variable_get("@intlHasChildren").nil?
           return
         end
@@ -530,7 +505,7 @@ module LinkedData
         return all_ids
       end
 
-      def has_children_query(class_id,submission_id)
+      def has_children_query(class_id, submission_id)
         property_tree = self.class.tree_view_property(self.submission)
         pattern = "?c <#{property_tree.to_s}> <#{class_id.to_s}> . "
         query = <<eos
@@ -544,7 +519,7 @@ eos
          return query
       end
 
-      def hierarchy_query(direction,class_ids)
+      def hierarchy_query(direction, class_ids)
         filter_ids = class_ids.map { |id| "?id = <#{id}>" } .join " || "
         directional_pattern = ""
         property_tree = self.class.tree_view_property(self.submission)
@@ -565,7 +540,7 @@ eos
          return query
       end
 
-      def append_if_not_there_already(path,r)
+      def append_if_not_there_already(path, r)
         return nil if r.id.to_s["#Thing"]
         return nil if (path.select { |x| x.id.to_s == r.id.to_s }).length > 0
         path << r
@@ -573,7 +548,6 @@ eos
 
       def traverse_path_to_root(parents, paths, path_i, tree=false)
         return if (tree and parents.length == 0)
-        recurse_on_path = []
         recursions = [path_i]
         recurse_on_path = [false]
 
