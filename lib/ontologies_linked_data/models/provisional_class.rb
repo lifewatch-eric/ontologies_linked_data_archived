@@ -123,6 +123,7 @@ module LinkedData
           cls = LinkedData::Models::Class.find(r.subclassOf).in(os).include(:parents).include(:children).to_a[0]
           return if cls.nil?
           paths_to_root = cls.paths_to_root
+          # add self to the beginning of each path
           paths_to_root.each { |p| p.unshift(r) }
           paths.concat(paths_to_root)
         end
@@ -164,7 +165,7 @@ module LinkedData
       def save(*args)
         super(*args)
         index
-        return self
+        self
       end
 
       def delete(*args)

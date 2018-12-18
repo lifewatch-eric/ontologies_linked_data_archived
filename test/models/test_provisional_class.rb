@@ -25,6 +25,7 @@ class TestProvisionalClass < LinkedData::TestOntologyCommon
     @provisional_class.delete
     pc = LinkedData::Models::ProvisionalClass.find(@provisional_class.id).first
     assert_nil pc
+    LinkedData::Models::Ontology.indexClear
   end
 
   def _delete
@@ -265,12 +266,60 @@ class TestProvisionalClass < LinkedData::TestOntologyCommon
     pc = @provisional_class
     pc.ontology = @ontology
     pc.unindex
-    resp = LinkedData::Models::Ontology.search(pc.label, params)
+    resp = LinkedData::Models::Ontology.search("\"#{pc.label}\"", params)
     assert_equal 0, resp["response"]["numFound"]
+
     pc.index
-    resp = LinkedData::Models::Ontology.search(pc.label, params)
+    resp = LinkedData::Models::Ontology.search("\"#{pc.label}\"", params)
     assert_equal 1, resp["response"]["numFound"]
     assert_equal pc.label, resp["response"]["docs"][0]["prefLabel"]
+    pc.unindex
+
+    acr = "CSTPROPS"
+    init_test_ontology_msotest acr
+    o = LinkedData::Models::Ontology.find(acr).first
+    os = LinkedData::Models::OntologySubmission.where(ontology: o, submissionId: 1).all
+    assert(os.length == 1)
+    os = os[0]
+    class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_5"
+    pc1 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Subclass of Real Class", creator: @user, ontology: o, subclassOf: class_id})
+    pc1.save
+    pc1 = LinkedData::Models::ProvisionalClass.find(pc1.id).include(:label).first
+
+    pc2 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Parent of Leaf", subclassOf: pc1.id, creator: @user, ontology: o})
+    pc2.save
+    pc2 = LinkedData::Models::ProvisionalClass.find(pc2.id).include(:label).first
+
+    pc3 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Leaf", subclassOf: pc2.id, creator: @user, ontology: o})
+    pc3.save
+    pc3 = LinkedData::Models::ProvisionalClass.find(pc3.id).include(:label).first
+
+    resp = LinkedData::Models::Ontology.search("\"#{pc1.label}\"", params)
+    assert_equal 1, resp["response"]["numFound"]
+    assert_equal pc1.label, resp["response"]["docs"][0]["prefLabel"]
+    par_len = resp["response"]["docs"][0]["parents"].length
+    assert_equal 5, par_len
+    assert_equal 1, (resp["response"]["docs"][0]["parents"].select { |x| x == class_id.to_s }).length
+
+    resp = LinkedData::Models::Ontology.search("\"#{pc2.label}\"", params)
+    assert_equal par_len + 1, resp["response"]["docs"][0]["parents"].length
+    assert_equal 1, (resp["response"]["docs"][0]["parents"].select { |x| x == pc1.id.to_s }).length
+
+    resp = LinkedData::Models::Ontology.search("\"#{pc3.label}\"", params)
+    assert_equal par_len + 2, resp["response"]["docs"][0]["parents"].length
+    assert_equal 1, (resp["response"]["docs"][0]["parents"].select { |x| x == pc1.id.to_s }).length
+    assert_equal 1, (resp["response"]["docs"][0]["parents"].select { |x| x == pc2.id.to_s }).length
+
+    # cleanup
+    pc3.delete
+    pc3 = LinkedData::Models::ProvisionalClass.find(pc3.id).first
+    assert_nil pc3
+    pc2.delete
+    pc2 = LinkedData::Models::ProvisionalClass.find(pc2.id).first
+    assert_nil pc2
+    pc1.delete
+    pc1 = LinkedData::Models::ProvisionalClass.find(pc1.id).first
+    assert_nil pc1
   end
 
 end
