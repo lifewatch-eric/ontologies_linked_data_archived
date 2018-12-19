@@ -26,6 +26,7 @@ class TestProvisionalClass < LinkedData::TestOntologyCommon
     pc = LinkedData::Models::ProvisionalClass.find(@provisional_class.id).first
     assert_nil pc
     LinkedData::Models::Ontology.indexClear
+    LinkedData::Models::Ontology.indexCommit
   end
 
   def _delete
