@@ -281,7 +281,6 @@ class TestProvisionalClass < LinkedData::TestOntologyCommon
     o = LinkedData::Models::Ontology.find(acr).first
     os = LinkedData::Models::OntologySubmission.where(ontology: o, submissionId: 1).all
     assert(os.length == 1)
-    os = os[0]
     class_id = RDF::IRI.new "http://bioportal.bioontology.org/ontologies/msotes#class_5"
     pc1 = LinkedData::Models::ProvisionalClass.new({label: "Test Provisional Subclass of Real Class", creator: @user, ontology: o, subclassOf: class_id})
     pc1.save
