@@ -263,7 +263,22 @@ module LinkedData
       end
 
       def paths_to_root()
-        self.bring(parents: [:prefLabel, :synonym, :definition])
+
+
+
+
+
+
+
+        # this is the correct code
+        # self.bring(parents: [:prefLabel, :synonym, :definition])
+        self.bring(parents: [:prefLabel,:synonym, :definition]) if self.bring?(:parents)
+
+
+
+
+
+
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0)
