@@ -139,7 +139,7 @@ module LinkedData
 
       def index_doc()
         child_count = 0
-        path_ids = Set.new
+        # path_ids = Set.new
         self.bring(:submission) if self.bring?(:submission)
 
         begin
@@ -150,16 +150,16 @@ module LinkedData
           puts "Exception getting childCount for search for #{self.id.to_s}: #{e.class}: #{e.message}"
         end
 
-        begin
-          paths_to_root = self.paths_to_root
-          paths_to_root.each do |paths|
-            path_ids += paths.map { |p| p.id.to_s }
-          end
-          path_ids.delete(self.id.to_s)
-        rescue Exception => e
-          path_ids = Set.new
-          puts "Exception getting paths to root for search for #{self.id.to_s}: #{e.class}: #{e.message}"
-        end
+        # begin
+        #   paths_to_root = self.paths_to_root
+        #   paths_to_root.each do |paths|
+        #     path_ids += paths.map { |p| p.id.to_s }
+        #   end
+        #   path_ids.delete(self.id.to_s)
+        # rescue Exception => e
+        #   path_ids = Set.new
+        #   puts "Exception getting paths to root for search for #{self.id.to_s}: #{e.class}: #{e.message}"
+        # end
 
         doc = {
             :resource_id => self.id.to_s,
@@ -169,7 +169,7 @@ module LinkedData
             :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
             :obsolete => self.obsolete.to_s,
             :childCount => child_count,
-            :parents => path_ids
+            # :parents => path_ids
         }
 
         all_attrs = self.to_hash
@@ -263,7 +263,22 @@ module LinkedData
       end
 
       def paths_to_root()
-        self.bring(parents: [:prefLabel, :synonym, :definition])
+
+
+
+
+
+
+
+        # this is the correct code
+        # self.bring(parents: [:prefLabel, :synonym, :definition])
+        self.bring(parents: [:prefLabel,:synonym, :definition]) if self.bring?(:parents)
+
+
+
+
+
+
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0)
