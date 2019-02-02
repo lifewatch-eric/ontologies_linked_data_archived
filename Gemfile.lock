@@ -1,7 +1,7 @@
 GIT
-  remote: git://github.com/ncbo/goo.git
-  revision: 77ccbf39c69091d6eb273492e54a0aa7a9cd85a2
-  branch: master
+  remote: https://github.com/ncbo/goo.git
+  revision: 27ba20dae4a0c687f9e259ae0708bb15043d3544
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -149,7 +149,7 @@ GEM
     ruby-progressbar (1.10.0)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.2.2)
-    sequel (5.16.0)
+    sequel (5.17.0)
     simplecov (0.16.1)
       docile (~> 1.1)
       json (>= 1.8, < 3)
@@ -175,6 +175,7 @@ GEM
 
 PLATFORMS
   ruby
+  x86_64-darwin-17
 
 DEPENDENCIES
   activesupport (~> 4.0)
