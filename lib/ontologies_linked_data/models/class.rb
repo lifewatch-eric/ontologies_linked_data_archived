@@ -137,72 +137,94 @@ module LinkedData
         "#{self.id.to_s}_#{self.submission.ontology.acronym}_#{self.submission.submissionId}"
       end
 
-      def index_doc()
-        child_count = 0
-        # path_ids = Set.new
+      # to_set is an optional array that allows passing specific
+      # field names that require updating
+      # if to_set is nil, it's assumed to be a new document for insert
+      def index_doc(to_set=nil)
+        doc = {}
+        path_ids = Set.new
         self.bring(:submission) if self.bring?(:submission)
 
-        begin
-          LinkedData::Models::Class.in(self.submission).models([self]).aggregate(:count, :children).all
-          child_count = self.childrenCount
-        rescue Exception => e
-          child_count = 0
-          puts "Exception getting childCount for search for #{self.id.to_s}: #{e.class}: #{e.message}"
-        end
+        if to_set.nil?
+          begin
+            doc[:childCount] = self.childrenCount
+          rescue ArgumentError
+            LinkedData::Models::Class.in(self.submission).models([self]).aggregate(:count, :children).all
+            doc[:childCount] = self.childrenCount
+          rescue Exception => e
+            doc[:childCount] = 0
+            puts "Exception getting childCount for search for #{self.id.to_s}: #{e.class}: #{e.message}"
+          end
 
-        # begin
-        #   paths_to_root = self.paths_to_root
-        #   paths_to_root.each do |paths|
-        #     path_ids += paths.map { |p| p.id.to_s }
-        #   end
-        #   path_ids.delete(self.id.to_s)
-        # rescue Exception => e
-        #   path_ids = Set.new
-        #   puts "Exception getting paths to root for search for #{self.id.to_s}: #{e.class}: #{e.message}"
-        # end
+          begin
+            # paths_to_root = self.paths_to_root
+            # paths_to_root.each do |paths|
+            #   path_ids += paths.map { |p| p.id.to_s }
+            # end
+            # path_ids.delete(self.id.to_s)
+            path_ids = retrieve_hierarchy_ids(:ancestors)
+            path_ids.select! { |x| !x["owl#Thing"] }
+            doc[:parents] = path_ids
+          rescue Exception => e
+            doc[:parents] = Set.new
+            puts "Exception getting paths to root for search for #{self.id.to_s}: #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}"
+          end
 
-        doc = {
-            :resource_id => self.id.to_s,
-            :ontologyId => self.submission.id.to_s,
-            :submissionAcronym => self.submission.ontology.acronym,
-            :submissionId => self.submission.submissionId,
-            :ontologyType => self.submission.ontology.ontologyType.get_code_from_id,
-            :obsolete => self.obsolete.to_s,
-            :childCount => child_count,
-            # :parents => path_ids
-        }
+          doc[:ontologyId] = self.submission.id.to_s
+          doc[:submissionAcronym] = self.submission.ontology.acronym
+          doc[:submissionId] = self.submission.submissionId
+          doc[:ontologyType] = self.submission.ontology.ontologyType.get_code_from_id
+          doc[:obsolete] = self.obsolete.to_s
 
-        all_attrs = self.to_hash
-        std = [:id, :prefLabel, :notation, :synonym, :definition, :cui]
+          all_attrs = self.to_hash
+          std = [:id, :prefLabel, :notation, :synonym, :definition, :cui]
 
-        std.each do |att|
-          cur_val = all_attrs[att]
+          std.each do |att|
+            cur_val = all_attrs[att]
 
-          # don't store empty values
-          next if cur_val.nil? || (cur_val.respond_to?('empty?') && cur_val.empty?)
-
-          if cur_val.is_a?(Array)
             # don't store empty values
-            cur_val = cur_val.reject { |c| c.respond_to?('empty?') && c.empty? }
-            doc[att] = []
-            cur_val = cur_val.uniq
-            cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
-          else
-            doc[att] = cur_val.to_s.strip
+            next if cur_val.nil? || (cur_val.respond_to?('empty?') && cur_val.empty?)
+
+            if cur_val.is_a?(Array)
+              # don't store empty values
+              cur_val = cur_val.reject { |c| c.respond_to?('empty?') && c.empty? }
+              doc[att] = []
+              cur_val = cur_val.uniq
+              cur_val.map { |val| doc[att] << (val.kind_of?(Goo::Base::Resource) ? val.id.to_s : val.to_s.strip) }
+            else
+              doc[att] = cur_val.to_s.strip
+            end
+          end
+
+          # special handling for :semanticType (AKA tui)
+          if all_attrs[:semanticType] && !all_attrs[:semanticType].empty?
+            doc[:semanticType] = []
+            all_attrs[:semanticType].each { |semType| doc[:semanticType] << semType.split("/").last }
           end
         end
 
-        # special handling for :semanticType (AKA tui)
-        if all_attrs[:semanticType] && !all_attrs[:semanticType].empty?
-          doc[:semanticType] = []
-          all_attrs[:semanticType].each { |semType| doc[:semanticType] << semType.split("/").last }
+        if to_set.nil? || (to_set.is_a?(Array) && to_set.include?(:properties))
+          props = self.properties_for_indexing
+
+          unless props.nil?
+            doc[:property] = props[:property]
+            doc[:propertyRaw] = props[:propertyRaw]
+          end
         end
 
+        doc
+      end
+
+      def properties_for_indexing()
+        self_props = self.properties
+        return nil if self_props.nil?
+
+        ret_val = nil
         props = {}
         prop_vals = []
 
-        self.properties.each do |attr_key, attr_val|
-          if !doc.include?(attr_key)
+        self_props.each do |attr_key, attr_val|
+          # unless doc.include?(attr_key)
             if attr_val.is_a?(Array)
               props[attr_key] = []
               attr_val = attr_val.uniq
@@ -225,21 +247,20 @@ module LinkedData
                 props[attr_key] = real_val
               end
             end
-          end
+          # end
         end
-        prop_vals.uniq!
 
         begin
-          doc[:property] = prop_vals
-          doc[:propertyRaw] = MultiJson.dump(props)
+          ret_val = {}
+          ret_val[:propertyRaw] = MultiJson.dump(props)
+          prop_vals.uniq!
+          ret_val[:property] = prop_vals
         rescue JSON::GeneratorError => e
-          doc[:property] = nil
-          doc[:propertyRaw] = nil
+          ret_val = nil
           # need to ignore non-UTF-8 characters in properties of classes (this is a rare issue)
           puts "#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}"
         end
-
-        doc
+        ret_val
       end
 
       def childrenCount()
@@ -254,31 +275,14 @@ module LinkedData
       EXCEPTION_URIS = ["http://bioportal.bioontology.org/ontologies/umls/cui"]
       BLACKLIST_URIS = BAD_PROPERTY_URIS - EXCEPTION_URIS
       def properties
-        if self.unmapped.nil?
-          raise Exception, "Properties can be call only with :unmmapped attributes preloaded"
-        end
+        return nil if self.unmapped.nil?
         properties = self.unmapped
         BLACKLIST_URIS.each {|bad_iri| properties.delete(RDF::URI.new(bad_iri))}
         properties
       end
 
       def paths_to_root()
-
-
-
-
-
-
-
-        # this is the correct code
-        # self.bring(parents: [:prefLabel, :synonym, :definition])
-        self.bring(parents: [:prefLabel,:synonym, :definition]) if self.bring?(:parents)
-
-
-
-
-
-
+        self.bring(parents: [:prefLabel, :synonym, :definition]) if self.bring?(:parents)
         return [] if self.parents.nil? or self.parents.length == 0
         paths = [[self]]
         traverse_path_to_root(self.parents.dup, paths, 0)
@@ -475,8 +479,6 @@ module LinkedData
         @intlHasChildren = has_c
       end
 
-      private
-
       def retrieve_hierarchy_ids(direction=:ancestors)
         current_level = 1
         max_levels = 40
@@ -519,6 +521,8 @@ module LinkedData
         end
         return all_ids
       end
+
+      private
 
       def has_children_query(class_id, submission_id)
         property_tree = self.class.tree_view_property(self.submission)
@@ -580,7 +584,7 @@ eos
           end
         else
           path = paths[path_i]
-          recurse_on_path[0] = !append_if_not_there_already(path,parents[0]).nil?
+          recurse_on_path[0] = !append_if_not_there_already(path, parents[0]).nil?
         end
 
         recursions.each_index do |i|
@@ -590,7 +594,7 @@ eos
           next if p.id.to_s["umls/OrphanClass"]
 
           if p.bring?(:parents)
-            p.bring(parents: [:prefLabel, :synonym, :definition] )
+            p.bring(parents: [:prefLabel, :synonym, :definition, parents: [:prefLabel, :synonym, :definition]])
           end
 
           if !p.loaded_attributes.include?(:parents)

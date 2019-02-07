@@ -512,56 +512,100 @@ eos
         end
       end
 
-      def loop_classes(logger, callbacks)
+      def loop_classes(logger, raw_paging, callbacks)
         page = 1
         size = 2500
-        paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label, :unmapped).page(page, size)
-        cls_count_set = false
-        cls_count = class_count(logger)
+        count_classes = 0
+        acr = self.id.to_s.split("/")[-1]
+        operations = callbacks.values.map { |v| v[:op_name] }.join(", ")
 
-        if cls_count > -1
-          # prevent a COUNT SPARQL query if possible
-          paging.page_count_set(cls_count)
-          cls_count_set = true
-        else
-          cls_count = 0
+        time = Benchmark.realtime do
+          paging = raw_paging.page(page, size)
+          cls_count_set = false
+          cls_count = class_count(logger)
+
+          if cls_count > -1
+            # prevent a COUNT SPARQL query if possible
+            paging.page_count_set(cls_count)
+            cls_count_set = true
+          else
+            cls_count = 0
+          end
+
+          iterate_classes = false
+          # 1. init artifacts hash if not explicitly passed in the callback
+          # 2. determine if class-level iteration is required
+          callbacks.each { |_, callback| callback[:artifacts] ||= {}; iterate_classes = true if callback[:caller_on_each] }
+
+          process_callbacks(logger, callbacks, :caller_on_pre) {
+              |callable, callback| callable.call(callback[:artifacts], logger, paging) }
+
+          page_len = -1
+          prev_page_len = -1
+
+          begin
+            t0 = Time.now
+            page_classes = paging.page(page, size).all
+            total_pages = page_classes.total_pages
+            page_len = page_classes.length
+
+            # nothing retrieved even though we're expecting more records
+            if total_pages > 0 && page_classes.empty? && (prev_page_len == -1 || prev_page_len == size)
+              j = 0
+              num_calls = LinkedData.settings.num_retries_4store
+
+              while page_classes.empty? && j < num_calls do
+                j += 1
+                logger.error("Empty page encountered. Retrying #{j} times...")
+                sleep(2)
+                page_classes = paging.page(page, size).all
+                logger.info("Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
+              end
+
+              if page_classes.empty?
+                msg = "Empty page #{page} of #{total_pages} persisted after retrying #{j} times. #{operations} of #{acr} aborted..."
+                logger.error(msg)
+                raise msg
+              end
+            end
+
+            if page_classes.empty?
+              if total_pages > 0
+                logger.info("The number of pages reported for #{acr} - #{total_pages} is higher than expected #{page - 1}. Completing #{operations}...")
+              else
+                logger.info("Ontology #{acr} contains #{total_pages} pages...")
+              end
+              break
+            end
+
+            prev_page_len = page_len
+            logger.info("#{acr}: page #{page} of #{total_pages} - #{page_len} ontology terms retrieved in #{Time.now - t0} sec.")
+            logger.flush
+            count_classes += page_classes.length
+
+            process_callbacks(logger, callbacks, :caller_on_pre_page) {
+                |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page) }
+
+            page_classes.each { |c|
+              process_callbacks(logger, callbacks, :caller_on_each) {
+                  |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page, c) }
+            } if iterate_classes
+
+            process_callbacks(logger, callbacks, :caller_on_post_page) {
+                |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page) }
+            cls_count += page_classes.length unless cls_count_set
+
+            page = page_classes.next? ? page + 1 : nil
+          end while !page.nil?
+
+          callbacks.each { |_, callback| callback[:artifacts][:count_classes] = cls_count }
+          process_callbacks(logger, callbacks, :caller_on_post) {
+              |callable, callback| callable.call(callback[:artifacts], logger, paging) }
         end
 
-        iterate_classes = false
-        # 1. init artifacts hash if not explicitly passed in the callback
-        # 2. determine if class-level iteration is required
-        callbacks.each { |_, callback| callback[:artifacts] ||= {}; iterate_classes = true if callback[:caller_on_each] }
+        logger.info("Completed #{operations}: #{acr} in #{time} sec. #{count_classes} classes.")
+        logger.flush
 
-        process_callbacks(logger, callbacks, :caller_on_pre) {
-            |callable, callback| callable.call(callback[:artifacts], logger, paging) }
-
-        begin
-          t0 = Time.now
-          page_classes = paging.page(page, size).all
-          t1 = Time.now
-          logger.info("#{page_classes.length} in page #{page} classes for " +
-                  "#{self.id.to_ntriples} (#{t1 - t0} sec)." +
-                  " Total pages #{page_classes.total_pages}.")
-          logger.flush
-
-          process_callbacks(logger, callbacks, :caller_on_pre_page) {
-              |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page) }
-
-          page_classes.each { |c|
-            process_callbacks(logger, callbacks, :caller_on_each) {
-                |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page, c) }
-          } if iterate_classes
-
-          process_callbacks(logger, callbacks, :caller_on_post_page) {
-              |callable, callback| callable.call(callback[:artifacts], logger, paging, page_classes, page) }
-          cls_count += page_classes.length unless cls_count_set
-
-          page = page_classes.next? ? page + 1 : nil
-        end while !page.nil?
-
-        callbacks.each { |_, callback| callback[:artifacts][:count_classes] = cls_count }
-        process_callbacks(logger, callbacks, :caller_on_post) {
-            |callable, callback| callable.call(callback[:artifacts], logger, paging) }
         # set the status on actions that have completed successfully
         callbacks.each do |_, callback|
           if callback[:status]
@@ -931,6 +975,7 @@ eos
 
               callbacks = {
                   missing_labels: {
+                      op_name: "Missing Labels Generation",
                       required: true,
                       status: LinkedData::Models::SubmissionStatus.find("RDF_LABELS").first,
                       artifacts: {
@@ -944,7 +989,8 @@ eos
                   }
               }
 
-              loop_classes(logger, callbacks)
+              raw_paging = LinkedData::Models::Class.in(self).include(:prefLabel, :synonym, :label)
+              loop_classes(logger, raw_paging, callbacks)
 
               status = LinkedData::Models::SubmissionStatus.find("OBSOLETE").first
               begin
@@ -1076,51 +1122,6 @@ eos
         self
       end
 
-      # callbacks = {
-      #     index: {
-      #         required: false,
-      #         status: LinkedData::Models::SubmissionStatus.find("INDEXED").first,
-      #         artifacts: {
-      #             commit: index_commit,
-      #             optimize: false
-      #         },
-      #         caller_on_pre: :index_pre,
-      #         caller_on_pre_page: :index_pre_page,
-      #         caller_on_each: :index_each,
-      #         caller_on_post_page: :index_post_page,
-      #         caller_on_post: :index_post
-      #     }
-      # }
-      #
-      #
-      #
-      # def index_pre(artifacts={}, logger, paging)
-      #   self.bring(:ontology) if self.bring?(:ontology)
-      #   self.ontology.bring(:provisionalClasses) if self.ontology.bring?(:provisionalClasses)
-      #   logger.info("Indexing ontology: #{self.ontology.acronym}...")
-      #   t0 = Time.now
-      #   self.ontology.unindex(artifacts[:commit])
-      #   logger.info("Removing ontology index (#{Time.now - t0}s)"); logger.flush
-      # end
-      #
-      #
-      #
-      # def index_pre_page(artifacts={}, logger, paging, page_classes, page)
-      #
-      # end
-      #
-      # def index_each(artifacts={}, logger, paging, page_classes, page, c)
-      #
-      # end
-      #
-      # def index_post_page(artifacts={}, logger, paging, page_classes, page)
-      #
-      # end
-      #
-      # def index_post(artifacts={}, logger, paging)
-      #
-      # end
-
       def index(logger, commit = true, optimize = true)
         page = 1
         size = 1000
@@ -1135,7 +1136,7 @@ eos
           self.ontology.unindex(false)
           logger.info("Removed ontology terms index (#{Time.now - t0}s)"); logger.flush
 
-          paging = LinkedData::Models::Class.in(self).include(:unmapped).page(page, size)
+          paging = LinkedData::Models::Class.in(self).include(:unmapped).aggregate(:count, :children).page(page, size)
           cls_count = class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
