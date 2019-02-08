@@ -79,6 +79,15 @@ module LinkedData
       read_restriction_based_on lambda {|sub| sub.ontology}
       access_control_load ontology: [:administeredBy, :acl, :viewingRestriction]
 
+      def initialize(*args)
+        super(*args)
+        @mutex = Mutex.new
+      end
+
+      def synchronize(&block)
+        @mutex.synchronize(&block)
+      end
+
       def self.ontology_link(m)
         ontology_link = ""
 
@@ -1123,10 +1132,10 @@ eos
       end
 
       def index(logger, commit = true, optimize = true)
-        page = 1
+        page = 0
         size = 1000
-
         count_classes = 0
+
         time = Benchmark.realtime do
           self.bring(:ontology) if self.bring?(:ontology)
           self.ontology.bring(:acronym) if self.ontology.bring?(:acronym)
@@ -1140,96 +1149,117 @@ eos
           cls_count = class_count(logger)
           paging.page_count_set(cls_count) unless cls_count < 0
 
-          # TODO: this needs to use its own parameter and moved into a callback
           csv_writer = LinkedData::Utils::OntologyCSVWriter.new
           csv_writer.open(self.ontology, self.csv_path)
-          page_len = -1
-          prev_page_len = -1
+          total_pages = paging.page(1, size).all.total_pages
+          num_threads = [total_pages, LinkedData.settings.indexing_num_threads].min
+          threads = []
+          page_classes = nil
 
-          begin #per page
-            t0 = Time.now
-            page_classes = paging.page(page, size).all
-            total_pages = page_classes.total_pages
-            page_len = page_classes.length
+          num_threads.times do |num|
+            threads[num] = Thread.new {
+              Thread.current["done"] = false
+              Thread.current["page_len"] = -1
+              Thread.current["prev_page_len"] = -1
 
-            # nothing retrieved even though we're expecting more records
-            if total_pages > 0 && page_classes.empty? && (prev_page_len == -1 || prev_page_len == size)
-              j = 0
-              num_calls = LinkedData.settings.num_retries_4store
+              while !Thread.current["done"]
+                synchronize do
+                  page = (page == 0 || page_classes.next?) ? page + 1 : nil
 
-              while page_classes.empty? && j < num_calls do
-                j += 1
-                logger.error("Empty page encountered. Retrying #{j} times...")
-                sleep(2)
-                page_classes = paging.page(page, size).all
-                logger.info("Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
-              end
+                  if page.nil?
+                    Thread.current["done"] = true
+                  else
+                    Thread.current["page"] = page || "nil"
+                    page_classes = paging.page(page, size).all
+                    count_classes += page_classes.length
+                    Thread.current["page_classes"] = page_classes
+                    Thread.current["page_len"] = page_classes.length
+                    Thread.current["t0"] = Time.now
 
-              if page_classes.empty?
-                msg = "Empty page #{page} of #{total_pages} persisted after retrying #{j} times. Indexing of #{self.id.to_s} aborted..."
-                logger.error(msg)
-                raise msg
-              end
-            end
+                    # nothing retrieved even though we're expecting more records
+                    if total_pages > 0 && page_classes.empty? && (Thread.current["prev_page_len"] == -1 || Thread.current["prev_page_len"] == size)
+                      j = 0
+                      num_calls = LinkedData.settings.num_retries_4store
 
-            if page_classes.empty?
-              if total_pages > 0
-                logger.info("The number of pages reported for #{self.id.to_s} - #{total_pages} is higher than expected #{page - 1}. Completing indexing...")
-              else
-                logger.info("Ontology #{self.id.to_s} contains #{total_pages} pages...")
-              end
+                      while page_classes.empty? && j < num_calls do
+                        j += 1
+                        logger.error("Thread #{num}: Empty page encountered. Retrying #{j} times...")
+                        sleep(2)
+                        page_classes = paging.page(page, size).all
+                        logger.info("Thread #{num}: Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
+                      end
 
-              break
-            end
-
-            prev_page_len = page_len
-            logger.info("Page #{page} of #{total_pages} - #{page_len} ontology terms retrieved in #{Time.now - t0} sec.")
-            t0 = Time.now
-
-            # TODO: CSV writing needs to be moved to its own callback
-            page_classes.each do |c|
-              begin
-                # this cal is needed for indexing of properties
-                LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
-              rescue Exception => e
-                i = 0
-                num_calls = LinkedData.settings.num_retries_4store
-                success = nil
-
-                while success.nil? && i < num_calls do
-                  i += 1
-                  logger.error("Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
-                  sleep(2)
-
-                  begin
-                    LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
-                    logger.info("Success mapping attributes for #{c.id.to_s} after retrying #{i} times...")
-                    success = true
-                  rescue Exception => e1
-                    success = nil
-
-                    if i == num_calls
-                      logger.error("Error mapping attributes for #{c.id.to_s}:")
-                      logger.error("#{e1.class}: #{e1.message} after retrying #{i} times...\n#{e1.backtrace.join("\n\t")}")
-                      logger.flush
+                      if page_classes.empty?
+                        msg = "Thread #{num}: Empty page #{Thread.current["page"]} of #{total_pages} persisted after retrying #{j} times. Indexing of #{self.id.to_s} aborted..."
+                        logger.error(msg)
+                        raise msg
+                      else
+                        Thread.current["page_classes"] = page_classes
+                      end
                     end
+
+                    if page_classes.empty?
+                      if total_pages > 0
+                        logger.info("Thread #{num}: The number of pages reported for #{self.id.to_s} - #{total_pages} is higher than expected #{page - 1}. Completing indexing...")
+                      else
+                        logger.info("Thread #{num}: Ontology #{self.id.to_s} contains #{total_pages} pages...")
+                      end
+
+                      break
+                    end
+
+                    Thread.current["prev_page_len"] = Thread.current["page_len"]
                   end
                 end
+
+                break if Thread.current["done"]
+
+                logger.info("Thread #{num}: Page #{Thread.current["page"]} of #{total_pages} - #{Thread.current["page_len"]} ontology terms retrieved in #{Time.now - Thread.current["t0"]} sec.")
+                Thread.current["t0"] = Time.now
+
+                Thread.current["page_classes"].each do |c|
+                  begin
+                    # this cal is needed for indexing of properties
+                    LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+                  rescue Exception => e
+                    i = 0
+                    num_calls = LinkedData.settings.num_retries_4store
+                    success = nil
+
+                    while success.nil? && i < num_calls do
+                      i += 1
+                      logger.error("Thread #{num}: Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
+                      sleep(2)
+
+                      begin
+                        LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
+                        logger.info("Thread #{num}: Success mapping attributes for #{c.id.to_s} after retrying #{i} times...")
+                        success = true
+                      rescue Exception => e1
+                        success = nil
+
+                        if i == num_calls
+                          logger.error("Thread #{num}: Error mapping attributes for #{c.id.to_s}:")
+                          logger.error("Thread #{num}: #{e1.class}: #{e1.message} after retrying #{i} times...\n#{e1.backtrace.join("\n\t")}")
+                          logger.flush
+                        end
+                      end
+                    end
+                  end
+
+                  csv_writer.write_class(c)
+                end
+                logger.info("Thread #{num}: Page #{Thread.current["page"]} of #{total_pages} attributes mapped in #{Time.now - Thread.current["t0"]} sec.")
+
+                Thread.current["t0"] = Time.now
+                LinkedData::Models::Class.indexBatch(Thread.current["page_classes"])
+                logger.info("Thread #{num}: Page #{Thread.current["page"]} of #{total_pages} - #{Thread.current["page_len"]} ontology terms indexed in #{Time.now - Thread.current["t0"]} sec.")
+                logger.flush
               end
-              csv_writer.write_class(c)
-            end
+            }
+          end
 
-            logger.info("Page #{page} of #{total_pages} attributes mapped in #{Time.now - t0} sec.")
-            count_classes += page_classes.length
-            t0 = Time.now
-
-            LinkedData::Models::Class.indexBatch(page_classes)
-            logger.info("Page #{page} of #{total_pages} ontology terms indexed in #{Time.now - t0} sec.")
-            logger.flush
-            page = page_classes.next? ? page + 1 : nil
-          end while !page.nil?
-
-          # TODO: move this into its own callback
+          threads.map { |t| t.join }
           csv_writer.close
 
           begin
