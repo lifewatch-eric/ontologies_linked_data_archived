@@ -1183,14 +1183,14 @@ eos
 
                       while page_classes.empty? && j < num_calls do
                         j += 1
-                        logger.error("Thread #{num}: Empty page encountered. Retrying #{j} times...")
+                        logger.error("Thread #{num + 1}: Empty page encountered. Retrying #{j} times...")
                         sleep(2)
                         page_classes = paging.page(page, size).all
-                        logger.info("Thread #{num}: Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
+                        logger.info("Thread #{num + 1}: Success retrieving a page of #{page_classes.length} classes after retrying #{j} times...") unless page_classes.empty?
                       end
 
                       if page_classes.empty?
-                        msg = "Thread #{num}: Empty page #{Thread.current["page"]} of #{total_pages} persisted after retrying #{j} times. Indexing of #{self.id.to_s} aborted..."
+                        msg = "Thread #{num + 1}: Empty page #{Thread.current["page"]} of #{total_pages} persisted after retrying #{j} times. Indexing of #{self.id.to_s} aborted..."
                         logger.error(msg)
                         raise msg
                       else
@@ -1200,9 +1200,9 @@ eos
 
                     if page_classes.empty?
                       if total_pages > 0
-                        logger.info("Thread #{num}: The number of pages reported for #{self.id.to_s} - #{total_pages} is higher than expected #{page - 1}. Completing indexing...")
+                        logger.info("Thread #{num + 1}: The number of pages reported for #{self.id.to_s} - #{total_pages} is higher than expected #{page - 1}. Completing indexing...")
                       else
-                        logger.info("Thread #{num}: Ontology #{self.id.to_s} contains #{total_pages} pages...")
+                        logger.info("Thread #{num + 1}: Ontology #{self.id.to_s} contains #{total_pages} pages...")
                       end
 
                       break
@@ -1214,7 +1214,7 @@ eos
 
                 break if Thread.current["done"]
 
-                logger.info("Thread #{num}: Page #{Thread.current["page"]} of #{total_pages} - #{Thread.current["page_len"]} ontology terms retrieved in #{Time.now - Thread.current["t0"]} sec.")
+                logger.info("Thread #{num + 1}: Page #{Thread.current["page"]} of #{total_pages} - #{Thread.current["page_len"]} ontology terms retrieved in #{Time.now - Thread.current["t0"]} sec.")
                 Thread.current["t0"] = Time.now
 
                 Thread.current["page_classes"].each do |c|
@@ -1228,32 +1228,34 @@ eos
 
                     while success.nil? && i < num_calls do
                       i += 1
-                      logger.error("Thread #{num}: Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
+                      logger.error("Thread #{num + 1}: Exception while mapping attributes for #{c.id.to_s}. Retrying #{i} times...")
                       sleep(2)
 
                       begin
                         LinkedData::Models::Class.map_attributes(c, paging.equivalent_predicates)
-                        logger.info("Thread #{num}: Success mapping attributes for #{c.id.to_s} after retrying #{i} times...")
+                        logger.info("Thread #{num + 1}: Success mapping attributes for #{c.id.to_s} after retrying #{i} times...")
                         success = true
                       rescue Exception => e1
                         success = nil
 
                         if i == num_calls
-                          logger.error("Thread #{num}: Error mapping attributes for #{c.id.to_s}:")
-                          logger.error("Thread #{num}: #{e1.class}: #{e1.message} after retrying #{i} times...\n#{e1.backtrace.join("\n\t")}")
+                          logger.error("Thread #{num + 1}: Error mapping attributes for #{c.id.to_s}:")
+                          logger.error("Thread #{num + 1}: #{e1.class}: #{e1.message} after retrying #{i} times...\n#{e1.backtrace.join("\n\t")}")
                           logger.flush
                         end
                       end
                     end
                   end
 
-                  csv_writer.write_class(c)
+                  synchronize do
+                    csv_writer.write_class(c)
+                  end
                 end
-                logger.info("Thread #{num}: Page #{Thread.current["page"]} of #{total_pages} attributes mapped in #{Time.now - Thread.current["t0"]} sec.")
+                logger.info("Thread #{num + 1}: Page #{Thread.current["page"]} of #{total_pages} attributes mapped in #{Time.now - Thread.current["t0"]} sec.")
 
                 Thread.current["t0"] = Time.now
                 LinkedData::Models::Class.indexBatch(Thread.current["page_classes"])
-                logger.info("Thread #{num}: Page #{Thread.current["page"]} of #{total_pages} - #{Thread.current["page_len"]} ontology terms indexed in #{Time.now - Thread.current["t0"]} sec.")
+                logger.info("Thread #{num + 1}: Page #{Thread.current["page"]} of #{total_pages} - #{Thread.current["page_len"]} ontology terms indexed in #{Time.now - Thread.current["t0"]} sec.")
                 logger.flush
               end
             }
