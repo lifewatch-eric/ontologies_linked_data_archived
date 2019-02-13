@@ -1,7 +1,7 @@
 GIT
-  remote: git://github.com/ncbo/goo.git
-  revision: 120b45894849a9eb4ceb2e0cc9eb11a3360364d8
-  branch: master
+  remote: https://github.com/ncbo/goo.git
+  revision: 87994453f3f535885ae4cb1bdba9fae3c121d030
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -115,7 +115,7 @@ GEM
     parallel (1.13.0)
     parser (2.6.0.0)
       ast (~> 2.4.0)
-    pony (1.12)
+    pony (1.13)
       mail (>= 2.0)
     powerbar (2.0.1)
       hashie (>= 1.1.0)
@@ -138,7 +138,7 @@ GEM
       netrc (~> 0.8)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (0.63.1)
+    rubocop (0.64.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.5, != 2.5.1.1)

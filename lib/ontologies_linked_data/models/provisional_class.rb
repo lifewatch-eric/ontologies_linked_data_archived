@@ -46,7 +46,7 @@ module LinkedData
         "#{self.id.to_s}_#{self.ontology.acronym}_#{latest.submissionId}"
       end
 
-      def index_doc()
+      def index_doc(to_set=nil)
         return {} unless self.ontology
         latest = self.ontology.latest_submission(status: :any)
         return {} unless latest
@@ -66,7 +66,6 @@ module LinkedData
         end
 
         doc = {
-          :resource_id => self.id.to_s,
           :prefLabel => self.label,
           :obsolete => false,
           :provisional => true,
