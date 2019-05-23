@@ -20,8 +20,8 @@ module LinkedData
     @settings.goo_path_query                ||= "/sparql/"
     @settings.goo_path_data                 ||= "/data/"
     @settings.goo_path_update               ||= "/update/"
-    @settings.search_server_url             ||= "http://localhost:8983/solr/core1"
-    @settings.property_search_server_url    ||= "http://localhost:8983/solr/prop_core1"
+    @settings.search_server_url             ||= "http://localhost:8983/solr/term_search_core1"
+    @settings.property_search_server_url    ||= "http://localhost:8983/solr/prop_search_core1"
     @settings.repository_folder             ||= "./test/data/ontology_files/repo"
     @settings.rest_url_prefix               ||= "http://data.bioontology.org/"
     @settings.enable_security               ||= false
@@ -79,6 +79,9 @@ module LinkedData
 
     # number of times to retry a query when empty records are returned
     @settings.num_retries_4store            ||= 10
+
+    # number of threads to use when indexing a single ontology for search
+    @settings.indexing_num_threads          ||= 1
 
     # Override defaults
     yield @settings, overide_connect_goo if block_given?
