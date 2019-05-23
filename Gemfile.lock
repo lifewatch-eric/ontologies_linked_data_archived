@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 1186bccfb65303db0fe881e1857508fbf7e30e61
+  revision: fc0548c4f93c0bfc78ba3c65be893bd8a94eb248
   branch: staging
   specs:
     goo (0.0.2)
@@ -137,7 +137,7 @@ GEM
       netrc (~> 0.8)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (0.69.0)
+    rubocop (0.70.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.6)
