@@ -15,6 +15,7 @@ module LinkedData
     overide_connect_goo = false
 
     # Set defaults
+    @settings.goo_backend_name              ||= "4store"
     @settings.goo_port                      ||= 9000
     @settings.goo_host                      ||= "localhost"
     @settings.goo_path_query                ||= "/sparql/"
@@ -109,6 +110,7 @@ module LinkedData
   ##
   # Connect to goo by configuring the store and search server
   def connect_goo
+    backend_name      ||= @settings.goo_backend_name
     port              ||= @settings.goo_port
     host              ||= @settings.goo_host
     path_query        ||= @settings.goo_path_query
@@ -119,8 +121,7 @@ module LinkedData
       Goo.configure do |conf|
         conf.queries_debug(@settings.queries_debug)
         conf.add_sparql_backend(:main,
-
-
+                                backend_name: backend_name,
                                 query: "http://#{host}:#{port}#{path_query}",
                                 data: "http://#{host}:#{port}#{path_data}",
                                 update: "http://#{host}:#{port}#{path_update}",
