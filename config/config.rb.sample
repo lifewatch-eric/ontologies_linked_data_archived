@@ -1,0 +1,21 @@
+LinkedData.config do |config|
+  config.goo_port          = 9000
+  config.goo_host          = "localhost"
+  config.search_server_url = "http://localhost:8983/solr/term_search_core1"
+  config.property_search_server_url = "http://localhost:8983/solr/prop_search_core1"
+  config.repository_folder = "./test/data/ontology_files/repo"
+  config.rest_url_prefix   = "http://data.bioontology.org/"
+  config.enable_security   = false
+
+  #PURL server config parameters
+  config.enable_purl            = false
+  config.purl_host              = "purl.bioontology.org"
+  config.purl_port              = 80
+  config.purl_username          = ""
+  config.purl_password          = ""
+  config.purl_maintainers       = ""
+  config.purl_target_url_prefix = "http://bioportal.bioontology.org"
+end
+
+#sometimes tmp by default cannot allocate large files
+$TMP_SORT_FOLDER = "SOME TMP FOLDER"

@@ -1,0 +1,3074 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE Ontology [
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY xml "http://www.w3.org/XML/1998/namespace" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     ontologyIRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl">
+    <Prefix name="Maux_d" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Maux_d&#39;"/>
+    <Prefix name="Stratégie_d" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Stratégie_d&#39;"/>
+    <Prefix name="La_douleur_et_l" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#La_douleur_et_l&#39;"/>
+    <Prefix name="Bande_d" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Bande_d&#39;"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="Banderole_de_l" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Banderole_de_l&#39;"/>
+    <Prefix name="Maux_de_tête_d" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Maux_de_tête_d&#39;"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="Modification_d" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Modification_d&#39;"/>
+    <Prefix name="" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#"/>
+    <Prefix name="_atroce" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#La_douleur_vive,_atroce,"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Prefix name="Nouvelles_Technologies_de_l" IRI="http://www.semanticweb.org/associatedmedicine/lavima/2011/10/Ontology1.owl#Nouvelles_Technologies_de_l&#39;"/>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <Literal datatypeIRI="&rdfs;Literal">La première ontologie déddiée aux concepts de la médecine associée</Literal>
+    </Annotation>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="owl:versionInfo"/>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Version 1.1
+Date: 11-2011
+</Literal>
+    </Annotation>
+    <Declaration>
+        <Class IRI="#Accouchement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Acteur_de_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Adresse"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Adulte"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Adulte_féminin"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Affaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Agent_paramédical_extrahospitalier"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Agent_paramédical_intrahospitalier"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Agent_pathogène"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Alcoolisme"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Anatomie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Animal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Article"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Article_de_journal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Association"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Association_international"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Automédication"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Autre_acteur_de_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Autre_problème"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Autre_produit"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Autre_stratégie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Autre_type"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bactérie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bande_d&#39;annonce"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Banderole"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Banderole_de_l&#39;association_des_guérisseurs"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Banderole_du_guérisseur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bannière"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bannière_publicitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_de_protection"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_du_patient"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_en_bien-être"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_en_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_en_soins_médicaux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_professionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_sentimental"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_spirituel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Besoin_économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bien-être"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Biologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Biomatériau"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Biomédicale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Boisson"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Boisson_alcoolisée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Boisson_non_alcoolisée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bouche"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bouteille"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Cabinet"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Cabinet_de_voyanace"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Cabinet_du_guérisseur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Carnivore"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Carte_de_visite"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Caste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Centre_de_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Champ_conventionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Champ_opératoire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Champ_traditionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Changement_de_la_règlementation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Charlatan"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Chirurgien_dentiste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Clan"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Coeur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Commercialisation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Concept"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Concept_biomédical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Concept_de_la_maladie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Condition_de_payement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil_professionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil_sentimental"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil_spirituel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Conseil_économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte_familial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte_médical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte_réligieux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte_sanitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contexte_économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Continent"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Contrôle_qualité"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Couleur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Crise_sanitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Céramique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Dent"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Dessin"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Dieu"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Discipline"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Discipline_de_médecine_conventionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Discipline_de_médecine_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Document"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Domaine_des_forces_invisibles"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Domaine_des_forces_visibles"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Don_naturel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Donnée_biomédicale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Donnée_ethnique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Donnée_non_scientifique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Donnée_paramédicale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Donnée_scientifique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_articulaires"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_chroniques"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_corporelles"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_et_brûlure"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_gastriques"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_lombaires"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_musculaires"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_par_stimulation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_partout"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_passagères"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_pénibles"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_respiratoires"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_régulières"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Douleurs_senties"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Découragement_du_mal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Département"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Dévin"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_cognitif"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_comportemental"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_inconnu"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_individuel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_indésirable"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_médical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_organisationnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_psychologie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_règlementaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_sanitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_sur_le_système_de_santé_"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_sur_le_système_de_soins"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Effet_économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Efficacité"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Efficacité_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Element_de_pharmacovigilance"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enfant"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_industriel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_politique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_politique_international"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_politique_national"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_règlementaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_règlementaire_international"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_règlementaire_national"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_sanitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Enjeu_économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Environnement_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Etat_général"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Etat_physiopathologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Ethnie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Ethnobotanique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Evènement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Evènement_culturel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Evènement_familial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Evènement_médical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Evènement_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fait"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fait_culturel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fait_historique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fait_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fait_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Femme_enceinte"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fiche_de_produit"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fiche_technico-publicitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fiche_technico_publicitaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fiche_technique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Flyer"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Gravité"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Gravité_conventionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Gravité_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Guérison"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Gynécologie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Génie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Herbivore"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Histologie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Hygiène_de_vie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Héritage"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Hôpital"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Iconographie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Idea_gravitas"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Image"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Indication"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Infection"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Information_biomédicale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Initiation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Innocuité_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Inocuité"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Journal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_chique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_chique_du_tabac"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_articulaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_de_reins"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_de_tout_le_corps"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_et_l&#39;enflément_des_pieds"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_et_la_brûlure"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_interne"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_interne_localisée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_osseuse"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_provoquée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_rénale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_douleur_vive,_atroce,_localisée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mastication_de_la_noix_de_Cola"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mastication_de_produit"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mutilation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mutilation_bucco-dentaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mutilation_dentaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mutilation_tégumentaire_ou_le_tatouage"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mutulation_dentaire_additive"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_mutulation_dentaire_soustractive"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#La_pratique_du_bâtonnet_frotte-dent_"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Langue"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Le_conseil"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Le_mal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Le_mal_sans_remède"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Le_mal_à"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Les_dieux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Les_djinns"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Les_douleurs"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Les_formes_de_douleur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Les_maux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Livre"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mal_au_cours_de"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mal_de_foie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mal_de_tête"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mal_partout"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mal_traiter"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Manuel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Marabout"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mauvais_oeil"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_d&#39;articulation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_d&#39;oreille"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_d&#39;oreilles"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_d&#39;yeux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_bas_ventre"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_coeur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_céphalée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_côtes"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_dent"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_dents"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_dents_dus_aux_douleurs_chroniques"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_dents_dus_aux_douleurs_passagères"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_gorge"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_hanche"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_membres"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_nerfs"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_nez"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_nombril"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_rein"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_reins"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_seins"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tout_le_corps"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête_chronique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête_compliqués"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête_d&#39;origine_tensionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête_en_général"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête_simple_et_chronique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_tête_violent_et_chronique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Maux_de_ventre"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Messagerie_électronique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Microbe"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modalité_thérapeutique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modification_d&#39;une_règlementation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_biomédical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_biopsychosocial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_de_biomédecine"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_intégratif_et_multifactoriel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_psychosomatique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_transactionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Modèle_épidémiologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Monnaie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Moyen_de_payement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecin_généraliste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecin_moderne"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecin_spécialiste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecine__conventionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecine_associée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecine_intégrative"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médecine_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médicament_conventionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Médicament_traditionnel_amélioré"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Nature_de_donnée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Niveau_de_preuve"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Nom_du_guérisseur"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Nom_du_village"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Notion_du_Mal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Nouvelles_Technologies_de_l&#39;Information_et_de_la_Communication"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet_en_bois"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet_en_terre"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet_en_verre"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet_métallique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet_pharmacologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Objet_traditionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Omnivore"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Organe"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Organisme_de_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Organisme_national"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pathologie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Patient"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pays"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pharmacopée_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Photo"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Phytothérapie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Plante_médicinale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_anthropologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_cognitif"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_comportemental"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_du_médecin"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_du_tradipraticien"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_géopolitique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_historique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_individuel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_linguistique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_médical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_paramédical"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_psychologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_sociologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_sémantique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point_de_vue_économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pratique_médicinale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pratique_médicinale_conventionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pratique_médicinale_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Prestation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Prestation_médicale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Prestation_surnaturelle_ou_spirituelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Prise_en_charge_clinique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Prix"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème_de_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème_de_santé_publique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème_professionnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème_sentimental"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème_socio-économique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Problème_surnaturel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Processus_pathogénique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Processus_physiologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Produit_de_la_pharmacopée_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Produit_utilisé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Prospectus"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Province"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Publication"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Publicité"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Recherche_clinique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Recommandation_de_pharmacovigilance"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Rein"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Récommandation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réference"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réference_non-réligieuse"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réference_réligieuse"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réligion"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réseau_associatif"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réseau_commercial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Réseau_social"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Résolution_de_problème"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Résultat"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Santé_publique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Sexe"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Signal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Site_internet"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Site_web"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Sort"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Soulagement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Spiritualiste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Spécialiste_en_médecine_dentaire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Statuette"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Stratégie_d&#39;association_de_guérisseurs"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Stratégie_d&#39;intégration"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Stratégie_d&#39;organisme"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Structure_sanitaire_conventionnelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Substance"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Substance_biologique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Substance_minérale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Substance_organique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Support_de_communication"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Symbole"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Symbole_de_pathologie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Symbole_de_plante"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Symbole_de_produit"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Symbôle_réligieux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Symptôme"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Système_de_santé"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Système_de_santé_Burkina_Faso"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Système_de_santé_américain"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Système_de_santé_anglais"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Système_de_santé_français"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Système_de_soins"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tarification"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tatouage_gingival"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tatouage_labial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tatouge_cutané"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Temps"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Thérapeute"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tissu_conjonctif"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tissu_épithélial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Topographie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tradipathologie"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tradipraticien"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tradipraticien_généraliste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tradipraticien_spécialiste"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Traitement_médicamenteux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Transmission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Travail"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Travaux"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Type_de_symbole"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Type_de_variable"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Téléphone"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tête"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Union_européenne"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Usage_de_cigarettes"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Usage_rationnel"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Variable_biomédicale"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Variable_censurée"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Variable_holistique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Variable_qualitative"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Variable_quantitative"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Village"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Ville"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Virus"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Vives_douleurs"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Vives_douleurs_lombaires"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Zone_géostratégique"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#adulte_masculin"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#inflammation"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Afrique"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Amérique"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Anglais"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Angleterre"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Asie"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Bamako"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Bobo"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Bobo-Dioulasso"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Burkina_Faso"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Cameroun"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Christianisme"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Couronne_artisanale"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Dioula"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Europe"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Extraction_pilotée_traditionnelle"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#France"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Français"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Gabon"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Incrustation_linéaire_interdentaire"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Islam"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Limage"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Mali"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Moré"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Nantes"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Océanie"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Prothèse_artisanale_adjointe"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#Prothèse_artisanale_conjointe"/>
+    </Declaration>
+    <EquivalentClasses>
+        <Class IRI="#Autre_type"/>
+        <Class IRI="#Biologique"/>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="#Autre_type"/>
+        <Class IRI="#Biomédicale"/>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <Class IRI="#Biologique"/>
+        <Class IRI="#Biomédicale"/>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class IRI="#Accouchement"/>
+        <Class IRI="#Processus_physiologique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Adresse"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Adulte"/>
+        <Class IRI="#Etat_physiopathologique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Adulte_féminin"/>
+        <Class IRI="#Adulte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Affaire"/>
+        <Class IRI="#Autre_problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Agent_paramédical_extrahospitalier"/>
+        <Class IRI="#Autre_acteur_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Agent_paramédical_intrahospitalier"/>
+        <Class IRI="#Autre_acteur_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Alcoolisme"/>
+        <Class IRI="#Hygiène_de_vie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Article"/>
+        <Class IRI="#Publication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Article_de_journal"/>
+        <Class IRI="#Article"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Association"/>
+        <Class IRI="#Organisme_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Association_international"/>
+        <Class IRI="#Organisme_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Autre_acteur_de_santé"/>
+        <Class IRI="#Acteur_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Autre_problème"/>
+        <Class IRI="#Problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Autre_produit"/>
+        <Class IRI="#Produit_utilisé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Autre_stratégie"/>
+        <Class IRI="#Stratégie_d&#39;intégration"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Autre_type"/>
+        <Class IRI="#Type_de_variable"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bactérie"/>
+        <Class IRI="#Agent_pathogène"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Banderole"/>
+        <Class IRI="#Bande_d&#39;annonce"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Banderole_de_l&#39;association_des_guérisseurs"/>
+        <Class IRI="#Banderole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Banderole_du_guérisseur"/>
+        <Class IRI="#Banderole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bannière"/>
+        <Class IRI="#Bande_d&#39;annonce"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bannière_publicitaire"/>
+        <Class IRI="#Bannière"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_de_protection"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_en_bien-être"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_en_santé"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_en_soins_médicaux"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_professionnel"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_sentimental"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_social"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_spirituel"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Besoin_économique"/>
+        <Class IRI="#Besoin_du_patient"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bien-être"/>
+        <Class IRI="#Santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Biologique"/>
+        <Class IRI="#Type_de_variable"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Biomédicale"/>
+        <Class IRI="#Type_de_variable"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Boisson_alcoolisée"/>
+        <Class IRI="#Boisson"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Boisson_non_alcoolisée"/>
+        <Class IRI="#Boisson"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bouche"/>
+        <Class IRI="#Topographie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bouteille"/>
+        <Class IRI="#Objet_en_verre"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Cabinet"/>
+        <Class IRI="#Système_de_soins"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Cabinet_de_voyanace"/>
+        <Class IRI="#Cabinet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Cabinet_du_guérisseur"/>
+        <Class IRI="#Cabinet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Carnivore"/>
+        <Class IRI="#Animal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Carte_de_visite"/>
+        <Class IRI="#Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Caste"/>
+        <Class IRI="#Donnée_ethnique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Centre_de_santé"/>
+        <Class IRI="#Structure_sanitaire_conventionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Champ_conventionnel"/>
+        <Class IRI="#Champ_opératoire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Champ_traditionnel"/>
+        <Class IRI="#Champ_opératoire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Changement_de_la_règlementation"/>
+        <Class IRI="#Effet_règlementaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Charlatan"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Chirurgien_dentiste"/>
+        <Class IRI="#Médecin_moderne"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Clan"/>
+        <Class IRI="#Donnée_ethnique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Coeur"/>
+        <Class IRI="#Organe"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Commercialisation"/>
+        <Class IRI="#Enjeu_économique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Concept_biomédical"/>
+        <Class IRI="#Concept"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Concept_de_la_maladie"/>
+        <Class IRI="#Concept"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Condition_de_payement"/>
+        <Class IRI="#Tarification"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conseil_professionnel"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conseil_sentimental"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conseil_social"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conseil_spirituel"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conseil_thérapeutique"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Conseil_économique"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contexte_familial"/>
+        <Class IRI="#Contexte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contexte_médical"/>
+        <Class IRI="#Contexte_sanitaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contexte_réligieux"/>
+        <Class IRI="#Contexte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contexte_sanitaire"/>
+        <Class IRI="#Contexte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contexte_thérapeutique"/>
+        <Class IRI="#Contexte_sanitaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contexte_économique"/>
+        <Class IRI="#Contexte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Continent"/>
+        <Class IRI="#Zone_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Contrôle_qualité"/>
+        <Class IRI="#Enjeu_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Crise_sanitaire"/>
+        <Class IRI="#Santé_publique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Céramique"/>
+        <Class IRI="#Biomatériau"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Dent"/>
+        <Class IRI="#Organe"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Dessin"/>
+        <Class IRI="#Symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Dieu"/>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Discipline_de_médecine_conventionnelle"/>
+        <Class IRI="#Discipline"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Discipline_de_médecine_traditionnelle"/>
+        <Class IRI="#Discipline"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Domaine_des_forces_invisibles"/>
+        <Class IRI="#Champ_traditionnel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Domaine_des_forces_visibles"/>
+        <Class IRI="#Champ_traditionnel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Don_naturel"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Donnée_biomédicale"/>
+        <Class IRI="#Concept_biomédical"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Donnée_non_scientifique"/>
+        <Class IRI="#Nature_de_donnée"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Donnée_paramédicale"/>
+        <Class IRI="#Nature_de_donnée"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Donnée_scientifique"/>
+        <Class IRI="#Nature_de_donnée"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_articulaires"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_chroniques"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_corporelles"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_et_brûlure"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_gastriques"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_lombaires"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_musculaires"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_par_stimulation"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_partout"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_passagères"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_pénibles"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_respiratoires"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_régulières"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Douleurs_senties"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Découragement_du_mal"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Département"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Dévin"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_cognitif"/>
+        <Class IRI="#Effet_individuel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_comportemental"/>
+        <Class IRI="#Effet_individuel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_inconnu"/>
+        <Class IRI="#Effet_médical"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_individuel"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_indésirable"/>
+        <Class IRI="#Effet_médical"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_médical"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_organisationnel"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_psychologie"/>
+        <Class IRI="#Effet_individuel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_règlementaire"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_sanitaire"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_social"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_sur_le_système_de_santé_"/>
+        <Class IRI="#Effet_organisationnel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_sur_le_système_de_soins"/>
+        <Class IRI="#Effet_organisationnel"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_thérapeutique"/>
+        <Class IRI="#Effet_médical"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Effet_économique"/>
+        <Class IRI="#Effet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Efficacité"/>
+        <Class IRI="#Effet_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Efficacité_thérapeutique"/>
+        <Class IRI="#Enjeu_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enfant"/>
+        <Class IRI="#Etat_physiopathologique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_industriel"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_politique"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_politique_international"/>
+        <Class IRI="#Enjeu_politique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_politique_national"/>
+        <Class IRI="#Enjeu_politique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_règlementaire"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_règlementaire_international"/>
+        <Class IRI="#Enjeu_règlementaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_règlementaire_national"/>
+        <Class IRI="#Enjeu_règlementaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_sanitaire"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_thérapeutique"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Enjeu_économique"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Environnement_social"/>
+        <Class IRI="#Contexte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Etat_général"/>
+        <Class IRI="#Contexte_médical"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Ethnie"/>
+        <Class IRI="#Donnée_ethnique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Ethnobotanique"/>
+        <Class IRI="#Discipline_de_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Evènement_culturel"/>
+        <Class IRI="#Evènement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Evènement_familial"/>
+        <Class IRI="#Evènement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Evènement_médical"/>
+        <Class IRI="#Evènement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Evènement_social"/>
+        <Class IRI="#Evènement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fait_culturel"/>
+        <Class IRI="#Fait"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fait_historique"/>
+        <Class IRI="#Fait"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fait_social"/>
+        <Class IRI="#Fait"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fait_thérapeutique"/>
+        <Class IRI="#Fait"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Femme_enceinte"/>
+        <Class IRI="#Etat_physiopathologique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fiche_de_produit"/>
+        <Class IRI="#Support_de_communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fiche_technico-publicitaire"/>
+        <Class IRI="#Support_de_communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fiche_technico_publicitaire"/>
+        <Class IRI="#Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Fiche_technique"/>
+        <Class IRI="#Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Flyer"/>
+        <Class IRI="#Support_de_communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Gravité_conventionnelle"/>
+        <Class IRI="#Gravité"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Gravité_traditionnelle"/>
+        <Class IRI="#Gravité"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Guérison"/>
+        <Class IRI="#Santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Gynécologie"/>
+        <Class IRI="#Discipline_de_médecine_conventionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Génie"/>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Herbivore"/>
+        <Class IRI="#Animal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Héritage"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Hôpital"/>
+        <Class IRI="#Structure_sanitaire_conventionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Iconographie"/>
+        <Class IRI="#Symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Idea_gravitas"/>
+        <Class IRI="#Gravité_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Image"/>
+        <Class IRI="#Symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Indication"/>
+        <Class IRI="#Effet_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Infection"/>
+        <Class IRI="#Processus_pathogénique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Information_biomédicale"/>
+        <Class IRI="#Concept_biomédical"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Initiation"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Innocuité_thérapeutique"/>
+        <Class IRI="#Enjeu_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Inocuité"/>
+        <Class IRI="#Effet_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Journal"/>
+        <Class IRI="#Support_de_communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_chique"/>
+        <Class IRI="#Pratique_médicinale_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_chique_du_tabac"/>
+        <Class IRI="#La_chique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur"/>
+        <Class IRI="#Les_formes_de_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_articulaire"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_de_reins"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_de_tout_le_corps"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_et_l&#39;enflément_des_pieds"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_et_la_brûlure"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_interne"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_interne_localisée"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_osseuse"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_provoquée"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_rénale"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_douleur_vive,_atroce,_localisée"/>
+        <Class IRI="#La_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mastication_de_la_noix_de_Cola"/>
+        <Class IRI="#La_mastication_de_produit"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mastication_de_produit"/>
+        <Class IRI="#Pratique_médicinale_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mutilation"/>
+        <Class IRI="#Pratique_médicinale_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mutilation_bucco-dentaire"/>
+        <Class IRI="#La_mutilation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mutilation_dentaire"/>
+        <Class IRI="#La_mutilation_bucco-dentaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mutilation_tégumentaire_ou_le_tatouage"/>
+        <Class IRI="#La_mutilation_bucco-dentaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mutulation_dentaire_additive"/>
+        <Class IRI="#La_mutilation_dentaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_mutulation_dentaire_soustractive"/>
+        <Class IRI="#La_mutilation_dentaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#La_pratique_du_bâtonnet_frotte-dent_"/>
+        <Class IRI="#Pratique_médicinale_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Le_conseil"/>
+        <Class IRI="#Prestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Le_mal"/>
+        <Class IRI="#Notion_du_Mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Le_mal_sans_remède"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Le_mal_à"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Les_dieux"/>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Les_djinns"/>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Les_douleurs"/>
+        <Class IRI="#Les_formes_de_douleur"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Les_maux"/>
+        <Class IRI="#Notion_du_Mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Livre"/>
+        <Class IRI="#Publication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Mal_au_cours_de"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Mal_de_foie"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Mal_de_tête"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Mal_partout"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Mal_traiter"/>
+        <Class IRI="#Le_mal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Manuel"/>
+        <Class IRI="#Publication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Marabout"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Mauvais_oeil"/>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_d&#39;articulation"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_d&#39;oreille"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_d&#39;oreilles"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_d&#39;yeux"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_bas_ventre"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_coeur"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_céphalée"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_côtes"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_dent"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_dents"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_dents_dus_aux_douleurs_chroniques"/>
+        <Class IRI="#Maux_de_dents"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_dents_dus_aux_douleurs_passagères"/>
+        <Class IRI="#Maux_de_dents"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_gorge"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_hanche"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_membres"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_nerfs"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_nez"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_nombril"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_rein"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_reins"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_seins"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tout_le_corps"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête_chronique"/>
+        <Class IRI="#Maux_de_tête"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête_compliqués"/>
+        <Class IRI="#Maux_de_tête"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête_d&#39;origine_tensionnelle"/>
+        <Class IRI="#Maux_de_tête"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête_en_général"/>
+        <Class IRI="#Maux_de_tête"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête_simple_et_chronique"/>
+        <Class IRI="#Maux_de_tête"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_tête_violent_et_chronique"/>
+        <Class IRI="#Maux_de_tête"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Maux_de_ventre"/>
+        <Class IRI="#Les_maux"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Messagerie_électronique"/>
+        <Class IRI="#Nouvelles_Technologies_de_l&#39;Information_et_de_la_Communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Microbe"/>
+        <Class IRI="#Agent_pathogène"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modification_d&#39;une_règlementation"/>
+        <Class IRI="#Effet_règlementaire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modèle_biomédical"/>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modèle_biopsychosocial"/>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modèle_intégratif_et_multifactoriel"/>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modèle_psychosomatique"/>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modèle_transactionnel"/>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Modèle_épidémiologique"/>
+        <Class IRI="#Modèle_clinique_ou_explicatif"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Monnaie"/>
+        <Class IRI="#Tarification"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Moyen_de_payement"/>
+        <Class IRI="#Tarification"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecin_généraliste"/>
+        <Class IRI="#Médecin_moderne"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecin_moderne"/>
+        <Class IRI="#Acteur_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecin_spécialiste"/>
+        <Class IRI="#Médecin_généraliste"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecine__conventionnelle"/>
+        <Class IRI="#Modèle_de_biomédecine"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecine_associée"/>
+        <Class IRI="#Modèle_de_biomédecine"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecine_intégrative"/>
+        <Class IRI="#Modèle_de_biomédecine"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médecine_traditionnelle"/>
+        <Class IRI="#Modèle_de_biomédecine"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médicament_conventionnel"/>
+        <Class IRI="#Produit_utilisé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Médicament_traditionnel_amélioré"/>
+        <Class IRI="#Produit_utilisé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Nature_de_donnée"/>
+        <Class IRI="#Variable_biomédicale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Nom_du_guérisseur"/>
+        <Class IRI="#Donnée_ethnique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Nom_du_village"/>
+        <Class IRI="#Donnée_ethnique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Objet_en_bois"/>
+        <Class IRI="#Objet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Objet_en_terre"/>
+        <Class IRI="#Objet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Objet_en_verre"/>
+        <Class IRI="#Objet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Objet_métallique"/>
+        <Class IRI="#Objet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Objet_pharmacologique"/>
+        <Class IRI="#Objet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Objet_traditionnel"/>
+        <Class IRI="#Objet"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Omnivore"/>
+        <Class IRI="#Animal"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Organe"/>
+        <Class IRI="#Anatomie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Organisme_national"/>
+        <Class IRI="#Organisme_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Patient"/>
+        <Class IRI="#Acteur_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Pays"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Pharmacopée_traditionnelle"/>
+        <Class IRI="#Discipline_de_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Photo"/>
+        <Class IRI="#Symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Phytothérapie"/>
+        <Class IRI="#Discipline_de_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_anthropologique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_cognitif"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_comportemental"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_du_médecin"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_du_tradipraticien"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_géopolitique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_historique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_individuel"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_linguistique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_médical"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_paramédical"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_psychologique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_sociologique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_sémantique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Point_de_vue_économique"/>
+        <Class IRI="#Point_de_vue"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Pratique_médicinale_conventionnelle"/>
+        <Class IRI="#Pratique_médicinale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Pratique_médicinale_traditionnelle"/>
+        <Class IRI="#Pratique_médicinale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Prestation_médicale"/>
+        <Class IRI="#Prestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Prestation_surnaturelle_ou_spirituelle"/>
+        <Class IRI="#Prestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Prix"/>
+        <Class IRI="#Tarification"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Problème_de_santé"/>
+        <Class IRI="#Problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Problème_de_santé_publique"/>
+        <Class IRI="#Santé_publique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Problème_professionnel"/>
+        <Class IRI="#Problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Problème_sentimental"/>
+        <Class IRI="#Problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Problème_socio-économique"/>
+        <Class IRI="#Problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Problème_surnaturel"/>
+        <Class IRI="#Problème"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Produit_de_la_pharmacopée_traditionnelle"/>
+        <Class IRI="#Produit_utilisé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Prospectus"/>
+        <Class IRI="#Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Province"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Publication"/>
+        <Class IRI="#Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Publicité"/>
+        <Class IRI="#Enjeu_économique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Recommandation_de_pharmacovigilance"/>
+        <Class IRI="#Element_de_pharmacovigilance"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Rein"/>
+        <Class IRI="#Organe"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Récommandation"/>
+        <Class IRI="#Conseil"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Réference_non-réligieuse"/>
+        <Class IRI="#Réference"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Réference_réligieuse"/>
+        <Class IRI="#Réference"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Réseau_associatif"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Réseau_commercial"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Réseau_social"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Résolution_de_problème"/>
+        <Class IRI="#Prestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Sexe"/>
+        <Class IRI="#Organe"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Signal"/>
+        <Class IRI="#Element_de_pharmacovigilance"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Site_internet"/>
+        <Class IRI="#Nouvelles_Technologies_de_l&#39;Information_et_de_la_Communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Site_web"/>
+        <Class IRI="#Support_de_communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Sort"/>
+        <Class IRI="#Entité_surnaturelle_ou_mystique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Soulagement"/>
+        <Class IRI="#Santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Spiritualiste"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Spécialiste_en_médecine_dentaire"/>
+        <Class IRI="#Chirurgien_dentiste"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Statuette"/>
+        <Class IRI="#Objet_en_bois"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Stratégie_d&#39;association_de_guérisseurs"/>
+        <Class IRI="#Stratégie_d&#39;intégration"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Stratégie_d&#39;organisme"/>
+        <Class IRI="#Stratégie_d&#39;intégration"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Structure_sanitaire_conventionnelle"/>
+        <Class IRI="#Système_de_soins"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Substance_biologique"/>
+        <Class IRI="#Substance"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Substance_minérale"/>
+        <Class IRI="#Substance"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Substance_organique"/>
+        <Class IRI="#Substance"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Symbole_de_pathologie"/>
+        <Class IRI="#Type_de_symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Symbole_de_plante"/>
+        <Class IRI="#Type_de_symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Symbole_de_produit"/>
+        <Class IRI="#Type_de_symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Symbôle_réligieux"/>
+        <Class IRI="#Type_de_symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Système_de_santé_Burkina_Faso"/>
+        <Class IRI="#Système_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Système_de_santé_américain"/>
+        <Class IRI="#Système_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Système_de_santé_anglais"/>
+        <Class IRI="#Système_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Système_de_santé_français"/>
+        <Class IRI="#Système_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tatouage_gingival"/>
+        <Class IRI="#La_mutilation_tégumentaire_ou_le_tatouage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tatouage_labial"/>
+        <Class IRI="#Tatouge_cutané"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tatouge_cutané"/>
+        <Class IRI="#La_mutilation_tégumentaire_ou_le_tatouage"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Thérapeute"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tissu_conjonctif"/>
+        <Class IRI="#Histologie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tissu_épithélial"/>
+        <Class IRI="#Histologie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Topographie"/>
+        <Class IRI="#Anatomie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tradipraticien"/>
+        <Class IRI="#Acteur_de_santé"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tradipraticien_généraliste"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tradipraticien_spécialiste"/>
+        <Class IRI="#Tradipraticien"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Traitement_médicamenteux"/>
+        <Class IRI="#Contexte_thérapeutique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Transmission"/>
+        <Class IRI="#Transmission_des_connaissances"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Travail"/>
+        <Class IRI="#Prestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Travaux"/>
+        <Class IRI="#Prestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Type_de_symbole"/>
+        <Class IRI="#Symbole"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Type_de_variable"/>
+        <Class IRI="#Variable_biomédicale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Téléphone"/>
+        <Class IRI="#Nouvelles_Technologies_de_l&#39;Information_et_de_la_Communication"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tête"/>
+        <Class IRI="#Topographie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Union_européenne"/>
+        <Class IRI="#Zone_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Usage_de_cigarettes"/>
+        <Class IRI="#Hygiène_de_vie"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Usage_rationnel"/>
+        <Class IRI="#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Variable_censurée"/>
+        <Class IRI="#Variable_biomédicale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Variable_holistique"/>
+        <Class IRI="#Variable_biomédicale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Variable_qualitative"/>
+        <Class IRI="#Variable_biomédicale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Variable_quantitative"/>
+        <Class IRI="#Variable_biomédicale"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Village"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Ville"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Virus"/>
+        <Class IRI="#Agent_pathogène"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Vives_douleurs"/>
+        <Class IRI="#Les_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Vives_douleurs_lombaires"/>
+        <Class IRI="#Vives_douleurs"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Zone_géostratégique"/>
+        <Class IRI="#Localisation_sociale_ou_géostratégique"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#adulte_masculin"/>
+        <Class IRI="#Adulte"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#inflammation"/>
+        <Class IRI="#Processus_pathogénique"/>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class IRI="#Variable_biomédicale"/>
+        <Class abbreviatedIRI="owl:Thing"/>
+    </DisjointClasses>
+    <ClassAssertion>
+        <Class IRI="#Continent"/>
+        <NamedIndividual IRI="#Afrique"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Continent"/>
+        <NamedIndividual IRI="#Amérique"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Langue"/>
+        <NamedIndividual IRI="#Anglais"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Pays"/>
+        <NamedIndividual IRI="#Angleterre"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Continent"/>
+        <NamedIndividual IRI="#Asie"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Ville"/>
+        <NamedIndividual IRI="#Bamako"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Langue"/>
+        <NamedIndividual IRI="#Bobo"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Ville"/>
+        <NamedIndividual IRI="#Bobo-Dioulasso"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Pays"/>
+        <NamedIndividual IRI="#Burkina_Faso"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Pays"/>
+        <NamedIndividual IRI="#Cameroun"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Réligion"/>
+        <NamedIndividual IRI="#Christianisme"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#La_mutulation_dentaire_additive"/>
+        <NamedIndividual IRI="#Couronne_artisanale"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Langue"/>
+        <NamedIndividual IRI="#Dioula"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Continent"/>
+        <NamedIndividual IRI="#Europe"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#La_mutulation_dentaire_soustractive"/>
+        <NamedIndividual IRI="#Extraction_pilotée_traditionnelle"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Pays"/>
+        <NamedIndividual IRI="#France"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Langue"/>
+        <NamedIndividual IRI="#Français"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Pays"/>
+        <NamedIndividual IRI="#Gabon"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#La_mutulation_dentaire_additive"/>
+        <NamedIndividual IRI="#Incrustation_linéaire_interdentaire"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Réligion"/>
+        <NamedIndividual IRI="#Islam"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#La_mutulation_dentaire_soustractive"/>
+        <NamedIndividual IRI="#Limage"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Pays"/>
+        <NamedIndividual IRI="#Mali"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Langue"/>
+        <NamedIndividual IRI="#Moré"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Ville"/>
+        <NamedIndividual IRI="#Nantes"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Continent"/>
+        <NamedIndividual IRI="#Océanie"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#La_mutulation_dentaire_additive"/>
+        <NamedIndividual IRI="#Prothèse_artisanale_adjointe"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#La_mutulation_dentaire_additive"/>
+        <NamedIndividual IRI="#Prothèse_artisanale_conjointe"/>
+    </ClassAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Acteur_de_santé</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Les acteurs de santé sont des acteurs humain qui interviennent dans les processus de prise en charge.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Autre_stratégie</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Stratégies issues de la revue littérature médicale</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Douleurs_respiratoires</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">les problèmes de respirations avec un indicatif de la douleur dans l&#39;énoncé</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Enjeu_de_la_valorisation_de_la_médecine_traditionnelle</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Enjeux et  défis tratégies de l&#39;OMS 2002</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Idea_gravitas</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Idée de la gravité</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Maux_de_rein</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Parfois apparait comme &quot;maux de rien&quot;</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Pathologie</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Pathologies au sens conventionnel</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Prestation_médicale</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Medical=liée à la pratique médicale</Literal>
+    </AnnotationAssertion>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 3.2.3.1824) http://owlapi.sourceforge.net -->
+
