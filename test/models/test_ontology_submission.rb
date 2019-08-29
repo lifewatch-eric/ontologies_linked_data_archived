@@ -263,7 +263,7 @@ eos
 
     #test roots to ack parsing went well
     n_roots = sub.roots.length
-    assert_equal 14, n_roots
+    assert_equal 16, n_roots
   end
 
   def test_submission_parse
@@ -933,11 +933,11 @@ eos
     metrics.bring_remaining
     assert_instance_of LinkedData::Models::Metric, metrics
 
-    assert_equal 144, metrics.classes
+    assert_equal 165, metrics.classes
     assert_equal 78, metrics.properties
     assert_equal 26, metrics.individuals
-    assert_equal 11, metrics.classesWithOneChild
-    assert_equal 134, metrics.classesWithNoDefinition
+    assert_equal 15, metrics.classesWithOneChild
+    assert_equal 139, metrics.classesWithNoDefinition
     assert_equal 0, metrics.classesWithMoreThan25Children
     assert_equal 18, metrics.maxChildCount
     assert_equal 3, metrics.averageChildCount
