@@ -1219,9 +1219,10 @@
         <str>yyyy-MM-dd</str>
       </arr>
     </processor>
-    
 
 
+
+    <!-- NCBO: comment this section out to enable the unmanaged schema (user-defined) -->
     <!--
     <processor class="solr.AddSchemaFieldsUpdateProcessorFactory">
       <str name="defaultFieldType">strings</str>
