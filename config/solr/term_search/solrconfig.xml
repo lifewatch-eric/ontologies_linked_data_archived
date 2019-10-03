@@ -391,7 +391,7 @@
          specified in `solr.xml`, it will have no effect, as that setting also limits the size
          of user specified boolean queries.
       -->
-    <maxBooleanClauses>${solr.max.booleanClauses:1024}</maxBooleanClauses>
+    <maxBooleanClauses>${solr.max.booleanClauses:500000}</maxBooleanClauses>
 
     <!-- Solr Internal Query Caches
 
