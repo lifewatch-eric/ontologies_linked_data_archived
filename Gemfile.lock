@@ -84,7 +84,7 @@ GEM
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.9.0)
-    logger (1.2.8)
+    logger (1.4.1)
     macaddr (1.7.1)
       systemu (~> 2.6.2)
     mail (2.6.6)
@@ -107,7 +107,7 @@ GEM
     pry (0.11.3)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    rack (1.6.8)
+    rack (2.0.7)
     rack-test (0.8.2)
       rack (>= 1.0, < 3)
     rake (10.5.0)
@@ -166,7 +166,7 @@ DEPENDENCIES
   omni_logger
   pony
   pry
-  rack (~> 1.0)
+  rack (~> 2.0)
   rack-test (~> 0.6)
   rake (~> 10.0)
   rsolr (~> 1.0)
