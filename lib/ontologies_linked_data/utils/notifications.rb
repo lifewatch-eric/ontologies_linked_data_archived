@@ -118,14 +118,25 @@ BioPortal Team
       notify(options)
     end
 
-    def self.obofoundry_sync(missing_ontologies)
-      body = "There are no OBO Library ontologies missing from BioPortal."
+    def self.obofoundry_sync(missing_onts, obsolete_onts)
+      body = ""
 
-      if missing_ontologies.size > 0
-        body = "The following OBO Library ontologies are missing from BioPortal:<br/><br/>"
-        missing_ontologies.each do |ont|
+      if missing_onts.size > 0
+        body << "<strong>The following OBO Library ontologies are missing from BioPortal:</strong><br/><br/>"
+        missing_onts.each do |ont|
           body << "<a href='#{ont['homepage']}'>#{ont['id']}</a> (#{ont['title']})<br/><br/>"
         end
+      end
+
+      if obsolete_onts.size > 0
+        body << "<strong>The following OBO Library ontologies have been deprecated:</strong><br/><br/>"
+        obsolete_onts.each do |ont|
+          body << "<a href='#{ont['homepage']}'>#{ont['id']}</a> (#{ont['title']})<br/><br/>"
+        end
+      end
+
+      if body.empty?
+        body << "BioPortal and the OBO Foundry are in sync.<br/><br/>"
       end
 
       options = {
