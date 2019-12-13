@@ -103,7 +103,7 @@ module LinkedData::Utils
 
     def self.reset_password(user, token)
       subject = "[BioPortal] User #{user.username} password reset"
-      password_url = "http://#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
+      password_url = "https://#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
       body = <<-EOS
 Someone has requested a password reset for user #{user.username}. If this was you, please click on the link below to reset your password. Otherwise, please ignore this email.<br/><br/>
 <a href="#{password_url}">#{password_url}</a><br/><br/>
