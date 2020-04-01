@@ -733,7 +733,7 @@ eos
         self.bring(:obsoleteParent) if self.bring?(:obsoleteParent)
         classes_deprecated = []
         if self.obsoleteProperty &&
-            self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
+           self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
 
           predicate_obsolete = RDF::URI.new(self.obsoleteProperty.to_s)
           query_obsolete_predicate = <<eos

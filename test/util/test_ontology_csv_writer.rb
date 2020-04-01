@@ -24,43 +24,16 @@ class TestOntologyCSVWriter < LinkedData::TestOntologyCommon
 
     # Open the CSV writer.
     @@csv_path = sub.csv_path
-
-
     writer = LinkedData::Utils::OntologyCSVWriter.new
     writer.open(sub.ontology, @@csv_path)
 
     # Write out the CSV.
     page = 1
-
-
-
-    # size = 50
     size = 2500
-
-
-
     @@num_classes = 0
-
-
-    # paging = LinkedData::Models::Class.in(sub).include(LinkedData::Models::Class.goo_attrs_to_load()).page(page, size)
-
-
-    # props = LinkedData::Models::Class.goo_attrs_to_load() << :parents << :unmapped
-    # paging = LinkedData::Models::Class.in(sub).include(props).page(page, size)
     paging = LinkedData::Models::Class.in(sub).include(:unmapped).page(page, size)
-
-
-
-
-
-
-
-
     while !page.nil?
-
       page_classes = paging.page(page, size).all
-
-
       props_to_include = LinkedData::Models::Class.goo_attrs_to_load() << :parents
       LinkedData::Models::Class.in(sub).include(props_to_include).models(page_classes).all
 

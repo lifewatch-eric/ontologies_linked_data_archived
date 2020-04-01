@@ -361,8 +361,11 @@ module LinkedData
         self.bring(:provisionalClasses)
         unless self.provisionalClasses.nil?
           self.provisionalClasses.each do |p|
+            p.bring(:ontology)
             p.bring_remaining
-            p.ontology = nil
+            onts = p.ontology
+            onts.select! {|x| x.id != self.id}
+            p.ontology = onts
             p.save()
           end
         end

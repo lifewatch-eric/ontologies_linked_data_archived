@@ -63,7 +63,7 @@ module Mappings
             "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
         logger.flush
       end
-      sleep(2)
+      sleep(5)
     end
     if enable_debug
       logger.info("Total time #{Time.now - t} sec.")
@@ -128,16 +128,6 @@ eos
       if sub2.nil?
         solutions = epr.query(query,
                               graphs: graphs, reload_cache: reload_cache)
-
-
-
-
-        # binding.pry
-
-
-
-
-
         solutions.each do |sol|
           acr = sol[:g].to_s.split("/")[-3]
           if group_count[acr].nil?
@@ -154,40 +144,17 @@ eos
       end
     end #per predicate query
 
-
-
-
     if sub2.nil?
       return group_count
     end
     return count
   end
 
-
-
-
-
-
-
-
-
-
   def self.empty_page(page,size)
       p = Goo::Base::Page.new(page,size,nil,[])
       p.aggregate = 0
       return p
   end
-
-
-
-
-
-
-
-
-
-
-
 
   def self.mappings_ontologies(sub1,sub2,page,size,classId=nil,reload_cache=false)
     union_template = <<-eos
@@ -212,12 +179,6 @@ eos
         acr2 = sub2.id.to_s.split("/")[-3]
       end
       pcount = LinkedData::Models::MappingCount.where(ontologies: acr1)
-
-
-
-      # binding.pry
-
-
       if not acr2 == nil
         pcount = pcount.and(ontologies: acr2)
       end
@@ -231,10 +192,6 @@ eos
       else
         persistent_count = pcount_arr.first.count
       end
-
-
-      # binding.pry
-
 
       if persistent_count == 0
         return LinkedData::Mappings.empty_page(page,size)
@@ -303,12 +260,7 @@ eos
     unless sub2.nil?
       graphs << sub2.id
     end
-
-
-
-
-    solutions = epr.query(query,
-                          graphs: graphs, reload_cache: reload_cache)
+    solutions = epr.query(query, graphs: graphs, reload_cache: reload_cache)
     s1 = nil
     unless classId.nil?
       s1 = RDF::URI.new(classId.to_s)
@@ -350,15 +302,6 @@ eos
     page.aggregate = persistent_count
     return page
   end
-
-
-
-
-
-
-
-
-
 
   def self.mappings_ontology(sub,page,size,classId=nil,reload_cache=false)
     return self.mappings_ontologies(sub,nil,page,size,classId=classId,
@@ -477,19 +420,6 @@ eos
     return mapping
   end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   def self.create_rest_mapping(classes,process)
     unless process.instance_of? LinkedData::Models::MappingProcess
       raise ArgumentError, "Process should be instance of MappingProcess"
@@ -531,15 +461,6 @@ eos
     mapping = LinkedData::Models::Mapping.new(classes,"REST",process)
     return mapping
   end
-
-
-
-
-
-
-
-
-
 
   def self.mappings_for_classids(class_ids,sources=["REST","CUI"])
     class_ids = class_ids.uniq
@@ -663,24 +584,10 @@ eos
     return latest_submissions
   end
 
-
-
-
-
-
   def self.create_mapping_counts(logger)
     new_counts = LinkedData::Mappings.mapping_counts(
                                         enable_debug=true,logger=logger,
                                         reload_cache=true)
-
-
-
-
-
-
-
-
-
     persistent_counts = {}
     f = Goo::Filter.new(:pair_count) == false
     LinkedData::Models::MappingCount.where.filter(f)
@@ -753,22 +660,6 @@ eos
       end
     end
   end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 end
 end

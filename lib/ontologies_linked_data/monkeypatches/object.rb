@@ -98,9 +98,6 @@ class Object
 
       # Look at the Hypermedia DSL to determine if we should embed this attribute
       begin
-
-
-
         hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
       rescue Exception => e
         puts "Bad data found in submission: #{hash}"

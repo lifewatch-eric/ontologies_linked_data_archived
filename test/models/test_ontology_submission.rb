@@ -455,7 +455,6 @@ eos
 
     acronym = "PIZZA"
     name = "PIZZA Ontology"
-
     ontologyFile = "./test/data/ontology_files/pizza.owl.zip"
     id = 10
 
@@ -484,42 +483,22 @@ eos
     end
 
     assert ont_submision.ready?({status: [:uploaded, :rdf, :rdf_labels]})
-
-
     read_only_classes = LinkedData::Models::Class.in(ont_submision).include(:prefLabel).read_only
-
-
     ctr = 0
 
     read_only_classes.each do |cls|
-
-
-
       # binding.pry
       # binding.pry if cls.prefLabel.nil?
       # next if cls.id.to_s == "http://bioontology.org/projects/ontologies/radlex/radlexOwl#neuraxis_metaclass"
       # next if cls.id.to_s == "http://bioontology.org/projects/ontologies/radlex/radlexOwl#RID7020"
-
       # assert(cls.prefLabel != nil, "Class #{cls.id.to_ntriples} does not have a label")
-
-
-
-
       if cls.prefLabel.nil?
         puts "Class #{cls.id.to_ntriples} does not have a label"
         ctr += 1
       end
-
-
-
       # assert_instance_of String, cls.prefLabel
-
-
-
     end
-
     puts "#{ctr} classes with no label"
-
   end
 
   def test_download_ontology_file
