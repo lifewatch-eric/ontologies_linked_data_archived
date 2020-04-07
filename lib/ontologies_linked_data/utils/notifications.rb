@@ -103,13 +103,19 @@ module LinkedData::Utils
 
     def self.reset_password(user, token)
       subject = "[BioPortal] User #{user.username} password reset"
-      password_url = "http://#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
-      body = <<-EOS
-Someone has requested a password reset for user #{user.username}. If this was you, please click on the link below to reset your password. Otherwise, please ignore this email.<br/><br/>
-<a href="#{password_url}">#{password_url}</a><br/><br/>
-Thanks,<br/>
-BioPortal Team
-      EOS
+      password_url = "https://#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
+      
+      body = <<~HTML
+        Someone has requested a password reset for user #{user.username}. If this was 
+        you, please click on the link below to reset your password. Otherwise, please 
+        ignore this email.<br/><br/>
+
+        <a href="#{password_url}">#{password_url}</a><br/><br/>
+
+        Thanks,<br/>
+        BioPortal Team
+      HTML
+
       options = {
         subject: subject,
         body: body,
@@ -118,14 +124,25 @@ BioPortal Team
       notify(options)
     end
 
-    def self.obofoundry_sync(missing_ontologies)
-      body = "There are no OBO Library ontologies missing from BioPortal."
+    def self.obofoundry_sync(missing_onts, obsolete_onts)
+      body = ""
 
-      if missing_ontologies.size > 0
-        body = "The following OBO Library ontologies are missing from BioPortal:<br/><br/>"
-        missing_ontologies.each do |ont|
+      if missing_onts.size > 0
+        body << "<strong>The following OBO Library ontologies are missing from BioPortal:</strong><br/><br/>"
+        missing_onts.each do |ont|
           body << "<a href='#{ont['homepage']}'>#{ont['id']}</a> (#{ont['title']})<br/><br/>"
         end
+      end
+
+      if obsolete_onts.size > 0
+        body << "<strong>The following OBO Library ontologies have been deprecated:</strong><br/><br/>"
+        obsolete_onts.each do |ont|
+          body << "<a href='#{ont['homepage']}'>#{ont['id']}</a> (#{ont['title']})<br/><br/>"
+        end
+      end
+
+      if body.empty?
+        body << "BioPortal and the OBO Foundry are in sync.<br/><br/>"
       end
 
       options = {

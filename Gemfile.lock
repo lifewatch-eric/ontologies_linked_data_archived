@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: a30326fc3605ab98b128cf10b7a854524e7740f2
+  revision: 34e6e5b20b6ac5d421a76aaebee28fe392e2763c
   branch: allegrograph_testing
   specs:
     goo (0.0.2)
@@ -113,7 +113,7 @@ GEM
     omni_logger (0.1.4)
       logger
     parallel (1.19.1)
-    parser (2.7.0.5)
+    parser (2.7.1.0)
       ast (~> 2.4.0)
     pony (1.13.1)
       mail (>= 2.0)
