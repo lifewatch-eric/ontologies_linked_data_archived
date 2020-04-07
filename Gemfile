@@ -29,9 +29,8 @@ group :test do
 end
 
 # NCBO gems (can be from a local dev path or from rubygems/git)
-gem 'goo', git: 'https://github.com/ncbo/goo.git', branch: 'allegrograph_testing'
-gem 'sparql-client', git: 'https://github.com/ncbo/sparql-client.git', branch: 'allegrograph_testing'
-# gem 'sparql-client', path: '/Users/mdorf/dev/ncbo/sparql-client', branch: 'allegrograph_testing'
+gem 'goo', git: 'https://github.com/ncbo/goo.git', branch: 'staging'
+gem 'sparql-client', git: 'https://github.com/ncbo/sparql-client.git', branch: 'staging'
 
 # ResourceIndex dependencies (managed per-platform)
 gem 'ncbo_resource_index', git: 'https://github.com/ncbo/resource_index.git'

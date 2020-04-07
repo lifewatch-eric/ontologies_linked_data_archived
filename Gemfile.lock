@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 34e6e5b20b6ac5d421a76aaebee28fe392e2763c
-  branch: allegrograph_testing
+  revision: 8e89c6be4a921484a0b15aa1304cea1bf5c0377e
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -30,7 +30,7 @@ GIT
 GIT
   remote: https://github.com/ncbo/sparql-client.git
   revision: 2025f80c5520b09215a9ed543ae32b71a98e261d
-  branch: allegrograph_testing
+  branch: staging
   specs:
     sparql-client (1.0.1)
       json_pure (>= 1.4)
