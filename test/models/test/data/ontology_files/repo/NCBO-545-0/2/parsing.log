@@ -1,5 +1,0 @@
-# Logfile created on 2016-12-05 16:04:45 -0800 by logger.rb/54362
-I, [2016-12-05T16:04:45.325477 #8942]  INFO -- : Starting to process NCBO-545-0/submissions/2
-I, [2016-12-05T16:04:45.550354 #8942]  INFO -- : Submission processing of http://data.bioontology.org/ontologies/NCBO-545-0/submissions/2 completed successfully
-I, [2017-01-20T15:21:22.712306 #2943]  INFO -- : Starting to process NCBO-545-0/submissions/2
-I, [2017-01-20T15:21:22.842462 #2943]  INFO -- : Submission processing of http://data.bioontology.org/ontologies/NCBO-545-0/submissions/2 completed successfully
