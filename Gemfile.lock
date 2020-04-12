@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 0dba0f9626e21946d9b44065325af6b0c32b4f8e
-  branch: master
+  revision: 8e89c6be4a921484a0b15aa1304cea1bf5c0377e
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -29,8 +29,8 @@ GIT
 
 GIT
   remote: https://github.com/ncbo/sparql-client.git
-  revision: 39cb76898cb6c8896c43aa076e493280d9621998
-  branch: master
+  revision: 2025f80c5520b09215a9ed543ae32b71a98e261d
+  branch: staging
   specs:
     sparql-client (1.0.1)
       json_pure (>= 1.4)
@@ -73,7 +73,7 @@ GEM
     ethon (0.12.0)
       ffi (>= 1.3.0)
     eventmachine (1.2.7)
-    faraday (1.0.0)
+    faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.21)
     hashie (4.1.0)
@@ -113,7 +113,7 @@ GEM
     omni_logger (0.1.4)
       logger
     parallel (1.19.1)
-    parser (2.7.0.5)
+    parser (2.7.1.0)
       ast (~> 2.4.0)
     pony (1.13.1)
       mail (>= 2.0)
@@ -139,18 +139,18 @@ GEM
     rexml (3.2.4)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (0.80.1)
+    rubocop (0.81.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.7.0.1)
       rainbow (>= 2.2.2, < 4.0)
       rexml
       ruby-progressbar (~> 1.7)
-      unicode-display_width (>= 1.4.0, < 1.7)
+      unicode-display_width (>= 1.4.0, < 2.0)
     ruby-progressbar (1.10.1)
     ruby-xxHash (0.4.0.1)
     rubyzip (1.3.0)
-    sequel (5.30.0)
+    sequel (5.31.0)
     simplecov (0.18.5)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -168,13 +168,14 @@ GEM
     tzinfo (0.3.56)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.6)
-    unicode-display_width (1.6.1)
+    unf_ext (0.0.7.7)
+    unicode-display_width (1.7.0)
     uuid (2.3.9)
       macaddr (~> 1.0)
 
 PLATFORMS
   ruby
+  x86_64-darwin-16
   x86_64-darwin-17
 
 DEPENDENCIES

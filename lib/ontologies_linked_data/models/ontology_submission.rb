@@ -118,7 +118,7 @@ module LinkedData
           raise ArgumentError, "Submission cannot be saved if ontology does not have acronym"
         end
         return RDF::URI.new(
-          "#{(Goo.id_prefix)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
+            "#{(Goo.id_prefix)}ontologies/#{CGI.escape(ss.ontology.acronym.to_s)}/submissions/#{ss.submissionId.to_s}"
         )
       end
 
@@ -227,13 +227,13 @@ module LinkedData
           if repeated_names.length > 0
             names = repeated_names.keys.to_s
             self.errors[:uploadFilePath] <<
-            "Zip file contains file names (#{names}) in more than one folder."
+                "Zip file contains file names (#{names}) in more than one folder."
             return false
           end
 
           #error message with options to choose from.
           self.errors[:uploadFilePath] << {
-            :message => "Zip file detected, choose the master file.", :options => files }
+              :message => "Zip file detected, choose the master file.", :options => files }
           return false
 
         elsif zip and not self.masterFileName.nil?
@@ -243,9 +243,9 @@ module LinkedData
             if self.errors[:uploadFilePath].nil?
               self.errors[:uploadFilePath] = []
               self.errors[:uploadFilePath] << {
-                :message =>
-              "The selected file `#{self.masterFileName}` is not included in the zip file",
-                :options => files }
+                  :message =>
+                      "The selected file `#{self.masterFileName}` is not included in the zip file",
+                  :options => files }
             end
           end
         end
@@ -733,7 +733,7 @@ eos
         self.bring(:obsoleteParent) if self.bring?(:obsoleteParent)
         classes_deprecated = []
         if self.obsoleteProperty &&
-          self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
+           self.obsoleteProperty.to_s != "http://www.w3.org/2002/07/owl#deprecated"
 
           predicate_obsolete = RDF::URI.new(self.obsoleteProperty.to_s)
           query_obsolete_predicate = <<eos
@@ -751,16 +751,16 @@ eos
         if self.obsoleteParent.nil?
           #try to find oboInOWL obsolete.
           obo_in_owl_obsolete_class = LinkedData::Models::Class
-                                  .find(LinkedData::Utils::Triples.obo_in_owl_obsolete_uri)
-                                  .in(self).first
+                                          .find(LinkedData::Utils::Triples.obo_in_owl_obsolete_uri)
+                                          .in(self).first
           if obo_in_owl_obsolete_class
             self.obsoleteParent = LinkedData::Utils::Triples.obo_in_owl_obsolete_uri
           end
         end
         if self.obsoleteParent
           class_obsolete_parent = LinkedData::Models::Class
-                                  .find(self.obsoleteParent)
-                                  .in(self).first
+                                      .find(self.obsoleteParent)
+                                      .in(self).first
           if class_obsolete_parent
             descendents_obsolete = class_obsolete_parent.descendants
             logger.info("Found #{descendents_obsolete.length} descendents of obsolete root #{self.obsoleteParent.to_s}")
@@ -781,9 +781,9 @@ eos
           end
           fsave.close()
           result = Goo.sparql_data_client.append_triples_from_file(
-                          self.id,
-                          save_in_file,
-                          mime_type="application/x-turtle")
+              self.id,
+              save_in_file,
+              mime_type="application/x-turtle")
         end
       end
 
