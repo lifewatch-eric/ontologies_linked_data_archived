@@ -5,10 +5,11 @@ require 'optparse'
 
 BACKEND_AG = 'ag'
 BACKEND_4STORE = '4store'
+GOO_HOST = 'localhost'
 AG_USERNAME = 'test'
 AG_PASSWORD = 'xyzzy'
 AG_PORT = 10035
-AG_HOST = "http://localhost:#{AG_PORT}"
+AG_HOST = "http://#{GOO_HOST}:#{AG_PORT}"
 JOB_NAME = 'bioportal'
 @options = nil
 
@@ -34,7 +35,7 @@ def main
   puts "\n#{test_cmd}\n\n"
 
   ENV['OVERRIDE_CONNECT_GOO'] = 'true'
-  ENV['GOO_HOST'] = 'localhost'
+  ENV['GOO_HOST'] = GOO_HOST
   ENV['GOO_BACKEND_NAME'] = @options[:backend]
 
   if @options[:backend] == BACKEND_AG
@@ -81,13 +82,13 @@ def parse_options
       test: ''
   }
   opt_parser = OptionParser.new do |opts|
-    opts.banner = "Usage: ruby #{File.basename(__FILE__)} [options]"
+    opts.banner = "Usage: bundle exec ruby #{File.basename(__FILE__)} [options]"
 
     opts.on('-b', "--backend [#{BACKEND_4STORE}|#{BACKEND_AG}]", "An optional backend name (default: #{BACKEND_4STORE})") do |bn|
       options[:backend] = bn.strip.downcase if backends.include?(bn.downcase)
     end
 
-    opts.on('-v', '--version VERSION', "Version of AllegroGraph to test against. Required if '#{BACKEND_AG}' is specified as the backend") do |ver|
+    opts.on('-v', '--version VERSION', "Version of AllegroGraph to test against. Required if '#{BACKEND_AG}' is specified as the --backend") do |ver|
       options[:version] = ver.strip.downcase
     end
 
@@ -110,6 +111,7 @@ def parse_options
     puts 'When using AllegroGraph, the version number is required. Run this script with the -h parameter for more information.'
     abort("Aborting...\n")
   end
+  options[:test] = '' if options[:filename].empty?
   options
 end
 
