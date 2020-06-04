@@ -92,7 +92,7 @@ def parse_options
       options[:version] = ver.strip.downcase
     end
 
-    opts.on('-f', '--file TEST_FILE_PATH', "An optional path to the test filename. Default: all test files") do |f|
+    opts.on('-f', '--file TEST_FILE_PATH', "An optional path to a test file to be run. Default: all test files") do |f|
       options[:filename] = f.strip
     end
 
