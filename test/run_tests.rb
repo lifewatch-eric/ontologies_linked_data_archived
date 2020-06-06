@@ -22,7 +22,8 @@ def main
     puts "\nUsing AllegroGraph #{@options[:version]} on port #{@options[:port]}...\n\n"
     pull_cmd = "docker pull franzinc/agraph:#{@options[:version]}"
     run_cmd = "docker run -d -e AGRAPH_SUPER_USER=#{AG_USERNAME} -e AGRAPH_SUPER_PASSWORD=#{AG_PASSWORD} -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} franzinc/agraph:#{@options[:version]}"
-    system("#{pull_cmd}")
+    pulled = system("#{pull_cmd}")
+    abort("Unable to pull the #{@options[:backend]} Docker image: #{@options[:version]}. Aborting...\n") unless pulled
     system("#{run_cmd}")
     sleep(5)
     ag_rest_call("/repositories/#{JOB_NAME}", 'PUT')
@@ -36,7 +37,8 @@ def main
     exec_cmd1 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-backend-setup --segments 4 demo"
     exec_cmd2 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-admin start-stores demo"
     exec_cmd3 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-httpd -s-1 -p#{@options[:port]} demo"
-    system("#{pull_cmd}")
+    pulled = system("#{pull_cmd}")
+    abort("Unable to pull the #{@options[:backend]} Docker image: #{@options[:version]}. Aborting...\n") unless pulled
     system("#{run_cmd}")
     system("#{exec_cmd1}")
     system("#{exec_cmd2}")
@@ -129,6 +131,9 @@ def parse_options
     end
   end
   opt_parser.parse!
+  options[:version] = "v#{options[:version]}" if options[:backend] == BACKEND_AG &&
+                                                  options[:version] != DEF_VERSION &&
+                                                  options[:version][0, 1].downcase != 'v'
 
   if options[:port] == 0
     puts 'The port number must be a valid integer. Run this script with the -h parameter for more information.'
