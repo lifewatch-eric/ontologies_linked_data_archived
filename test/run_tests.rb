@@ -32,14 +32,14 @@ def main
 
   begin
     if @options[:backend] == BACKEND_AG
-      run_cmd = "docker run -d -e AGRAPH_SUPER_USER=#{AG_USERNAME} -e AGRAPH_SUPER_PASSWORD=#{AG_PASSWORD} -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} franzinc/agraph:#{@options[:version]}"
+      run_cmd = "docker run -d --rm -e AGRAPH_SUPER_USER=#{AG_USERNAME} -e AGRAPH_SUPER_PASSWORD=#{AG_PASSWORD} -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} franzinc/agraph:#{@options[:version]}"
       system("#{run_cmd}")
       sleep(5)
       ag_rest_call("/repositories/#{JOB_NAME}", 'PUT')
       ag_rest_call('/users/anonymous', 'PUT')
       ag_rest_call("/users/anonymous/access?read=true&write=true&repositories=#{JOB_NAME}", 'PUT')
     elsif @options[:backend] == BACKEND_4STORE
-      run_cmd = "docker run -d -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} bde2020/4store:#{@options[:version]}"
+      run_cmd = "docker run -d --rm -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} bde2020/4store:#{@options[:version]}"
       exec_cmd1 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-backend-setup --segments 4 #{JOB_NAME}"
       exec_cmd2 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-admin start-stores #{JOB_NAME}"
       exec_cmd3 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-httpd -s-1 -p#{@options[:port]} #{JOB_NAME}"
