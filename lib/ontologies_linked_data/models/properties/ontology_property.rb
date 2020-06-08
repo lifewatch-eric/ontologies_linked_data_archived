@@ -283,7 +283,7 @@ eos
 
           unless p.loaded_attributes.include?(:parents)
             # fail safely
-            LOGGER.error("Property #{p.id.to_s} from #{p.submission.id.to_s} cannot load parents")
+            #LOGGER.error("Property #{p.id.to_s} from #{p.submission.id.to_s} cannot load parents")
             return
           end
 

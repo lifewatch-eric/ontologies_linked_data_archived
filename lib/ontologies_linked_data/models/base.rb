@@ -41,6 +41,7 @@ module LinkedData
       # This is a convenience method that will provide Goo with
       # a list of attributes and nested values to load for this request
       def self.goo_attrs_to_load(attributes = [], level = 0)
+        #ECOPORTAL_LOGGER.debug("\n\n*********** ONTOLOGIES_LINKED_DATA - base.rb -> goo_attrs_to_load: ***********\n   level=#{level};\n   attributes=#{attributes.inspect}")
         raise ArgumentError, "`attributes` should be an array" unless attributes.is_a?(Array)
 
         # Get attributes, either provided, all, or default
@@ -58,12 +59,15 @@ module LinkedData
 
         embed_attrs = {}
         extra_attrs = []
-        if level == 0
+        #if level == 0
+        if level <= 0  #modifica ecoportal
           # Also include attributes that are embedded
+          #ECOPORTAL_LOGGER.debug("    > self: #{self.inspect} \n    > self.hypermedia_settings[:embed]=#{self.hypermedia_settings[:embed].inspect}")
           self.hypermedia_settings[:embed].each do |e|
             next unless default_attrs.include?(e)
             default_attrs.delete(e)
             embed_class = self.range(e)
+            #ECOPORTAL_LOGGER.debug("       > embed_class=#{embed_class.inspect} \n    > embed_class.hypermedia_settings[:embed]=#{embed_class.hypermedia_settings[:embed].inspect}")
             next if embed_class.nil? || !embed_class.ancestors.include?(LinkedData::Models::Base)
             #hack to avoid nested unmapped queries in class
             if (self.model_name == :class)
@@ -72,7 +76,8 @@ module LinkedData
                 attributes.delete :properties
               end
             end
-            embed_attrs[e] = embed_class.goo_attrs_to_load(attributes, level += 1)
+            #embed_attrs[e] = embed_class.goo_attrs_to_load(attributes, level += 1) #original to uncomment
+            embed_attrs[e] = embed_class.goo_attrs_to_load(attributes, level + 1) #modifica ecoportal
           end
         end
 
@@ -122,7 +127,7 @@ module LinkedData
 
         # Filter out attributes that should not get loaded
         default_attrs = default_attrs - self.hypermedia_settings[:do_not_load]
-
+        #ECOPORTAL_LOGGER.debug("\n\n ====> goo_attrs_to_load RESULT: default_attrs=#{default_attrs} \n")
         return default_attrs
       end
 
@@ -137,6 +142,48 @@ module LinkedData
         included_aggregates
       end
 
+      #New Ecoportal
+      #Overwrite of Goo::base::Resource to_hash method. This create hash also for nested object like "LinkedData::Models::Creator" object
+      def to_hash
+        begin
+          #LOGGER.debug "\n\n\n ontologies_linked_data - Base-> to_hash" 
+          attr_hash = {}
+          self.class.attributes.each do |attr|
+            v = self.instance_variable_get("@#{attr}")
+            #begin
+            case v
+            when Base then v = v.to_hash # Base instance? convert deeply
+            when Array # Array? convert elements
+              v = v.map do |e|
+                e.respond_to?(:to_hash) ? e.to_hash : e
+              end          
+            end
+            #end
+            attr_hash[attr]=v unless v.nil?
+          end
+          if @unmapped
+            all_attr_uris = Set.new
+            self.class.attributes.each do |attr|
+              if self.class.collection_opts
+                all_attr_uris << self.class.attribute_uri(attr,self.collection)
+              else
+                all_attr_uris << self.class.attribute_uri(attr)
+              end
+            end
+            @unmapped.each do |attr,values|
+              unless all_attr_uris.include?(attr)
+                attr_hash[attr] = values.map { |v| v.to_s }
+              end
+            end
+          end
+          attr_hash[:id] = @id
+          return attr_hash
+        rescue => e
+          LOGGER.debug "\n\n\n ontologies_linked_data - Base-> to_hash - error: #{e.message}\n#{e.backtrace.join("\n")}"
+          raise e        
+        end
+      end
+
       private
 
       ##
@@ -145,17 +192,19 @@ module LinkedData
       def write_permission_check(*args)
         # Don't prevent writes if creating a new object (anyone should be able to do this)
         return unless self.exist?
-
+        # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check: args#{args.inspect}")
         if LinkedData.settings.enable_security
           user = nil
           options_hash = {}
           args.each {|e| options_hash.merge!(e) if e.is_a?(Hash)}
           user = options_hash[:user]
-
+          # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check 1 - user= #{user.inspect}")
           # Allow a passed option to short-cut the security process
           return if options_hash[:override_security]
 
           user ||= Thread.current[:remote_user]
+
+          # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check 2 - user= #{user.inspect}")
 
           reference_object = self
 
@@ -165,6 +214,7 @@ module LinkedData
           # remove the original owner.
           reference_object = self.class.find(self.id).first if self.modified?
 
+          # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check  - reference_object= #{reference_object.inspect}")
           # Allow everyone to write
           return if reference_object.access_for_all?
 
@@ -172,16 +222,24 @@ module LinkedData
           if reference_object.access_control_load?
             # Only load ones that aren't loaded so we don't overwrite changes
             not_loaded = []
+            # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check  - reference_object.access_control_load_attrs= #{reference_object.access_control_load_attrs.inspect}")
+          
             reference_object.access_control_load_attrs.each do |attr|
               not_loaded << attr unless reference_object.loaded_attributes.include?(attr)
+              # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check  - attr= #{attr.inspect} - not_loaded=#{not_loaded.inspect}")
             end
             reference_object.bring(*not_loaded) unless not_loaded.empty?
+            # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check  - reference_object= #{reference_object.inspect}")
           end
 
           writable = reference_object.writable?(user)
+          # LOGGER.debug("\n\n LINKDE_DATA - models/base - write_permission_check  - writable= #{writable}")
           raise LinkedData::Security::WriteAccessDeniedError, "Write access denied: #{reference_object.id}" unless writable
         end
       end
+
+      
+
 
     end
   end

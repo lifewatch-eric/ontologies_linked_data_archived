@@ -7,7 +7,13 @@ require 'ontologies_linked_data/serializers/html'
 module LinkedData
   module Serializers
     def self.serialize(obj, type, options = {})
-      SERIALIZERS[type].serialize(obj, options)
+      begin
+        #ECOPORTAL_LOGGER.debug("\n\n\nONTOLOGIES_LINKED_DATA: serializers.rb - self.serialize type:#{type} \n options=#{options.inspect}")
+        SERIALIZERS[type].serialize(obj, options)
+      rescue => e
+        ECOPORTAL_LOGGER.debug "\n\n\nONTOLOGIES_LINKED_DATA - serializers.rb - self.serialize - ECCEZIONE: #{e.message}\n#{e.backtrace.join("\n")}"
+        raise e        
+      end
     end
 
     class Turtle

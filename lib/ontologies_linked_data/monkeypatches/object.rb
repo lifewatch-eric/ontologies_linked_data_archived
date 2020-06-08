@@ -7,6 +7,8 @@ class Object
   CONVERT_TO_STRING = Set.new([RDF::IRI, RDF::URI, RDF::Literal].map {|c| [c.descendants, c]}.flatten)
 
   def to_flex_hash(options = {}, &block)
+    #ECOPORTAL_LOGGER.debug("\n\n- - - - - \n ONTOLOGIES_LINKED_DATA: object.rb - to_flex_hash \n options=#{options.inspect}")
+        
     return self if is_a?(String) || is_a?(Fixnum) || is_a?(Float) || is_a?(TrueClass) || is_a?(FalseClass) || is_a?(NilClass)
 
     # Make sure special include_for_class params are separated out
@@ -14,6 +16,7 @@ class Object
 
     # Recurse to handle sets, arrays, etc
     recursed_object = enumerable_handling(options, &block)
+    #ECOPORTAL_LOGGER.debug(" -> ONTOLOGIES_LINKED_DATA: object.rb - to_flex_hash \n recursed_object=#{recursed_object}")
     return recursed_object unless recursed_object.nil?
 
     # Get sets for passed parameters from users
@@ -36,91 +39,101 @@ class Object
     if all # Get everything
       methods = self.class.hypermedia_settings[:serialize_methods] if self.is_a?(LinkedData::Hypermedia::Resource)
     end
+    
+    #ECOPORTAL_LOGGER.debug(" -> ONTOLOGIES_LINKED_DATA: object.rb - to_flex_hash \n > cls=#{cls} \n\n > only=#{only} \n\n > all=#{all}")
 
-    # Check to see if we're nested, if so remove necessary properties
-    only = only - do_not_serialize_nested(options)
+    #ECOPORTAL - BEGIN
+    begin
+      # Check to see if we're nested, if so remove necessary properties
+      only = only - do_not_serialize_nested(options)
 
-    # Determine whether to use defaults from the DSL or all attributes
-    hash = populate_attributes(hash, all, only, options)
 
-    # Remove banned attributes (from DSL or defined here)
-    hash = remove_bad_attributes(hash)
+      # Determine whether to use defaults from the DSL or all attributes
+      hash = populate_attributes(hash, all, only, options)
 
-    # Infer methods from only
-    only.each do |prop|
-      methods << prop unless hash.key?(prop)
-    end
+      # Remove banned attributes (from DSL or defined here)
+      hash = remove_bad_attributes(hash)
 
-    # Add methods
-    methods = methods - do_not_serialize_nested(options)
-    methods.each do |method|
-      hash[method] = self.send(method.to_s) if self.respond_to?(method) rescue next
-    end
-
-    # Get rid of everything except the 'only'
-    hash.keep_if {|k,v| only.include?(k) } unless only.empty?
-
-    # Make sure we're not returning things to be excepted
-    hash.delete_if {|k,v| except.include?(k) } unless except.empty?
-
-    # Filter to use if we need to remove attributes (done when we iterate the hash below)
-    do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_filter].empty?
-
-    # Special processing for each attribute in the new hash
-    # This will handle serializing linked goo objects
-    keys = hash.keys
-    keys.each do |k|
-      v = hash[k]
-
-      # Filter out values on a per-instance basis
-      # If the attributes list contains a proc, call it to get values
-      filtered_attribute = do_not_filter && !do_not_filter.include?(k)
-      if self.is_a?(LinkedData::Hypermedia::Resource) && filtered_attribute
-        hash.delete(k)
-        next
+      # Infer methods from only
+      only.each do |prop|
+        methods << prop unless hash.key?(prop)
       end
 
-      # Convert keys from IRIs to strings
-      unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
-        hash.delete(k)
-        hash[convert_nonstandard_types(k, options, &block)] = v
+      # Add methods
+      methods = methods - do_not_serialize_nested(options)
+      methods.each do |method|
+        hash[method] = self.send(method.to_s) if self.respond_to?(method) rescue next
       end
 
-      # Convert RDF literals to their equivalent Ruby typed value
-      if v.is_a?(RDF::Literal)
-        hash[k] = v.value
-        next
+      # Get rid of everything except the 'only'
+      hash.keep_if {|k,v| only.include?(k) } unless only.empty?
+
+      # Make sure we're not returning things to be excepted
+      hash.delete_if {|k,v| except.include?(k) } unless except.empty?
+
+      # Filter to use if we need to remove attributes (done when we iterate the hash below)
+      do_not_filter = self.class.hypermedia_settings[:serialize_filter].first.call(self) unless !self.is_a?(LinkedData::Hypermedia::Resource) || self.class.hypermedia_settings[:serialize_filter].empty?
+
+      # Special processing for each attribute in the new hash
+      # This will handle serializing linked goo objects
+      keys = hash.keys
+      keys.each do |k|
+        v = hash[k]
+
+        # Filter out values on a per-instance basis
+        # If the attributes list contains a proc, call it to get values
+        filtered_attribute = do_not_filter && !do_not_filter.include?(k)
+        if self.is_a?(LinkedData::Hypermedia::Resource) && filtered_attribute
+          hash.delete(k)
+          next
+        end
+
+        # Convert keys from IRIs to strings
+        unless k.is_a?(Symbol) || k.is_a?(String) || k.is_a?(Fixnum)
+          hash.delete(k)
+          hash[convert_nonstandard_types(k, options, &block)] = v
+        end
+
+        # Convert RDF literals to their equivalent Ruby typed value
+        if v.is_a?(RDF::Literal)
+          hash[k] = v.value
+          next
+        end
+
+        # Look at the Hypermedia DSL to determine if we should embed this attribute
+        hash, modified = embed_goo_objects(hash, k, v, options, &block)
+        next if modified
+
+        # Look at the Hypermedia DSL to determine if we should embed this attribute
+        begin
+          hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
+        rescue Exception => e
+          puts "Bad data found in submission: #{hash}"
+          raise e
+        end
+
+        next if modified
+
+        new_value = convert_nonstandard_types(v, options, &block)
+
+        hash[k] = new_value
       end
 
-      # Look at the Hypermedia DSL to determine if we should embed this attribute
-      hash, modified = embed_goo_objects(hash, k, v, options, &block)
-      next if modified
-
-      # Look at the Hypermedia DSL to determine if we should embed this attribute
-      begin
-        hash, modified = embed_goo_objects_just_values(hash, k, v, options, &block)
-      rescue Exception => e
-        puts "Bad data found in submission: #{hash}"
-        raise e
+      # Don't show nil properties for read_only objects. We do this because
+      # we could be showing a term, but only know its id. If we showed prefLabel
+      # as nil, it would be misleading, because the term likely has a prefLabel.
+      if self.respond_to?(:klass)
+        hash.delete_if {|k,v| v.nil?}
       end
 
-      next if modified
+      # Provide the hash for serialization processes to add data
+      yield hash, self if block_given?
+    rescue => e
+      ECOPORTAL_LOGGER.debug(" !!! ECCEZIONE!!!  ONTOLOGIES_LINKED_DATA: object.rb - to_flex_hash: error: #{e.message}\n#{e.backtrace.join("\n")}")
+      raise e
+    end 
 
-      new_value = convert_nonstandard_types(v, options, &block)
-
-      hash[k] = new_value
-    end
-
-    # Don't show nil properties for read_only objects. We do this because
-    # we could be showing a term, but only know its id. If we showed prefLabel
-    # as nil, it would be misleading, because the term likely has a prefLabel.
-    if self.respond_to?(:klass)
-      hash.delete_if {|k,v| v.nil?}
-    end
-
-    # Provide the hash for serialization processes to add data
-    yield hash, self if block_given?
-
+    #ECOPORTAL_LOGGER.debug(" ONTOLOGIES_LINKED_DATA: object.rb - to_flex_hash: hash: #{hash} ")
     hash
   end
 
@@ -131,6 +144,7 @@ class Object
   # when the object is nested. If the object is not nested or there
   # is no restriction, return an empty array.
   def do_not_serialize_nested(options, cls = nil)
+    #ECOPORTAL_LOGGER.debug("  ONTOLOGIES_LINKED_DATA - object.rb -> do_not_serialize_nested: #{options.inspect}") if options && options[:params] && options[:params]["serialize_nested"]
     return [] if options && options[:params] && options[:params]["serialize_nested"]
 
     cls ||= self

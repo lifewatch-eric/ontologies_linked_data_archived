@@ -25,6 +25,6 @@ end
 Dir.mkdir('log') unless File.exist?('log')
 log = File.new("log/debug_ont_linked_data.log", "a+")
 log.sync = true
-DEBUG_LOGGER = DebugLogger.new(log)
-DEBUG_LOGGER.level = Logger::DEBUG
+ECOPORTAL_LOGGER = DebugLogger.new(log)
+ECOPORTAL_LOGGER.level = Logger::DEBUG
 

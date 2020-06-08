@@ -5,10 +5,10 @@ module LinkedData::Utils
   class Notifications
 
    def self.notify(options = {})
-      DEBUG_LOGGER.debug("Notifications: notify - begin")
+      # # ECOPORTAL_LOGGER.debug("Notifications: notify - begin")
       return unless LinkedData.settings.enable_notifications
 
-      DEBUG_LOGGER.debug("LinkedData.settings.email_sender: #{LinkedData.settings.email_sender}")
+      ## ECOPORTAL_LOGGER.debug("LinkedData.settings.email_sender: #{LinkedData.settings.email_sender}")
       headers    = { 'Content-Type' => 'text/html' }
       sender     = options[:sender] || LinkedData.settings.email_sender
       recipients = options[:recipients]
@@ -35,7 +35,7 @@ module LinkedData::Utils
 	        via_options: mail_options
 	      })
         rescue Exception => e
-          DEBUG_LOGGER.error(e.message)
+          # ECOPORTAL_LOGGER.error(e.message)
           raise
       end
     end
@@ -109,7 +109,7 @@ module LinkedData::Utils
     end
 
     def self.reset_password(user, token)
-      DEBUG_LOGGER.debug("reset_password: {username: #{user.username}, user_email: #{user.email}}")
+      # # ECOPORTAL_LOGGER.debug("reset_password: {username: #{user.username}, user_email: #{user.email}}")
       subject = "[EcoPortal] User #{user.username} password reset"
       password_url = "#{LinkedData.settings.ui_host}/reset_password?tk=#{token}&em=#{CGI.escape(user.email)}&un=#{CGI.escape(user.username)}"
       body = <<-EOS
@@ -180,16 +180,16 @@ EcoPortal Team
         domain:  LinkedData.settings.smtp_domain # the HELO domain provided by the client to the server
       }
 
-      DEBUG_LOGGER.debug("LinkedData.settings.smtp_auth_type: #{LinkedData.settings.smtp_auth_type}")
+      # # ECOPORTAL_LOGGER.debug("LinkedData.settings.smtp_auth_type: #{LinkedData.settings.smtp_auth_type}")
       if LinkedData.settings.smtp_auth_type && LinkedData.settings.smtp_auth_type != :none
-        DEBUG_LOGGER.debug("LinkedData.settings.smtp_user: #{LinkedData.settings.smtp_user},  LinkedData.settings.smtp_password: #{LinkedData.settings.smtp_password}")
+        # # ECOPORTAL_LOGGER.debug("LinkedData.settings.smtp_user: #{LinkedData.settings.smtp_user},  LinkedData.settings.smtp_password: #{LinkedData.settings.smtp_password}")
         options = options.merge({
           user_name:      LinkedData.settings.smtp_user,
           password:       LinkedData.settings.smtp_password,
           authentication: LinkedData.settings.smtp_auth_type
         })
       end
-      #DEBUG_LOGGER.debug("mail_options: {host: #{options[:address]}, port: #{options[:port]}, authentication: #{options[:authentication]}, username: #{options[:user_name]}}")
+      ## ECOPORTAL_LOGGER.debug("mail_options: {host: #{options[:address]}, port: #{options[:port]}, authentication: #{options[:authentication]}, username: #{options[:user_name]}}")
       return options
     end
 

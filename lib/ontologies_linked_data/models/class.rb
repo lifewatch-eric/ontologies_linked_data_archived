@@ -556,7 +556,7 @@ eos
 
           if !p.loaded_attributes.include?(:parents)
             # fail safely
-            LOGGER.error("Class #{p.id.to_s} from #{p.submission.id} cannot load parents")
+            #LOGGER.error("Class #{p.id.to_s} from #{p.submission.id} cannot load parents")
             return
           end
 
