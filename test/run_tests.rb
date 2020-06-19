@@ -32,9 +32,21 @@ def main
 
   begin
     if @options[:backend] == BACKEND_AG
-      run_cmd = "docker run -d --rm -e AGRAPH_SUPER_USER=#{AG_USERNAME} -e AGRAPH_SUPER_PASSWORD=#{AG_PASSWORD} -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} franzinc/agraph:#{@options[:version]}"
+      container_name = "#{@options[:backend]}-#{@options[:version]}-#{@options[:port]}"
+      run_cmd = "docker run -d --rm -e AGRAPH_SUPER_USER=#{AG_USERNAME} -e AGRAPH_SUPER_PASSWORD=#{AG_PASSWORD} -p #{@options[:port]}:#{@options[:port]} --shm-size 1g --name #{container_name} franzinc/agraph:#{@options[:version]}"
       system("#{run_cmd}")
       sleep(5)
+
+      # If you need to upload a patch to the AG container, uncomment this code
+      # tmp_cmd = "docker cp /Users/mdorf/Downloads/patch-spr45071-bug26235.cl #{container_name}:agraph/lib/patches/patch-spr45071-bug26235.cl"
+      # system("#{tmp_cmd}")
+      # tmp_cmd = "docker exec -u root -t -i #{container_name} /agraph/bin/agraph-control --config /agraph/etc/agraph.cfg stop"
+      # system("#{tmp_cmd}")
+      # sleep(5)
+      # tmp_cmd = "docker exec -u root -t -i #{container_name} /agraph/bin/agraph-control --config /agraph/etc/agraph.cfg start"
+      # system("#{tmp_cmd}")
+      # sleep(5)
+
       ag_rest_call("/repositories/#{JOB_NAME}", 'PUT')
       ag_rest_call('/users/anonymous', 'PUT')
       ag_rest_call("/users/anonymous/access?read=true&write=true&repositories=#{JOB_NAME}", 'PUT')
