@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 6c9ea05aafa3b0e6e67a3ec704e6c04ee36777e0
+  revision: 5b389057eb8898e00d6cc2f4f4dda093c8267fcd
   branch: staging
   specs:
     goo (0.0.2)
@@ -29,7 +29,7 @@ GIT
 
 GIT
   remote: https://github.com/ncbo/sparql-client.git
-  revision: 2025f80c5520b09215a9ed543ae32b71a98e261d
+  revision: 2ab48e2b7b2aca5fd7ab99b9de36151bd7510de0
   branch: staging
   specs:
     sparql-client (1.0.1)
@@ -139,13 +139,13 @@ GEM
     rexml (3.2.4)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (0.85.1)
+    rubocop (0.86.0)
       parallel (~> 1.10)
       parser (>= 2.7.0.1)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.7)
       rexml
-      rubocop-ast (>= 0.0.3)
+      rubocop-ast (>= 0.0.3, < 1.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 2.0)
     rubocop-ast (0.0.3)
