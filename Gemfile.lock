@@ -29,7 +29,7 @@ GIT
 
 GIT
   remote: https://github.com/ncbo/sparql-client.git
-  revision: 2ab48e2b7b2aca5fd7ab99b9de36151bd7510de0
+  revision: a1e6beaf6790df68921cbed9bd1719299b9add3e
   branch: staging
   specs:
     sparql-client (1.0.1)
@@ -103,7 +103,7 @@ GEM
       builder
       minitest (>= 2.12, < 5.0)
       powerbar
-    multi_json (1.14.1)
+    multi_json (1.15.0)
     multipart-post (2.1.1)
     mysql2 (0.5.2)
     net-http-persistent (2.9.4)
@@ -139,7 +139,7 @@ GEM
     rexml (3.2.4)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (0.87.0)
+    rubocop (0.88.0)
       parallel (~> 1.10)
       parser (>= 2.7.1.1)
       rainbow (>= 2.2.2, < 4.0)
