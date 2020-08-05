@@ -12,7 +12,7 @@ DEF_AG_PORT = 10035
 DEF_4STORE_PORT = 9000
 JOB_NAME = 'bioportal'
 DEF_VERSION = 'latest'
-@options = nil
+REDIS_PORT = 6379
 
 def main
   @options = parse_options
@@ -62,6 +62,12 @@ def main
       system("#{exec_cmd3}")
       sleep(1)
     end
+
+    # start redis container
+    puts "starting redis container on port #{@options[:redis_port]}"
+    run_cmd4 = "docker run -p #{@options[:redis_port]}:6379  --name redis-#{@options[:redis_port]} -d redis"
+    system("#{run_cmd4}")
+
     test_cmd = 'bundle exec rake test'
     test_cmd << " TEST=\"#{@options[:filename]}\"" unless @options[:filename].empty?
     test_cmd << ' TESTOPTS="-v"'
@@ -72,6 +78,9 @@ def main
     ENV['GOO_HOST'] = GOO_HOST
     ENV['GOO_PORT'] = @options[:port].to_s
     ENV['GOO_BACKEND_NAME'] = @options[:backend]
+
+    ENV['GOO_REDIS_PORT'] = @options[:redis_port].to_s
+    ENV['HTTP_REDIS_PORT'] = @options[:redis_port].to_s
 
     if @options[:backend] == BACKEND_AG
       ENV['GOO_PATH_QUERY'] = "/repositories/#{JOB_NAME}"
@@ -90,8 +99,10 @@ def main
   end
 
   img_name = "#{@options[:backend]}-#{@options[:version]}-#{@options[:port]}"
-  rm_cmd = "docker rm -f -v #{img_name}"
+  img_name_redis = "redis-#{@options[:redis_port]}"
+  rm_cmd = "docker rm -f -v #{img_name}; docker rm -f -v #{img_name_redis}"
   puts "\nRemoving Docker Image: #{img_name}\n"
+  puts "\nRemoving Docker Image: #{img_name_redis}\n"
   %x(#{rm_cmd})
 end
 
@@ -115,7 +126,8 @@ def parse_options
       version: DEF_VERSION,
       filename: '',
       test: '',
-      port: -1
+      port: -1,
+      redis_port: 6379
   }
   opt_parser = OptionParser.new do |opts|
     opts.banner = "\n\s\s\s\s\sUsage: bundle exec ruby #{File.basename(__FILE__)} [options]\n\n"
@@ -130,6 +142,10 @@ def parse_options
 
     opts.on('-p', '--port PORT', "An optional port number of the server to test against. Default: #{DEF_4STORE_PORT} for #{BACKEND_4STORE}, #{DEF_AG_PORT} for #{BACKEND_AG}\n\t\t\t\t\s\s\s\s\sMust be a valid integer value") do |port|
       options[:port] = port.strip.to_i
+    end
+
+    opts.on('-r', '--redis_port REDIS_PORT', "An optional port number of the redis server. Default: #{REDIS_PORT} \n\t\t\t\t\s\s\s\s\sMust be a valid integer value") do |redis_port|
+      options[:redis_port] = redis_port.strip.to_i
     end
 
     opts.on('-f', '--file TEST_FILE_PATH', "An optional path to a test file to be run. Default: all test files") do |f|
@@ -155,7 +171,7 @@ def parse_options
     abort("Aborting...\n")
   end
 
-  if options[:port] == 0
+  if options[:port] == 0 or options[:redis_port] == 0
     puts "\nThe port number must be a valid integer. Run this script with the -h parameter for more information."
     abort("Aborting...\n")
   end
