@@ -51,10 +51,11 @@ def main
       ag_rest_call('/users/anonymous', 'PUT')
       ag_rest_call("/users/anonymous/access?read=true&write=true&repositories=#{JOB_NAME}", 'PUT')
     elsif @options[:backend] == BACKEND_4STORE
-      run_cmd = "docker run -d --rm -p #{@options[:port]}:#{DEF_4STORE_PORT} --shm-size 1g --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} bde2020/4store:#{@options[:version]}"
+      run_cmd = "docker run -d --rm -p #{@options[:port]}:#{@options[:port]} --name #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} bde2020/4store:#{@options[:version]}"
       exec_cmd1 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-backend-setup --segments 4 #{JOB_NAME}"
       exec_cmd2 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-admin start-stores #{JOB_NAME}"
       exec_cmd3 = "docker exec #{@options[:backend]}-#{@options[:version]}-#{@options[:port]} 4s-httpd -s-1 -p#{@options[:port]} #{JOB_NAME}"
+      puts "#{run_cmd}"
       system("#{run_cmd}")
       system("#{exec_cmd1}")
       system("#{exec_cmd2}")
