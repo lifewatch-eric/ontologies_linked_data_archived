@@ -13,6 +13,7 @@ DEF_4STORE_PORT = 9000
 JOB_NAME = 'bioportal'
 DEF_VERSION = 'latest'
 REDIS_PORT = 6379
+@options = nil
 
 def main
   @options = parse_options
