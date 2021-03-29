@@ -37,7 +37,7 @@ module Mappings
 
       if enable_debug
         logger.info("#{i}/#{latest.count} " +
-            "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
+            "Retrieved #{s_total} records for #{acro} in #{Time.now - t0} seconds.")
         logger.flush
       end
       sleep(5)
@@ -660,9 +660,17 @@ GROUP BY ?ontology
   # ontologies to ALL other ontologies in the system
   def self.create_mapping_count_pairs_for_ontologies(logger, arr_acronyms)
     latest_submissions = self.retrieve_latest_submissions(options={acronyms:arr_acronyms})
+    ont_total = latest_submissions.length
+    logger.info("There is a total of #{ont_total} ontologies to process...")
+    ont_ctr = 0
 
     latest_submissions.each do |acr, sub|
-      new_counts = self.mapping_ontologies_count(sub, nil, reload_cache=true)
+      new_counts = nil
+      time = Benchmark.realtime do
+        new_counts = self.mapping_ontologies_count(sub, nil, reload_cache=true)
+      end
+      logger.info("Retrieved mapping pair counts for #{acr} in #{time} seconds.")
+      ont_ctr += 1
       persistent_counts = {}
       LinkedData::Models::MappingCount.where(pair_count: true).and(ontologies: acr)
                                       .include(:ontologies, :count)
@@ -677,8 +685,8 @@ GROUP BY ?ontology
       end
 
       num_counts = new_counts.keys.length
-      logger.info("Ontology: #{acr}. #{num_counts} mapping counts to record...")
-      logger.info("----------------------------------")
+      logger.info("Ontology: #{acr}. #{num_counts} mapping pair counts to record...")
+      logger.info("------------------------------------------------")
       ctr = 0
 
       new_counts.each_key do |other|
@@ -724,9 +732,16 @@ GROUP BY ?ontology
           end
         end
         remaining = num_counts - ctr
-        logger.info("Mapping count saved for the pair [#{acr}, #{other}]: #{new_count}. " << ((remaining > 0) ? "#{remaining} counts remaining..." : "All done!"))
-        sleep(1)
+        logger.info("Mapping count saved for the pair [#{acr}, #{other}]: #{new_count}. " << ((remaining > 0) ? "#{remaining} counts remaining for #{acr}..." : "All done!"))
+
+        if ctr % 50 == 0
+          sec_to_wait = 1
+          logger.info("Waiting #{sec_to_wait} second" << ((sec_to_wait > 1) ? 's' : '') << '...')
+          sleep(sec_to_wait)
+        end
       end
+      remaining_ont = ont_total - ont_ctr
+      logger.info("Completed processing pair mapping counts for #{acr}. " << ((remaining_ont > 0) ? "#{remaining_ont} ontologies remaining..." : "All ontologies processed!"))
     end
   end
 
