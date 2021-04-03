@@ -1,3 +1,5 @@
+require 'benchmark'
+
 module LinkedData
 module Mappings
 
@@ -13,58 +15,34 @@ module Mappings
     return predicates
   end
 
-  def self.retrieve_latest_submissions()
-    status = "RDF"
-    include_ready = status.eql?("READY") ? true : false
-    status = "RDF" if status.eql?("READY")
-    includes = []
-    includes << :submissionStatus
-    includes << :submissionId
-    includes << { ontology: [:acronym, :viewOf] }
-    submissions_query = LinkedData::Models::OntologySubmission
-                          .where(submissionStatus: [ code: status])
-
-    filter = Goo::Filter.new(ontology: [:viewOf]).unbound
-    submissions_query = submissions_query.filter(filter)
-    submissions = submissions_query.include(includes).to_a
-
-    # Figure out latest parsed submissions using all submissions
-    latest_submissions = {}
-    submissions.each do |sub|
-      next if include_ready && !sub.ready?
-      latest_submissions[sub.ontology.acronym] ||= sub
-      otherId = latest_submissions[sub.ontology.acronym].submissionId
-      if sub.submissionId > otherId
-        latest_submissions[sub.ontology.acronym] = sub
-      end
-    end
-    return latest_submissions
-  end
-
-  def self.mapping_counts(enable_debug=false,logger=nil,reload_cache=false)
+  def self.mapping_counts(enable_debug=false, logger=nil, reload_cache=false, arr_acronyms=[])
     if not enable_debug
       logger = nil
     end
     t = Time.now
-    latest = retrieve_latest_submissions()
+    latest = self.retrieve_latest_submissions(options={acronyms:arr_acronyms})
     counts = {}
     i = 0
-    latest.each do |acro,sub|
+
+    latest.each do |acro, sub|
       t0 = Time.now
-      s_counts = mapping_ontologies_count(sub,nil,reload_cache=reload_cache)
+      s_counts = self.mapping_ontologies_count(sub, nil, reload_cache=reload_cache)
       s_total = 0
+
       s_counts.each do |k,v|
         s_total += v
       end
       counts[acro] = s_total
       i += 1
+
       if enable_debug
         logger.info("#{i}/#{latest.count} " +
-            "Time for #{acro} took #{Time.now - t0} sec. records #{s_total}")
+            "Retrieved #{s_total} records for #{acro} in #{Time.now - t0} seconds.")
         logger.flush
       end
       sleep(5)
     end
+
     if enable_debug
       logger.info("Total time #{Time.now - t} sec.")
       logger.flush
@@ -72,7 +50,7 @@ module Mappings
     return counts
   end
 
-  def self.mapping_ontologies_count(sub1,sub2,reload_cache=false)
+  def self.mapping_ontologies_count(sub1, sub2, reload_cache=false)
     template = <<-eos
 {
   GRAPH <#{sub1.id.to_s}> {
@@ -83,28 +61,22 @@ module Mappings
   }
 }
 eos
-    group_count = nil
+    group_count = sub2.nil? ? {} : nil
     count = 0
-    if sub2.nil?
-      group_count = {}
-    end
-    mapping_predicates().each do |_source,mapping_predicate|
+    latest_sub_ids = self.retrieve_latest_submission_ids
+
+    mapping_predicates().each do |_source, mapping_predicate|
       block = template.gsub("predicate", mapping_predicate[0])
-      if sub2.nil?
-      else
-      end
       query_template = <<-eos
       SELECT variables
       WHERE {
       block
       filter
       } group
-eos
+      eos
       query = query_template.sub("block", block)
-      filter = ""
-      if _source != "SAME_URI"
-        filter += "FILTER (?s1 != ?s2)"
-      end
+      filter = _source == "SAME_URI" ? '' : 'FILTER (?s1 != ?s2)'
+
       if sub2.nil?
         ont_id = sub1.id.to_s.split("/")[0..-3].join("/")
         #STRSTARTS is used to not count older graphs
@@ -121,15 +93,15 @@ eos
       end
       epr = Goo.sparql_query_client(:main)
       graphs = [sub1.id, LinkedData::Models::MappingProcess.type_uri]
-      unless sub2.nil?
-        graphs << sub2.id
-      end
-      solutions = nil
+      graphs << sub2.id unless sub2.nil?
+
       if sub2.nil?
-        solutions = epr.query(query,
-                              graphs: graphs, reload_cache: reload_cache)
+        solutions = epr.query(query, graphs: graphs, reload_cache: reload_cache)
+
         solutions.each do |sol|
           acr = sol[:g].to_s.split("/")[-3]
+          next unless latest_sub_ids[acr] == sol[:g].to_s
+
           if group_count[acr].nil?
             group_count[acr] = 0
           end
@@ -172,30 +144,19 @@ eos
     mappings = []
     persistent_count = 0
     acr1 = sub1.id.to_s.split("/")[-3]
+
     if classId.nil?
       acr2 = nil
-
-      if not sub2.nil?
-        acr2 = sub2.id.to_s.split("/")[-3]
-      end
+      acr2 = sub2.id.to_s.split("/")[-3] unless sub2.nil?
       pcount = LinkedData::Models::MappingCount.where(ontologies: acr1)
-      if not acr2 == nil
-        pcount = pcount.and(ontologies: acr2)
-      end
+      pcount = pcount.and(ontologies: acr2) unless acr2.nil?
       f = Goo::Filter.new(:pair_count) == (not acr2.nil?)
       pcount = pcount.filter(f)
       pcount = pcount.include(:count)
       pcount_arr = pcount.all
+      persistent_count = pcount_arr.length == 0 ? 0 : pcount_arr.first.count
 
-      if pcount_arr.length == 0
-        persistent_count = 0
-      else
-        persistent_count = pcount_arr.first.count
-      end
-
-      if persistent_count == 0
-        return LinkedData::Mappings.empty_page(page,size)
-      end
+      return LinkedData::Mappings.empty_page(page,size) if persistent_count == 0
     end
 
     if classId.nil?
@@ -203,10 +164,12 @@ eos
     else
       union_template = union_template.gsub("classId", "<#{classId.to_s}>")
     end
+    # latest_sub_ids = self.retrieve_latest_submission_ids
 
     mapping_predicates().each do |_source,mapping_predicate|
       union_block = union_template.gsub("predicate", mapping_predicate[0])
       union_block = union_block.gsub("bind","BIND ('#{_source}' AS ?source)")
+
       if sub2.nil?
         union_block = union_block.gsub("graph","?g")
       else
@@ -223,29 +186,27 @@ unions
 filter
 } page_group
 eos
-    query = mappings_in_ontology.gsub( "unions", unions)
+    query = mappings_in_ontology.gsub("unions", unions)
     variables = "?s2 graph ?source ?o"
-    if classId.nil?
-      variables = "?s1 " + variables
-    end
+    variables = "?s1 " + variables if classId.nil?
     query = query.gsub("variables", variables)
-    filter = ""
-    if classId.nil?
-      filter = "FILTER ((?s1 != ?s2) || (?source = 'SAME_URI'))"
-    else
-      filter = ""
-    end
+    filter = classId.nil? ? "FILTER ((?s1 != ?s2) || (?source = 'SAME_URI'))" : ''
+
     if sub2.nil?
       query = query.gsub("graph","?g")
       ont_id = sub1.id.to_s.split("/")[0..-3].join("/")
+
+      # latest_sub_filter_arr = latest_sub_ids.map { |_, id| "?g = <#{id}>" }
+      # filter += "\nFILTER (#{latest_sub_filter_arr.join(' || ')}) "
+
       #STRSTARTS is used to not count older graphs
       #no need since now we delete older graphs
       filter += "\nFILTER (!STRSTARTS(str(?g),'#{ont_id}'))"
-      query = query.gsub("filter",filter)
     else
-      query = query.gsub("graph","")
-      query = query.gsub("filter",filter)
+      query = query.gsub("graph", "")
     end
+    query = query.gsub("filter", filter)
+
     if size > 0
       pagination = "OFFSET offset LIMIT limit"
       query = query.gsub("page_group",pagination)
@@ -295,6 +256,7 @@ eos
       end
       mappings << mapping
     end
+
     if size == 0
       return mappings
     end
@@ -325,6 +287,7 @@ eos
       submission = LinkedData::Models::OntologySubmission
             .read_only(
               id: RDF::IRI.new(ontologyId+"/submissions/latest"),
+              # id: RDF::IRI.new(submissionId),
               ontology: ontology)
       mappedClass = LinkedData::Models::Class
             .read_only(
@@ -354,7 +317,6 @@ eos
       end
     end
     return triples
-
   end
 
   def self.delete_rest_mapping(mapping_id)
@@ -558,24 +520,59 @@ eos
     return mappings.sort_by { |x| x.process.date }.reverse[0..n-1]
   end
 
+  def self.retrieve_latest_submission_ids(options = {})
+    include_views = options[:include_views] || false
+    ids_query = <<-eos
+SELECT (CONCAT(?ontology, "/submissions/", (MAX(?submissionId))) as ?id)
+WHERE { 
+	?id <http://data.bioontology.org/metadata/ontology> ?ontology .
+	?id <http://data.bioontology.org/metadata/submissionId> ?submissionId .
+	?id <http://data.bioontology.org/metadata/submissionStatus> ?submissionStatus .
+	?submissionStatus <http://data.bioontology.org/metadata/code> "RDF" . 
+	include_views_filter 
+}
+GROUP BY ?ontology
+    eos
+    include_views_filter = include_views ? '' : <<-eos
+	OPTIONAL { 
+		?id <http://data.bioontology.org/metadata/ontology> ?ontJoin .  
+	} 
+	OPTIONAL { 
+		?ontJoin <http://data.bioontology.org/metadata/viewOf> ?viewOf .  
+	} 
+	FILTER(!BOUND(?viewOf))
+    eos
+    ids_query.gsub!("include_views_filter", include_views_filter)
+    epr = Goo.sparql_query_client(:main)
+    solutions = epr.query(ids_query)
+    latest_ids = {}
+
+    solutions.each do |sol|
+      acr = sol[:id].to_s.split("/")[-3]
+      latest_ids[acr] = sol[:id].object
+    end
+
+    latest_ids
+  end
+
   def self.retrieve_latest_submissions(options = {})
+    acronyms = (options[:acronyms] || [])
     status = (options[:status] || "RDF").to_s.upcase
     include_ready = status.eql?("READY") ? true : false
     status = "RDF" if status.eql?("READY")
-    any = true if status.eql?("ANY")
+    any = status.eql?("ANY")
     include_views = options[:include_views] || false
+
     if any
       submissions_query = LinkedData::Models::OntologySubmission.where
     else
-      submissions_query = LinkedData::Models::OntologySubmission
-                            .where(submissionStatus: [ code: status])
+      submissions_query = LinkedData::Models::OntologySubmission.where(submissionStatus: [code: status])
     end
-
     submissions_query = submissions_query.filter(Goo::Filter.new(ontology: [:viewOf]).unbound) unless include_views
-    submissions = submissions_query.
-        include(:submissionStatus,:submissionId, ontology: [:acronym]).to_a
-
+    submissions = submissions_query.include(:submissionStatus,:submissionId, ontology: [:acronym]).to_a
+    submissions.select! { |sub| acronyms.include?(sub.ontology.acronym) } unless acronyms.empty?
     latest_submissions = {}
+
     submissions.each do |sub|
       next if include_ready && !sub.ready?
       latest_submissions[sub.ontology.acronym] ||= sub
@@ -584,10 +581,22 @@ eos
     return latest_submissions
   end
 
-  def self.create_mapping_counts(logger)
-    new_counts = LinkedData::Mappings.mapping_counts(
-                                        enable_debug=true,logger=logger,
-                                        reload_cache=true)
+  def self.create_mapping_counts(logger, arr_acronyms=[])
+    ont_msg = arr_acronyms.empty? ? "all ontologies" : "ontologies [#{arr_acronyms.join(', ')}]"
+
+    time = Benchmark.realtime do
+      self.create_mapping_count_totals_for_ontologies(logger, arr_acronyms)
+    end
+    logger.info("Completed rebuilding total mapping counts for #{ont_msg} in #{(time/60).round(1)} minutes.")
+
+    time = Benchmark.realtime do
+      self.create_mapping_count_pairs_for_ontologies(logger, arr_acronyms)
+    end
+    logger.info("Completed rebuilding mapping count pairs for #{ont_msg} in #{(time/60).round(1)} minutes.")
+  end
+
+  def self.create_mapping_count_totals_for_ontologies(logger, arr_acronyms)
+    new_counts = self.mapping_counts(enable_debug=true, logger=logger, reload_cache=true, arr_acronyms)
     persistent_counts = {}
     f = Goo::Filter.new(:pair_count) == false
     LinkedData::Models::MappingCount.where.filter(f)
@@ -598,17 +607,30 @@ eos
       persistent_counts[m.ontologies.first] = m
     end
 
+    num_counts = new_counts.keys.length
+    ctr = 0
+
     new_counts.each_key do |acr|
       new_count = new_counts[acr]
+      ctr += 1
+
       if persistent_counts.include?(acr)
         inst = persistent_counts[acr]
+
         if new_count != inst.count
           inst.bring_remaining
           inst.count = new_count
-          if not inst.valid? && logger
-            logger.info("Error saving #{inst.id.to_s} #{inst.errors}")
-          else
-             inst.save
+
+          begin
+            if inst.valid?
+              inst.save
+            else
+              logger.error("Error updating mapping count for #{acr}: #{inst.id.to_s}. #{inst.errors}")
+              next
+            end
+          rescue Exception => e
+            logger.error("Exception updating mapping count for #{acr}: #{inst.id.to_s}. #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+            next
           end
         end
       else
@@ -616,48 +638,110 @@ eos
         m.ontologies = [acr]
         m.pair_count = false
         m.count = new_count
-        if not m.valid? && logger
-          logger.info("Error saving #{inst.id.to_s} #{inst.errors}")
-        else
-           m.save
+
+        begin
+          if m.valid?
+            m.save
+          else
+            logger.error("Error saving new mapping count for #{acr}. #{m.errors}")
+            next
+          end
+        rescue Exception => e
+          logger.error("Exception saving new mapping count for #{acr}. #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+          next
         end
       end
+      remaining = num_counts - ctr
+      logger.info("Total mapping count saved for #{acr}: #{new_count}. " << ((remaining > 0) ? "#{remaining} counts remaining..." : "All done!"))
     end
+  end
 
-    retrieve_latest_submissions.each do |acr,sub|
+  # This generates pair mapping counts for the given
+  # ontologies to ALL other ontologies in the system
+  def self.create_mapping_count_pairs_for_ontologies(logger, arr_acronyms)
+    latest_submissions = self.retrieve_latest_submissions(options={acronyms:arr_acronyms})
+    ont_total = latest_submissions.length
+    logger.info("There is a total of #{ont_total} ontologies to process...")
+    ont_ctr = 0
 
-      new_counts = LinkedData::Mappings
-                .mapping_ontologies_count(sub,nil,reload_cache=true)
+    latest_submissions.each do |acr, sub|
+      new_counts = nil
+      time = Benchmark.realtime do
+        new_counts = self.mapping_ontologies_count(sub, nil, reload_cache=true)
+      end
+      logger.info("Retrieved mapping pair counts for #{acr} in #{time} seconds.")
+      ont_ctr += 1
       persistent_counts = {}
-      LinkedData::Models::MappingCount.where(pair_count: true)
-                                             .and(ontologies: acr)
-      .include(:ontologies,:count)
-      .all
-      .each do |m|
+      LinkedData::Models::MappingCount.where(pair_count: true).and(ontologies: acr)
+                                      .include(:ontologies, :count)
+                                      .all
+                                      .each do |m|
         other = m.ontologies.first
+
         if other == acr
           other = m.ontologies[1]
         end
         persistent_counts[other] = m
       end
 
+      num_counts = new_counts.keys.length
+      logger.info("Ontology: #{acr}. #{num_counts} mapping pair counts to record...")
+      logger.info("------------------------------------------------")
+      ctr = 0
+
       new_counts.each_key do |other|
         new_count = new_counts[other]
+        ctr += 1
+
         if persistent_counts.include?(other)
           inst = persistent_counts[other]
+
           if new_count != inst.count
             inst.bring_remaining
+            inst.pair_count = true
             inst.count = new_count
-            inst.save
+
+            begin
+              if inst.valid?
+                inst.save
+              else
+                logger.error("Error updating mapping count for the pair [#{acr}, #{other}]: #{inst.id.to_s}. #{inst.errors}")
+                next
+              end
+            rescue Exception => e
+              logger.error("Exception updating mapping count for the pair [#{acr}, #{other}]: #{inst.id.to_s}. #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+              next
+            end
           end
         else
           m = LinkedData::Models::MappingCount.new
           m.count = new_count
           m.ontologies = [acr,other]
           m.pair_count = true
-          m.save
+
+          begin
+            if m.valid?
+              m.save
+            else
+              logger.error("Error saving new mapping count for the pair [#{acr}, #{other}]. #{m.errors}")
+              next
+            end
+          rescue Exception => e
+            logger.error("Exception saving new mapping count for the pair [#{acr}, #{other}]. #{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+            next
+          end
+        end
+        remaining = num_counts - ctr
+        logger.info("Mapping count saved for the pair [#{acr}, #{other}]: #{new_count}. " << ((remaining > 0) ? "#{remaining} counts remaining for #{acr}..." : "All done!"))
+
+        if ctr % 50 == 0
+          sec_to_wait = 1
+          logger.info("Waiting #{sec_to_wait} second" << ((sec_to_wait > 1) ? 's' : '') << '...')
+          sleep(sec_to_wait)
         end
       end
+      remaining_ont = ont_total - ont_ctr
+      logger.info("Completed processing pair mapping counts for #{acr}. " << ((remaining_ont > 0) ? "#{remaining_ont} ontologies remaining..." : "All ontologies processed!"))
     end
   end
 
