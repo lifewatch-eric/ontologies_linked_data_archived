@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: ec4cdd64e2cb728236067b1349209f6b17b154e0
+  revision: da478e16f5aa0e025ea5c399ec6539c0a20be2b6
   branch: staging
   specs:
     goo (0.0.2)
@@ -73,7 +73,7 @@ GEM
     ethon (0.14.0)
       ffi (>= 1.15.0)
     eventmachine (1.2.7)
-    faraday (1.4.2)
+    faraday (1.4.3)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
@@ -150,7 +150,7 @@ GEM
     rexml (3.2.5)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    rubocop (1.17.0)
+    rubocop (1.18.1)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
       rainbow (>= 2.2.2, < 4.0)
