@@ -523,7 +523,8 @@ eos
   def self.retrieve_latest_submission_ids(options = {})
     include_views = options[:include_views] || false
     ids_query = <<-eos
-SELECT (CONCAT(?ontology, "/submissions/", (MAX(?submissionId))) as ?id)
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT (CONCAT(xsd:string(?ontology), "/submissions/", xsd:string(MAX(?submissionId))) as ?id)
 WHERE { 
 	?id <http://data.bioontology.org/metadata/ontology> ?ontology .
 	?id <http://data.bioontology.org/metadata/submissionId> ?submissionId .
