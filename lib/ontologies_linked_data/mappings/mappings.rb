@@ -1,7 +1,9 @@
 require 'benchmark'
+require 'tmpdir'
 
 module LinkedData
 module Mappings
+  OUTSTANDING_LIMIT = 30
 
   def self.mapping_predicates()
     predicates = {}
@@ -15,16 +17,31 @@ module Mappings
     return predicates
   end
 
-  def self.mapping_counts(enable_debug=false, logger=nil, reload_cache=false, arr_acronyms=[])
-    if not enable_debug
-      logger = nil
+  def self.handle_triple_store_downtime(logger=nil)
+    epr = Goo.sparql_query_client(:main)
+    status = epr.status
+
+    if status[:exception]
+      logger.info(status[:exception]) if logger
+      exit(1)
     end
+
+    if status[:outstanding] > OUTSTANDING_LIMIT
+      logger.info("The triple store number of outstanding queries exceeded #{OUTSTANDING_LIMIT}. Exiting...") if logger
+      exit(1)
+    end
+  end
+
+  def self.mapping_counts(enable_debug=false, logger=nil, reload_cache=false, arr_acronyms=[])
+    logger = nil unless enable_debug
     t = Time.now
     latest = self.retrieve_latest_submissions(options={acronyms:arr_acronyms})
     counts = {}
     i = 0
+    epr = Goo.sparql_query_client(:main)
 
     latest.each do |acro, sub|
+      self.handle_triple_store_downtime(logger)
       t0 = Time.now
       s_counts = self.mapping_ontologies_count(sub, nil, reload_cache=reload_cache)
       s_total = 0
@@ -64,6 +81,7 @@ eos
     group_count = sub2.nil? ? {} : nil
     count = 0
     latest_sub_ids = self.retrieve_latest_submission_ids
+    epr = Goo.sparql_query_client(:main)
 
     mapping_predicates().each do |_source, mapping_predicate|
       block = template.gsub("predicate", mapping_predicate[0])
@@ -91,7 +109,6 @@ eos
         query = query.sub("variables","(count(?s1) as ?c)")
         query = query.sub("group","")
       end
-      epr = Goo.sparql_query_client(:main)
       graphs = [sub1.id, LinkedData::Models::MappingProcess.type_uri]
       graphs << sub2.id unless sub2.nil?
 
@@ -601,7 +618,7 @@ GROUP BY ?ontology
     persistent_counts = {}
     f = Goo::Filter.new(:pair_count) == false
     LinkedData::Models::MappingCount.where.filter(f)
-      .include(:ontologies,:count)
+      .include(:ontologies, :count)
     .include(:all)
     .all
     .each do |m|
@@ -664,19 +681,24 @@ GROUP BY ?ontology
     ont_total = latest_submissions.length
     logger.info("There is a total of #{ont_total} ontologies to process...")
     ont_ctr = 0
+    # filename = 'mapping_pairs.ttl'
+    # temp_dir = Dir.tmpdir
+    # temp_file_path = File.join(temp_dir, filename)
+    # temp_dir = '/Users/mdorf/Downloads/test/'
+    # temp_file_path = File.join(File.dirname(file_path), "test.ttl")
+    # fsave = File.open(temp_file_path, "a")
 
     latest_submissions.each do |acr, sub|
+      self.handle_triple_store_downtime(logger)
       new_counts = nil
       time = Benchmark.realtime do
         new_counts = self.mapping_ontologies_count(sub, nil, reload_cache=true)
       end
-      logger.info("Retrieved mapping pair counts for #{acr} in #{time} seconds.")
+      logger.info("Retrieved new mapping pair counts for #{acr} in #{time} seconds.")
       ont_ctr += 1
       persistent_counts = {}
       LinkedData::Models::MappingCount.where(pair_count: true).and(ontologies: acr)
-                                      .include(:ontologies, :count)
-                                      .all
-                                      .each do |m|
+                                      .include(:ontologies, :count).all.each do |m|
         other = m.ontologies.first
 
         if other == acr
@@ -704,7 +726,8 @@ GROUP BY ?ontology
 
             begin
               if inst.valid?
-                inst.save
+                inst.save()
+                # inst.save({ batch: fsave })
               else
                 logger.error("Error updating mapping count for the pair [#{acr}, #{other}]: #{inst.id.to_s}. #{inst.errors}")
                 next
@@ -722,7 +745,8 @@ GROUP BY ?ontology
 
           begin
             if m.valid?
-              m.save
+              m.save()
+              # m.save({ batch: fsave })
             else
               logger.error("Error saving new mapping count for the pair [#{acr}, #{other}]. #{m.errors}")
               next
@@ -734,8 +758,9 @@ GROUP BY ?ontology
         end
         remaining = num_counts - ctr
         logger.info("Mapping count saved for the pair [#{acr}, #{other}]: #{new_count}. " << ((remaining > 0) ? "#{remaining} counts remaining for #{acr}..." : "All done!"))
+        wait_interval = 250
 
-        if ctr % 50 == 0
+        if ctr % wait_interval == 0
           sec_to_wait = 1
           logger.info("Waiting #{sec_to_wait} second" << ((sec_to_wait > 1) ? 's' : '') << '...')
           sleep(sec_to_wait)
@@ -743,7 +768,9 @@ GROUP BY ?ontology
       end
       remaining_ont = ont_total - ont_ctr
       logger.info("Completed processing pair mapping counts for #{acr}. " << ((remaining_ont > 0) ? "#{remaining_ont} ontologies remaining..." : "All ontologies processed!"))
+      sleep(5)
     end
+    # fsave.close
   end
 
 end
