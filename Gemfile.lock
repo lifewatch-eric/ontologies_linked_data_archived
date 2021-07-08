@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: 410d6aee244e758d34416c4cbad2965e60a33502
+  revision: 52b49b00086b53533a723c2effc7ed445a6a6aab
   branch: master
   specs:
     goo (0.0.2)
