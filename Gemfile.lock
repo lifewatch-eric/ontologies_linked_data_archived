@@ -127,7 +127,7 @@ GEM
     omni_logger (0.1.4)
       logger
     parallel (1.20.1)
-    parser (3.0.1.1)
+    parser (3.0.2.0)
       ast (~> 2.4.1)
     pony (1.13.1)
       mail (>= 2.0)
