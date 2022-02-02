@@ -202,10 +202,9 @@ GEM
 
 PLATFORMS
   ruby
-  x86_64-darwin-17
 
 DEPENDENCIES
-  activesupport (~> 4.0)
+  activesupport (~> 4)
   addressable (= 2.3.5)
   bcrypt (~> 3.0)
   cube-ruby
@@ -214,7 +213,7 @@ DEPENDENCIES
   ffi
   goo!
   libxml-ruby (~> 2.0)
-  minitest (~> 4.0)
+  minitest
   minitest-reporters (>= 0.5.0)
   multi_json (~> 1.0)
   ncbo_resource_index!
