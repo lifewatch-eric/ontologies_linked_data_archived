@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/ncbo/goo.git
-  revision: d26b364dc5e8a22753cf9f8495a77c398112683f
-  branch: master
+  revision: 06421b2a06807865adc94af6276afee4aa438cea
+  branch: staging
   specs:
     goo (0.0.2)
       addressable (= 2.3.5)
@@ -149,7 +149,7 @@ GEM
     rake (10.5.0)
     rdf (1.0.8)
       addressable (>= 2.2)
-    redis (4.5.1)
+    redis (4.6.0)
     ref (2.0.0)
     regexp_parser (2.2.0)
     rest-client (2.1.0)
