@@ -166,6 +166,8 @@ module LinkedData
       conf.add_namespace(:obo_purl, RDF::Vocabulary.new("http://purl.obolibrary.org/obo/"))
       conf.add_namespace(:umls,
                          RDF::Vocabulary.new("http://bioportal.bioontology.org/ontologies/umls/"))
+      conf.add_namespace(:dct, RDF::Vocabulary.new("http://purl.org/dc/terms/"))
+      conf.add_namespace(:datacite, RDF::Vocabulary.new("http://datacite.org/schema/kernel-4#"))
       conf.id_prefix = "http://data.bioontology.org/"
       conf.pluralize_models(true)
     end

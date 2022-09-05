@@ -1,5 +1,5 @@
 require 'set'
-
+require 'oauth2'
 module LinkedData
   module Security
     class Authorization
@@ -7,6 +7,34 @@ module LinkedData
 
       def initialize(app = nil)
         @app = app
+        @semaphore = Mutex.new
+        if LinkedData.settings.oauth2_enabled
+          begin
+            @oath2Client = OAuth2::Client.new(LinkedData.settings.oauth2_client_id, LinkedData.settings.oauth2_client_secret, {site: LinkedData.settings.oauth2_site, token_url: "oauth2/token", ssl: LinkedData.settings.oauth2_ssl})
+            @oath2ClientToken = @oath2Client.client_credentials.get_token("scope" => LinkedData.settings.oauth2_token_introspection_scope)
+          rescue OAuth2::Error => e
+            LOGGER.info("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+            raise e
+          end
+        end
+      end
+
+      def oath2_client_token()
+        token = nil
+        @semaphore.synchronize do
+          token = @oath2ClientToken
+        end
+
+        if token.expired?
+          token = @oath2Client.client_credentials.get_token("scope" => LinkedData.settings.oauth2_token_introspection_scope)
+
+          @semaphore.synchronize do
+            @oath2ClientToken = token
+          end
+
+        end
+
+        token
       end
 
       ROUTES_THAT_BYPASS_SECURITY = Set.new([
@@ -19,26 +47,88 @@ module LinkedData
       def call(env)
         req = Rack::Request.new(env)
         params = req.params
-        apikey = find_apikey(env, params)
 
-        unless apikey
-          status = 401
-          response = {
-            status: status,
-            error: "You must provide an API Key either using the query-string parameter `apikey` or the `Authorization` header: `Authorization: apikey token=my_apikey`. " + \
+        accessToken = find_access_token(env, params)
+        apikey = accessToken ? nil : find_apikey(env, params)
+
+        if apikey
+          if !authorized?(apikey, env)
+            status = 401
+            response = {
+              status: status,
+              error: "You must provide a valid API Key. " + \
               "Your API Key can be obtained by logging in at #{LinkedData.settings.ui_host}/account"
-          }
-        end
+            }
+          end
+        elsif accessToken
+          begin
+          introspectionResponse = oath2_client_token.post("/oauth2/introspect", {body: {"token" => accessToken}})
+          rescue OAuth2::Error => e
+            LOGGER.debug("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
+            raise e
+          end
 
-        if status != 401 && !authorized?(apikey, env)
-          status = 401
-          response = {
-            status: status,
-            error: "You must provide a valid API Key. " + \
-              "Your API Key can be obtained by logging in at #{LinkedData.settings.ui_host}/account"
-          }
-        end
+          unless introspectionResponse.parsed.active
+            status = 401
+            response = {
+              status: status,
+              error: "The provided access token is not valid."
+            }
+          end
 
+          if status != 401
+            username = introspectionResponse.parsed.username
+
+            # the token returns a qualified username with source (e.g. LIFEWATCH.EU) and domain (e.g. @carbon)
+            if status != 401 && LinkedData.settings.oauth2_token_username_extractor
+              if usernameMatch = LinkedData.settings.oauth2_token_username_extractor.match(username)
+                username = usernameMatch["username"]
+              else
+                status = 401
+                response = {
+                  status: status,
+                  error: "Username does not match the extraction pattern"
+                }
+              end
+            end
+
+            if status != 401
+              scope = introspectionResponse.parsed.scope
+
+              scopes = []
+              if scope
+                scopes = scope.split()
+              end
+
+              unless !LinkedData.settings.oauth2_token_scope_matcher || scopes.any?(LinkedData.settings.oauth2_token_scope_matcher)
+                status = 401
+                response = {
+                  status: status,
+                  error: "The provided access token doesn't meet the required scope"
+                }
+              end
+
+              user = LinkedData::Models::User.where(username: username).include(LinkedData::Models::User.attributes(:all)).first
+              if user
+                store_user(user, env)
+              else
+                status = 401
+                response = {
+                  status: status,
+                  error: "The user who granted the access token is not recognized"
+                }
+              end
+            end
+          else
+            status = 401
+            response = {
+              status: status,
+              error: "You must provide an API Key either using the query-string parameter `apikey` or the `Authorization` header: `Authorization: apikey token=my_apikey`. " + \
+              "Your API Key can be obtained by logging in at #{LinkedData.settings.ui_host}/account" + \
+              "Alternatively, you must supply an OAuth2 access token in the `Authorization` header: `Authorization: Bearer oauth2-access-token`."
+            }
+          end
+        end
         if status == 401 && !bypass?(env)
           LinkedData::Serializer.build_response(env, status: status, body: response)
         else
@@ -65,6 +155,15 @@ module LinkedData
         if best == LinkedData::MediaTypes::HTML
           Rack::Utils.set_cookie_header!(headers, "ncbo_apikey", {:value => apikey, :path => "/", :expires => Time.now+90*24*60*60})
         end
+      end
+
+      def find_access_token(env, params)
+        access_token = nil
+        header_auth = env["HTTP_AUTHORIZATION"] || env["Authorization"]
+        if header_auth && header_auth.downcase().start_with?("bearer ")
+          access_token = header_auth.split()[1]
+        end
+        access_token
       end
 
       def find_apikey(env, params)

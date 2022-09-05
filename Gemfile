@@ -39,3 +39,5 @@ gem 'sparql-client', github: 'ncbo/sparql-client', branch: 'master'
 
 # ResourceIndex dependencies (managed per-platform)
 gem 'ncbo_resource_index', github: 'ncbo/resource_index'
+
+gem "oauth2", "~> 2.0"
