@@ -119,15 +119,15 @@ module LinkedData
                 }
               end
             end
-          else
-            status = 401
-            response = {
-              status: status,
-              error: "You must provide an API Key either using the query-string parameter `apikey` or the `Authorization` header: `Authorization: apikey token=my_apikey`. " + \
-              "Your API Key can be obtained by logging in at #{LinkedData.settings.ui_host}/account" + \
-              "Alternatively, you must supply an OAuth2 access token in the `Authorization` header: `Authorization: Bearer oauth2-access-token`."
-            }
           end
+        else
+          status = 401
+          response = {
+            status: status,
+            error: "You must provide an API Key either using the query-string parameter `apikey` or the `Authorization` header: `Authorization: apikey token=my_apikey`. " + \
+            "Your API Key can be obtained by logging in at #{LinkedData.settings.ui_host}/account" + \
+            "Alternatively, you must supply an OAuth2 access token in the `Authorization` header: `Authorization: Bearer oauth2-access-token`."
+          }
         end
         if status == 401 && !bypass?(env)
           LinkedData::Serializer.build_response(env, status: status, body: response)
