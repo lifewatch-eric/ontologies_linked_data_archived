@@ -1,26 +1,25 @@
 GIT
-  remote: git://github.com/ncbo/goo.git
-  revision: 5e7c8f42ed2598bab36152d98a254657c6c0c311
+  remote: https://github.com/ncbo/goo.git
+  revision: 562826ba21f7da641159071531375776a1414207
   branch: master
   specs:
     goo (0.0.2)
-      addressable (= 2.3.5)
+      addressable (~> 2.8)
       pry
       rdf (= 1.0.8)
       redis
       rest-client
       rsolr
       sparql-client
-      systemu
       uuid
 
 GIT
-  remote: git://github.com/ncbo/resource_index.git
-  revision: 9d1f0a4e2f2816990a1f80ee576c73a08e34e754
+  remote: https://github.com/ncbo/resource_index.git
+  revision: 24a7f14a6da4f4a0eaba1016ca5a378dfccd7441
   specs:
     ncbo_resource_index (0.0.1)
       elasticsearch (= 2.0.0)
-      mysql2
+      mysql2 (= 0.5.2)
       pony
       ref
       ruby-xxHash
@@ -28,8 +27,8 @@ GIT
       typhoeus
 
 GIT
-  remote: git://github.com/ncbo/sparql-client.git
-  revision: 8dbf57fb87264699eb25643c35a219e02d21f4fc
+  remote: https://github.com/ncbo/sparql-client.git
+  revision: fb4a89b420f8eb6dda5190a126b6c62e32c4c0c9
   branch: master
   specs:
     sparql-client (1.0.1)
@@ -46,15 +45,17 @@ GEM
       multi_json (~> 1.3)
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
-    addressable (2.3.5)
+    addressable (2.8.0)
+      public_suffix (>= 2.0.2, < 5.0)
     bcrypt (3.1.11)
     builder (3.2.3)
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
+    connection_pool (2.3.0)
     cube-ruby (0.0.3)
     daemons (1.2.5)
     docile (1.1.5)
-    domain_name (0.5.20170404)
+    domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     elasticsearch (2.0.0)
       elasticsearch-api (= 2.0.0)
@@ -68,25 +69,28 @@ GEM
       htmlentities (~> 4.3.3)
       launchy (~> 2.1)
       mail (~> 2.6)
-    ethon (0.11.0)
-      ffi (>= 1.3.0)
+    ethon (0.15.0)
+      ffi (>= 1.15.0)
     eventmachine (1.2.5)
-    faraday (0.13.1)
-      multipart-post (>= 1.2, < 3)
-    ffi (1.9.18)
+    faraday (2.6.0)
+      faraday-net_http (>= 2.0, < 3.1)
+      ruby2_keywords (>= 0.0.4)
+    faraday-net_http (3.0.0)
+    ffi (1.15.5)
     htmlentities (4.3.4)
-    http-cookie (1.0.3)
+    http-accept (1.7.0)
+    http-cookie (1.0.5)
       domain_name (~> 0.5)
     i18n (0.9.1)
       concurrent-ruby (~> 1.0)
     json (2.1.0)
-    json_pure (2.1.0)
+    json_pure (2.6.2)
     launchy (2.4.3)
       addressable (~> 2.3)
     libxml-ruby (2.9.0)
-    logger (1.2.8)
-    macaddr (1.7.1)
-      systemu (~> 2.6.2)
+    logger (1.5.1)
+    macaddr (1.7.2)
+      systemu (~> 2.6.5)
     mail (2.6.6)
       mime-types (>= 1.16, < 4)
     method_source (0.9.0)
@@ -95,8 +99,7 @@ GEM
     mime-types-data (3.2016.0521)
     minitest (4.7.5)
     multi_json (1.12.2)
-    multipart-post (2.0.0)
-    mysql2 (0.4.10)
+    mysql2 (0.5.2)
     net-http-persistent (2.9.4)
     netrc (0.11.0)
     oj (2.18.5)
@@ -107,23 +110,29 @@ GEM
     pry (0.11.3)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
+    public_suffix (4.0.7)
     rack (1.6.8)
     rack-test (0.8.2)
       rack (>= 1.0, < 3)
     rake (10.5.0)
     rdf (1.0.8)
       addressable (>= 2.2)
-    redis (4.0.1)
+    redis (5.0.5)
+      redis-client (>= 0.9.0)
+    redis-client (0.9.0)
+      connection_pool
     ref (2.0.0)
-    rest-client (2.0.2)
+    rest-client (2.1.0)
+      http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     rsolr (1.1.2)
       builder (>= 2.1.2)
-    ruby-xxHash (0.4.0.1)
+    ruby-xxHash (0.4.0.2)
+    ruby2_keywords (0.0.5)
     rubyzip (1.2.1)
-    sequel (5.3.0)
+    sequel (5.61.0)
     simplecov (0.15.1)
       docile (~> 1.1.0)
       json (>= 1.8, < 3)
@@ -137,13 +146,13 @@ GEM
       eventmachine (~> 1.0, >= 1.0.4)
       rack (>= 1, < 3)
     thread_safe (0.3.6)
-    typhoeus (1.3.0)
+    typhoeus (1.4.0)
       ethon (>= 0.9.0)
     tzinfo (0.3.53)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.4)
-    uuid (2.3.8)
+    unf_ext (0.0.8.2)
+    uuid (2.3.9)
       macaddr (~> 1.0)
 
 PLATFORMS
@@ -152,7 +161,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport (~> 4.0)
-  addressable (= 2.3.5)
+  addressable (= 2.8.0)
   bcrypt (~> 3.0)
   cube-ruby
   email_spec
