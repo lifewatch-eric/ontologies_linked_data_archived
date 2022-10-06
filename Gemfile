@@ -13,7 +13,7 @@ gem 'rsolr', '~> 1.0'
 gem 'minitest', '~> 4.0'
 gem 'cube-ruby', require: "cube"
 gem 'pony'
-gem 'addressable', '= 2.3.5'
+gem 'addressable', '2.8.0'
 gem 'omni_logger'
 gem 'thin'
 gem 'mail', '2.6.6'
