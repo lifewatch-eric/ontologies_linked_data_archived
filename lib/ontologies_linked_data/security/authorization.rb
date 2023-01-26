@@ -1,40 +1,27 @@
 require 'set'
-require 'oauth2'
+require 'jwt'
+
 module LinkedData
   module Security
     class Authorization
+      def self.decodeJWT(encodedToken)
+        rsa_public = OpenSSL::X509::Certificate.new(
+          Base64.decode64(LinkedData.settings.oauth2_authorization_server_signature_cert)).public_key
+        decoded_token = JWT.decode encodedToken, rsa_public, true, { algorithm: LinkedData.settings.oauth2_authorization_server_signature_alg,
+                                                                     verify_iat: true,
+                                                                     verify_not_before: true,
+                                                                     verify_expiration: true,
+                                                                     verify_aud: true,
+                                                                     aud: LinkedData.settings.oauth2_audience,
+                                                                     verify_iss: true,
+                                                                     iss: LinkedData.settings.oauth_issuer }
+        decoded_token
+      end
+
       APIKEYS_FOR_AUTHORIZATION = {}
 
       def initialize(app = nil)
         @app = app
-        @semaphore = Mutex.new
-        if LinkedData.settings.oauth2_enabled
-          begin
-            @oath2Client = OAuth2::Client.new(LinkedData.settings.oauth2_client_id, LinkedData.settings.oauth2_client_secret, {site: LinkedData.settings.oauth2_site, token_url: "oauth2/token", ssl: LinkedData.settings.oauth2_ssl})
-            @oath2ClientToken = @oath2Client.client_credentials.get_token("scope" => LinkedData.settings.oauth2_token_introspection_scope)
-          rescue OAuth2::Error => e
-            LOGGER.info("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
-            raise e
-          end
-        end
-      end
-
-      def oath2_client_token()
-        token = nil
-        @semaphore.synchronize do
-          token = @oath2ClientToken
-        end
-
-        if token.expired?
-          token = @oath2Client.client_credentials.get_token("scope" => LinkedData.settings.oauth2_token_introspection_scope)
-
-          @semaphore.synchronize do
-            @oath2ClientToken = token
-          end
-
-        end
-
-        token
       end
 
       ROUTES_THAT_BYPASS_SECURITY = Set.new([
@@ -48,8 +35,8 @@ module LinkedData
         req = Rack::Request.new(env)
         params = req.params
 
-        accessToken = find_access_token(env, params)
-        apikey = accessToken ? nil : find_apikey(env, params)
+        accessToken = find_access_token(env, params) if LinkedData.settings.oauth2_enabled
+        apikey = find_apikey(env, params) unless accessToken
 
         if apikey
           if !authorized?(apikey, env)
@@ -62,63 +49,14 @@ module LinkedData
           end
         elsif accessToken
           begin
-          introspectionResponse = oath2_client_token.post("/oauth2/introspect", {body: {"token" => accessToken}})
-          rescue OAuth2::Error => e
-            LOGGER.debug("#{e.class}: #{e.message}\n#{e.backtrace.join("\n\t")}")
-            raise e
-          end
-
-          unless introspectionResponse.parsed.active
+            Authorization::decodeJWT(accessToken)
+          rescue JWT::DecodeError => e
+            LOGGER.debug(e.message)
             status = 401
             response = {
               status: status,
-              error: "The provided access token is not valid."
+              error: "Failed to decode JWT token: " + e.message
             }
-          end
-
-          if status != 401
-            username = introspectionResponse.parsed.username
-
-            # the token returns a qualified username with source (e.g. LIFEWATCH.EU) and domain (e.g. @carbon)
-            if status != 401 && LinkedData.settings.oauth2_token_username_extractor
-              if usernameMatch = LinkedData.settings.oauth2_token_username_extractor.match(username)
-                username = usernameMatch["username"]
-              else
-                status = 401
-                response = {
-                  status: status,
-                  error: "Username does not match the extraction pattern"
-                }
-              end
-            end
-
-            if status != 401
-              scope = introspectionResponse.parsed.scope
-
-              scopes = []
-              if scope
-                scopes = scope.split()
-              end
-
-              unless !LinkedData.settings.oauth2_token_scope_matcher || scopes.any?(LinkedData.settings.oauth2_token_scope_matcher)
-                status = 401
-                response = {
-                  status: status,
-                  error: "The provided access token doesn't meet the required scope"
-                }
-              end
-
-              user = LinkedData::Models::User.where(username: username).include(LinkedData::Models::User.attributes(:all)).first
-              if user
-                store_user(user, env)
-              else
-                status = 401
-                response = {
-                  status: status,
-                  error: "The user who granted the access token is not recognized"
-                }
-              end
-            end
           end
         else
           status = 401
@@ -175,7 +113,7 @@ module LinkedData
           apikey = params["userapikey"]
         elsif params["apikey"]
           apikey = params["apikey"]
-        elsif apikey.nil? && header_auth
+        elsif apikey.nil? && header_auth && !header_auth.empty?
           token = Rack::Utils.parse_query(header_auth.split(" ")[1])
           # Strip spaces from start and end of string
           apikey = token["token"].gsub(/\"/, "")
