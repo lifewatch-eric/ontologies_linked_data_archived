@@ -639,15 +639,17 @@ module LinkedData
         end
 
         # Retrieve ontology URI attribute directly with OWLAPI
-        self.URI = ontology_uri
+        self.uri = ontology_uri
       end
 
       # Set some metadata to default values if nothing extracted
       def set_default_metadata(logger)
         if self.identifier.nil?
-          self.identifier = self.URI.to_s
+          self.identifier = self.uri.to_s
         end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         if self.deprecated.nil?
           if self.status.eql?("retired")
             self.deprecated = true
@@ -655,7 +657,10 @@ module LinkedData
             self.deprecated = false
           end
         end
+=end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # Add the ontology hasDomain to the submission hasDomain metadata value
         ontology_domain_list = []
         self.ontology.bring(:hasDomain).hasDomain.each do |domain|
@@ -667,41 +672,60 @@ module LinkedData
         if !self.hasDomain.nil?
           self.hasDomain << ontology_domain_list.join(", ")
         end
+=end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # Only get the first view because the attribute is not a list
         ontology_view = self.ontology.bring(:views).views.first
         if (self.hasPart.nil? && !ontology_view.nil?)
           self.hasPart = ontology_view.id
         end
+=end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # If no example identifier extracted: take the first class
         if self.exampleIdentifier.nil?
           self.exampleIdentifier = LinkedData::Models::Class.in(self).first.id
         end
+=end
 
         # Metadata specific to BioPortal that have been removed:
         #if self.hostedBy.nil?
         #  self.hostedBy = [ RDF::URI.new("http://#{LinkedData.settings.ui_host}") ]
         #end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # Add the search endpoint URL
         if self.openSearchDescription.nil?
           self.openSearchDescription = RDF::URI.new("#{LinkedData.settings.rest_url_prefix}search?ontologies=#{self.ontology.acronym}&q=")
         end
+=end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # Search allow to search by URI too
         if self.uriLookupEndpoint.nil?
           self.uriLookupEndpoint = RDF::URI.new("#{LinkedData.settings.rest_url_prefix}search?ontologies=#{self.ontology.acronym}&require_exact_match=true&q=")
         end
+=end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # Add the dataDump URL
         if self.dataDump.nil?
           self.dataDump = RDF::URI.new("#{LinkedData.settings.rest_url_prefix}ontologies/#{self.ontology.acronym}/download?download_format=rdf")
         end
+=end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         if self.csvDump.nil?
           self.csvDump = RDF::URI.new("#{LinkedData.settings.rest_url_prefix}ontologies/#{self.ontology.acronym}/download?download_format=csv")
         end
+=end
 
         # Add the previous submission as a prior version
         if self.submissionId > 1
@@ -714,14 +738,20 @@ module LinkedData
           prior_versions.push(RDF::URI.new("#{LinkedData.settings.rest_url_prefix}ontologies/#{self.ontology.acronym}/submissions/#{self.submissionId - 1}"))
           self.hasPriorVersion = prior_versions
 =end
+          #EcoPortal commented because this metadata is not present in the schema
+=begin
           self.hasPriorVersion = RDF::URI.new("#{LinkedData.settings.rest_url_prefix}ontologies/#{self.ontology.acronym}/submissions/#{self.submissionId - 1}")
+=end
         end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         if self.hasOntologyLanguage.umls?
           self.hasOntologySyntax = "http://www.w3.org/ns/formats/Turtle"
         elsif self.hasOntologyLanguage.obo?
           self.hasOntologySyntax = "http://purl.obolibrary.org/obo/oboformat/spec.html"
         end
+=end
 
         # Define default properties for prefLabel, synonyms, definition, author:
         if self.hasOntologyLanguage.owl?
@@ -740,10 +770,13 @@ module LinkedData
           # Add also hierarchyProperty? Could not find any use of it
         end
 
+        #EcoPortal commented because this metadata is not present in the schema
+=begin
         # Add the sparql endpoint URL
         if self.endpoint.nil?
           self.endpoint = RDF::URI.new(LinkedData.settings.sparql_endpoint_url)
         end
+=end
 
       end
 
